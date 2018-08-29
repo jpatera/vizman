@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * The entry point of the Spring Boot application.
  */
-@SpringBootApplication
+
 
 //@SpringBootApplication(scanBasePackageClasses = {
 //        SecurityConfiguration.class, MainView.class, Application.class,
@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 //@EnableJpaRepositories(basePackageClasses = { UserRepository.class })
 //@EntityScan(basePackageClasses = { User.class })
 
+@SpringBootApplication
 public class Application {
 // public class Application extends SpringBootServletInitializer {
 
