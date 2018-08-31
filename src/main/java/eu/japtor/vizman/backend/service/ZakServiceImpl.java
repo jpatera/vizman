@@ -1,7 +1,7 @@
 package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.backend.entity.Zak;
-import eu.japtor.vizman.backend.repository.ZakRepository;
+import eu.japtor.vizman.backend.repository.ZakRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,31 +10,31 @@ import java.util.List;
 @Service
 public class ZakServiceImpl implements ZakService {
 
-    private ZakRepository zakRepository;
+    private ZakRepo zakRepo;
 
     @Autowired
-    public ZakServiceImpl(ZakRepository zakRepository) {
+    public ZakServiceImpl(ZakRepo zakRepo) {
         super();
-        this.zakRepository = zakRepository;
+        this.zakRepo = zakRepo;
     }
 
     @Override
     public Zak saveZak(Zak zak) {
-        return zakRepository.save(zak);
+        return zakRepo.save(zak);
     }
 
     @Override
     public Zak getZak(Long id) {
-        return zakRepository.getOne(id);
+        return zakRepo.getOne(id);
     }
 
     @Override
     public List<Zak> getAllZak() {
-        return zakRepository.findAll();
+        return zakRepo.findAll();
     }
 
     @Override
     public long countZak() {
-        return zakRepository.count();
+        return zakRepo.count();
     }
 }

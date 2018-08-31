@@ -1,8 +1,10 @@
 package eu.japtor.vizman.app;
 
 import com.vaadin.flow.spring.annotation.SpringComponent;
+import eu.japtor.vizman.backend.entity.Usr;
 import eu.japtor.vizman.backend.entity.Zak;
-import eu.japtor.vizman.backend.repository.ZakRepository;
+import eu.japtor.vizman.backend.repository.UsrRepo;
+import eu.japtor.vizman.backend.repository.ZakRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -10,25 +12,32 @@ import javax.annotation.PostConstruct;
 @SpringComponent
 public class DataGenerator implements HasLogger {
 
-    private ZakRepository zakRepository;
+    private ZakRepo zakRepo;
+    private UsrRepo usrRepo;
 
     @Autowired
-    public DataGenerator(ZakRepository zakRepository) {
-        this.zakRepository = zakRepository;
+    public DataGenerator(final UsrRepo usrRepo, final ZakRepo zakRepo) {
+        this.usrRepo = usrRepo;
+        this.zakRepo = zakRepo;
     }
+
 
     @PostConstruct
     public void loadData() {
-        if (zakRepository.count() != 0L) {
+        if (zakRepo.count() != 0L) {
             getLogger().info("Using existing database");
             return;
         }
 
         getLogger().info("Generating demo data");
 
+        getLogger().info("... generating Usr");
+        usrRepo.save(createUsr("admin", "admin", "Administrator", "Dlouhán"));
+        usrRepo.save(createUsr("user", "user", "User", "Userovatej"));
+
         getLogger().info("... generating Zak");
-        zakRepository.save(createZak("2018.01", "Zakázka NULA JEDNA"));
-        zakRepository.save(createZak("2018.02", "Zakázka NULA DVA"));
+        zakRepo.save(createZak("2018.01", "Zakázka NULA JEDNA"));
+        zakRepo.save(createZak("2018.02", "Zakázka NULA DVA"));
 
         getLogger().info("Generated demo data");
     }
@@ -38,5 +47,14 @@ public class DataGenerator implements HasLogger {
         zak.setZakNum(zakNum);
         zak.setZakTitle(zakTitle);
         return zak;
+    }
+
+    private Usr createUsr(String username, String password, String firstName, String lastName) {
+        Usr usr = new Usr();
+        usr.setUsername(username);
+        usr.setPassword(password);
+        usr.setFirstName(firstName);
+        usr.setLastName(lastName);
+        return usr;
     }
 }

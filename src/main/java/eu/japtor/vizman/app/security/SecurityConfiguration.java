@@ -1,20 +1,16 @@
 package eu.japtor.vizman.app.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 
 /**
  * Configures spring security, doing the following:
@@ -31,52 +27,56 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 //    private static final String LOGIN_FAILURE_URL = "/login?error";
 //    private static final String LOGIN_URL = "/login";
 //    private static final String LOGOUT_SUCCESS_URL = "/" + BakeryConst.PAGE_STOREFRONT;
-//
-//    private final UserDetailsService userDetailsService;
-//
-//    @Autowired
-//    private PasswordEncoder passwordEncoder;
-//
-//    @Autowired
-//    public SecurityConfiguration(UserDetailsService userDetailsService) {
-//        this.userDetailsService = userDetailsService;
-//    }
 
-//    /**
-//     * The password encoder to use when encrypting passwords.
-//     */
+    private final UserDetailsService userDetailsService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public SecurityConfiguration(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
+
+
+    /**
+     * The password encoder to use when encrypting passwords.
+     */
 //    @Bean
 //    public PasswordEncoder passwordEncoder() {
 //        return new BCryptPasswordEncoder();
 //    }
-//
+    @SuppressWarnings("deprecation")
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return NoOpPasswordEncoder.getInstance();
+    }
+
+
 //    @Bean
 //    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 //    public User currentUser(UserRepository userRepository) {
 //        return userRepository.findByEmailIgnoreCase(SecurityUtils.getUsername());
 //    }
 
-//    /**
-//     * Registers our UserDetailsService and the password encoder to be used on login attempts.
-//     */
-//    @Override
-//    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-//        super.configure(auth);
-//        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
-//    }
 
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth
-                .inMemoryAuthentication()
-                .passwordEncoder(NoOpPasswordEncoder.getInstance())
-                .withUser("user")
-                .password("user")
-                .roles("USER")
-                .and()
-                .withUser("admin")
-                .password("admin")
-                .roles("ADMIN", "USER");
+
+        // Registers our UserDetailsService and the password encoder to be used on login attempts.
+        super.configure(auth);
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+
+//        auth
+//                .inMemoryAuthentication()
+//                .passwordEncoder(NoOpPasswordEncoder.getInstance())
+//                .withUser("user")
+//                .password("user")
+//                .roles("USER")
+//                .and()
+//                .withUser("admin")
+//                .password("admin")
+//                .roles("ADMIN", "USER");
     }
 
     /**
@@ -87,14 +87,24 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // Not using Spring CSRF here to be able to use plain HTML for the login page
         http.csrf().disable()
                 .authorizeRequests()
-//					.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
+//                  .antMatchers("/welcome").permitAll()
+//  				.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
                 .anyRequest().authenticated()
-// 				.and().httpBasic()
+ 				.and().httpBasic()
                 .and()
                 .formLogin().permitAll()
                 .and()
                 .logout().permitAll()
         ;
+
+//        http.authorizeRequests()
+//                .antMatchers("/login")
+//                .permitAll()
+//                .antMatchers("/*")
+//                .access("hasRole('ROLE_USER')");
+//
+//        http.formLogin()
+//                .defaultSuccessUrl("/", true);
     }
 
 //    /**

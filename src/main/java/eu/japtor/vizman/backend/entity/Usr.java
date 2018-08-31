@@ -8,7 +8,7 @@ import javax.persistence.Table;
  * Represents a Usr
  */
 @Entity
-@Table(name = "USER")
+@Table(name = "USR")
 public class Usr extends AbstractEntity {
 
     @Column(name="PASSWORD")
@@ -16,36 +16,39 @@ public class Usr extends AbstractEntity {
 
     @Column(name="USERNAME")
     private String username = "";
+    @Column(name="FIRST_NMAME")
+    private String firstName = "";
+
+    @Column(name="LAST_NAME")
+    private String lastName = "";
+
 
     public Usr() {
     }
 
-    /**
-     * Gets the value of password
-     *
-     * @return the value of user password
-     */
     public String getPassword() {
         return password;
     }
-
-    /**
-     * Sets the value password
-     *
-     * @param password new value of user password
-     */
     public void setPassword(String password) {
         this.password = password;
     }
 
-
-    /**
-     * Gets the value of user username
-     *
-     * @return the value of username
-     */
     public String getUsername() {
         return username;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     /**

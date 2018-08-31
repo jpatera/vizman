@@ -22,8 +22,11 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import eu.japtor.vizman.backend.entity.Usr;
+import eu.japtor.vizman.backend.service.UsrService;
 import eu.japtor.vizman.ui.MainView;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
@@ -32,39 +35,44 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 @Tag(PAGE_USERS_TAG)
 public class UserListView extends VerticalLayout {
 
-    //    private ZakService zakService;
+    private UsrService usrService;
     private final H2 header = new H2(TITLE_USERS);
 
     private final Grid<Usr> grid = new Grid<>();
 
     @Autowired
-//    public UserListView(ZakService zakService) {
-    public UserListView() {
-//        this.zakService = zakService;   // Note: Field @Autowiring of zakService resulted to null
-        initView();
-        addContent();
-        updateView();
-    }
-
-    private void initView() {
+    public UserListView(UsrService usrService) {
+//	public ProductsView(CrudEntityPresenter<Product> presenter) {
+        this.usrService = usrService;   // Note: Field @Autowiring of usrService resulted to null
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+        setupGrid();
+        updateView();
+
+//        super(EntityUtil.getName(Usr.class), form);
+//        this.presenter = presenter;
+//        form.setBinder(binder);
+//        setupEventListeners();
     }
 
-    private void addContent() {
+
+    private void setupGrid() {
         VerticalLayout container = new VerticalLayout();
         container.setClassName("view-container");
         container.setAlignItems(Alignment.STRETCH);
 
         grid.addColumn(Usr::getUsername).setHeader("Username").setWidth("8em").setResizable(true);
         grid.addColumn(Usr::getPassword).setHeader("Password").setWidth("8em").setResizable(true);
+        grid.addColumn(Usr::getFirstName).setHeader("Jméno").setWidth("8em").setResizable(true);
+        grid.addColumn(Usr::getLastName).setHeader("Příjmení").setWidth("8em").setResizable(true);
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
-
+//        grid.setDataProvider(filteredDataProvider);
         container.add(header, grid);
         add(container);
     }
 
+
     private void updateView() {
-//        List<Zak> zaks = zakService.getAllZak();
-//        grid.setItems(zaks);
+        List<Usr> usrList = usrService.getAllUsr();
+        grid.setItems(usrList);
     }
 }
