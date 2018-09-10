@@ -12,15 +12,15 @@ import javax.persistence.Query;
 @Transactional(readOnly = true)
 public class UsrRepoCustomImpl implements UsrRepoCustom  {
 
-    @PersistenceContext
-    EntityManager entityManager;
-
-    @Override
-    public Usr getUsrByUsername(final String username) {
-        Query query = entityManager.createNativeQuery("SELECT usr.* FROM Usr as usr " +
-                "WHERE usr.username = ?", Usr.class);
-        query.setParameter(1, username);
-//        query.setParameter(1, firstName + "%");
-        return (Usr)query.getResultList().get(0);
-    }
+//    @PersistenceContext
+//    EntityManager entityManager;
+//
+//    @Override
+//    public Usr getUsrByUsername(final String username) {
+//        Query query = entityManager.createNativeQuery("SELECT usr.* FROM Usr as usr " +
+//                "WHERE usr.username = ?", Usr.class);
+//        query.setParameter(1, username);
+////        query.setParameter(1, firstName + "%");
+//        return (Usr)query.getResultList().get(0);
+//    }
 }

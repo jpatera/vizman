@@ -1,9 +1,12 @@
 package eu.japtor.vizman.app.security;
 
+import eu.japtor.vizman.backend.entity.Role;
+import eu.japtor.vizman.backend.repository.RoleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -11,6 +14,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.stream.Collectors;
+
+import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_USERS;
 
 /**
  * Configures spring security, doing the following:
@@ -20,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
  */
 @EnableWebSecurity
+@EnableGlobalMethodSecurity
 @Configuration
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
@@ -32,6 +40,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RoleRepo roleRepo;
 
     @Autowired
     public SecurityConfiguration(UserDetailsService userDetailsService) {
@@ -86,22 +97,43 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         // Not using Spring CSRF here to be able to use plain HTML for the login page
         http.csrf().disable()
+
+//                // Register our CustomRequestCache, that saves unauthorized access attempts, so
+//                // the user is redirected after login.
+//                .requestCache().requestCache(new CustomRequestCache())
+//                .and()
+
+                // Restrict access to our application.
                 .authorizeRequests()
-//                  .antMatchers("/welcome").permitAll()
-//  				.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
-                .anyRequest().authenticated()
- 				.and().httpBasic()
+
+                    // Allow all flow internal requests.
+                    .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
+
+//                    // Allow all requests by logged in users.
+//                    .anyRequest().hasAnyRole(roleRepo.getAllRoleNames())
+
+//                    .antMatchers("/**").hasAnyRole("ADMIN", "USER")
+                    .anyRequest()
+                    .authenticated()
+
+////                  .antMatchers("/welcome").permitAll()
+////  				.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
+//                    .antMatchers("/" + ROUTE_USERS).hasRole("ADMIN")
+//                    .anyRequest().authenticated()
                 .and()
-                .formLogin().permitAll()
+// 				.and().httpBasic()
+                .formLogin()
+                    .permitAll()
                 .and()
-                .logout().permitAll()
+                .logout()
+                    .permitAll()
         ;
 
 //        http.authorizeRequests()
 //                .antMatchers("/login")
 //                .permitAll()
 //                .antMatchers("/*")
-//                .access("hasRole('ROLE_USER')");
+//                .access("hasRole('USER')");
 //
 //        http.formLogin()
 //                .defaultSuccessUrl("/", true);

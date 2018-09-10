@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UsrRepo extends JpaRepository<Usr, Long>, UsrRepoCustom {
 
+        Usr findTopByUsername(String name);
 }

@@ -6,7 +6,7 @@ import javax.persistence.*;
  * Represents a zakazka
  */
 @Entity
-@Table(name = "ZAK")
+//@Table(name = "ZAK")
 public class Zak extends AbstractEntity {
 
     @Column(name="ZAK_NUM")

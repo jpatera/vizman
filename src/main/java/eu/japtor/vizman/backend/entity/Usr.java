@@ -1,27 +1,45 @@
 package eu.japtor.vizman.backend.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import org.springframework.security.access.annotation.Secured;
+
+import javax.persistence.*;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * Represents a Usr
  */
 @Entity
-@Table(name = "USR")
+//@Table(name = "USR")
 public class Usr extends AbstractEntity {
 
-    @Column(name="PASSWORD")
+//    @Column(name="PASSWORD")
     private String password = "";
 
-    @Column(name="USERNAME")
+//    @Column(name="USERNAME")
     private String username = "";
-    @Column(name="FIRST_NMAME")
+//    @Column(name="FIRST_NMAME")
     private String firstName = "";
 
-    @Column(name="LAST_NAME")
+//    @Column(name="LAST_NAME")
     private String lastName = "";
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "usr_role",
+            joinColumns = @JoinColumn(
+                    name = "usr_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "role_id", referencedColumnName = "id"))
+    private Set<Role> roles;
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
 
     public Usr() {
     }
@@ -36,6 +54,9 @@ public class Usr extends AbstractEntity {
     public String getUsername() {
         return username;
     }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public String getFirstName() {
         return firstName;
@@ -49,15 +70,6 @@ public class Usr extends AbstractEntity {
     }
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    /**
-     * Sets the value username
-     *
-     * @param username new value of username
-     */
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     @Override

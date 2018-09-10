@@ -21,10 +21,12 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.annotation.SpringComponent;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.ui.MainView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 
 import java.util.List;
 
@@ -33,6 +35,8 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 @Route(value = ROUTE_ZAKS, layout = MainView.class)
 @PageTitle(PAGE_ZAKS_TITLE)
 @Tag(PAGE_ZAKS_TAG)
+//@Secured({"ZAK_VIEW_BASIC_READ", "ZAK_VIEW_EXT_READ"})
+@SpringComponent
 public class ZakListView extends VerticalLayout {
 
     private ZakService zakService;

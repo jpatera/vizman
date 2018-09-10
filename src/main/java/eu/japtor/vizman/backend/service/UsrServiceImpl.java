@@ -26,7 +26,7 @@ public class UsrServiceImpl implements UsrService {
 
     @Override
     public Usr getUsrByUsername(String username) {
-        return usrRepo.getUsrByUsername(username);
+        return usrRepo.findTopByUsername(username);
     }
 
     @Override

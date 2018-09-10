@@ -21,10 +21,13 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import eu.japtor.vizman.backend.entity.Privilege;
 import eu.japtor.vizman.backend.entity.Usr;
 import eu.japtor.vizman.backend.service.UsrService;
 import eu.japtor.vizman.ui.MainView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 
 import java.util.List;
 
@@ -33,6 +36,8 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 @Route(value = ROUTE_USERS, layout = MainView.class)
 @PageTitle(PAGE_USERS_TITLE)
 @Tag(PAGE_USERS_TAG)
+//@Secured({"USR_VIEW_BASIC_READ", "USR_VIEW_EXT_READ"})
+@SpringComponent
 public class UserListView extends VerticalLayout {
 
     private UsrService usrService;

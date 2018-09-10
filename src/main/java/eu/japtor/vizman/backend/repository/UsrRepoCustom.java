@@ -4,5 +4,5 @@ import eu.japtor.vizman.backend.entity.Usr;
 
 public interface UsrRepoCustom {
 
-    Usr getUsrByUsername(String username);
+//    Usr getUsrByUsername(String username);
 }
