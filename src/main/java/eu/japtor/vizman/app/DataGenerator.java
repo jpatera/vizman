@@ -10,6 +10,7 @@ import eu.japtor.vizman.backend.repository.RoleRepo;
 import eu.japtor.vizman.backend.repository.UsrRepo;
 import eu.japtor.vizman.backend.repository.ZakRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -66,7 +67,7 @@ public class DataGenerator implements HasLogger {
         createRoleIfNotFound("ROLE_ADMIN", adminPrivileges);
 
         Set<Privilege> userPrivileges = new HashSet<>();
-        adminPrivileges.addAll(Arrays.asList(Privilege.ZAK_VIEW_BASIC_READ));
+        userPrivileges.addAll(Arrays.asList(Privilege.ZAK_VIEW_BASIC_READ));
         createRoleIfNotFound("ROLE_USER", userPrivileges);
 
 
@@ -118,22 +119,22 @@ public class DataGenerator implements HasLogger {
         return zak;
     }
 
-    private Usr createUsr(
-            String username, String password, String firstName, String lastName,
-            Set<Role> roles
-    ) {
-        Usr usr = new Usr();
-        usr.setUsername(username);
-        usr.setPassword(password);
-        usr.setFirstName(firstName);
-        usr.setLastName(lastName);
-        usr.setRoles(roles);
-        return usr;
-    }
+//    private Usr createUsr(
+//            String username, String password, String firstName, String lastName,
+//            Set<Role> roles
+//    ) {
+//        Usr usr = new Usr();
+//        usr.setUsername(username);
+//        usr.setPassword(password);
+//        usr.setFirstName(firstName);
+//        usr.setLastName(lastName);
+//        usr.setRoles(roles);
+//        return usr;
+//    }
 
-//    @Transactional
+    @Transactional
 //    private Role createRoleIfNotFound(String name) {
-    private Role createRoleIfNotFound(String name, Set<Privilege> privileges) {
+    public Role createRoleIfNotFound(String name, Set<Privilege> privileges) {
 
         Role role = roleRepo.findTopByName(name);
         if (role == null) {

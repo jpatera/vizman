@@ -1,6 +1,6 @@
 package eu.japtor.vizman.app.security;
 
-import eu.japtor.vizman.backend.entity.Role;
+import eu.japtor.vizman.backend.entity.Privilege;
 import eu.japtor.vizman.backend.repository.RoleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -15,9 +15,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.stream.Collectors;
-
-import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_USERS;
+import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_USR;
+import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_ZAK;
 
 /**
  * Configures spring security, doing the following:
@@ -106,19 +105,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 // Restrict access to our application.
                 .authorizeRequests()
 
+//                    .antMatchers("/", "/home").permitAll()
+                    .antMatchers("/" + ROUTE_USR).hasAnyAuthority(Privilege.USR_VIEW_BASIC_READ.name(), Privilege.USR_VIEW_EXT_READ.name())
+                    .antMatchers("/" + ROUTE_ZAK).hasAnyAuthority(Privilege.ZAK_VIEW_BASIC_READ.name(), Privilege.ZAK_VIEW_EXT_READ.name())
                     // Allow all flow internal requests.
-                    .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
+//                    .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
 
 //                    // Allow all requests by logged in users.
 //                    .anyRequest().hasAnyRole(roleRepo.getAllRoleNames())
 
 //                    .antMatchers("/**").hasAnyRole("ADMIN", "USER")
-                    .anyRequest()
-                    .authenticated()
+                    .anyRequest().authenticated()
 
 ////                  .antMatchers("/welcome").permitAll()
 ////  				.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
-//                    .antMatchers("/" + ROUTE_USERS).hasRole("ADMIN")
+//                    .antMatchers("/" + ROUTE_USR).hasRole("ADMIN")
 //                    .anyRequest().authenticated()
                 .and()
 // 				.and().httpBasic()

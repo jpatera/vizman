@@ -35,7 +35,7 @@ public enum Privilege implements GrantedAuthority {
 
     @Override
     public String getAuthority() {
-        return name();
+        return this.name();
     }
 
 //    public String name;

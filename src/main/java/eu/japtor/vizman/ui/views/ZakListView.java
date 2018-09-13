@@ -21,7 +21,6 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.spring.annotation.SpringComponent;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.ui.MainView;
@@ -32,21 +31,21 @@ import java.util.List;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
-@Route(value = ROUTE_ZAKS, layout = MainView.class)
-@PageTitle(PAGE_ZAKS_TITLE)
-@Tag(PAGE_ZAKS_TAG)
+@Route(value = ROUTE_ZAK, layout = MainView.class)
+@PageTitle(PAGE_ZAK_TITLE)
+@Tag(PAGE_ZAK_TAG)
 //@Secured({"ZAK_VIEW_BASIC_READ", "ZAK_VIEW_EXT_READ"})
-@SpringComponent
+//@SpringComponent
 public class ZakListView extends VerticalLayout {
 
     private ZakService zakService;
-    private final H2 header = new H2(TITLE_ZAKS);
+    private final H2 header = new H2(TITLE_ZAK);
 
     private final Grid<Zak> grid = new Grid<>();
 
     @Autowired
     public ZakListView(ZakService zakService) {
-        this.zakService = zakService;   // Note: @Autowiring of zakService resulted to null
+        this.zakService = zakService;   // Note: Direct @Autowiring of zakService resulted to null
         initView();
         addContent();
         updateView();

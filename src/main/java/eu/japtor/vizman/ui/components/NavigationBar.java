@@ -9,7 +9,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.views.UserListView;
 import eu.japtor.vizman.ui.views.ZakListView;
@@ -29,19 +28,19 @@ public class NavigationBar extends Div implements RouterLayout {
         homeLink.add(ICON_HOME, new Text(TITLE_HOME));
         homeLink.addClassName("main-layout__nav-item");
 
-        RouterLink usersLink = new RouterLink(null, UserListView.class);
+        RouterLink usrLink = new RouterLink(null, UserListView.class);
         Icon ICON_USERS = new Icon (VaadinIcon.USERS);
         ICON_USERS.setColor("blue");
-        usersLink.add(ICON_USERS, new Text(TITLE_USERS));
-        usersLink.addClassName("main-layout__nav-item");
+        usrLink.add(ICON_USERS, new Text(TITLE_USR));
+        usrLink.addClassName("main-layout__nav-item");
 
-        RouterLink zaksLink = new RouterLink(null, ZakListView.class);
+        RouterLink zakLink = new RouterLink(null, ZakListView.class);
         Icon ICON_ZAKS = new Icon (VaadinIcon.LIST);
         ICON_ZAKS.setColor("green");
-        zaksLink.add(ICON_ZAKS, new Text(TITLE_ZAKS));
-        zaksLink.addClassName("main-layout__nav-item");
+        zakLink.add(ICON_ZAKS, new Text(TITLE_ZAK));
+        zakLink.addClassName("main-layout__nav-item");
 
-        this.add(homeLink, zaksLink, usersLink);
+        this.add(homeLink, zakLink, usrLink);
         this.addClassName("main-layout__nav");
     }
 }

@@ -1,5 +1,6 @@
 package eu.japtor.vizman.app.security;
 
+import eu.japtor.vizman.backend.entity.Privilege;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.entity.Usr;
 import eu.japtor.vizman.backend.service.UsrService;
@@ -12,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,6 +27,7 @@ public class UserDetailServiceImpl  implements UserDetailsService {
     UsrService usrService;
 
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         Usr usr = usrService.getUsrByUsername(username);
@@ -65,7 +68,9 @@ public class UserDetailServiceImpl  implements UserDetailsService {
 //        }
 
         for (Role role : roles) {
-            authorities.add(new SimpleGrantedAuthority(role.getName()));
+            for (Privilege perm : role.getPrivileges()) {
+                authorities.add(new SimpleGrantedAuthority(perm.getAuthority()));
+            }
         }
 
 //        authorities.add(new SimpleGrantedAuthority("ADMIN"));
