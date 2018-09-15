@@ -2,9 +2,8 @@ package eu.japtor.vizman.app.security;
 
 import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.shared.ApplicationConstants;
+import eu.japtor.vizman.backend.entity.Perm;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class SecurityUtils {
@@ -43,8 +43,8 @@ public class SecurityUtils {
      * @return true if access is granted, false otherwise.
      */
     public static boolean isAccessGranted(Class<?> securedClass) {
-        PreAuthorize preAuthorized = AnnotationUtils.findAnnotation(securedClass, PreAuthorize.class);
-        if (preAuthorized == null) {
+        Permissions permissions = AnnotationUtils.findAnnotation(securedClass, Permissions.class);
+        if (permissions == null) {
             return true;
         }
 
@@ -52,9 +52,12 @@ public class SecurityUtils {
         if (userAuthentication == null) {
             return false;
         }
-        List<String> allowedRoles = Arrays.asList(preAuthorized.value());
-        return userAuthentication.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-                .anyMatch(allowedRoles::contains);
+//        List<GrantedAuthority> allowedAuths = Arrays.asList(perm.value());
+        Set<String> allowedPermNames = Perm.getPermNames(Arrays.asList(permissions.value()));
+        return userAuthentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(allowedPermNames::contains);
+//                .anyMatch(a -> allowedAuths.contains(a));
     }
 
     /**

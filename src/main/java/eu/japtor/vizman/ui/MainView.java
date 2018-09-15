@@ -13,29 +13,39 @@ import eu.japtor.vizman.ui.components.NavigationBar;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.router.Route;
-import org.springframework.security.access.AccessDeniedException;
+import eu.japtor.vizman.ui.exceptions.AccessDeniedException;
+import org.springframework.beans.factory.annotation.Autowired;
 
-//import static eu.japtor.vizman.ui.util.VizmanConst.ICON_ZAK_LIST;
+import javax.annotation.PostConstruct;
+
 
 
 @HtmlImport("frontend://styles/shared-styles.html")
 @Route("")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
 public class MainView extends Div implements RouterLayout, BeforeEnterObserver, HasLogger {
-// public class MainView extends Div implements RouterLayout, HasLogger, BeforeEnterObserver {
 
 //    @Id("navigationBar")
+    @Autowired  // Must not be used in constructor, only in @PostConstruct
     private NavigationBar navigationBar;
 
-    public MainView(NavigationBar navigationBar) {
-        this.navigationBar = navigationBar;
-        init();
+    @Autowired
+    public MainView() {
+
+        System.out.println("###  MainView constructor");
+
+//    public MainView(NavigationBar navigationBar) {
+//        this.navigationBar = navigationBar;
+//        this.navigationBar.init();
+//        init();
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         if (!SecurityUtils.isAccessGranted(event.getNavigationTarget())) {
-            event.rerouteToError(AccessDeniedException.class);
+//            UI.getCurrent().navigate(href);
+//            event = null;
+            event.rerouteToError(AccessDeniedException.class, "PŘÍSTUP NENÍ POVOLEN");
         }
     }
 
@@ -68,9 +78,12 @@ public class MainView extends Div implements RouterLayout, BeforeEnterObserver, 
 //        }
 //    }
 
-    private void init() {
+    @PostConstruct
+    public void setup() {
 
-        getLogger().info("INIT started");
+        getLogger().info("###  MainView SETUP started");
+
+        this.navigationBar.init();
 
 //        RouterLink zakListLink = new RouterLink(null, ZakListView.class);
 //        Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);

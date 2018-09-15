@@ -2,14 +2,12 @@ package eu.japtor.vizman.backend.entity;
 
 import org.springframework.security.core.GrantedAuthority;
 
-import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-//@Entity
-//public class Privilege extends AbstractEntity{
-public enum Privilege implements GrantedAuthority {
+public enum Perm implements GrantedAuthority {
 
     VIEW_ALL("Může otevřít všechny definované stránky"),
     MANAGE_ALL("Může vytvářet/editovat/rušit všechna dostupná data"),
@@ -21,7 +19,14 @@ public enum Privilege implements GrantedAuthority {
     USR_VIEW_EXT_READ("Může otevřít stránku uživatelů, přístup ke všem údajům"),
     CONFIG_VIEW_MANAGE("Může otevřít konfigurační stránku VizMana");
 
-    Privilege(String description) {
+    static private HashSet<String> permNames = new HashSet<>();
+    static {
+        for (Perm p : Perm.values()) {
+            permNames.add(p.name());
+        }
+    }
+
+    Perm(String description) {
         this.description = description;
     }
 
@@ -38,20 +43,13 @@ public enum Privilege implements GrantedAuthority {
         return this.name();
     }
 
-//    public String name;
-//    public String getName() {
-//        return name;
-//    }
-//    public void setName(String name) {
-//        this.name = name;
-//    }
+    public static Set<String> getAllPermNames() {
+        return permNames;
+    }
 
-//    @ManyToMany(mappedBy = "privileges")
-//    private Set<Role> roles;
-//    public Set<Role> getRoles() {
-//        return roles;
-//    }
-//    public void setRoles(Set<Role> roles) {
-//        this.roles = roles;
-//    }
+    public static Set<String> getPermNames(Collection<Perm> perms) {
+        return perms.stream()
+                .map(Perm::name)
+                .collect(Collectors.toSet());
+    }
 }

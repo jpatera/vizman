@@ -19,13 +19,16 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import eu.japtor.vizman.app.security.Permissions;
+import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Usr;
 import eu.japtor.vizman.backend.service.UsrService;
 import eu.japtor.vizman.ui.MainView;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -34,15 +37,13 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 @Route(value = ROUTE_USR, layout = MainView.class)
 @PageTitle(PAGE_USR_TITLE)
 @Tag(PAGE_USR_TAG)
-//@PreAuthorize({PERM_USR_VIEW_BASIC_READ, "USR_VIEW_EXT_READ"})
-//@Secured({USR_VIEW_BASIC_READ.name()})
-//@SpringComponent  ..must not be defined, otherwise refresh (in Chrome) throws exception
-@PreAuthorize("hasAnyAuthority(" +
-        "T(eu.japtor.vizman.backend.entity.Privilege).VIEW_ALL, " +
-        "T(eu.japtor.vizman.backend.entity.Privilege).MANAGE_ALL)")
-public class UserListView extends VerticalLayout {
+// Note: @SpringComponent  ..must not be defined, otherwise refresh (in Chrome) throws exception
+@Permissions({Perm.VIEW_ALL, Perm.MANAGE_ALL
+        , Perm.USR_VIEW_BASIC_READ, Perm.USR_VIEW_EXT_READ
+})
+public class UserListView extends VerticalLayout implements BeforeEnterObserver {
 
-    private UsrService usrService;
+    private final UsrService usrService;
     private final H2 header = new H2(TITLE_USR);
 
     private final Grid<Usr> grid = new Grid<>();
@@ -61,6 +62,11 @@ public class UserListView extends VerticalLayout {
 //        setupEventListeners();
     }
 
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        // Navigation first gos here, then to the beforeEnter of MainView
+        System.out.println("###  ZaklListView.beforeEnter");
+    }
 
     private void setupGrid() {
         VerticalLayout container = new VerticalLayout();

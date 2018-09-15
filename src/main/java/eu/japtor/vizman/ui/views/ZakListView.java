@@ -19,13 +19,18 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import eu.japtor.vizman.app.security.Permissions;
+import eu.japtor.vizman.app.security.SecurityUtils;
+import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.ui.MainView;
+import eu.japtor.vizman.ui.exceptions.AccessDeniedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
 
 import java.util.List;
 
@@ -34,11 +39,13 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 @Route(value = ROUTE_ZAK, layout = MainView.class)
 @PageTitle(PAGE_ZAK_TITLE)
 @Tag(PAGE_ZAK_TAG)
-//@Secured({"ZAK_VIEW_BASIC_READ", "ZAK_VIEW_EXT_READ"})
-//@SpringComponent
-public class ZakListView extends VerticalLayout {
+@Permissions({Perm.VIEW_ALL, Perm.MANAGE_ALL,
+        Perm.ZAK_VIEW_BASIC_READ, Perm.ZAK_VIEW_BASIC_MANAGE,
+        Perm.ZAK_VIEW_EXT_READ, Perm.ZAK_VIEW_EXT_MANAGE
+})
+public class ZakListView extends VerticalLayout implements BeforeEnterObserver {
 
-    private ZakService zakService;
+    private final ZakService zakService;
     private final H2 header = new H2(TITLE_ZAK);
 
     private final Grid<Zak> grid = new Grid<>();
@@ -49,6 +56,12 @@ public class ZakListView extends VerticalLayout {
         initView();
         addContent();
         updateView();
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        // Navigation first gos here, then to the beforeEnter of MainView
+        System.out.println("###  ZaklListView.beforeEnter");
     }
 
     private void initView() {

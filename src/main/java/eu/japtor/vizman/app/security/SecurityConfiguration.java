@@ -1,6 +1,6 @@
 package eu.japtor.vizman.app.security;
 
-import eu.japtor.vizman.backend.entity.Privilege;
+import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.repository.RoleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -106,8 +106,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
 
 //                    .antMatchers("/", "/home").permitAll()
-                    .antMatchers("/" + ROUTE_USR).hasAnyAuthority(Privilege.USR_VIEW_BASIC_READ.name(), Privilege.USR_VIEW_EXT_READ.name())
-                    .antMatchers("/" + ROUTE_ZAK).hasAnyAuthority(Privilege.ZAK_VIEW_BASIC_READ.name(), Privilege.ZAK_VIEW_EXT_READ.name())
+                    .antMatchers("/" + ROUTE_USR).hasAnyAuthority(Perm.USR_VIEW_BASIC_READ.name(), Perm.USR_VIEW_EXT_READ.name())
+                    .antMatchers("/" + ROUTE_ZAK).hasAnyAuthority(Perm.ZAK_VIEW_BASIC_READ.name(), Perm.ZAK_VIEW_EXT_READ.name())
                     // Allow all flow internal requests.
 //                    .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
 

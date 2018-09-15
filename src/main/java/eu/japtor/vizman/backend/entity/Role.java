@@ -27,24 +27,15 @@ public class Role extends AbstractEntity {
     @ManyToMany(mappedBy = "roles")
     private Set<Usr> usrs;
 
-//    @ManyToMany(fetch = FetchType.EAGER)
-//    @JoinTable(
-//            name = "role_privilege",
-//            joinColumns = @JoinColumn(
-//                    name = "role_id", referencedColumnName = "id"),
-//            inverseJoinColumns = @JoinColumn(
-//                    name = "privilege_id", referencedColumnName = "id"))
-//    @Enumerated(EnumType.STRING)
-
-    @ElementCollection(targetClass=Privilege.class)
+    @ElementCollection(targetClass=Perm.class)
     @Enumerated(EnumType.STRING) // Possibly optional (I'm not sure) but defaults to ORDINAL.
-    @CollectionTable(name="role_privilege")
-    @Column(name="privilege") // Column name in role_privilege
-    protected Set<Privilege> privileges = new HashSet<>();
-    public Set<Privilege> getPrivileges() {
-        return privileges;
+    @CollectionTable(name="role_perm")
+    @Column(name="perm") // Column name in role_perm
+    protected Set<Perm> perms = new HashSet<>();
+    public Set<Perm> getPerms() {
+        return perms;
     }
-    public void setPrivileges(Set<Privilege> privileges) {
-        this.privileges = privileges;
+    public void setPerms(Set<Perm> perms) {
+        this.perms = perms;
     }
 }

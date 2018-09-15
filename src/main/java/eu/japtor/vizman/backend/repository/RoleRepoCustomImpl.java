@@ -1,6 +1,5 @@
 package eu.japtor.vizman.backend.repository;
 
-import eu.japtor.vizman.backend.entity.Role;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

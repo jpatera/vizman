@@ -1,6 +1,6 @@
 package eu.japtor.vizman.app.security;
 
-import eu.japtor.vizman.backend.entity.Privilege;
+import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.entity.Usr;
 import eu.japtor.vizman.backend.service.UsrService;
@@ -14,17 +14,26 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Primary
 public class UserDetailServiceImpl  implements UserDetailsService {
 
-    @Autowired
+    final
     UsrService usrService;
+
+    @Autowired
+    public UserDetailServiceImpl(UsrService usrService) {
+//        Assert.nonNull("");
+//        Objects.nonNull(usrService);
+        this.usrService = usrService;
+    }
 
     @Override
     @Transactional
@@ -47,47 +56,16 @@ public class UserDetailServiceImpl  implements UserDetailsService {
                 , true
                 , getGrantedAuthorities(usr.getRoles())
         );
-
-//        if(username.equals("test")) {
-//            return User.withDefaultPasswordEncoder()
-//                    .username("test")
-//                    .password("test")
-//                    .roles("test")
-//                    .build();
-//        } else {
-//            return null;
-//        }
     }
 
-//    private List<GrantedAuthority> getGrantedAuthorities(List<String> privileges) {
     private List<GrantedAuthority> getGrantedAuthorities(Collection<Role> roles) {
 
         List<GrantedAuthority> authorities = new ArrayList<>();
-//        for (String privilege : privileges) {
-//            authorities.add(new SimpleGrantedAuthority(privilege));
-//        }
-
         for (Role role : roles) {
-            for (Privilege perm : role.getPrivileges()) {
+            for (Perm perm : role.getPerms()) {
                 authorities.add(new SimpleGrantedAuthority(perm.getAuthority()));
             }
         }
-
-//        authorities.add(new SimpleGrantedAuthority("ADMIN"));
-//        authorities.add(new SimpleGrantedAuthority("USER"));
         return authorities;
     }
-
-//    private Collection<? extends GrantedAuthority> getAuthorities(Collection<Role> roles) {
-//
-//        List<GrantedAuthority> authorities = new ArrayList<>();
-//        for (Role role: roles) {
-//            authorities.add(new SimpleGrantedAuthority(role.getName()));
-//            role.getPrivileges().stream()
-//                    .map(p -> new SimpleGrantedAuthority(p.name()))
-//                    .forEach(authorities::add);
-//        }
-//
-//        return authorities;
-//    }
 }
