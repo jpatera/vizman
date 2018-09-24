@@ -18,9 +18,9 @@ public class RoleRepoCustomImpl implements RoleRepoCustom  {
     @Override
     public String[] getAllRoleNames() {
         Query query = em.createQuery("select r from Role r");
-        List<String> repoNameList = query.getResultList();
-        String[] repoNameArray = new String[repoNameList.size()];
-        return repoNameList.toArray(repoNameArray);
+        List<String> roleNameList = query.getResultList();
+        String[] repoNameArray = new String[roleNameList.size()];
+        return roleNameList.toArray(repoNameArray);
 
 //        List<String> list = query.getResultList();
 //                "WHERE role.name = ?", Role.class);

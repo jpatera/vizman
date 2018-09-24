@@ -18,6 +18,7 @@ package eu.japtor.vizman.ui.views;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -35,8 +36,8 @@ import java.util.List;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
 @Route(value = ROUTE_USR, layout = MainView.class)
-@PageTitle(PAGE_USR_TITLE)
-@Tag(PAGE_USR_TAG)
+@PageTitle(PAGE_TITLE_USR)
+@Tag(TAG_USR)
 // Note: @SpringComponent  ..must not be defined, otherwise refresh (in Chrome) throws exception
 @Permissions({Perm.VIEW_ALL, Perm.MANAGE_ALL
         , Perm.USR_VIEW_BASIC_READ, Perm.USR_VIEW_EXT_READ
@@ -44,7 +45,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 public class UserListView extends VerticalLayout implements BeforeEnterObserver {
 
     private final UsrService usrService;
-    private final H2 header = new H2(TITLE_USR);
+    private final H3 header = new H3(TITLE_USR);
 
     private final Grid<Usr> grid = new Grid<>();
 

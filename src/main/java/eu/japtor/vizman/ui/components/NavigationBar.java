@@ -12,9 +12,11 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.ui.MainView;
+import eu.japtor.vizman.ui.views.KontListView;
 import eu.japtor.vizman.ui.views.UserListView;
 import eu.japtor.vizman.ui.views.ZakListView;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +41,7 @@ public class NavigationBar extends Div implements RouterLayout {
 
     }
 
+    @PostConstruct
     public void init() {
 
         System.out.println("###  NavigationBar init");
@@ -56,13 +59,19 @@ public class NavigationBar extends Div implements RouterLayout {
         usrLink.add(ICON_USR, new Text(TITLE_USR));
         usrLink.addClassName("main-layout__nav-item");
 
+        RouterLink kontLink = new RouterLink(null, KontListView.class);
+        Icon ICON_KONT = new Icon (VaadinIcon.LIST);
+        ICON_KONT.setColor("orange");
+        kontLink.add(ICON_KONT, new Text(TITLE_KONT));
+        kontLink.addClassName("main-layout__nav-item");
+
         RouterLink zakLink = new RouterLink(null, ZakListView.class);
         Icon ICON_ZAK = new Icon (VaadinIcon.LIST);
         ICON_ZAK.setColor("green");
         zakLink.add(ICON_ZAK, new Text(TITLE_ZAK));
         zakLink.addClassName("main-layout__nav-item");
 
-        this.add(homeLink, zakLink);
+        this.add(homeLink, kontLink, zakLink);
         if (SecurityUtils.isAccessGranted(UserListView.class)) {
             this.add(usrLink);
         }

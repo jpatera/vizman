@@ -16,7 +16,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- Dependencies -->
-        <vaadin.version>10.0.2</vaadin.version>
+        <!--<vaadin.version>10.0.2</vaadin.version>-->
+        <vaadin.version>11.0.1</vaadin.version>
     </properties>
 
     <parent>
@@ -68,8 +69,8 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <!--<version>1.4.197</version>-->
-            <!--<scope>runtime</scope>-->
+            <version>1.4.197</version>
+            <scope>runtime</scope>
         </dependency>
 
 
@@ -113,6 +114,12 @@
             <!--<groupId>org.springframework.boot</groupId>-->
             <!--<artifactId>spring-boot-autoconfigure</artifactId>-->
         <!--</dependency>-->
+
+        <!-- This is needed in order to get to in mem H2 DB while app is running. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

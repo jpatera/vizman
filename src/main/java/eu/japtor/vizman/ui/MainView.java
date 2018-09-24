@@ -3,6 +3,7 @@ package eu.japtor.vizman.ui;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -18,11 +19,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 
-
-
+//@Theme(Lumo.class)    // Lumo is default
 @HtmlImport("frontend://styles/shared-styles.html")
-@Route("")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
+//@BodySize(height = "100vh", width = "100vw")
+@Route("")
 public class MainView extends Div implements RouterLayout, BeforeEnterObserver, HasLogger {
 
 //    @Id("navigationBar")
@@ -33,7 +34,8 @@ public class MainView extends Div implements RouterLayout, BeforeEnterObserver, 
     public MainView() {
 
         System.out.println("###  MainView constructor");
-
+//        this.setWidth("100%");
+//        this.setHeight("100%");
 //    public MainView(NavigationBar navigationBar) {
 //        this.navigationBar = navigationBar;
 //        this.navigationBar.init();
@@ -83,7 +85,7 @@ public class MainView extends Div implements RouterLayout, BeforeEnterObserver, 
 
         getLogger().info("###  MainView SETUP started");
 
-        this.navigationBar.init();
+//        this.navigationBar.init();
 
 //        RouterLink zakListLink = new RouterLink(null, ZakListView.class);
 //        Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);
@@ -107,8 +109,16 @@ public class MainView extends Div implements RouterLayout, BeforeEnterObserver, 
     private Component buildHeader() {
         H2 title = new H2("VizMan");
         title.addClassName("main-layout__title");
+
+        Div header = new Div(title, navigationBar);
+        header.addClassName("main-layout__header");
+        return header;
+
+//        this.add(header);
+
+
 //        return new Div(title, buildNavComponent());
-        return new Div(title, navigationBar);
+//        return new Div(title, navigationBar);
     }
 
 //    private Component buildNavComponent() {

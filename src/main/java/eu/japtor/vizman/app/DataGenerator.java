@@ -54,7 +54,9 @@ public class DataGenerator implements HasLogger {
         createRoleIfNotFound("ROLE_ADMIN", adminPerms);
 
         Set<Perm> userPerms = new HashSet<>();
-        userPerms.addAll(Arrays.asList(Perm.ZAK_VIEW_BASIC_READ));
+        userPerms.addAll(Arrays.asList(
+                Perm.ZAK_VIEW_BASIC_READ, Perm.KONT_VIEW_BASIC_READ,
+                Perm.ZAK_VIEW_BASIC_MANAGE, Perm.KONT_VIEW_BASIC_MANAGE));
         createRoleIfNotFound("ROLE_USER", userPerms);
 
 
@@ -80,19 +82,19 @@ public class DataGenerator implements HasLogger {
         usrUser.setRoles(Stream.of(userRole).collect(Collectors.toSet()));
         usrRepo.save(usrUser);
 
-        getLogger().info("... generating Zak");
-        zakRepo.save(createZak("2018.01", "Zakázka NULA JEDNA"));
-        zakRepo.save(createZak("2018.02", "Zakázka NULA DVA"));
+//        getLogger().info("... generating Zak");
+//        zakRepo.save(createZak("2018.01", "Zakázka NULA JEDNA"));
+//        zakRepo.save(createZak("2018.02", "Zakázka NULA DVA"));
 
         getLogger().info("Generated demo data");
     }
 
-    private Zak createZak(String zakNum, String zakTitle) {
-        Zak zak = new Zak();
-        zak.setZakNum(zakNum);
-        zak.setZakTitle(zakTitle);
-        return zak;
-    }
+//    private Zak createZak(String cisloZakazky, String text) {
+//        Zak zak = new Zak();
+//        zak.setCisloZakazky(cisloZakazky);
+//        zak.setText(text);
+//        return zak;
+//    }
 
     @Transactional
     public Role createRoleIfNotFound(String name, Set<Perm> perms) {

@@ -5,6 +5,7 @@ import eu.japtor.vizman.backend.repository.RoleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_KONT;
 import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_USR;
 import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_ZAK;
 
@@ -39,9 +41,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private RoleRepo roleRepo;
 
     @Autowired
     public SecurityConfiguration(UserDetailsService userDetailsService) {
@@ -105,27 +104,31 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 // Restrict access to our application.
                 .authorizeRequests()
 
-//                    .antMatchers("/", "/home").permitAll()
-                    .antMatchers("/" + ROUTE_USR).hasAnyAuthority(Perm.USR_VIEW_BASIC_READ.name(), Perm.USR_VIEW_EXT_READ.name())
-                    .antMatchers("/" + ROUTE_ZAK).hasAnyAuthority(Perm.ZAK_VIEW_BASIC_READ.name(), Perm.ZAK_VIEW_EXT_READ.name())
-                    // Allow all flow internal requests.
-//                    .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
 
-//                    // Allow all requests by logged in users.
-//                    .anyRequest().hasAnyRole(roleRepo.getAllRoleNames())
+////                    .antMatchers("/", "/home").permitAll()
+                    .antMatchers("/" + ROUTE_USR).hasAnyAuthority(
+                            Perm.USR_VIEW_BASIC_READ.name(), Perm.USR_VIEW_EXT_READ.name(),
+                            Perm.VIEW_ALL.name())
+                    .antMatchers("/" + ROUTE_KONT).hasAnyAuthority(
+                            Perm.KONT_VIEW_BASIC_READ.name(), Perm.KONT_VIEW_EXT_READ.name(),
+                            Perm.VIEW_ALL.name())
+                    .antMatchers("/" + ROUTE_ZAK).hasAnyAuthority(
+                            Perm.ZAK_VIEW_BASIC_READ.name(), Perm.ZAK_VIEW_EXT_READ.name(),
+                            Perm.VIEW_ALL.name())
+//                    // Allow all flow internal requests.
+////                    .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
 
-//                    .antMatchers("/**").hasAnyRole("ADMIN", "USER")
                     .anyRequest().authenticated()
 
 ////                  .antMatchers("/welcome").permitAll()
 ////  				.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
 //                    .antMatchers("/" + ROUTE_USR).hasRole("ADMIN")
 //                    .anyRequest().authenticated()
-                .and()
+                    .and()
 // 				.and().httpBasic()
                 .formLogin()
                     .permitAll()
-                .and()
+                    .and()
                 .logout()
                     .permitAll()
         ;

@@ -1,7 +1,6 @@
 package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.backend.entity.Usr;
-import eu.japtor.vizman.backend.entity.Zak;
 
 import java.util.List;
 
