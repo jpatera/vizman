@@ -2,28 +2,27 @@ package eu.japtor.vizman.ui;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.*;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.ui.components.NavigationBar;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.router.Route;
 import eu.japtor.vizman.ui.exceptions.AccessDeniedException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 
 //@Theme(Lumo.class)    // Lumo is default
+
+//@Route(value = ROUTE_ROOT)
+//@PageTitle(PAGE_TITLE_ROOT)
+//@Tag(TAG_ROOT)
 @HtmlImport("frontend://styles/shared-styles.html")
-@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
+@Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")    // ###***
 //@BodySize(height = "100vh", width = "100vw")
-@Route("")
 public class MainView extends Div implements RouterLayout, BeforeEnterObserver, HasLogger {
 
 //    @Id("navigationBar")
@@ -34,6 +33,9 @@ public class MainView extends Div implements RouterLayout, BeforeEnterObserver, 
     public MainView() {
 
         System.out.println("###  MainView constructor");
+
+//        addClassName("main-layout");
+
 //        this.setWidth("100%");
 //        this.setHeight("100%");
 //    public MainView(NavigationBar navigationBar) {
@@ -62,7 +64,7 @@ public class MainView extends Div implements RouterLayout, BeforeEnterObserver, 
 //        pages.add(new PageInfo(PAGE_STOREFRONT, ICON_STOREFRONT, TITLE_STOREFRONT));
 //        pages.add(new PageInfo(PAGE_DASHBOARD, ICON_DASHBOARD, TITLE_DASHBOARD));
 //        if (SecurityUtils.isAccessGranted(UsersView.class)) {
-//            pages.add(new PageInfo(PAGE_USERS, ICON_USERS, TITLE_USR));
+//            pages.add(new PageInfo(PAGE_USERS, ICON_USERS, TITLE_PERSON));
 //        }
 //        if (SecurityUtils.isAccessGranted(ProductsView.class)) {
 //            pages.add(new PageInfo(PAGE_PRODUCTS, ICON_PRODUCTS, TITLE_PRODUCTS));
@@ -87,39 +89,50 @@ public class MainView extends Div implements RouterLayout, BeforeEnterObserver, 
 
 //        this.navigationBar.init();
 
-//        RouterLink zakListLink = new RouterLink(null, ZakListView.class);
+//        RouterLink zakListLink = new RouterLink(null, PodzakListView.class);
 //        Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);
 //        ICON_ZAK_LIST.setColor("green");
-//        zakListLink.add(ICON_ZAK_LIST, new Text(TITLE_ZAK));
+//        zakListLink.add(ICON_ZAK_LIST, new Text(TITLE_PODZAK));
 //        zakListLink.addClassName("main-layout__nav-item");
 
 //        Div navComoponent = new Div(zakListLink);
 //        navComoponent.addClassName("main-layout__nav");
 
 
-        add(buildHeader());
+        add(buildSiteHeader());
 
-        addClassName("main-layout");
+        addClassName("main-layout");    // ###***
 
         getLogger().info("INIT finished");
 
     }
 
 
-    private Component buildHeader() {
-        H2 title = new H2("VizMan");
-        title.addClassName("main-layout__title");
+    private Component buildSiteHeader() {
+//        H2 title = new H2("VizMan");
+        Div title = new Div();
+        title.add(new Label("VizMan"));
+//        title.addClassName("main-layout__title");
 
-        Div header = new Div(title, navigationBar);
-        header.addClassName("main-layout__header");
-        return header;
-
-//        this.add(header);
-
-
-//        return new Div(title, buildNavComponent());
-//        return new Div(title, navigationBar);
+        Div siteHeader = new Div(title, navigationBar);
+        siteHeader.addClassName("main-layout__header");
+        return siteHeader;
     }
+
+
+//    private void navigate() {
+//        int idx = tabs.getSelectedIndex();
+//        if (idx >= 0 && idx < hrefs.size()) {
+//            String href = hrefs.get(idx);
+//            if (href.equals(logoutHref)) {
+//                // The logout button is a 'normal' URL, not Flow-managed but
+//                // handled by Spring Security.
+//                UI.getCurrent().getPage().executeJavaScript("location.assign('logout')");
+//            } else if (!href.equals(currentHref)) {
+//                UI.getCurrent().navigate(href);
+//            }
+//        }
+//    }
 
 //    private Component buildNavComponent() {
 //        Div navComponent = new Div();
@@ -129,10 +142,10 @@ public class MainView extends Div implements RouterLayout, BeforeEnterObserver, 
 //    }
 
 //    private Component buildZakListRoute() {
-//        RouterLink zakListRoute = new RouterLink(null, ZakListView.class);
+//        RouterLink zakListRoute = new RouterLink(null, PodzakListView.class);
 //        Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);
 //        ICON_ZAK_LIST.setColor("green");
-//        zakListRoute.add(ICON_ZAK_LIST, new Text(TITLE_ZAK));
+//        zakListRoute.add(ICON_ZAK_LIST, new Text(TITLE_PODZAK));
 //        zakListRoute.addClassName("main-layout__nav-item");
 //        return zakListRoute;
 //    }

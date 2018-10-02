@@ -2,12 +2,11 @@ package eu.japtor.vizman.app;
 
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import eu.japtor.vizman.backend.entity.Perm;
+import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.entity.Role;
-import eu.japtor.vizman.backend.entity.Usr;
-import eu.japtor.vizman.backend.entity.Zak;
+import eu.japtor.vizman.backend.repository.PersonRepo;
 import eu.japtor.vizman.backend.repository.RoleRepo;
-import eu.japtor.vizman.backend.repository.UsrRepo;
-import eu.japtor.vizman.backend.repository.ZakRepo;
+import eu.japtor.vizman.backend.repository.PodzakRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,88 +19,88 @@ import java.util.stream.Stream;
 public class DataGenerator implements HasLogger {
 
     @Autowired
-    private ZakRepo zakRepo;
+    private PodzakRepo podzakRepo;
     @Autowired
-    private UsrRepo usrRepo;
+    private PersonRepo personRepo;
     @Autowired
     private RoleRepo roleRepo;
 
     @Autowired
     public DataGenerator(
             RoleRepo roleRepo
-            , UsrRepo usrRepo
-            , ZakRepo zakRepo
+            , PersonRepo personRepo
+            , PodzakRepo podzakRepo
     ) {
         this.roleRepo = roleRepo;
-        this.usrRepo = usrRepo;
-        this.zakRepo = zakRepo;
+        this.personRepo = personRepo;
+        this.podzakRepo = podzakRepo;
     }
 
 
     @PostConstruct
     public void loadData() {
-        if (zakRepo.count() != 0L) {
+        if (roleRepo.count() != 0L) {
             getLogger().info("Using existing database");
             return;
         }
 
         getLogger().info("Generating demo data");
-
         getLogger().info("... generating roles");
 
         Set<Perm> adminPerms = new HashSet<>();
         adminPerms.addAll(Arrays.asList(Perm.VIEW_ALL, Perm.MANAGE_ALL));
-        createRoleIfNotFound("ROLE_ADMIN", adminPerms);
+        createRoleIfNotFound(1L, "ROLE_ADMIN", adminPerms);
 
         Set<Perm> userPerms = new HashSet<>();
         userPerms.addAll(Arrays.asList(
-                Perm.ZAK_VIEW_BASIC_READ, Perm.KONT_VIEW_BASIC_READ,
-                Perm.ZAK_VIEW_BASIC_MANAGE, Perm.KONT_VIEW_BASIC_MANAGE));
-        createRoleIfNotFound("ROLE_USER", userPerms);
+                Perm.PODZAK_VIEW_BASIC_READ, Perm.ZAK_VIEW_BASIC_READ,
+                Perm.PODZAK_VIEW_BASIC_MANAGE, Perm.ZAK_VIEW_BASIC_MANAGE));
+        createRoleIfNotFound(2L, "ROLE_USER", userPerms);
 
 
-        getLogger().info("... generating users");
+        getLogger().info("... generating persons");
 
-        Usr usrAdmin = new Usr();
+        Person personAdmin = new Person();
         Role adminRole = roleRepo.findTopByName("ROLE_ADMIN");
-        usrAdmin.setFirstName("Admin");
-        usrAdmin.setLastName("Systemak");
-        usrAdmin.setUsername("admin");
-        usrAdmin.setPassword("admin");
-//        user.setEmail("test@test.com");
-        usrAdmin.setRoles(Stream.of(adminRole).collect(Collectors.toSet()));
-//        usr.setEnabled(true);
-        usrRepo.save(usrAdmin);
+        personAdmin.setId(1001L);
+        personAdmin.setJmeno("Admin");
+        personAdmin.setPrijmeni("Systemak");
+        personAdmin.setUsername("admin");
+        personAdmin.setPassword("admin");
+        personAdmin.setRoles(Stream.of(adminRole).collect(Collectors.toSet()));
+        personRepo.save(personAdmin);
 
-        Usr usrUser = new Usr();
+        Person personUser = new Person();
         Role userRole = roleRepo.findTopByName("ROLE_USER");
-        usrUser.setFirstName("User");
-        usrUser.setLastName("Běžný");
-        usrUser.setUsername("user");
-        usrUser.setPassword("user");
-        usrUser.setRoles(Stream.of(userRole).collect(Collectors.toSet()));
-        usrRepo.save(usrUser);
+        personUser.setId(1002L);
+        personUser.setJmeno("User");
+        personUser.setPrijmeni("Běžný");
+        personUser.setUsername("user");
+        personUser.setPassword("user");
+        personUser.setRoles(Stream.of(userRole).collect(Collectors.toSet()));
+        personRepo.save(personUser);
 
-//        getLogger().info("... generating Zak");
-//        zakRepo.save(createZak("2018.01", "Zakázka NULA JEDNA"));
-//        zakRepo.save(createZak("2018.02", "Zakázka NULA DVA"));
+//        getLogger().info("... generating Podzak");
+//        podzakRepo.save(createZak("2018.01", "Zakázka NULA JEDNA"));
+//        podzakRepo.save(createZak("2018.02", "Zakázka NULA DVA"));
 
         getLogger().info("Generated demo data");
     }
 
-//    private Zak createZak(String cisloZakazky, String text) {
-//        Zak zak = new Zak();
-//        zak.setCisloZakazky(cisloZakazky);
-//        zak.setText(text);
-//        return zak;
+//    private Podzak createZak(String cisloZakazky, String text) {
+//        Podzak podzak = new Podzak();
+//        podzak.setCisloZakazky(cisloZakazky);
+//        podzak.setText(text);
+//        return podzak;
 //    }
 
     @Transactional
-    public Role createRoleIfNotFound(String name, Set<Perm> perms) {
+    public Role createRoleIfNotFound(Long id, String name, Set<Perm> perms) {
 
         Role role = roleRepo.findTopByName(name);
         if (role == null) {
             role = new Role();
+            role.setId(id);
             role.setName(name);
             role.setDescription("Description of "+ name);
             role.setPerms(perms);

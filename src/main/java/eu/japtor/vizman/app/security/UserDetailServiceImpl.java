@@ -2,8 +2,8 @@ package eu.japtor.vizman.app.security;
 
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Role;
-import eu.japtor.vizman.backend.entity.Usr;
-import eu.japtor.vizman.backend.service.UsrService;
+import eu.japtor.vizman.backend.entity.Person;
+import eu.japtor.vizman.backend.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,35 +25,45 @@ import java.util.List;
 public class UserDetailServiceImpl  implements UserDetailsService {
 
     final
-    UsrService usrService;
+    PersonService personService;
 
     @Autowired
-    public UserDetailServiceImpl(UsrService usrService) {
+    public UserDetailServiceImpl(PersonService personService) {
 //        Assert.nonNull("");
-//        Objects.nonNull(usrService);
-        this.usrService = usrService;
+//        Objects.nonNull(personService);
+        this.personService = personService;
     }
 
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        Usr usr = usrService.getUsrByUsername(username);
 
-//            return User.withUsername(usr.getUsername())
-//                    .password(usr.getPassword())
+//        Optional<UserObject> user = users.stream()
+//                .filter(u -> u.name.equals(username))
+//                .findAny();
+//        if (!user.isPresent()) {
+//            throw new UsernameNotFoundException("User not found by name: " + username);
+//        }
+//        return toUserDetails(user.get());
+
+
+        Person person = personService.getByUsername(username);
+
+//            return User.withUsername(person.getUsername())
+//                    .password(person.getPassword())
 ////                    .roles("ROLE")
 //                    .authorities(getGrantedAuthorities())
 //                    .build();
 
         return new User(
-                usr.getUsername()
-                , usr.getPassword()
+                person.getUsername()
+                , person.getPassword()
                 , true
                 , true
                 , true
                 , true
-                , getGrantedAuthorities(usr.getRoles())
+                , getGrantedAuthorities(person.getRoles())
         );
     }
 

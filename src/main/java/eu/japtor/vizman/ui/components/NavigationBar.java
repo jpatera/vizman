@@ -12,13 +12,9 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.ui.MainView;
-import eu.japtor.vizman.ui.views.KontListView;
-import eu.japtor.vizman.ui.views.UserListView;
-import eu.japtor.vizman.ui.views.ZakListView;
+import eu.japtor.vizman.ui.views.*;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
@@ -48,33 +44,62 @@ public class NavigationBar extends Div implements RouterLayout {
         this.removeAll();
 
         // Navigation:
-        RouterLink homeLink = new RouterLink(null, MainView.class);
+        RouterLink homeLink = new RouterLink(null, HomeView.class);
         Icon ICON_HOME = new Icon (VaadinIcon.HOME);
-        homeLink. add(ICON_HOME, new Text(TITLE_HOME));
+        ICON_HOME.setColor("magenta");
+        homeLink.add(ICON_HOME, new Text(TITLE_HOME));
         homeLink.addClassName("main-layout__nav-item");
-
-        RouterLink usrLink = new RouterLink(null, UserListView.class);
-        Icon ICON_USR = new Icon (VaadinIcon.USERS);
-        ICON_USR.setColor("blue");
-        usrLink.add(ICON_USR, new Text(TITLE_USR));
-        usrLink.addClassName("main-layout__nav-item");
-
-        RouterLink kontLink = new RouterLink(null, KontListView.class);
-        Icon ICON_KONT = new Icon (VaadinIcon.LIST);
-        ICON_KONT.setColor("orange");
-        kontLink.add(ICON_KONT, new Text(TITLE_KONT));
-        kontLink.addClassName("main-layout__nav-item");
 
         RouterLink zakLink = new RouterLink(null, ZakListView.class);
         Icon ICON_ZAK = new Icon (VaadinIcon.LIST);
-        ICON_ZAK.setColor("green");
+        ICON_ZAK.setColor("orange");
         zakLink.add(ICON_ZAK, new Text(TITLE_ZAK));
         zakLink.addClassName("main-layout__nav-item");
 
-        this.add(homeLink, kontLink, zakLink);
-        if (SecurityUtils.isAccessGranted(UserListView.class)) {
-            this.add(usrLink);
+        RouterLink podzakLink = new RouterLink(null, PodzakListView.class);
+        Icon ICON_PODZAK = new Icon (VaadinIcon.LIST);
+        ICON_PODZAK.setColor("green");
+        podzakLink.add(ICON_PODZAK, new Text(TITLE_PODZAK));
+        podzakLink.addClassName("main-layout__nav-item");
+
+//        RouterLink personLink = new RouterLink(null, PersonListView.class);
+//        Icon ICON_PERSON = new Icon (VaadinIcon.USERS);
+//        ICON_PERSON.setColor("blue");
+//        personLink.add(ICON_PERSON, new Text(TITLE_PERSON));
+//        personLink.addClassName("main-layout__nav-item");
+
+        RouterLink cfgLink = new RouterLink(null, CfgTabsView.class);
+        Icon ICON_CFG = new Icon (VaadinIcon.COG);
+//        Icon ICON_CFG = new Icon (VaadinIcon.TOOLS);
+        ICON_CFG.setColor("coral");
+        cfgLink.add(ICON_CFG, new Text(TITLE_CFG));
+        cfgLink.addClassName("main-layout__nav-item");
+
+//        Element logoutLink = ElementFactory.createRouterLink("logout", "LOGOUT_CTX");
+//        RouterLink logoutLink = new RouterLink(null, Nav.class);
+        Div logoutLink = new Div();
+        logoutLink.addClickListener(e ->
+                UI.getCurrent().getPage().executeJavaScript("location.assign('logout')")
+        );
+        Icon ICON_LOGOUT = new Icon (VaadinIcon.USER);
+        ICON_LOGOUT.setColor("black");
+        logoutLink.add(ICON_LOGOUT, new Text("Logout"));
+        logoutLink.addClassName("main-layout__nav-item");
+
+//        logoutLink.addEventListener("click", e -> {
+//            Element response = ElementFactory.createDiv("Hello!");
+//            getElement().appendChild(response);
+//        });
+
+
+        this.add(homeLink, zakLink, podzakLink);
+//        if (SecurityUtils.isAccessGranted(UserListView.class)) {
+//            this.add(personLink);
+//        }
+        if (SecurityUtils.isAccessGranted(CfgTabsView.class)) {
+            this.add(cfgLink);
         }
+        this.add(logoutLink);
         this.addClassName("main-layout__nav");
     }
 }

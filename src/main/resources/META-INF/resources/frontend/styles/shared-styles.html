@@ -36,7 +36,7 @@
 
             .view-toolbar__search-field {
                 flex: auto;
-                min-width: 0;
+                min-width: 20em;
                 margin-right: 16px;
             }
             .view-container {
@@ -63,10 +63,8 @@
         .main-layout {
             display: flex;
             flex-direction: column;
-            /*width: 100%;*/
-            /*height: 100%;*/
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             /*min-height: 100vh;*/
             /*max-width: 960px;*/
             margin: 0 auto;
@@ -145,6 +143,38 @@
             pointer-events: none;
         }
     </style>
+
+    <dom-module id="vizman-grid" theme-for="vaadin-grid">
+        <template>
+            <style>
+                th[part~="header-cell"] {
+                    background-color: lemonchiffon;
+                    height: 20px;
+                    /*font-size: 70px;*/
+                    /*max-height: 130px;*/
+                }
+            </style>
+        </template>
+    </dom-module>
+
+    <dom-module id="vizman-simple-grid" theme-for="vaadin-grid">
+        <template>
+            <style>
+                /*:host(.vizman-simple-table) th {*/
+                    /*height:10px;*/
+                    /*display:block;*/
+                    /*overflow:hidden;*/
+                /*}*/
+                :host(.vizman-simple-grid) th[part~="header-cell"] {
+                    /*background-color: palegoldenrod;*/
+                    background-color: lightskyblue;
+                    height: 20px;
+                    min-height: 20px;
+                }
+            </style>
+        </template>
+    </dom-module>
+
 
     <dom-module id="my-dialog-styles" theme-for="vaadin-dialog-overlay">
         <template>

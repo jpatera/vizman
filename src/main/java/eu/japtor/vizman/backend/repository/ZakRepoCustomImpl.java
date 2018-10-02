@@ -10,16 +10,16 @@ import java.util.List;
 
 @Repository
 @Transactional(readOnly = true)
-public class KontRepoCustomImpl implements KontRepoCustom  {
+public class ZakRepoCustomImpl implements ZakRepoCustom {
 
     @PersistenceContext
     EntityManager em;
 
     @Override
     public String[] getAllFirmaArray() {
-        Query query = em.createQuery("select distinct k.firma from Kont k");
-        List<String> firmList = query.getResultList();
-        String[] firmaArray = new String[firmList.size()];
-        return firmList.toArray(firmaArray);
+        Query query = em.createQuery("select distinct zak.firma from Zak zak");
+        List<String> firmaList = query.getResultList();
+        String[] firmaArray = new String[firmaList.size()];
+        return firmaList.toArray(firmaArray);
     }
 }

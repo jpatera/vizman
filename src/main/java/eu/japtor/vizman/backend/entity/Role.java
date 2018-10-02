@@ -1,11 +1,11 @@
 package eu.japtor.vizman.backend.entity;
 
 import javax.persistence.*;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@Table(name = "ROLE")
 public class Role extends AbstractEntity {
 
     public String name;
@@ -17,7 +17,7 @@ public class Role extends AbstractEntity {
     }
 
     public String description;
-    public String getDesription() {
+    public String getDescription() {
         return description;
     }
     public void setDescription(String description) {
@@ -25,13 +25,13 @@ public class Role extends AbstractEntity {
     }
 
     @ManyToMany(mappedBy = "roles")
-    private Set<Usr> usrs;
+    private Set<Person> persons;
 
-    @ElementCollection(targetClass=Perm.class)
+    @ElementCollection(targetClass=Perm.class, fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING) // Possibly optional (I'm not sure) but defaults to ORDINAL.
     @CollectionTable(name="role_perm")
-    @Column(name="perm") // Column name in role_perm
-    protected Set<Perm> perms = new HashSet<>();
+    @Column(name="perm", nullable=false) // Column name in role_perm
+    private Set<Perm> perms = new HashSet<>();
     public Set<Perm> getPerms() {
         return perms;
     }

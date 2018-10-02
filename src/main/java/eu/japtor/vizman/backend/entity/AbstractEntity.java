@@ -6,13 +6,13 @@ import java.io.Serializable;
 @MappedSuperclass
 public class AbstractEntity implements Serializable {
 
-	@Id
-	@Column(name = "id", updatable = false, nullable = false)
 //	@GeneratedValue
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "id_gen")
 //	@SequenceGenerator(name="book_generator", sequenceName = "book_seq", allocationSize=50)
 //	@Column(name = "id", updatable = false, nullable = false)
 
+	@Id
+	@Column(name = "id", updatable = false, nullable = false)
+//	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "id_gen")
 	private Long id;
 
 	@Version
@@ -20,6 +20,10 @@ public class AbstractEntity implements Serializable {
 
 	public Long getId() {
 		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public int getVersion() {

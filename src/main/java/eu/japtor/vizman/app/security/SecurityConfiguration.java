@@ -1,11 +1,15 @@
 package eu.japtor.vizman.app.security;
 
+import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.shared.ApplicationConstants;
 import eu.japtor.vizman.backend.entity.Perm;
-import eu.japtor.vizman.backend.repository.RoleRepo;
+import eu.japtor.vizman.backend.entity.Person;
+import eu.japtor.vizman.backend.repository.PersonRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
+import org.springframework.context.annotation.Scope;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,9 +20,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_KONT;
-import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_USR;
-import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_ZAK;
+import javax.servlet.http.HttpServletRequest;
+
+import java.util.stream.Stream;
+
+import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
 /**
  * Configures spring security, doing the following:
@@ -32,15 +38,25 @@ import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_ZAK;
 @Configuration
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-//    private static final String LOGIN_PROCESSING_URL = "/login";
-//    private static final String LOGIN_FAILURE_URL = "/login?error";
-//    private static final String LOGIN_URL = "/login";
-//    private static final String LOGOUT_SUCCESS_URL = "/" + BakeryConst.PAGE_STOREFRONT;
-
     private final UserDetailsService userDetailsService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+//    /**
+//     * The password encoder to use when encrypting passwords.
+//     */
+//    @SuppressWarnings("deprecation")
+//    @Bean
+//    public PasswordEncoder passwordEncoder() {
+//        return new BCryptPasswordEncoder();
+//    }
+
+    @SuppressWarnings("deprecation")
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return NoOpPasswordEncoder.getInstance();
+    }
 
     @Autowired
     public SecurityConfiguration(UserDetailsService userDetailsService) {
@@ -48,25 +64,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
 
-    /**
-     * The password encoder to use when encrypting passwords.
-     */
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
-    @SuppressWarnings("deprecation")
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public Person currentUser(PersonRepo userRepo) {
+        return userRepo.findTopByUsernameIgnoreCase(SecurityUtils.getUsername());
     }
-
-
-//    @Bean
-//    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-//    public User currentUser(UserRepository userRepository) {
-//        return userRepository.findByEmailIgnoreCase(SecurityUtils.getUsername());
-//    }
 
 
     @Override
@@ -96,6 +98,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // Not using Spring CSRF here to be able to use plain HTML for the login page
         http.csrf().disable()
 
+//                .exceptionHandling()
+//                    .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+////                    .accessDeniedPage("/accessDenied")
+//                    .and()
+
 //                // Register our CustomRequestCache, that saves unauthorized access attempts, so
 //                // the user is redirected after login.
 //                .requestCache().requestCache(new CustomRequestCache())
@@ -105,15 +112,32 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
 
 
+//                    // TODO: Isn't it redundant ?
+//                    .antMatchers("/VAADIN/**", "/HEARTBEAT/**", "/UIDL/**", "/resources/**"
+//                        , "/login", "/login**", "/login/**"
+//                        , "/manifest.json", "/icons/**", "/images/**",
+//                        // (development mode) static resources
+//                        "/frontend/**",
+//                        // (development mode) webjars
+//                        "/webjars/**",
+//                        // (development mode) H2 debugging console
+//                        "/h2-console/**",
+//                        // (production mode) static resources
+//                        "/frontend-es5/**", "/frontend-es6/**").permitAll()
+
+
 ////                    .antMatchers("/", "/home").permitAll()
-                    .antMatchers("/" + ROUTE_USR).hasAnyAuthority(
-                            Perm.USR_VIEW_BASIC_READ.name(), Perm.USR_VIEW_EXT_READ.name(),
+                    .antMatchers("/" + ROUTE_PERSON).hasAnyAuthority(
+                            Perm.PERSON_VIEW_BASIC_READ.name(), Perm.PERSON_VIEW_EXT_READ.name(),
                             Perm.VIEW_ALL.name())
-                    .antMatchers("/" + ROUTE_KONT).hasAnyAuthority(
-                            Perm.KONT_VIEW_BASIC_READ.name(), Perm.KONT_VIEW_EXT_READ.name(),
+                    .antMatchers("/" + ROUTE_ROLE).hasAnyAuthority(
+                            Perm.ROLE_VIEW_READ.name(),
                             Perm.VIEW_ALL.name())
                     .antMatchers("/" + ROUTE_ZAK).hasAnyAuthority(
                             Perm.ZAK_VIEW_BASIC_READ.name(), Perm.ZAK_VIEW_EXT_READ.name(),
+                            Perm.VIEW_ALL.name())
+                    .antMatchers("/" + ROUTE_PODZAK).hasAnyAuthority(
+                            Perm.PODZAK_VIEW_BASIC_READ.name(), Perm.PODZAK_VIEW_EXT_READ.name(),
                             Perm.VIEW_ALL.name())
 //                    // Allow all flow internal requests.
 ////                    .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
@@ -122,15 +146,29 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 ////                  .antMatchers("/welcome").permitAll()
 ////  				.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
-//                    .antMatchers("/" + ROUTE_USR).hasRole("ADMIN")
+//                    .antMatchers("/" + ROUTE_PERSON).hasRole("ADMIN")
 //                    .anyRequest().authenticated()
                     .and()
 // 				.and().httpBasic()
+
+//                .formLogin()
+//                    .permitAll().defaultSuccessUrl("/zak", true)
+//                    .and()
+//                // Configure the login page.
+
                 .formLogin()
-                    .permitAll()
+                    .loginPage("/login").permitAll()
+//                    .defaultSuccessUrl("/home", true)
+                    .defaultSuccessUrl("/home", false)
+                    .loginProcessingUrl("/login")
+                    .failureUrl("/login?error")
                     .and()
+
                 .logout()
                     .permitAll()
+//                    .logoutSuccessUrl("/zak")
+//                    .and()
+//                .sessionManagement().sessionAuthenticationStrategy(sessionControlAuthenticationStrategy())
         ;
 
 //        http.authorizeRequests()
@@ -208,5 +246,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
                 // (production mode) static resources
                 "/frontend-es5/**", "/frontend-es6/**");
+    }
+
+
+    static boolean isFrameworkInternalRequest(HttpServletRequest request) {
+        final String parameterValue = request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
+        return parameterValue != null
+                && Stream.of(ServletHelper.RequestType.values()).anyMatch(r -> r.getIdentifier().equals(parameterValue));
     }
 }
