@@ -56,6 +56,9 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
     @Autowired
     RoleListView roleListView;
 
+    @Autowired
+    CinListView cinListView;
+
 //    @Autowired
 //    public CfgTabsView() {
 ////	public ProductsView(CrudEntityPresenter<Product> presenter) {
@@ -88,7 +91,7 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
 //        personListView = new UserListView();
         cfgExtTabs.add(personListView, tabPerson);
         cfgExtTabs.add(roleListView, tabRole);
-        cfgExtTabs.add(new VerticalLayout(new H4("ČINNOSTI")), tabCin);
+        cfgExtTabs.add(cinListView, tabCin);
 
         MemoryBuffer buffer = new MemoryBuffer();
         Upload upload = new Upload(buffer);

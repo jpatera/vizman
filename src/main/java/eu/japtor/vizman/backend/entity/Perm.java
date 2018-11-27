@@ -9,26 +9,28 @@ import java.util.stream.Collectors;
 
 public enum Perm implements GrantedAuthority {
 
-    VIEW_ALL("Může otevřít všechny definované stránky"),
-    MANAGE_ALL("Může vytvářet/editovat/rušit všechna dostupná data"),
+    VIEW_ALL("Lze prohlížet všechna dostupná data"),
+    MANAGE_ALL("Lze vytvářet/editovat/rušit všechna dostupná data"),
 
-    ZAK_VIEW_BASIC_READ("Může otevřít seznam zakázek, přístup pouze k základním údajům"),
-    ZAK_VIEW_BASIC_MANAGE("Může vytvářet/editovat/rušit zakázky, přístup pouze k základním údajům"),
-    ZAK_VIEW_EXT_READ("Může otevřít seznam zakázek, přístup ke všem údajům"),
-    ZAK_VIEW_EXT_MANAGE("Může vytvářet/editovat/rušit zakázky, přístup ke všem údajům"),
+    ZAK_VIEW_BASIC_READ("Lze prohlížet seznam zakázek, přístup pouze k základním údajům"),
+    ZAK_VIEW_BASIC_MANAGE("Lze vytvářet/editovat/rušit zakázky, přístup pouze k základním údajům"),
+    ZAK_VIEW_EXT_READ("Lze prohlížet seznam zakázek, přístup ke všem údajům"),
+    ZAK_VIEW_EXT_MANAGE("Lze vytvářet/editovat/rušit zakázky, přístup ke všem údajům"),
 
-    PODZAK_VIEW_BASIC_READ("Může otevřít seznam podzakázek, přístup pouze k základním údajům"),
-    PODZAK_VIEW_BASIC_MANAGE("Může vytvářet/editovat/rušit podzakazky, přístup pouze k základním údajům"),
-    PODZAK_VIEW_EXT_READ("Může otevřít seznam podzakázek, přístup ke všem údajům"),
-    PODZAK_VIEW_EXT_MANAGE("Může vytvářet/editovat/rušit podzakazky, přístup ke všem údajům"),
+    PODZAK_VIEW_BASIC_READ("Lze prohlížet seznam podzakázek, přístup pouze k základním údajům"),
+    PODZAK_VIEW_BASIC_MANAGE("Lze vytvářet/editovat/rušit podzakazky, přístup pouze k základním údajům"),
+    PODZAK_VIEW_EXT_READ("Lze prohlížet seznam podzakázek, přístup ke všem údajům"),
+    PODZAK_VIEW_EXT_MANAGE("Lze vytvářet/editovat/rušit podzakazky, přístup ke všem údajům"),
 
-    CONFIG_VIEW_MANAGE("M8 p59stup do konfigurace VizMana"),
+    CONFIG_VIEW_MANAGE("Lze měnit konfiguraci VizMana"),
 
-    PERSON_VIEW_BASIC_READ("Může otevřít seznam uživatelů, přístup pouze k základním údajům"),
-    PERSON_VIEW_EXT_READ("Může otevřít seznam uživatelů, přístup ke všem údajům"),
+    PERSON_VIEW_BASIC_READ("Lze prohlížet seznam uživatelů, přístup pouze k základním údajům"),
+    PERSON_VIEW_EXT_READ("Lze prohlížet seznam uživatelů, přístup ke všem údajům"),
 
-    ROLE_VIEW_READ("Může otevřít seznam rolí"),
-    ROLE_VIEW_MANAGE("Může vytvářet/editovat/rušit role")
+    ROLE_VIEW_READ("Lze prohlížet seznam rolí"),
+    ROLE_VIEW_MANAGE("Lze vytvářet/editovat/rušit role"),
+
+    CIN_VIEW_READ("Lze prohlížet seznam činností"),
     ;
 
     static private HashSet<String> permNames = new HashSet<>();

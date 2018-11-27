@@ -4,6 +4,7 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "ZAK")
@@ -15,16 +16,6 @@ public class Zak extends AbstractGenEntity {
     private String firma;
     private Timestamp datumzad;
     private Boolean arch;
-
-//    @Basic
-//    @Column(name = "ID")
-//    public long getId() {
-//        return id;
-//    }
-//
-//    public void setId(long id) {
-//        this.id = id;
-//    }
 
     @Basic
     @Column(name = "CZAK")
@@ -106,8 +97,23 @@ public class Zak extends AbstractGenEntity {
 //    }
 
 
-    @OneToMany(mappedBy = "zak")
-    private List<Podzak> podzaks = new ArrayList<>();
+//    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER)
+    private Set<Podzak> podzaks;
+//    @JoinTable(
+//            name = "zak_podzak",
+//            joinColumns = @JoinColumn(
+//                    name = "person_id", referencedColumnName = "id"),
+//            inverseJoinColumns = @JoinColumn(
+//                    name = "role_id", referencedColumnName = "id"))
+
+    public Set<Podzak> getPodzaks() {
+        return podzaks;
+    }
+    public void setPodzaks(Set<Podzak> podzaks) {
+        this.podzaks = podzaks;
+    }
+
 
     public void addZakentity(Podzak podzak) {
         this.podzaks.add(podzak);
