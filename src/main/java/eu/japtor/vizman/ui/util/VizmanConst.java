@@ -43,6 +43,11 @@ public class VizmanConst {
 	public static final String TAG_CFG = "cfg-tabs-view";
 	public static final String ROUTE_CFG = "cfg";
 
+	public static final String TITLE_DOCH = "Docházka";
+	public static final String PAGE_TITLE_DOCH = PAGE_TITLE_BASE + " - " + TITLE_DOCH;
+	public static final String TAG_DOCH = "doch-form";
+	public static final String ROUTE_DOCH = "doch";
+
 	public static final String TITLE_ZAK = "Zakázky";
 	public static final String PAGE_TITLE_ZAK = PAGE_TITLE_BASE + " - " + TITLE_ZAK;
 	public static final String TAG_ZAK = "zak-list-view";
@@ -52,9 +57,6 @@ public class VizmanConst {
 	public static final String PAGE_TITLE_PODZAK = PAGE_TITLE_BASE + " - " + TITLE_PODZAK;
 	public static final String TAG_PODZAK = "podzak-list-view";
 	public static final String ROUTE_PODZAK = "podzak";
-
-	public static final String TITLE_DOCH = "Docházka";
-	public static final String ROUTE_DOCH = "doch";
 
 	public static final String TITLE_PRUH = "Proužek";
 	public static final String ROUTE_PRUH = "pruh";

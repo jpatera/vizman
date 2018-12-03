@@ -127,18 +127,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 
 ////                    .antMatchers("/", "/home").permitAll()
+                    .antMatchers("/" + ROUTE_DOCH).hasAnyAuthority(
+                            Perm.DOCH_USE.name(),
+                            Perm.VIEW_ALL.name(), Perm.MANAGE_ALL.name())
                     .antMatchers("/" + ROUTE_PERSON).hasAnyAuthority(
                             Perm.PERSON_VIEW_BASIC_READ.name(), Perm.PERSON_VIEW_EXT_READ.name(),
-                            Perm.VIEW_ALL.name())
+                            Perm.VIEW_ALL.name(), Perm.MANAGE_ALL.name())
                     .antMatchers("/" + ROUTE_ROLE).hasAnyAuthority(
                             Perm.ROLE_VIEW_READ.name(),
-                            Perm.VIEW_ALL.name())
+                            Perm.VIEW_ALL.name(), Perm.MANAGE_ALL.name())
                     .antMatchers("/" + ROUTE_ZAK).hasAnyAuthority(
                             Perm.ZAK_VIEW_BASIC_READ.name(), Perm.ZAK_VIEW_EXT_READ.name(),
-                            Perm.VIEW_ALL.name())
+                            Perm.VIEW_ALL.name(), Perm.MANAGE_ALL.name())
                     .antMatchers("/" + ROUTE_PODZAK).hasAnyAuthority(
                             Perm.PODZAK_VIEW_BASIC_READ.name(), Perm.PODZAK_VIEW_EXT_READ.name(),
-                            Perm.VIEW_ALL.name())
+                            Perm.VIEW_ALL.name(), Perm.MANAGE_ALL.name())
 //                    // Allow all flow internal requests.
 ////                    .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
 
@@ -159,7 +162,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .formLogin()
                     .loginPage("/login").permitAll()
 //                    .defaultSuccessUrl("/home", true)
-                    .defaultSuccessUrl("/home", false)
+                    .defaultSuccessUrl("/doch", false)
                     .loginProcessingUrl("/login")
                     .failureUrl("/login?error")
                     .and()

@@ -85,10 +85,19 @@ public class PodzakListView extends VerticalLayout implements BeforeEnterObserve
 //        gridContainer.setHeight("90%");
 //        gridContainer.setWidth("90%");
 
-        podzakGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#");
-        podzakGrid.addColumn(Podzak::getCzak).setHeader("Číslo zak.").setWidth("8em").setResizable(true);
-        podzakGrid.addColumn(Podzak::getText).setHeader("Text").setWidth("8em").setResizable(true);
         podzakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        podzakGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#").setWidth("1em");
+        podzakGrid.addColumn(Podzak::getCzak).setHeader("ČZ").setWidth("2em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getCpodzak).setHeader("ČPZ").setWidth("1em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getText).setHeader("Text").setWidth("8em").setResizable(true);
+
+        podzakGrid.addColumn(Podzak::getSkupina).setHeader("Skupina").setWidth("4em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getHonorar).setHeader("Honorář").setWidth("4em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getRm).setHeader("RM").setWidth("2em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getR1).setHeader("R1").setWidth("2em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getR2).setHeader("R2").setWidth("2em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getR3).setHeader("R3").setWidth("2em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getR4).setHeader("R4").setWidth("2em").setResizable(true);
 
         container.add(podzakHeader, podzakGrid);
         add(container);

@@ -15,15 +15,14 @@
  */
 package eu.japtor.vizman.ui.views;
 
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -67,6 +66,7 @@ public class ZakListView extends VerticalLayout implements BeforeEnterObserver {
     public void init() {
         initView();
         initGrid();
+        initPodzakGrid();
         updateViewContent();
     }
 
@@ -99,11 +99,19 @@ public class ZakListView extends VerticalLayout implements BeforeEnterObserver {
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 
         zakGrid.setItemDetailsRenderer(new ComponentRenderer<>(zak -> {
-            VerticalLayout layout = new VerticalLayout();
-            layout.setAlignItems(FlexComponent.Alignment.STRETCH);
+
             TextField textField = new TextField("Text zak.: ", zak.getText(), "");
             textField.setWidth(null);
-            layout.add(textField);
+            textField.setReadOnly(true);
+
+            podzakGrid.setDataProvider(new ListDataProvider<>(zak.getPodzaks()));
+
+            FormLayout zakForm = new FormLayout();
+            zakForm.add(textField);
+            zakForm.add(podzakGrid);
+
+//            VerticalLayout gridLayout = new VerticalLayout();
+//            gridLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
 
 //            TextField zadanoField = new TextField("Zadáno: ", zak.getDatumzad().toString(), "");
 //            zadanoField.setReadOnly(true);
@@ -113,11 +121,9 @@ public class ZakListView extends VerticalLayout implements BeforeEnterObserver {
 //            layout.add(new Label("Text zak.: " + zak.getText()));
 //            layout.add(new Label("Zadáno: " + zak.getDatumzad()));
 
-            Grid <Podzak> podzakGrid = buildPodzakGrid();
-            podzakGrid.setHeightByRows(true);
-            podzakGrid.setDataProvider(new ListDataProvider<>(zak.getPodzaks()));
-            layout.add(podzakGrid);
 
+            VerticalLayout layout = new VerticalLayout();
+            layout.add(zakForm);
             return layout;
         }));
 
@@ -131,19 +137,24 @@ public class ZakListView extends VerticalLayout implements BeforeEnterObserver {
         zakGrid.setItems(zaks);
     }
 
-    private Grid<Podzak> buildPodzakGrid() {
-        Grid<Podzak> grid = new Grid<>();
-        grid.setMultiSort(false);
-        grid.setSelectionMode(Grid.SelectionMode.NONE);
+    private Grid<Podzak> initPodzakGrid() {
+        podzakGrid.setSizeFull();
+        podzakGrid.getElement().setAttribute("colspan", "2");
+        podzakGrid.setMultiSort(false);
+        podzakGrid.setSelectionMode(Grid.SelectionMode.NONE);
+        podzakGrid.setHeightByRows(true);
+        setWidth("900px");
+//        podzakGrid.setHeight(null);
+//        podzakGrid.getElement().setAlignItems(FlexComponent.Alignment.STRETCH);
 
         // TODO: ID -> CSS ?
-        grid.setId("podzak-grid");  // .. same ID as is used in shared-styles grid's dom module
-        grid.addColumn(Podzak::getCpodzak).setHeader("ČPZ").setWidth("3em").setResizable(true)
+        podzakGrid.setId("podzak-grid");  // .. same ID as is used in shared-styles grid's dom module
+        podzakGrid.addColumn(Podzak::getCpodzak).setHeader("ČPZ").setWidth("3em").setResizable(true)
                 .setSortProperty("poradi");
-        grid.addColumn(Podzak::getRokmeszad).setHeader("Zadáno").setWidth("3em").setResizable(true);
-        grid.addColumn(Podzak::getText).setHeader("Text podzak.").setWidth("5em").setResizable(true);
-        grid.addColumn(Podzak::getHonorar).setHeader("Honorář").setWidth("3em").setResizable(true);
-        grid.addColumn(Podzak::getSkupina).setHeader("Skupina").setWidth("4em").setResizable(true);
-        return grid;
+        podzakGrid.addColumn(Podzak::getRokmeszad).setHeader("Zadáno").setWidth("3em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getText).setHeader("Text podzak.").setWidth("5em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getHonorar).setHeader("Honorář").setWidth("3em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getSkupina).setHeader("Skupina").setWidth("4em").setResizable(true);
+        return podzakGrid;
     }
 }

@@ -12,6 +12,8 @@ public enum Perm implements GrantedAuthority {
     VIEW_ALL("Lze prohlížet všechna dostupná data"),
     MANAGE_ALL("Lze vytvářet/editovat/rušit všechna dostupná data"),
 
+    DOCH_USE("Lze zanamenávat docházku"),
+
     ZAK_VIEW_BASIC_READ("Lze prohlížet seznam zakázek, přístup pouze k základním údajům"),
     ZAK_VIEW_BASIC_MANAGE("Lze vytvářet/editovat/rušit zakázky, přístup pouze k základním údajům"),
     ZAK_VIEW_EXT_READ("Lze prohlížet seznam zakázek, přístup ke všem údajům"),

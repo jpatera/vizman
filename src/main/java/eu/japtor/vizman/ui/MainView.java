@@ -1,10 +1,17 @@
 package eu.japtor.vizman.ui;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.ui.components.NavigationBar;
@@ -15,17 +22,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 
+
 //@Theme(Lumo.class)    // Lumo is default
 
 //@Route(value = ROUTE_ROOT)
 //@PageTitle(PAGE_TITLE_ROOT)
 //@Tag(TAG_ROOT)
+//@Theme(Material.class)
+//@Route(value = "")
+//@PageTitle(PAGE_TITLE_HOME)
+@Theme(Lumo.class)
 @HtmlImport("frontend://styles/shared-styles.html")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")    // ###***
 //@BodySize(height = "100vh", width = "100vw")
+@Push
 public class MainView extends Div implements RouterLayout, BeforeEnterObserver, HasLogger {
 
-//    @Id("navigationBar")
+    //    @Id("navigationBar")
     @Autowired  // Must not be used in constructor, only in @PostConstruct
     private NavigationBar navigationBar;
 
@@ -42,6 +55,13 @@ public class MainView extends Div implements RouterLayout, BeforeEnterObserver, 
 //        this.navigationBar = navigationBar;
 //        this.navigationBar.init();
 //        init();
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        // user name can be stored to session after login
+        String userName = (String) attachEvent.getSession().getAttribute("username");
+//        getElement().setText("Hello " + userName + ", welcome back!");
     }
 
     @Override

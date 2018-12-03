@@ -50,6 +50,12 @@ public class NavigationBar extends Div implements RouterLayout {
         homeLink.add(ICON_HOME, new Text(TITLE_HOME));
         homeLink.addClassName("main-layout__nav-item");
 
+        RouterLink dochLink = new RouterLink(null, DochForm.class);
+        Icon ICON_DOCH = new Icon (VaadinIcon.BELL);
+        ICON_DOCH.setColor("blue");
+        dochLink.add(ICON_DOCH, new Text(TITLE_DOCH));
+        dochLink.addClassName("main-layout__nav-item");
+
         RouterLink zakLink = new RouterLink(null, ZakListView.class);
         Icon ICON_ZAK = new Icon (VaadinIcon.LIST);
         ICON_ZAK.setColor("orange");
@@ -92,7 +98,7 @@ public class NavigationBar extends Div implements RouterLayout {
 //        });
 
 
-        this.add(homeLink, zakLink, podzakLink);
+        this.add(homeLink, dochLink, zakLink, podzakLink);
 //        if (SecurityUtils.isAccessGranted(UserListView.class)) {
 //            this.add(personLink);
 //        }

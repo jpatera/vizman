@@ -29,7 +29,7 @@ import javax.annotation.PostConstruct;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
 @Route(value = ROUTE_HOME, layout = MainView.class)
-@PageTitle(PAGE_TITLE_HOME)
+//@PageTitle(PAGE_TITLE_HOME)
 //@Tag(TAG_HOME)
 // Note: @SpringComponent  ..must not be defined, otherwise refresh (in Chrome) throws exception
 public class HomeView extends VerticalLayout implements BeforeEnterObserver {

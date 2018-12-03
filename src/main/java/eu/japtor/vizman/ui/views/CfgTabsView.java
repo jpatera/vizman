@@ -16,7 +16,6 @@
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.textfield.TextField;
@@ -59,6 +58,9 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
     @Autowired
     CinListView cinListView;
 
+    @Autowired
+    CfgPropsForm cfgSysForm;
+
 //    @Autowired
 //    public CfgTabsView() {
 ////	public ProductsView(CrudEntityPresenter<Product> presenter) {
@@ -92,6 +94,7 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
         cfgExtTabs.add(personListView, tabPerson);
         cfgExtTabs.add(roleListView, tabRole);
         cfgExtTabs.add(cinListView, tabCin);
+        cfgExtTabs.add(cfgSysForm, tabSys);
 
         MemoryBuffer buffer = new MemoryBuffer();
         Upload upload = new Upload(buffer);
@@ -102,7 +105,15 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
 //            showOutput(event.getFileName(), component, output);
 //        });
 
-        cfgExtTabs.add(new VerticalLayout(new H4("SYSTÉM"), upload), tabSys);
+        VerticalLayout systemCfg =  new VerticalLayout();
+//        systemCfg.add(new H4("SYSTÉM"));
+//        systemCfg.add(new TextField("Application locale", Locale.getDefault().toString()));
+//        systemCfg.add(new TextField("Project root", "P:\\projects"));
+//        systemCfg.add(new TextField("Document root", "L:\\documents"));
+
+//        cfgExtTabs.add(systemCfg, tabSys);
+
+
 //        tabs.select(tabCin);  // -> Tohle rozhazuje UI layout
 //        tabs.setOrientation(Tabs.Orientation.VERTICAL);
 //        cfgExtTabs.setSelectedTab(tabCin);
