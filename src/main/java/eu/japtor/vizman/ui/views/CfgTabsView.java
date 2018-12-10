@@ -59,7 +59,7 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
     CinListView cinListView;
 
     @Autowired
-    CfgPropsForm cfgSysForm;
+    SysPropsForm cfgSysForm;
 
 //    @Autowired
 //    public CfgTabsView() {

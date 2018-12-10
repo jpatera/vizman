@@ -164,6 +164,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                    .defaultSuccessUrl("/home", true)
                     .defaultSuccessUrl("/doch", false)
                     .loginProcessingUrl("/login")
+                    .successForwardUrl("/doch")
                     .failureUrl("/login?error")
                     .and()
 

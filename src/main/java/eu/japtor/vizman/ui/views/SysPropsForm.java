@@ -38,7 +38,7 @@ import java.util.Locale;
 })
 @SpringComponent
 @UIScope
-public class CfgPropsForm extends VerticalLayout {
+public class SysPropsForm extends VerticalLayout {
 
     private TextField appLocaleFld;
     private TextField projRootFld;
@@ -50,7 +50,7 @@ public class CfgPropsForm extends VerticalLayout {
     public CfgPropRepo cfgPropRepo;
 
     @Autowired
-    public CfgPropsForm() {
+    public SysPropsForm() {
         buildPropsContainer();
     }
 

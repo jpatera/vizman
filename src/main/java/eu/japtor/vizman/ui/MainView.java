@@ -10,6 +10,8 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
 import eu.japtor.vizman.app.HasLogger;
@@ -35,6 +37,7 @@ import javax.annotation.PostConstruct;
 @HtmlImport("frontend://styles/shared-styles.html")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")    // ###***
 //@BodySize(height = "100vh", width = "100vw")
+//@Push(PushMode.MANUAL)
 @Push
 public class MainView extends Div implements RouterLayout, BeforeEnterObserver, HasLogger {
 
