@@ -15,9 +15,11 @@
  */
 package eu.japtor.vizman.ui.views;
 
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -28,9 +30,11 @@ import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Podzak;
 import eu.japtor.vizman.backend.repository.PodzakRepo;
 import eu.japtor.vizman.ui.MainView;
+import eu.japtor.vizman.ui.components.OpenDirSmallButton;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.util.List;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
@@ -86,23 +90,39 @@ public class PodzakListView extends VerticalLayout implements BeforeEnterObserve
 //        gridContainer.setWidth("90%");
 
         podzakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        podzakGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#").setWidth("1em");
-        podzakGrid.addColumn(Podzak::getCzak).setHeader("ČZ").setWidth("2em").setResizable(true);
-        podzakGrid.addColumn(Podzak::getCpodzak).setHeader("ČPZ").setWidth("1em").setResizable(true);
-        podzakGrid.addColumn(Podzak::getText).setHeader("Text").setWidth("8em").setResizable(true);
+//        podzakGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#").setWidth("4em")
+//            .setFrozen(true);;
+        podzakGrid.addColumn(Podzak::getCzak).setHeader("ČZ").setWidth("7em").setResizable(true)
+            .setFrozen(true);
+        podzakGrid.addColumn(Podzak::getCpodzak).setHeader("ČPZ").setWidth("3em").setResizable(true)
+            .setFrozen(true);;
+        podzakGrid.addColumn(Podzak::getText).setHeader("Text").setWidth("15em").setResizable(true);
 
         podzakGrid.addColumn(Podzak::getSkupina).setHeader("Skupina").setWidth("4em").setResizable(true);
         podzakGrid.addColumn(Podzak::getHonorar).setHeader("Honorář").setWidth("4em").setResizable(true);
-        podzakGrid.addColumn(Podzak::getRm).setHeader("RM").setWidth("2em").setResizable(true);
-        podzakGrid.addColumn(Podzak::getR1).setHeader("R1").setWidth("2em").setResizable(true);
-        podzakGrid.addColumn(Podzak::getR2).setHeader("R2").setWidth("2em").setResizable(true);
-        podzakGrid.addColumn(Podzak::getR3).setHeader("R3").setWidth("2em").setResizable(true);
-        podzakGrid.addColumn(Podzak::getR4).setHeader("R4").setWidth("2em").setResizable(true);
+        podzakGrid.addColumn(new ComponentRenderer<>(this::createOpenDirButton)).setFlexGrow(0);
+        podzakGrid.addColumn(Podzak::getRm).setHeader("RM").setWidth("4em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getR1).setHeader("R1").setWidth("4em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getR2).setHeader("R2").setWidth("4em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getR3).setHeader("R3").setWidth("4em").setResizable(true);
+        podzakGrid.addColumn(Podzak::getR4).setHeader("R4").setWidth("4em").setResizable(true);
 
         container.add(podzakHeader, podzakGrid);
         add(container);
     }
 
+    private Button createOpenDirButton(Podzak podzak) {
+        Button openDirBtn = new OpenDirSmallButton(event -> openDir("C:/"));
+        return openDirBtn;
+    }
+
+    private void openDir(String path) {
+        try {
+            Runtime.getRuntime().exec("explorer.exe /select," + path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void updateViewContent() {
         List<Podzak> podzaks = podzakRepo.findAll();

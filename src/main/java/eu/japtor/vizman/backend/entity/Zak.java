@@ -2,6 +2,7 @@ package eu.japtor.vizman.backend.entity;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -14,7 +15,7 @@ public class Zak extends AbstractGenEntity {
     private String czak;
     private String text;
     private String firma;
-    private Timestamp datumzad;
+    private LocalDate datumzad;
     private Boolean arch;
 
     @Basic
@@ -49,11 +50,11 @@ public class Zak extends AbstractGenEntity {
 
     @Basic
     @Column(name = "DATUMZAD")
-    public Timestamp getDatumzad() {
+    public LocalDate getDatumzad() {
         return datumzad;
     }
 
-    public void setDatumzad(Timestamp datumzad) {
+    public void setDatumzad(LocalDate datumzad) {
         this.datumzad = datumzad;
     }
 

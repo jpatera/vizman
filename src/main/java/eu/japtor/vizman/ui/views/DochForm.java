@@ -3,6 +3,7 @@ package eu.japtor.vizman.ui.views;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
@@ -17,6 +18,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.security.Permissions;
+import eu.japtor.vizman.backend.entity.Doch;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.repository.CinRepo;
@@ -42,6 +44,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_DOCH;
 public class DochForm  extends VerticalLayout {
 
     private ComboBox personSelectBox = new ComboBox();
+    private DatePicker datePicker = new DatePicker();
     private Button dochMonthReportBtn = new Button();
     private Button dochYearReportBtn = new Button();
 
@@ -51,6 +54,7 @@ public class DochForm  extends VerticalLayout {
     FormLayout nepritControl = new FormLayout();
     private Span clockDisplay = new Span();
     private Span dochUpperDateInfo = new Span();
+    private Span dochLowerDateInfo = new Span();
     private RadioButtonGroup<String> odchodRadio = new RadioButtonGroup();
 
     private Button prichodBtn = new Button("Příchod");
@@ -68,7 +72,14 @@ public class DochForm  extends VerticalLayout {
     Button volnoBtn = new Button("Neplacené volno (8h)");
     Button volnoZrusBtn = new Button("Zrušit neplac. volno");
 
-    Grid dochUpperGrid = new Grid();
+    HorizontalLayout dochRecUpperHeader = new HorizontalLayout();
+    Grid<Doch> dochRecUpperGrid = new Grid();
+    HorizontalLayout dochRecUpperFooter = new HorizontalLayout();
+
+    HorizontalLayout dochRecLowerHeader = new HorizontalLayout();
+    Grid<Doch> dochRecLowerGrid = new Grid();
+    HorizontalLayout dochRecLowerFooter = new HorizontalLayout();
+
 
     private Person dochPerson;
     private LocalDate dochDate;
@@ -98,8 +109,8 @@ public class DochForm  extends VerticalLayout {
 
     @PostConstruct
     public void init() {
-//        initCurrentDochGrid();
-//        initLastDochGrid();
+        initUpperDochGrid();
+        initLowerDochGrid();
         initData();
     }
 
@@ -124,6 +135,9 @@ public class DochForm  extends VerticalLayout {
         personSelectBox.setLabel(null);
         personSelectBox.setWidth("100%");
 
+        datePicker.setLabel(null);
+        datePicker.setWidth("100%");
+
         dochMonthReportBtn.setText("Měsíční přehled");
 //        dochMonthReportBtn.setWidth("100%");
 
@@ -132,7 +146,7 @@ public class DochForm  extends VerticalLayout {
 //        dochYearReportBtn.setWidth("100%");
 
 //        HorizontalLayout dochHeader = new HorizontalLayout();
-        dochHeader.add(new H4("Uživatel(ka): "), personSelectBox, dochMonthReportBtn, dochYearReportBtn);
+        dochHeader.add(new H4("Uživatel(ka): "), personSelectBox, datePicker, dochMonthReportBtn, dochYearReportBtn);
 
         VerticalLayout clockContainer = new VerticalLayout();
         clockContainer.setSizeFull();
@@ -218,26 +232,19 @@ public class DochForm  extends VerticalLayout {
         nepritControl.add(volnoBtn);
         nepritControl.add(volnoZrusBtn);
 
-//        dochUpperDateInfo = new Span("Vybraný den docházky...");
         dochUpperDateInfo.setText("Vybraný den docházky...");
+        dochLowerDateInfo.setText("Předchozí den docházky...");
 
-        HorizontalLayout dochRecUpperHeader = new HorizontalLayout();
         dochRecUpperHeader.add(dochUpperDateInfo);
-
-        Grid dochRecUpperGrid = new Grid();
-        HorizontalLayout dochRecUpperFooter = new HorizontalLayout();
-
-        HorizontalLayout dochRecLowerHeader = new HorizontalLayout();
-        Grid dochRecLowerGrid = new Grid();
-        HorizontalLayout dochRecLowerFooter = new HorizontalLayout();
+        dochRecLowerHeader.add(dochLowerDateInfo);
 
         VerticalLayout dochRecords = new VerticalLayout();
         dochRecords.add(dochRecUpperHeader);
         dochRecords.add(dochRecUpperGrid);
-        dochRecords.add(dochRecUpperHeader);
+        dochRecords.add(dochRecUpperFooter);
         dochRecords.add(dochRecLowerHeader);
         dochRecords.add(dochRecLowerGrid);
-        dochRecords.add(dochRecLowerHeader);
+        dochRecords.add(dochRecLowerFooter);
 
         HorizontalLayout dochDesk = new HorizontalLayout();
         dochDesk.add(dochControl);
@@ -258,20 +265,28 @@ public class DochForm  extends VerticalLayout {
 
     }
 
-    private void initCurrentDochGrid() {
-        dochUpperGrid.setSelectionMode(Grid.SelectionMode.NONE);
-//        dochUpperGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#").setWidth("1em");
-        dochUpperGrid.addColumn(Doch::getCzak).setHeader("ČZ").setWidth("2em").setResizable(true);
-        dochUpperGrid.addColumn(Podzak::getCpodzak).setHeader("ČPZ").setWidth("1em").setResizable(true);
-        dochUpperGrid.addColumn(Podzak::getText).setHeader("Text").setWidth("8em").setResizable(true);
+    private void initUpperDochGrid() {
+        dochRecUpperGrid.setSelectionMode(Grid.SelectionMode.NONE);
+//        dochRecUpperGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#").setWidth("1em");
+        dochRecUpperGrid.addColumn(Doch::getCinSt).setHeader("St.").setWidth("2em").setResizable(true);
+//        dochRecUpperGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
+//        dochRecUpperGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
+        dochRecUpperGrid.addColumn(Doch::getdCasOd).setHeader("Od").setWidth("3em").setResizable(true);
+        dochRecUpperGrid.addColumn(Doch::getdCasDo).setHeader("Do").setWidth("3em").setResizable(true);
+        dochRecUpperGrid.addColumn(Doch::getdHodin).setHeader("Hod.").setWidth("3em").setResizable(true);
+        dochRecUpperGrid.addColumn(Doch::getCinnost).setHeader("Činnost").setWidth("4em").setResizable(true);
+    }
 
-        dochUpperGrid.addColumn(Podzak::getSkupina).setHeader("Skupina").setWidth("4em").setResizable(true);
-        dochUpperGrid.addColumn(Podzak::getHonorar).setHeader("Honorář").setWidth("4em").setResizable(true);
-        dochUpperGrid.addColumn(Podzak::getRm).setHeader("RM").setWidth("2em").setResizable(true);
-        dochUpperGrid.addColumn(Podzak::getR1).setHeader("R1").setWidth("2em").setResizable(true);
-        dochUpperGrid.addColumn(Podzak::getR2).setHeader("R2").setWidth("2em").setResizable(true);
-        dochUpperGrid.addColumn(Podzak::getR3).setHeader("R3").setWidth("2em").setResizable(true);
-        dochUpperGrid.addColumn(Podzak::getR4).setHeader("R4").setWidth("2em").setResizable(true);
+    private void initLowerDochGrid() {
+        dochRecLowerGrid.setSelectionMode(Grid.SelectionMode.NONE);
+//        dochRecUpperGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#").setWidth("1em");
+        dochRecLowerGrid.addColumn(Doch::getCinSt).setHeader("St.").setWidth("2em").setResizable(true);
+//        dochRecUpperGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
+//        dochRecUpperGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
+        dochRecLowerGrid.addColumn(Doch::getdCasOd).setHeader("Od").setWidth("3em").setResizable(true);
+        dochRecLowerGrid.addColumn(Doch::getdCasDo).setHeader("Do").setWidth("3em").setResizable(true);
+        dochRecLowerGrid.addColumn(Doch::getdHodin).setHeader("Hod.").setWidth("3em").setResizable(true);
+        dochRecLowerGrid.addColumn(Doch::getCinnost).setHeader("Činnost").setWidth("4em").setResizable(true);
     }
 
     private void odchodRadionChanged(HasValue.ValueChangeEvent event) {
@@ -305,6 +320,10 @@ public class DochForm  extends VerticalLayout {
 
         dochDate = LocalDate.now();
         dochUpperDateInfo.setText(dochDate.format(dochDateHeaderFormatter));
+
+        dochDatePrev = LocalDate.now().minusDays(1);
+        dochLowerDateInfo.setText(dochDatePrev.format(dochDateHeaderFormatter));
+
         timeThread = new TimeThread(attachEvent.getUI(), this);
         timeThread.start();
     }

@@ -15,6 +15,7 @@
  */
 package eu.japtor.vizman.ui.views;
 
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
@@ -33,9 +34,12 @@ import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.repository.ZakRepo;
 import eu.japtor.vizman.ui.MainView;
+import eu.japtor.vizman.ui.components.EditItemSmallButton;
+import eu.japtor.vizman.ui.components.OpenDirSmallButton;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.util.List;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
@@ -94,8 +98,11 @@ public class ZakListView extends VerticalLayout implements BeforeEnterObserver {
         container.setAlignItems(Alignment.STRETCH);
 
 //        zakGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#");
-        zakGrid.addColumn(Zak::getCzak).setHeader("ČZ").setWidth("8em").setResizable(true);
+        zakGrid.addColumn(Zak::getCzak).setHeader("ČZ").setWidth("7em").setResizable(true);
         zakGrid.addColumn(Zak::getFirma).setHeader("Firma").setWidth("16em").setResizable(true);
+        zakGrid.addColumn(Zak::getArch).setHeader("Arch").setWidth("4em").setResizable(true);
+        zakGrid.addColumn(Zak::getText).setHeader("Text").setWidth("15em").setResizable(true);
+        zakGrid.addColumn(Zak::getDatumzad).setHeader("Dat.zad.").setWidth("7em").setResizable(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 
         zakGrid.setItemDetailsRenderer(new ComponentRenderer<>(zak -> {
@@ -151,10 +158,12 @@ public class ZakListView extends VerticalLayout implements BeforeEnterObserver {
         podzakGrid.setId("podzak-grid");  // .. same ID as is used in shared-styles grid's dom module
         podzakGrid.addColumn(Podzak::getCpodzak).setHeader("ČPZ").setWidth("3em").setResizable(true)
                 .setSortProperty("poradi");
+//        podzakGrid.addColumn(new ComponentRenderer<>(this::createOpenDirButton)).setFlexGrow(0);
         podzakGrid.addColumn(Podzak::getRokmeszad).setHeader("Zadáno").setWidth("3em").setResizable(true);
         podzakGrid.addColumn(Podzak::getText).setHeader("Text podzak.").setWidth("5em").setResizable(true);
         podzakGrid.addColumn(Podzak::getHonorar).setHeader("Honorář").setWidth("3em").setResizable(true);
         podzakGrid.addColumn(Podzak::getSkupina).setHeader("Skupina").setWidth("4em").setResizable(true);
+
         return podzakGrid;
     }
 }

@@ -197,7 +197,8 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         grid.setMultiSort(true);
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
         grid.setId("person-grid");  // .. same ID as is used in shared-styles grid's dom module
-        grid.addColumn(Person::getStatus).setHeader("Status").setWidth("3em").setResizable(true);
+        grid.addColumn(Person::getStatus).setHeader("Status").setWidth("3em").setResizable(true)
+            .setFrozen(true);
         grid.addColumn(Person::getUsername).setHeader("Username").setWidth("8em").setResizable(true)
             .setSortProperty("username")
             .setFrozen(true);
