@@ -2,13 +2,13 @@ package eu.japtor.vizman.backend.entity;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "ZAK")
 @SequenceGenerator(initialValue = 1, name = "id_gen", sequenceName = "zak_seq")
-public class Zak extends AbstractGenEntity implements ZakTreeAware {
+public class Zak extends AbstractGenEntity implements KontZakTreeAware {
 
     private String ckont;
     private Integer czak;
@@ -276,22 +276,60 @@ public class Zak extends AbstractGenEntity implements ZakTreeAware {
         this.kont = kont;
     }
 
+    @Override
+    public int hashCode() {
+        if (getId() == null) {
+            return super.hashCode();
+        }
+//        return 31 + getId().hashCode();
+
+        int result = (int) (getId() ^ (getId() >>> 32));
+        result = 31 * result + (int) (kont.getId() ^ (kont.getId() >>> 32));
+//        result = 31 * result + (int) (z ^ (z >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (getId() == null) {
+            // New entities are only equal if the instance is the same
+            return super.equals(other);
+        }
+        if (!(other instanceof Zak)) {
+            return false;
+        }
+        return (getId().equals(((Zak) other).getId()))
+                && (kont.getId().equals(((Zak) other).kont.getId()));
+    }
 
 // ======================================
 
 
     @Override
     public BigDecimal getHonorar() {
-        return BigDecimal.valueOf(3333.40);
+        return honorc;
     }
 
     @Override
-    public Set<? extends ZakTreeAware> getNodes() {
-        return null;
+    public List<KontZakTreeAware> getNodes() {
+        return new ArrayList();
+    }
+
+    @Override
+    public Currency getCurrency() {
+        return kont.getCurrency();
     }
 
 //    @Override
-//    public void setNodes(Set<? extends ZakTreeAware> zaks) {
+//    public void setNodes(List<KontZakTreeAware> nodes) {
+////        return new ArrayList();
+//    }
+
+//    @Override
+//    public void setNodes(Set<? extends KontZakTreeAware> zaks) {
 //        // Do nothing
 //    }
 
