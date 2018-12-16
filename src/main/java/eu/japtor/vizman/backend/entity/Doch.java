@@ -239,13 +239,13 @@ public class Doch extends AbstractGenEntity {
 //    }
 //
 //    @Basic
-//    @Column(name = "CPODZAK")
-//    public Integer getCpodzak() {
-//        return cpodzak;
+//    @Column(name = "CZAK")
+//    public Integer getCzak() {
+//        return czak;
 //    }
 //
-//    public void setCpodzak(Integer cpodzak) {
-//        this.cpodzak = cpodzak;
+//    public void setCzak(Integer czak) {
+//        this.czak = czak;
 //    }
 //
 //    @Basic
@@ -413,7 +413,7 @@ public class Doch extends AbstractGenEntity {
 //        if (this == o) return true;
 //        if (o == null || getClass() != o.getClass()) return false;
 //
-//        Podzak zakentity = (Podzak) o;
+//        Zak zakentity = (Zak) o;
 //
 //        if (id != zakentity.id) return false;
 //        if (cisloZakazky != null ? !cisloZakazky.equals(zakentity.cisloZakazky) : zakentity.cisloZakazky != null)

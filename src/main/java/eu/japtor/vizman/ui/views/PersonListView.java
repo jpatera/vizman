@@ -25,8 +25,10 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -89,7 +91,9 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 //                "Hledej uživatele...", event ->
 //                "Hledej uživatele...", event -> updateGridContent()
                 "Hledej uživatele...",
-                event -> ((ConfigurableFilterDataProvider) personGrid.getDataProvider()).setFilter(event.getValue())
+//                event -> ((ConfigurableFilterDataProvider) personGrid.getDataProvider()).setFilter(event.getValue())
+                event -> ((CallbackDataProvider) personGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getValue()))
+//                event -> ((CallbackDataProvider) personGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getValue()))
         );
 
         newItemButton = new NewItemButton("Nový uživatel",
@@ -243,17 +247,17 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
                 .set("font-weight", "600")
                 .set("padding-right", "0.75em");
 
-        HorizontalLayout toolBarSearch = new HorizontalLayout(viewTitle, searchField);
-        toolBarSearch.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        HorizontalLayout searchToolBar = new HorizontalLayout(viewTitle, searchField);
+        searchToolBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
-        HorizontalLayout toolBarGrid = new HorizontalLayout(reloadViewButton);
-        toolBarGrid.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        HorizontalLayout gridToolBar = new HorizontalLayout(reloadViewButton);
+        gridToolBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
         HorizontalLayout toolBarItem = new HorizontalLayout(newItemButton);
         toolBarItem.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
         Span ribbon = new Span();
-        viewToolBar.add(toolBarSearch, toolBarGrid, ribbon, toolBarItem);
+        viewToolBar.add(searchToolBar, gridToolBar, ribbon, toolBarItem);
         viewToolBar.expand(ribbon);
 
         return viewToolBar;

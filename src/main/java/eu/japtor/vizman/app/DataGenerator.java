@@ -6,7 +6,7 @@ import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.repository.PersonRepo;
 import eu.japtor.vizman.backend.repository.RoleRepo;
-import eu.japtor.vizman.backend.repository.PodzakRepo;
+import eu.japtor.vizman.backend.repository.ZakRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 public class DataGenerator implements HasLogger {
 
     @Autowired
-    private PodzakRepo podzakRepo;
+    private ZakRepo zakRepo;
     @Autowired
     private PersonRepo personRepo;
     @Autowired
@@ -29,11 +29,11 @@ public class DataGenerator implements HasLogger {
     public DataGenerator(
             RoleRepo roleRepo
             , PersonRepo personRepo
-            , PodzakRepo podzakRepo
+            , ZakRepo zakRepo
     ) {
         this.roleRepo = roleRepo;
         this.personRepo = personRepo;
-        this.podzakRepo = podzakRepo;
+        this.zakRepo = zakRepo;
     }
 
 
@@ -53,8 +53,8 @@ public class DataGenerator implements HasLogger {
 
         Set<Perm> userPerms = new HashSet<>();
         userPerms.addAll(Arrays.asList(
-                Perm.PODZAK_VIEW_BASIC_READ, Perm.ZAK_VIEW_BASIC_READ,
-                Perm.PODZAK_VIEW_BASIC_MANAGE, Perm.ZAK_VIEW_BASIC_MANAGE));
+                Perm.ZAK_VIEW_BASIC_READ, Perm.KONT_VIEW_BASIC_READ,
+                Perm.ZAK_VIEW_BASIC_MANAGE, Perm.KONT_VIEW_BASIC_MANAGE));
         createRoleIfNotFound(2L, "ROLE_USER", userPerms);
 
 
@@ -80,18 +80,18 @@ public class DataGenerator implements HasLogger {
         personUser.setRoles(Stream.of(userRole).collect(Collectors.toSet()));
         personRepo.save(personUser);
 
-//        getLogger().info("... generating Podzak");
-//        podzakRepo.save(createZak("2018.01", "Zakázka NULA JEDNA"));
-//        podzakRepo.save(createZak("2018.02", "Zakázka NULA DVA"));
+//        getLogger().info("... generating Zak");
+//        zakRepo.save(createZak("2018.01", "Zakázka NULA JEDNA"));
+//        zakRepo.save(createZak("2018.02", "Zakázka NULA DVA"));
 
         getLogger().info("Generated demo data");
     }
 
-//    private Podzak createZak(String cisloZakazky, String text) {
-//        Podzak podzak = new Podzak();
-//        podzak.setCisloZakazky(cisloZakazky);
-//        podzak.setText(text);
-//        return podzak;
+//    private Zak createZak(String cisloZakazky, String text) {
+//        Zak zak = new Zak();
+//        zak.setCisloZakazky(cisloZakazky);
+//        zak.setText(text);
+//        return zak;
 //    }
 
     @Transactional

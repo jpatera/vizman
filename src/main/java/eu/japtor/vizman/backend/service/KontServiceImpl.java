@@ -2,8 +2,8 @@ package eu.japtor.vizman.backend.service;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
-import eu.japtor.vizman.backend.entity.Person;
-import eu.japtor.vizman.backend.repository.PersonRepo;
+import eu.japtor.vizman.backend.entity.Kont;
+import eu.japtor.vizman.backend.repository.KontRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
@@ -12,16 +12,16 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
-public class PersonServiceImpl extends AbstractSortableService implements PersonService {
+public class KontServiceImpl extends AbstractSortableService implements KontService {
 
-    private final PersonRepo personRepo;
+    private final KontRepo kontRepo;
     private static final List<QuerySortOrder> DEFAULT_SORT_ORDER =
-            Collections.singletonList(new QuerySortOrder("username", SortDirection.ASCENDING));
+            Collections.singletonList(new QuerySortOrder("czak", SortDirection.ASCENDING));
 
     @Autowired
-    public PersonServiceImpl(PersonRepo personRepo) {
+    public KontServiceImpl(KontRepo kontRepo) {
         super();
-        this.personRepo = personRepo;
+        this.kontRepo = kontRepo;
     }
 
     @Override
@@ -30,33 +30,33 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
     }
 
     @Override
-    public Person getById(Long id) {
-        return personRepo.getOne(id);
+    public Kont getById(Long id) {
+        return kontRepo.getOne(id);
     }
 
     @Override
-    public Person getByUsername(String username) {
-        return personRepo.findTopByUsernameIgnoreCase(username);
+    public Kont getByFirma(String firma) {
+        return kontRepo.findTopByFirmaIgnoreCase(firma);
     }
 
     @Override
-    public List<Person> fetchAll() {
-        return personRepo.findAllByOrderByUsername();
+    public List<Kont> fetchAll() {
+        return kontRepo.findAllByOrderByFirma();
     }
 
     @Override
     public long countAll() {
-        return personRepo.count();
+        return kontRepo.count();
     }
 
     @Override
-    public Person savePerson(Person person) {
-        return personRepo.save(person);
+    public Kont saveZak(Kont kont) {
+        return kontRepo.save(kont);
     }
 
     @Override
-    public void deletePerson(Person person) {
-        personRepo.delete(person);
+    public void deleteZak(Kont kont) {
+        kontRepo.delete(kont);
     }
 
     /**
@@ -70,9 +70,9 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
      * @return          the list of matching perosns
      */
     @Override
-    public List<Person> fetchBySearchFilter(String searchString, List<QuerySortOrder> sortOrders) {
+    public List<Kont> fetchBySearchFilter(String searchString, List<QuerySortOrder> sortOrders) {
         if (searchString == null) {
-            return personRepo.findAll(mapSortOrdersToSpring(sortOrders));
+            return kontRepo.findAll(mapSortOrdersToSpring(sortOrders));
         } else {
             String likeFilter = "%" + searchString.toLowerCase() + "%";
 
@@ -83,7 +83,7 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
                     .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
                     .withIgnoreNullValues();
 
-            return personRepo.findByUsernameLikeIgnoreCase(likeFilter, mapSortOrdersToSpring(sortOrders));
+            return kontRepo.findByFirmaLikeIgnoreCase(likeFilter, mapSortOrdersToSpring(sortOrders));
 
             // Make a copy of each matching item to keep entities and DTOs separated
             //        return personRepo.findAllByUsername(filter).stream()
@@ -105,7 +105,7 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
 
             // Make a copy of each matching item to keep entities and DTOs separated
             //        return personRepo.findAllByUsername(filter).stream()
-            return personRepo.countByUsernameLikeIgnoreCase(likeFilter);
+            return kontRepo.countByFirmaLikeIgnoreCase(likeFilter);
 
 //            return fetchAll().stream()
 //                    //                .filter(c -> c.getUsername().toLowerCase().contains(normalizedFilter))

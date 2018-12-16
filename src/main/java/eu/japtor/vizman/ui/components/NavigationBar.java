@@ -56,17 +56,24 @@ public class NavigationBar extends Div implements RouterLayout {
         dochLink.add(ICON_DOCH, new Text(TITLE_DOCH));
         dochLink.addClassName("main-layout__nav-item");
 
+        RouterLink kontTreeLink = new RouterLink(null, KontTreeView.class);
+        Icon ICON_KONT_TREE = new Icon (VaadinIcon.TREE_TABLE);
+        ICON_KONT_TREE.setColor("brown");
+        kontTreeLink.add(ICON_KONT_TREE, new Text(TITLE_KONT_TREE));
+        kontTreeLink.addClassName("main-layout__nav-item");
+
+        RouterLink kontListLink = new RouterLink(null, KontListView.class);
+        Icon ICON_KONT_LIST = new Icon (VaadinIcon.LIST);
+        ICON_KONT_LIST.setColor("orange");
+        kontListLink.add(ICON_KONT_LIST, new Text(TITLE_KONT_LIST));
+        kontListLink.addClassName("main-layout__nav-item");
+
         RouterLink zakLink = new RouterLink(null, ZakListView.class);
         Icon ICON_ZAK = new Icon (VaadinIcon.LIST);
-        ICON_ZAK.setColor("orange");
+        ICON_ZAK.setColor("green");
         zakLink.add(ICON_ZAK, new Text(TITLE_ZAK));
         zakLink.addClassName("main-layout__nav-item");
 
-        RouterLink podzakLink = new RouterLink(null, PodzakListView.class);
-        Icon ICON_PODZAK = new Icon (VaadinIcon.LIST);
-        ICON_PODZAK.setColor("green");
-        podzakLink.add(ICON_PODZAK, new Text(TITLE_PODZAK));
-        podzakLink.addClassName("main-layout__nav-item");
 
 //        RouterLink personLink = new RouterLink(null, PersonListView.class);
 //        Icon ICON_PERSON = new Icon (VaadinIcon.USERS);
@@ -98,10 +105,11 @@ public class NavigationBar extends Div implements RouterLayout {
 //        });
 
 
-        this.add(homeLink, dochLink, zakLink, podzakLink);
+        this.add(homeLink, dochLink, kontTreeLink, kontListLink, zakLink);
 //        if (SecurityUtils.isAccessGranted(UserListView.class)) {
 //            this.add(personLink);
 //        }
+
         if (SecurityUtils.isAccessGranted(CfgTabsView.class)) {
             this.add(cfgLink);
         }

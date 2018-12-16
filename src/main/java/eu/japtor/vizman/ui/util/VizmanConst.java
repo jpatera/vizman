@@ -48,20 +48,25 @@ public class VizmanConst {
 	public static final String TAG_DOCH = "doch-form";
 	public static final String ROUTE_DOCH = "doch";
 
+	public static final String TITLE_KONT_LIST = "Kontrakty L";
+	public static final String PAGE_TITLE_KONT_LIST = PAGE_TITLE_BASE + " - " + TITLE_KONT_LIST;
+	public static final String TAG_KONT_LIST = "kont-list-view";
+	public static final String ROUTE_KONT = "kontlist";
+
+	public static final String TITLE_KONT_TREE = "Kontrakty T";
+	public static final String PAGE_TITLE_KONT_TREE = PAGE_TITLE_BASE + " - " + TITLE_KONT_TREE;
+	public static final String TAG_KONT_TREE = "kont-tree-view";
+	public static final String ROUTE_KONT_TREE = "konttree";
+
 	public static final String TITLE_ZAK = "Zakázky";
 	public static final String PAGE_TITLE_ZAK = PAGE_TITLE_BASE + " - " + TITLE_ZAK;
 	public static final String TAG_ZAK = "zak-list-view";
 	public static final String ROUTE_ZAK = "zak";
 
-	public static final String TITLE_PODZAK = "Podzakázky";
-	public static final String PAGE_TITLE_PODZAK = PAGE_TITLE_BASE + " - " + TITLE_PODZAK;
-	public static final String TAG_PODZAK = "podzak-list-view";
-	public static final String ROUTE_PODZAK = "podzak";
-
 	public static final String TITLE_PRUH = "Proužek";
 	public static final String ROUTE_PRUH = "pruh";
 
-	public static final String ROUTE_DEFAULT = ROUTE_PODZAK;
+	public static final String ROUTE_DEFAULT = ROUTE_ZAK;
 
 //	public static final Icon ICON_USERS = new Icon (VaadinIcon.USERS);
 //	//	public static final Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);

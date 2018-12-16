@@ -1,6 +1,6 @@
 package eu.japtor.vizman.backend.repository;
 
-public interface ZakRepoCustom {
+public interface KontRepoCustom {
 
     String[] getAllFirmaArray();
 }

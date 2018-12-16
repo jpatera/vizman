@@ -136,11 +136,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .antMatchers("/" + ROUTE_ROLE).hasAnyAuthority(
                             Perm.ROLE_VIEW_READ.name(),
                             Perm.VIEW_ALL.name(), Perm.MANAGE_ALL.name())
+                    .antMatchers("/" + ROUTE_KONT).hasAnyAuthority(
+                            Perm.KONT_VIEW_BASIC_READ.name(), Perm.KONT_VIEW_EXT_READ.name(),
+                            Perm.VIEW_ALL.name(), Perm.MANAGE_ALL.name())
                     .antMatchers("/" + ROUTE_ZAK).hasAnyAuthority(
                             Perm.ZAK_VIEW_BASIC_READ.name(), Perm.ZAK_VIEW_EXT_READ.name(),
-                            Perm.VIEW_ALL.name(), Perm.MANAGE_ALL.name())
-                    .antMatchers("/" + ROUTE_PODZAK).hasAnyAuthority(
-                            Perm.PODZAK_VIEW_BASIC_READ.name(), Perm.PODZAK_VIEW_EXT_READ.name(),
                             Perm.VIEW_ALL.name(), Perm.MANAGE_ALL.name())
 //                    // Allow all flow internal requests.
 ////                    .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()

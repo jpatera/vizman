@@ -112,10 +112,10 @@ public class MainView extends Div implements RouterLayout, BeforeEnterObserver, 
 
 //        this.navigationBar.init();
 
-//        RouterLink zakListLink = new RouterLink(null, PodzakListView.class);
+//        RouterLink zakListLink = new RouterLink(null, ZakListView.class);
 //        Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);
 //        ICON_ZAK_LIST.setColor("green");
-//        zakListLink.add(ICON_ZAK_LIST, new Text(TITLE_PODZAK));
+//        zakListLink.add(ICON_ZAK_LIST, new Text(TITLE_ZAK));
 //        zakListLink.addClassName("main-layout__nav-item");
 
 //        Div navComoponent = new Div(zakListLink);
@@ -165,10 +165,10 @@ public class MainView extends Div implements RouterLayout, BeforeEnterObserver, 
 //    }
 
 //    private Component buildZakListRoute() {
-//        RouterLink zakListRoute = new RouterLink(null, PodzakListView.class);
+//        RouterLink zakListRoute = new RouterLink(null, ZakListView.class);
 //        Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);
 //        ICON_ZAK_LIST.setColor("green");
-//        zakListRoute.add(ICON_ZAK_LIST, new Text(TITLE_PODZAK));
+//        zakListRoute.add(ICON_ZAK_LIST, new Text(TITLE_ZAK));
 //        zakListRoute.addClassName("main-layout__nav-item");
 //        return zakListRoute;
 //    }

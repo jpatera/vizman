@@ -91,7 +91,7 @@ public class DochForm  extends VerticalLayout {
     DateTimeFormatter dochDateHeaderFormatter = DateTimeFormatter.ofPattern("EEEE, dd.MM.yyyy");
 
 //    @Autowired
-//    public DochRepo zakRepo;
+//    public DochRepo kontRepo;
 
     @Autowired
     public PersonRepo personRepo;

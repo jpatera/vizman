@@ -40,9 +40,12 @@ import java.util.Locale;
 @UIScope
 public class SysPropsForm extends VerticalLayout {
 
-    private TextField appLocaleFld;
-    private TextField projRootFld;
-    private TextField docRootFld;
+    private TextField appLocaleFld = new TextField(CfgProp.CfgPropName.APP_LOCALE.getDescription(), Locale.getDefault().toString());
+    private TextField projRootFld = new TextField(CfgProp.CfgPropName.PROJECT_ROOT.getDescription(), "project-root-dir");
+    private TextField docRootFld = new TextField(CfgProp.CfgPropName.DOCUMENT_ROOT.getDescription(), "project-root-dir");
+
+    private TextField koefRezieFld = new TextField("Koeficient režie");
+    private TextField koefPojisteniFld = new TextField("Koeficient pojištění");
 
     private Binder<CfgProp> binder = new Binder<>();
 
@@ -60,6 +63,8 @@ public class SysPropsForm extends VerticalLayout {
         appLocaleFld.setValue( Locale.getDefault().toString());
         projRootFld.setValue(cfgPropRepo.findByName(CfgProp.CfgPropName.PROJECT_ROOT.getName()).getValue());
         docRootFld.setValue(cfgPropRepo.findByName(CfgProp.CfgPropName.DOCUMENT_ROOT.getName()).getValue());
+        koefRezieFld.setValue("0,35");
+        koefPojisteniFld.setValue("0,8");
 
 //        cinGrid.setDataProvider(new ListDataProvider<>(cinRepo.findAll()));
 //        container.add(usernameField);
@@ -87,14 +92,13 @@ public class SysPropsForm extends VerticalLayout {
 
         Component propsHeader = new H4("SYSTÉM");
 
-        appLocaleFld = new TextField(CfgProp.CfgPropName.APP_LOCALE.getDescription(), Locale.getDefault().toString());
         appLocaleFld.setReadOnly(true);
-        projRootFld = new TextField(CfgProp.CfgPropName.PROJECT_ROOT.getDescription(), "project-root-dir");
-        docRootFld = new TextField(CfgProp.CfgPropName.DOCUMENT_ROOT.getDescription(), "project-root-dir");
         VerticalLayout propContainer = new VerticalLayout();
         propContainer.add(appLocaleFld);
         propContainer.add(projRootFld);
         propContainer.add(docRootFld);
+        propContainer.add(koefPojisteniFld);
+        propContainer.add(koefRezieFld);
 
         HorizontalLayout propsFooter = new HorizontalLayout();
         propsFooter.add(new Button("Uložit"));

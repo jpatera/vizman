@@ -5,5 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ZakRepo extends JpaRepository<Zak, Long> {
 
-    Zak findTopByFirma(String firma);
+//    @Modifying
+//    @Transactional
+//    @Query("delete from User u where u.active = false")
+//      someMethod...
 }

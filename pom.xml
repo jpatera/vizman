@@ -18,7 +18,7 @@
         <!-- Dependencies -->
         <!--<vaadin.version>10.0.2</vaadin.version>-->
         <!--<vaadin.version>11.0.1</vaadin.version>-->
-        <vaadin.version>12.0.0.alpha5</vaadin.version>
+        <vaadin.version>12.0.2</vaadin.version>
     </properties>
 
     <parent>

@@ -1,10 +1,8 @@
 package eu.japtor.vizman;
 
-import com.vaadin.flow.component.html.H3;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import static eu.japtor.vizman.ui.util.VizmanConst.TITLE_ZAK;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 
 /**
@@ -20,6 +18,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.TITLE_ZAK;
 //@EntityScan(basePackageClasses = { User.class })
 
 @SpringBootApplication
+//@EnableScheduling
 public class Application {
 //public class Application extends SpringBootServletInitializer {
 
