@@ -17,7 +17,7 @@ public class KontRepoCustomImpl implements KontRepoCustom {
 
     @Override
     public String[] getAllFirmaArray() {
-        Query query = em.createQuery("select distinct kont.firma from Kont kont");
+        Query query = em.createQuery("select distinct kont.getObjednatel from Kont kont");
         List<String> firmaList = query.getResultList();
         String[] firmaArray = new String[firmaList.size()];
         return firmaList.toArray(firmaArray);

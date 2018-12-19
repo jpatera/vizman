@@ -113,7 +113,7 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
 
 //        kontGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#");
         kontGrid.addColumn(Kont::getCkont).setHeader("ČK").setWidth("7em").setResizable(true);
-        kontGrid.addColumn(Kont::getFirma).setHeader("Firma").setWidth("16em").setResizable(true);
+        kontGrid.addColumn(Kont::getObjednatel).setHeader("Objednatel").setWidth("16em").setResizable(true);
         kontGrid.addColumn(Kont::getArch).setHeader("Arch").setWidth("4em").setResizable(true);
         kontGrid.addColumn(Kont::getText).setHeader("Text").setWidth("25em").setResizable(true);
         kontGrid.addColumn(Kont::getDatZad).setHeader("Dat.zad.").setWidth("7em").setResizable(true);
@@ -139,7 +139,7 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
 //            zadanoField.setReadOnly(true);
 
 //            layout.add(zadanoField);
-//            layout.add(new TextField("Firma: ", zak.getFirma().toString(), "placeholder"));
+//            layout.add(new TextField("Objednatel: ", zak.getObjednatel().toString(), "placeholder"));
 //            layout.add(new Label("Text zak.: " + zak.getText()));
 //            layout.add(new Label("Zadáno: " + zak.getDatumzad()));
 
@@ -267,7 +267,7 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
 //        zakGrid.addColumn(new ComponentRenderer<>(this::createOpenDirButton)).setFlexGrow(0);
         zakGrid.addColumn(Zak::getRokmeszad).setHeader("Zadáno").setWidth("3em").setResizable(true);
         zakGrid.addColumn(Zak::getText).setHeader("Text zak.").setWidth("5em").setResizable(true);
-        zakGrid.addColumn(Zak::getHonorc).setHeader("Honorář").setWidth("3em").setResizable(true);
+        zakGrid.addColumn(Zak::getHonorar).setHeader("Honorář").setWidth("3em").setResizable(true);
         zakGrid.addColumn(Zak::getSkupina).setHeader("Skupina").setWidth("4em").setResizable(true);
 
         return zakGrid;

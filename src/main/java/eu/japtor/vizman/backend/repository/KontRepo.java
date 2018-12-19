@@ -8,20 +8,20 @@ import java.util.List;
 
 public interface KontRepo extends JpaRepository<Kont, Long> {
 
-//   Kont findTopByFirma(String firma);
+//   Kont findTopByObjednatel(String objednatel);
 
-   Kont findTopByFirmaIgnoreCase(String firma);
+   Kont findTopByObjednatelIgnoreCase(String objednatel);
 
-    List<Kont> findAllByOrderByFirma();
+    List<Kont> findAllByOrderByObjednatel();
 
 //        Page<Product> findByNameLikeIgnoreCase(String name, Pageable page);
 
-    List<Kont> findByFirmaLikeIgnoreCase(String username, Sort sort);
+    List<Kont> findByObjednatelLikeIgnoreCase(String username, Sort sort);
     // TODO: more versatile might be using Example matchers
     // See: https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example
     // See: https://vaadin.com/forum/thread/16031323
     // findAll(Example.of(userProbe, userMatcher));
 
-    int countByFirmaLikeIgnoreCase(String firma);
+    int countByObjednatelLikeIgnoreCase(String objenatel);
 
 }

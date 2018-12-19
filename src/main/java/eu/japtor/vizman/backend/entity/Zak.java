@@ -12,12 +12,20 @@ public class Zak extends AbstractGenEntity implements KontZakTreeAware {
 
     private String ckont;
     private Integer czak;
+
+    @Enumerated(EnumType.STRING)
+    private ZakTyp typ;
+
     private String typDokladu;
     private Short rokzak;
     private String rokmeszad;
     private String text;
     private Boolean x;
-    private BigDecimal honorc;
+    private BigDecimal honorar;
+
+    @Enumerated(EnumType.STRING)
+    private Mena mena;
+
     private BigDecimal rozprac;
     private String tmp;
     private Boolean arch;
@@ -48,6 +56,18 @@ public class Zak extends AbstractGenEntity implements KontZakTreeAware {
 
     public void setCzak(Integer czak) {
         this.czak = czak;
+    }
+
+    // TODO: add TYP (KONT, ZAK, SUB, FAK)
+
+    @Basic
+    @Column(name = "TYP")
+    public ZakTyp getTyp() {
+        return typ;
+    }
+
+    public void setTyp(ZakTyp typ) {
+        this.typ = typ;
     }
 
     @Basic
@@ -101,13 +121,24 @@ public class Zak extends AbstractGenEntity implements KontZakTreeAware {
     }
 
     @Basic
-    @Column(name = "HONORC")
-    public BigDecimal getHonorc() {
-        return honorc;
+    @Column(name = "HONORAR")
+    public BigDecimal getHonorar() {
+        return honorar;
     }
 
-    public void setHonorc(BigDecimal honorc) {
-        this.honorc = honorc;
+    public void setHonorar(BigDecimal honorc) {
+        this.honorar = honorar;
+    }
+
+    @Override
+    @Column(name = "MENA")
+    @Transient
+    public Mena getMena() {
+        return mena;
+    }
+
+    public void setMena(Mena mena) {
+        this.mena = mena;
     }
 
     @Basic
@@ -308,20 +339,16 @@ public class Zak extends AbstractGenEntity implements KontZakTreeAware {
 // ======================================
 
 
-    @Override
-    public BigDecimal getHonorar() {
-        return honorc;
-    }
+//    @Override
+//    public BigDecimal getHonorar() {
+//        return honorar;
+//    }
 
     @Override
     public List<KontZakTreeAware> getNodes() {
         return new ArrayList();
     }
 
-    @Override
-    public Currency getCurrency() {
-        return kont.getCurrency();
-    }
 
 //    @Override
 //    public void setNodes(List<KontZakTreeAware> nodes) {
@@ -334,8 +361,8 @@ public class Zak extends AbstractGenEntity implements KontZakTreeAware {
 //    }
 
     @Override
-    public String getFirma() {
-        return "TO JE FIRMA";
+    public String getObjednatel() {
+        return "";
     }
 
 

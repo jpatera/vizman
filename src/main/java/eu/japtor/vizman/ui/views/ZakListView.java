@@ -98,7 +98,7 @@ public class ZakListView extends VerticalLayout implements BeforeEnterObserver {
         zakGrid.addColumn(Zak::getText).setHeader("Text").setWidth("15em").setResizable(true);
 
         zakGrid.addColumn(Zak::getSkupina).setHeader("Skupina").setWidth("4em").setResizable(true);
-        zakGrid.addColumn(Zak::getHonorc).setHeader("Honorář").setWidth("4em").setResizable(true);
+        zakGrid.addColumn(Zak::getHonorar).setHeader("Honorář").setWidth("4em").setResizable(true);
         zakGrid.addColumn(new ComponentRenderer<>(this::createOpenDirButton)).setFlexGrow(0);
         zakGrid.addColumn(Zak::getRm).setHeader("RM").setWidth("4em").setResizable(true);
         zakGrid.addColumn(Zak::getR1).setHeader("R1").setWidth("4em").setResizable(true);

@@ -1,5 +1,5 @@
 package eu.japtor.vizman.backend.entity;
 
-public enum Currency {
+public enum Mena {
     CZK, EUR;
 }

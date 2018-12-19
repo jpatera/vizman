@@ -1,16 +1,17 @@
 package eu.japtor.vizman.backend.entity;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
 
 public interface KontZakTreeAware <T extends KontZakTreeAware> {
 
     String getCkont();
     Integer getCzak();
-    String getFirma();
+    ZakTyp getTyp();
+    Boolean getArch();
+    String getObjednatel();
     String getText();
     BigDecimal getHonorar();
-    Currency getCurrency();
+    Mena getMena();
     List<T> getNodes();
 }

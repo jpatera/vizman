@@ -13,7 +13,7 @@ public interface KontService {
 
     void deleteZak(Kont kont);
 
-    Kont getByFirma(String firma);
+    Kont getByObjednatel(String objednatel);
 
     List<Kont> fetchAll();
 

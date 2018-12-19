@@ -15,8 +15,6 @@
  */
 package eu.japtor.vizman.ui.views;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridMultiSelectionModel;
 import com.vaadin.flow.component.grid.GridSelectionModel;
@@ -29,15 +27,15 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import eu.japtor.vizman.app.security.Permissions;
-import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.KontZakTreeAware;
 import eu.japtor.vizman.backend.entity.Perm;
-import eu.japtor.vizman.backend.entity.Zak;
+import eu.japtor.vizman.backend.entity.ZakTyp;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.ui.MainView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +72,17 @@ public class KontTreeView extends VerticalLayout implements BeforeEnterObserver 
     VerticalLayout gridContainer = new VerticalLayout();
     HorizontalLayout viewToolBar = new HorizontalLayout();
     HorizontalLayout toolBarSearch = new HorizontalLayout();
+
+    ValueProvider<KontZakTreeAware, String> zakTextValProv = new ValueProvider() {
+        @Override
+        public Object apply(Object o) {
+            if (((KontZakTreeAware)o).getTyp() == ZakTyp.ZAK) {
+                return "#  " + ((KontZakTreeAware)o).getText();
+            } else {
+                return ((KontZakTreeAware)o).getText();
+            }
+        }
+    };
 
 //    TextField searchField = new TextField("Hledej kontrakty...");
 ////    SearchField searchField = new SearchField("Hledej uživatele..."
@@ -175,16 +184,19 @@ public class KontTreeView extends VerticalLayout implements BeforeEnterObserver 
 
 //        treeGrid.removeColumn(treeGrid.getColumnByKey("subNodes"));
 
+        zakTreeGrid.addColumn(KontZakTreeAware::getArch).setHeader(("Arch"))
+                .setFlexGrow(0).setFrozen(true).setWidth("7em").setResizable(true).setId("arch-column");
+//                .setFlexGrow(0).setWidth("7em").setResizable(true).setId("ckont-column");
         zakTreeGrid.addHierarchyColumn(KontZakTreeAware::getCkont).setHeader(("ČK"))
-                .setFlexGrow(0).setFrozen(true).setWidth("8em").setResizable(true).setId("ckont-column");
+                .setFlexGrow(0).setFrozen(true).setWidth("10em").setResizable(true).setId("ckont-column");
 //                .setFlexGrow(0).setWidth("7em").setResizable(true).setId("ckont-column");
         zakTreeGrid.addColumn(KontZakTreeAware::getCzak).setHeader("ČZ")
                 .setFlexGrow(0).setFrozen(true).setWidth("4em").setResizable(true).setId("czak-column");
-        zakTreeGrid.addColumn(KontZakTreeAware::getFirma).setHeader("Objednatel");
-//                .setWidth("4em").setResizable(true).setId("objednatel-column");
+        zakTreeGrid.addColumn(KontZakTreeAware::getObjednatel).setHeader("Objednatel")
+                .setFlexGrow(0).setWidth("8em").setResizable(true).setId("objednatel-column");
         zakTreeGrid.addColumn(new ComponentRenderer<>(kontZak -> {
                     Paragraph comp = new Paragraph();
-                    comp.setWidth("5em");
+//                    comp.setWidth("5em");
                     comp.getStyle()
                             .set("text-align", "right");
                     if (null == kontZak.getCzak()) {
@@ -196,8 +208,10 @@ public class KontTreeView extends VerticalLayout implements BeforeEnterObserver 
                     }
                     return comp;
                 })
-            ).setHeader("Honorář");
-        zakTreeGrid.addColumn(KontZakTreeAware::getCurrency).setHeader("Měna");
+            ).setHeader("Honorář").setFlexGrow(0).setWidth("8em").setId("honorar-column");
+        ;
+        zakTreeGrid.addColumn(KontZakTreeAware::getMena).setHeader("Měna")
+                .setFlexGrow(0).setWidth("6em").setResizable(false).setId("mena-column");
 
 //        zakTreeGrid.addColumn(new ComponentRenderer<>(bean -> {
 ////            Button status = new Button(VaadinIcon.CIRCLE.create());
@@ -206,7 +220,15 @@ public class KontTreeView extends VerticalLayout implements BeforeEnterObserver 
 ////            return status;
 ////        }));
 //                KontZakTreeAware::getHonorar).setHeader("Honorář");
-        zakTreeGrid.addColumn(KontZakTreeAware::getText).setHeader("Text");
+
+//        zakTreeGrid.addColumn(KontZakTreeAware::getText).setHeader("Text")
+//                .setFlexGrow(1).setResizable(true).setId("text-column");
+////                .setFlexGrow(1).setWidth("6em").setResizable(false).setId("mena-column");
+
+        zakTreeGrid.addColumn(zakTextValProv).setHeader("Text")
+                .setFlexGrow(1).setResizable(true).setId("text-column");
+//                .setFlexGrow(1).setWidth("6em").setResizable(false).setId("mena-column");
+
 
         GridSelectionModel<?> selectionMode = zakTreeGrid.setSelectionMode(Grid.SelectionMode.MULTI);
         ((GridMultiSelectionModel<?>) selectionMode).setSelectionColumnFrozen(true);
@@ -297,7 +319,7 @@ public class KontTreeView extends VerticalLayout implements BeforeEnterObserver 
 
 ////        treeGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#");
 //        treeGrid.addColumn(Kont::getCkont).setHeader("ČK").setWidth("7em").setResizable(true);
-//        treeGrid.addColumn(Kont::getFirma).setHeader("Firma").setWidth("16em").setResizable(true);
+//        treeGrid.addColumn(Kont::getObjednatel).setHeader("Objednatel").setWidth("16em").setResizable(true);
 //        treeGrid.addColumn(Kont::getArch).setHeader("Arch").setWidth("4em").setResizable(true);
 //        treeGrid.addColumn(Kont::getText).setHeader("Text").setWidth("25em").setResizable(true);
 //        treeGrid.addColumn(Kont::getDatZad).setHeader("Dat.zad.").setWidth("7em").setResizable(true);
@@ -331,7 +353,7 @@ public class KontTreeView extends VerticalLayout implements BeforeEnterObserver 
 ////            zadanoField.setReadOnly(true);
 //
 ////            layout.add(zadanoField);
-////            layout.add(new TextField("Firma: ", zak.getFirma().toString(), "placeholder"));
+////            layout.add(new TextField("Objednatel: ", zak.getObjednatel().toString(), "placeholder"));
 ////            layout.add(new Label("Text zak.: " + zak.getText()));
 ////            layout.add(new Label("Zadáno: " + zak.getDatumzad()));
 //

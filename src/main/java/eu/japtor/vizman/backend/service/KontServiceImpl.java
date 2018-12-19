@@ -35,13 +35,13 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
-    public Kont getByFirma(String firma) {
-        return kontRepo.findTopByFirmaIgnoreCase(firma);
+    public Kont getByObjednatel(String objednatel) {
+        return kontRepo.findTopByObjednatelIgnoreCase(objednatel);
     }
 
     @Override
     public List<Kont> fetchAll() {
-        return kontRepo.findAllByOrderByFirma();
+        return kontRepo.findAllByOrderByObjednatel();
     }
 
     @Override
@@ -83,7 +83,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
                     .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
                     .withIgnoreNullValues();
 
-            return kontRepo.findByFirmaLikeIgnoreCase(likeFilter, mapSortOrdersToSpring(sortOrders));
+            return kontRepo.findByObjednatelLikeIgnoreCase(likeFilter, mapSortOrdersToSpring(sortOrders));
 
             // Make a copy of each matching item to keep entities and DTOs separated
             //        return personRepo.findAllByUsername(filter).stream()
@@ -105,7 +105,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
             // Make a copy of each matching item to keep entities and DTOs separated
             //        return personRepo.findAllByUsername(filter).stream()
-            return kontRepo.countByFirmaLikeIgnoreCase(likeFilter);
+            return kontRepo.countByObjednatelLikeIgnoreCase(likeFilter);
 
 //            return fetchAll().stream()
 //                    //                .filter(c -> c.getUsername().toLowerCase().contains(normalizedFilter))
