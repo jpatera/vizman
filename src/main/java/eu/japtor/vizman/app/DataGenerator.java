@@ -53,8 +53,8 @@ public class DataGenerator implements HasLogger {
 
         Set<Perm> userPerms = new HashSet<>();
         userPerms.addAll(Arrays.asList(
-                Perm.ZAK_VIEW_BASIC_READ, Perm.KONT_VIEW_BASIC_READ,
-                Perm.ZAK_VIEW_BASIC_MANAGE, Perm.KONT_VIEW_BASIC_MANAGE));
+                Perm.ZAK_VIEW_BASIC_READ,
+                Perm.ZAK_VIEW_BASIC_MANAGE));
         createRoleIfNotFound(2L, "ROLE_USER", userPerms);
 
 

@@ -14,15 +14,15 @@ public enum Perm implements GrantedAuthority {
 
     DOCH_USE("Lze zanamenávat docházku"),
 
-    KONT_VIEW_BASIC_READ("Lze prohlížet seznam kontraktů, přístup pouze k základním údajům"),
-    KONT_VIEW_BASIC_MANAGE("Lze vytvářet/editovat/rušit kontrakty, přístup pouze k základním údajům"),
-    KONT_VIEW_EXT_READ("Lze prohlížet seznam kontraktů, přístup ke všem údajům"),
-    KONT_VIEW_EXT_MANAGE("Lze vytvářet/editovat/rušit kontraktz, přístup ke všem údajům"),
+//    KONT_VIEW_BASIC_READ("Lze prohlížet seznam kontraktů, přístup pouze k základním údajům"),
+//    KONT_VIEW_BASIC_MANAGE("Lze vytvářet/editovat/rušit kontrakty, přístup pouze k základním údajům"),
+//    KONT_VIEW_EXT_READ("Lze prohlížet seznam kontraktů, přístup ke všem údajům"),
+//    KONT_VIEW_EXT_MANAGE("Lze vytvářet/editovat/rušit kontraktz, přístup ke všem údajům"),
 
-    ZAK_VIEW_BASIC_READ("Lze prohlížet seznam zakázek, přístup pouze k základním údajům"),
-    ZAK_VIEW_BASIC_MANAGE("Lze vytvářet/editovat/rušit zakazky, přístup pouze k základním údajům"),
-    ZAK_VIEW_EXT_READ("Lze prohlížet seznam zakázek, přístup ke všem údajům"),
-    ZAK_VIEW_EXT_MANAGE("Lze vytvářet/editovat/rušit zakazky, přístup ke všem údajům"),
+    ZAK_VIEW_BASIC_READ("Lze prohlížet seznam kontraktů/zakázek, přístup pouze k základním údajům"),
+    ZAK_VIEW_BASIC_MANAGE("Lze vytvářet/editovat/rušit kontrakty/zakazky, přístup pouze k základním údajům"),
+    ZAK_VIEW_EXT_READ("Lze prohlížet seznam kontraktů zakázek, přístup ke všem údajům"),
+    ZAK_VIEW_EXT_MANAGE("Lze vytvářet/editovat/rušit kontrakty/zakazky, přístup ke všem údajům"),
 
     CONFIG_VIEW_MANAGE("Lze měnit konfiguraci VizMana"),
 

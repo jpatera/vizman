@@ -56,7 +56,7 @@ public class NavigationBar extends Div implements RouterLayout {
         dochLink.add(ICON_DOCH, new Text(TITLE_DOCH));
         dochLink.addClassName("main-layout__nav-item");
 
-        RouterLink kontTreeLink = new RouterLink(null, KontTreeView.class);
+        RouterLink kontTreeLink = new RouterLink(null, ZakBasicView.class);
         Icon ICON_KONT_TREE = new Icon (VaadinIcon.TREE_TABLE);
         ICON_KONT_TREE.setColor("brown");
         kontTreeLink.add(ICON_KONT_TREE, new Text(TITLE_KONT_TREE));

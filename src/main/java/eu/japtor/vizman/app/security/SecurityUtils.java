@@ -61,6 +61,24 @@ public class SecurityUtils {
     }
 
     /**
+     * Checks if access is granted for the current user for the price/money related fields,
+     *
+     * @return true if access  prices/money information is granted, false otherwise.
+     */
+    public static boolean isMoneyAccessGranted() {
+        Authentication userAuthentication = SecurityContextHolder.getContext().getAuthentication();
+        if (userAuthentication == null) {
+            return false;
+        }
+        Set<String> pricesPermNames =  Perm.getPermNames(Arrays.asList(Perm.VIEW_ALL, Perm.MANAGE_ALL));
+        return userAuthentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(pricesPermNames::contains);
+//                .anyMatch(a -> allowedAuths.contains(a));
+    }
+
+
+    /**
      * Checks if the user is logged in.
      *
      * @return true if the user is logged in. False otherwise.

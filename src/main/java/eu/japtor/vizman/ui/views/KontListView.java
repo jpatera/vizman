@@ -48,8 +48,8 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 @PageTitle(PAGE_TITLE_KONT_LIST)
 //@Tag(TAG_ZAK)    // Kurvi layout
 @Permissions({Perm.VIEW_ALL, Perm.MANAGE_ALL,
-        Perm.KONT_VIEW_BASIC_READ, Perm.KONT_VIEW_BASIC_MANAGE,
-        Perm.KONT_VIEW_EXT_READ, Perm.KONT_VIEW_EXT_MANAGE
+        Perm.ZAK_VIEW_BASIC_READ, Perm.ZAK_VIEW_BASIC_MANAGE,
+        Perm.ZAK_VIEW_EXT_READ, Perm.ZAK_VIEW_EXT_MANAGE
 })
 public class KontListView extends VerticalLayout implements BeforeEnterObserver {
 
