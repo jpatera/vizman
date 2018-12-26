@@ -13,7 +13,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -70,7 +69,7 @@ public class SecurityUtils {
         if (userAuthentication == null) {
             return false;
         }
-        Set<String> pricesPermNames =  Perm.getPermNames(Arrays.asList(Perm.VIEW_ALL, Perm.MANAGE_ALL));
+        Set<String> pricesPermNames =  Perm.getPermNames(Arrays.asList(Perm.VIEW_ALL, Perm.MODIFY_ALL));
         return userAuthentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(pricesPermNames::contains);

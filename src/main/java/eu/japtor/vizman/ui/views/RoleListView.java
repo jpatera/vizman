@@ -43,8 +43,8 @@ import java.util.List;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.TITLE_PERSON;
 
-@Permissions({Perm.VIEW_ALL, Perm.MANAGE_ALL
-        , Perm.ROLE_VIEW_READ, Perm.ROLE_VIEW_MANAGE
+@Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL
+        , Perm.ROLE_READ, Perm.ROLE_MODIFY
 })
 @SpringComponent
 @UIScope    // Without this annotation browser refresh throws exception

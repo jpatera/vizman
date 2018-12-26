@@ -53,10 +53,10 @@ public class VizmanConst {
 	public static final String TAG_KONT_LIST = "kont-list-view";
 	public static final String ROUTE_KONT = "kontlist";
 
-	public static final String TITLE_KONT_TREE = "Kontrakty T";
-	public static final String PAGE_TITLE_KONT_TREE = PAGE_TITLE_BASE + " - " + TITLE_KONT_TREE;
-	public static final String TAG_KONT_TREE = "kont-tree-view";
-	public static final String ROUTE_KONT_TREE = "konttree";
+	public static final String TITLE_KZ_TREE = "Zakázky TREE";
+	public static final String PAGE_TITLE_KZ_TREE = PAGE_TITLE_BASE + " - " + TITLE_KZ_TREE;
+	public static final String TAG_KZ_TREE = "kz-tree-view";
+	public static final String ROUTE_KZ_TREE = "kztree";
 
 	public static final String TITLE_ZAK = "Zakázky";
 	public static final String PAGE_TITLE_ZAK = PAGE_TITLE_BASE + " - " + TITLE_ZAK;

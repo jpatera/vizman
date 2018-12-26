@@ -41,9 +41,9 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 @Route(value = ROUTE_ZAK, layout = MainView.class)
 @PageTitle(PAGE_TITLE_ZAK)
 //@Tag(TAG_ZAK)
-@Permissions({Perm.VIEW_ALL, Perm.MANAGE_ALL,
-        Perm.ZAK_VIEW_BASIC_READ, Perm.ZAK_VIEW_BASIC_MANAGE,
-        Perm.ZAK_VIEW_EXT_READ, Perm.ZAK_VIEW_EXT_MANAGE
+@Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL,
+        Perm.ZAK_BASIC_READ, Perm.ZAK_BASIC_MODIFY,
+        Perm.ZAK_EXT_READ, Perm.ZAK_EXT_MODIFY
 })
 //public class ZakListView extends Div implements BeforeEnterObserver {
 // ###***

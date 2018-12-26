@@ -18,8 +18,8 @@ package eu.japtor.vizman.ui.views;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridMultiSelectionModel;
 import com.vaadin.flow.component.grid.GridSelectionModel;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -28,7 +28,12 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
+import com.vaadin.flow.data.provider.SortDirection;
+import com.vaadin.flow.data.provider.hierarchy.TreeData;
+import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.ElementFactory;
@@ -39,11 +44,14 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import elemental.json.JsonObject;
 import eu.japtor.vizman.app.security.Permissions;
-import eu.japtor.vizman.backend.entity.KontZakTreeAware;
+import eu.japtor.vizman.backend.dataprovider.LazyHierarchicalKontProvider;
+import eu.japtor.vizman.backend.entity.Kont;
+import eu.japtor.vizman.backend.entity.KzTreeAware;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.ZakTyp;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.ui.MainView;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -57,12 +65,12 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 //import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 //import com.vaadin.flow.data.provider.ListDataProvider;
 
-@Route(value = ROUTE_KONT_TREE, layout = MainView.class)
-@PageTitle(PAGE_TITLE_KONT_TREE)
+@Route(value = ROUTE_KZ_TREE, layout = MainView.class)
+@PageTitle(PAGE_TITLE_KZ_TREE)
 //@Tag(TAG_ZAK)    // Kurvi layout
-@Permissions({Perm.VIEW_ALL, Perm.MANAGE_ALL,
-        Perm.ZAK_VIEW_BASIC_READ, Perm.ZAK_VIEW_BASIC_MANAGE,
-        Perm.ZAK_VIEW_EXT_READ, Perm.ZAK_VIEW_EXT_MANAGE
+@Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL,
+        Perm.ZAK_BASIC_READ, Perm.ZAK_BASIC_MODIFY,
+        Perm.ZAK_EXT_READ, Perm.ZAK_EXT_MODIFY
 })
 public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver {
 
@@ -70,12 +78,12 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 //    int n = rand.nextInt(50) + 1;
 
 
-    private final H3 kontHeader = new H3(TITLE_KONT_TREE);
+    private final H3 kontHeader = new H3(TITLE_KZ_TREE);
 
 //    private final Grid<Kont> kontGrid = new Grid<>();
 //    private final Grid<Zak> zakGrid = new Grid<>();
     private TreeGrid<TreeAware> treeGrid;
-    private TreeGrid<KontZakTreeAware> zakTreeGrid;
+    private TreeGrid<KzTreeAware> kzTreeGrid;
 
     VerticalLayout gridContainer = new VerticalLayout();
     HorizontalLayout viewToolBar = new HorizontalLayout();
@@ -98,9 +106,9 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 //    }
 
 
-//    ValueProvider<KontZakTreeAware, String> zakTextValProv = new ValueProvider() {
-//    ComponentRenderer<HtmlComponent, KontZakTreeAware> zakTextRenderer = new ComponentRenderer<>(kontZak -> {
-    ComponentRenderer<HtmlComponent, KontZakTreeAware> zakTextRenderer = new ComponentRenderer<>(kontZak -> {
+//    ValueProvider<KzTreeAware, String> zakTextValProv = new ValueProvider() {
+//    ComponentRenderer<HtmlComponent, KzTreeAware> zakTextRenderer = new ComponentRenderer<>(kontZak -> {
+    ComponentRenderer<HtmlComponent, KzTreeAware> zakTextRenderer = new ComponentRenderer<>(kontZak -> {
 
 //        TextField fld = new TextField(kontZak.getText());
 //        fld.addKeyPressListener()
@@ -111,6 +119,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 //        comp.addClickListener();
 //        Paragraph comp = new Paragraph(kontZak.getText());
 //        comp.addDoubleClickListener();
+
 //        comp.addKeyPressListener(Key.ENTER, new ComponentEventListener<KeyPressEvent>() {
         comp.addKeyPressListener(new ComponentEventListener<KeyPressEvent>() {
             @Override
@@ -128,18 +137,18 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         return comp;
     });
 
-    ValueProvider<KontZakTreeAware, String> ckontValProv = new ValueProvider() {
+    ValueProvider<KzTreeAware, String> ckontValProv = new ValueProvider() {
         @Override
         public Object apply(Object o) {
-            if (((KontZakTreeAware)o).getTyp() == ZakTyp.KONT) {
-                return ((KontZakTreeAware)o).getCkont();
+            if (((KzTreeAware)o).getTyp() == ZakTyp.KONT) {
+                return ((KzTreeAware)o).getCkont();
             } else {
                 return "";
             }
         }
     };
 
-    ComponentRenderer<HtmlComponent, KontZakTreeAware> honorarCellRenderer = new ComponentRenderer<>(kontZak -> {
+    ComponentRenderer<HtmlComponent, KzTreeAware> honorarCellRenderer = new ComponentRenderer<>(kontZak -> {
         Paragraph comp = new Paragraph();
         if (ZakTyp.KONT == kontZak.getTyp()) {
 //            comp.getStyle().set("color", "darkmagenta");
@@ -160,7 +169,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         return comp;
     });
 
-    ComponentRenderer<Component, KontZakTreeAware> booleanRenderer = new ComponentRenderer<>(kontZak -> {
+    ComponentRenderer<Component, KzTreeAware> booleanRenderer = new ComponentRenderer<>(kontZak -> {
 //            Checkbox comp = new Checkbox(o.getArch().booleanValue());
 //        Icon icoTrue = new Icon(VaadinIcon.CHECK_CIRCLE_O);
         Icon icoTrue = new Icon(VaadinIcon.CHECK);
@@ -235,7 +244,9 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 //        gridContainer.add(treeGrid);
 
         initZakTreeGrid();
-        gridContainer.add(zakTreeGrid);
+        gridContainer.setClassName("view-container");
+//        gridContainer.setAlignItems(Alignment.STRETCH);
+        gridContainer.add(kzTreeGrid);
 
         this.add(gridContainer);
 
@@ -267,11 +278,11 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 //        gridContainer.setClassName("view-container");
 //        gridContainer.setAlignItems(Alignment.STRETCH);
 
-        zakTreeGrid = new TreeGrid<>();
-        zakTreeGrid.setWidth( "100%" );
-        zakTreeGrid.setHeight( null );
-//        zakTreeGrid.addItemDoubleClickListener()setHeight( null );
-        zakTreeGrid.getElement().addEventListener("keypress", e -> {
+        kzTreeGrid = new TreeGrid<>();
+        kzTreeGrid.setWidth( "100%" );
+        kzTreeGrid.setHeight( null );
+//        kzTreeGrid.addItemDoubleClickListener()setHeight( null );
+        kzTreeGrid.getElement().addEventListener("keypress", e -> {
                 JsonObject eventData = e.getEventData();
                 String enterKey = eventData.getString("event.key");
                 if ("Enter".equals(enterKey)) {
@@ -299,52 +310,65 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 
 //        treeGrid.removeColumn(treeGrid.getColumnByKey("subNodes"));
 
-        zakTreeGrid.addHierarchyColumn(ckontValProv).setHeader(("ČK"))
-                .setFlexGrow(0).setFrozen(true).setWidth("9em").setResizable(true).setId("ckont-column");
-//                .setFlexGrow(0).setWidth("7em").setResizable(true).setId("ckont-column");
-        zakTreeGrid.addColumn(KontZakTreeAware::getCzak).setHeader("ČZ")
-                .setFlexGrow(0).setFrozen(true).setWidth("4em").setResizable(true).setId("czak-column");
-        zakTreeGrid.addColumn(KontZakTreeAware::getObjednatel).setHeader("Objednatel")
-                .setFlexGrow(0).setWidth("10em").setResizable(true).setId("objednatel-column");
 
-        zakTreeGrid.addColumn(booleanRenderer)
+
+        kzTreeGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#").setFooter("COUNT")
+                .setFlexGrow(0).setFrozen(true);
+
+        kzTreeGrid.addHierarchyColumn(ckontValProv).setHeader(("ČK"))
+                .setFlexGrow(0).setFrozen(true).setWidth("9em").setResizable(true).setId("ckont-column")
+        ;
+//                .setFlexGrow(0).setWidth("7em").setResizable(true).setId("ckont-column");
+
+        kzTreeGrid.addColumn(KzTreeAware::getCzak).setHeader("ČZ")
+                .setFlexGrow(0).setFrozen(true).setWidth("4em").setResizable(true).setId("czak-column")
+        ;
+
+        kzTreeGrid.addColumn(KzTreeAware::getObjednatel).setHeader("Objednatel")
+                .setFlexGrow(0).setWidth("10em").setResizable(true).setKey("objednatel-column").setId("objednatel-column")
+        ;
+
+
+
+        kzTreeGrid.addColumn(booleanRenderer)
                 .setHeader(("Arch"))
                 .setFlexGrow(0).setFrozen(true).setWidth("5em").setResizable(true)
                 .setId("arch-column");
 //                .setFlexGrow(0).setWidth("7em").setResizable(true).setId("ckont-column");
 
         if (isMoneyAccessGranted()) {
-            zakTreeGrid.addColumn(honorarCellRenderer).setHeader("Honorář")
+            kzTreeGrid.addColumn(honorarCellRenderer).setHeader("Honorář")
                     .setFlexGrow(0).setWidth("8em").setResizable(true).setTextAlign(ColumnTextAlign.END)
                     .setId("honorar-column");
-            zakTreeGrid.addColumn(KontZakTreeAware::getMena).setHeader("Měna")
+            kzTreeGrid.addColumn(KzTreeAware::getMena).setHeader("Měna")
                     .setFlexGrow(0).setWidth("6em").setResizable(true)
                     .setId("mena-column");
         }
 
-//        zakTreeGrid.addColumn(new ComponentRenderer<>(bean -> {
+//        kzTreeGrid.addColumn(new ComponentRenderer<>(bean -> {
 ////            Button status = new Button(VaadinIcon.CIRCLE.create());
 //////            status.setClassName("hidden");
 //                bean.getElement().setAttribute("style", "color:#28a745");
 ////            return status;
 ////        }));
-//                KontZakTreeAware::getHonorar).setHeader("Honorář");
+//                KzTreeAware::getHonorar).setHeader("Honorář");
 
-//        zakTreeGrid.addColumn(KontZakTreeAware::getText).setHeader("Text")
+//        kzTreeGrid.addColumn(KzTreeAware::getText).setHeader("Text")
 //                .setFlexGrow(1).setResizable(true).setId("text-column");
 ////                .setFlexGrow(1).setWidth("6em").setResizable(false).setId("mena-column");
 
-//        zakTreeGrid.addColumn(zakTextValProv).setHeader("Text")
-        zakTreeGrid.addColumn(zakTextRenderer).setHeader("Text")
+//        kzTreeGrid.addColumn(zakTextValProv).setHeader("Text")
+        kzTreeGrid.addColumn(zakTextRenderer).setHeader("Text")
                 .setFlexGrow(1).setResizable(true)
                 .setId("text-column");
 //                .setFlexGrow(1).setWidth("6em").setResizable(false).setId("mena-column");
 
 
-//        GridSelectionModel<?> selectionMode = zakTreeGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+//        GridSelectionModel<?> selectionMode = kzTreeGrid.setSelectionMode(Grid.SelectionMode.MULTI);
 //        ((GridMultiSelectionModel<?>) selectionMode).setSelectionColumnFrozen(true);
-//        GridSelectionModel<?> selectionMode = zakTreeGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        GridSelectionModel<?> selectionMode = zakTreeGrid.setSelectionMode(Grid.SelectionMode.NONE);
+//        GridSelectionModel<?> selectionMode = kzTreeGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        GridSelectionModel<?> selectionMode = kzTreeGrid.setSelectionMode(Grid.SelectionMode.NONE);
+
 
 // Timto se da nejak manipulovat s checboxem:
 //        treeGrid.addColumn(new ComponentRenderer<>(bean -> {
@@ -375,20 +399,56 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 //                )
 //        );
 
+//        kzTreeGrid.setSizeFull();
+//        kzTreeGrid.setHeightByRows(true);
+
+//        List<T extends KzTreeAware> kontList = kontService.fetchAll();
+        List<? super Kont> kzList = kontService.fetchAll();
+        ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzValueProvider = KzTreeAware::getNodes;
+//        Set<? extends KzTreeAware> konts = null;
+//        kzTreeGrid.setItems((Collection<KzTreeAware>) kontList, KzTreeAware::getNodes);
+
+        TreeDataProvider<KzTreeAware> inMemoryTreeProvider
+                = new TreeDataProvider((new TreeData()).addItems(kzList, kzValueProvider));
+        inMemoryTreeProvider.setSortOrder(KzTreeAware::getCkont, SortDirection.DESCENDING);
+
+        LazyHierarchicalKontProvider lazyDataProvider = new LazyHierarchicalKontProvider(kontService);
+
+//        kzTreeGrid.setItems((Collection<KzTreeAware>) kontList, KzTreeAware::getNodes);
+        kzTreeGrid.setDataProvider(inMemoryTreeProvider);
+//        kzTreeGrid.setDataProvider(lazyDataProvider);
 
 
-//        List<T extends KontZakTreeAware> kontList = kontService.fetchAll();
-        List<? extends KontZakTreeAware> kontList = kontService.fetchAll();
-//        Set<? extends KontZakTreeAware> konts = null;
-//        zakTreeGrid.setItems((Collection<KontZakTreeAware>) kontList, KontZakTreeAware::getNodes);
-        zakTreeGrid.setItems((Collection<KontZakTreeAware>) kontList, KontZakTreeAware::getNodes);
+        HeaderRow filterRow = kzTreeGrid.appendHeaderRow();
+
+        TextField objednatelFilterField = new TextField();
+        ValueProvider<KzTreeAware, String> kzObjednatelValueProvider
+                        = KzTreeAware::getObjednatel;
+        objednatelFilterField.addValueChangeListener(event ->
+                        ((TreeDataProvider<KzTreeAware>)kzTreeGrid.getDataProvider())
+//                            .addFilter(KzTreeAware::getObjednatel, t ->
+//                                    StringUtils.containsIgnoreCase(t, objednatelFilterField.getValue())
+//                            )
+                            .addFilter(kz -> ZakTyp.KONT != kz.getTyp() || StringUtils.containsIgnoreCase(
+                                kz.getObjednatel(), objednatelFilterField.getValue())
+                            )
+        );
+
+
+        objednatelFilterField.setValueChangeMode(ValueChangeMode.EAGER);
+        Grid.Column objednatelColumn = kzTreeGrid.getColumnByKey("objednatel-column");
+        filterRow.getCell(objednatelColumn).setComponent(objednatelFilterField);
+        objednatelFilterField.setSizeFull();
+        objednatelFilterField.setPlaceholder("Filtr...");
+
+
 
 //        treeGrid.getDataProvider().refreshItem(pojoItem);
-        zakTreeGrid.getDataProvider().refreshAll();
-//        zakTreeGrid.expand(konts.get(0));
+        kzTreeGrid.getDataProvider().refreshAll();
+//        kzTreeGrid.expand(konts.get(0));
 
 //        treeGrid.getTreeData().getRootItems().contains(item);
-        zakTreeGrid.getSelectedItems();
+        kzTreeGrid.getSelectedItems();
 
 
 
@@ -822,7 +882,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 
                 set("padding-bottom","5px");
 
-        Span viewTitle = new Span(TITLE_KONT_TREE.toUpperCase());
+        Span viewTitle = new Span(TITLE_KZ_TREE.toUpperCase());
         viewTitle.getStyle()
                 .set("font-size","var(--lumo-font-size-l)")
                 .set("font-weight","600")

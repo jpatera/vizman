@@ -3,7 +3,7 @@ package eu.japtor.vizman.backend.entity;
 import java.math.BigDecimal;
 import java.util.List;
 
-public interface KontZakTreeAware <T extends KontZakTreeAware> {
+public interface KzTreeAware<T extends KzTreeAware> {
 
     String getCkont();
     Integer getCzak();

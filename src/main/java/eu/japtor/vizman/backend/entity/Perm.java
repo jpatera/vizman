@@ -10,29 +10,29 @@ import java.util.stream.Collectors;
 public enum Perm implements GrantedAuthority {
 
     VIEW_ALL("Lze prohlížet všechna dostupná data"),
-    MANAGE_ALL("Lze vytvářet/editovat/rušit všechna dostupná data"),
+    MODIFY_ALL("Lze vytvářet/editovat/rušit všechna dostupná data"),
 
-    DOCH_USE("Lze zanamenávat docházku"),
+    DOCH_USE("Lze používat docházku"),
 
 //    KONT_VIEW_BASIC_READ("Lze prohlížet seznam kontraktů, přístup pouze k základním údajům"),
 //    KONT_VIEW_BASIC_MANAGE("Lze vytvářet/editovat/rušit kontrakty, přístup pouze k základním údajům"),
 //    KONT_VIEW_EXT_READ("Lze prohlížet seznam kontraktů, přístup ke všem údajům"),
 //    KONT_VIEW_EXT_MANAGE("Lze vytvářet/editovat/rušit kontraktz, přístup ke všem údajům"),
 
-    ZAK_VIEW_BASIC_READ("Lze prohlížet seznam kontraktů/zakázek, přístup pouze k základním údajům"),
-    ZAK_VIEW_BASIC_MANAGE("Lze vytvářet/editovat/rušit kontrakty/zakazky, přístup pouze k základním údajům"),
-    ZAK_VIEW_EXT_READ("Lze prohlížet seznam kontraktů zakázek, přístup ke všem údajům"),
-    ZAK_VIEW_EXT_MANAGE("Lze vytvářet/editovat/rušit kontrakty/zakazky, přístup ke všem údajům"),
+    ZAK_BASIC_READ("Lze prohlížet seznam kontraktů/zakázek, přístup pouze k základním údajům"),
+    ZAK_BASIC_MODIFY("Lze vytvářet/editovat/rušit kontrakty/zakazky, přístup pouze k základním údajům"),
+    ZAK_EXT_READ("Lze prohlížet seznam kontraktů zakázek, přístup ke všem údajům"),
+    ZAK_EXT_MODIFY("Lze vytvářet/editovat/rušit kontrakty/zakazky, přístup ke všem údajům"),
 
-    CONFIG_VIEW_MANAGE("Lze měnit konfiguraci VizMana"),
+    CONFIG_CHANGE("Lze nastavovat a měnit konfiguraci VizMana"),
 
-    PERSON_VIEW_BASIC_READ("Lze prohlížet seznam uživatelů, přístup pouze k základním údajům"),
-    PERSON_VIEW_EXT_READ("Lze prohlížet seznam uživatelů, přístup ke všem údajům"),
+    PERSON_BASIC_READ("Lze prohlížet seznam uživatelů, přístup pouze k základním údajům"),
+    PERSON_EXT_READ("Lze prohlížet seznam uživatelů, přístup ke všem údajům"),
 
-    ROLE_VIEW_READ("Lze prohlížet seznam rolí"),
-    ROLE_VIEW_MANAGE("Lze vytvářet/editovat/rušit role"),
+    ROLE_READ("Lze prohlížet seznam rolí"),
+    ROLE_MODIFY("Lze vytvářet/editovat/rušit role"),
 
-    CIN_VIEW_READ("Lze prohlížet seznam činností"),
+    CIN_READ("Lze prohlížet seznam činností"),
     ;
 
     static private HashSet<String> permNames = new HashSet<>();

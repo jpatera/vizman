@@ -15,7 +15,7 @@ public interface KontService {
 
     Kont getByObjednatel(String objednatel);
 
-    List<Kont> fetchAll();
+    List<? super Kont> fetchAll();
 
     long countAll();
 

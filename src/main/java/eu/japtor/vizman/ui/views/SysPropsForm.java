@@ -34,7 +34,7 @@ import javax.annotation.PostConstruct;
 import java.util.Locale;
 
 
-@Permissions({Perm.VIEW_ALL, Perm.MANAGE_ALL
+@Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL
 })
 @SpringComponent
 @UIScope

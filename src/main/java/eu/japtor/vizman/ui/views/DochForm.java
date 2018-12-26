@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_DOCH;
 
 @Route(value = ROUTE_DOCH, layout = MainView.class)
-@Permissions({Perm.VIEW_ALL, Perm.MANAGE_ALL
+@Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL
         , Perm.DOCH_USE
 })
 @SpringComponent

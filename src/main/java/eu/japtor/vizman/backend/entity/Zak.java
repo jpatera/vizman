@@ -8,7 +8,7 @@ import java.util.List;
 @Entity
 @Table(name = "ZAK")
 @SequenceGenerator(initialValue = 1, name = "id_gen", sequenceName = "zak_seq")
-public class Zak extends AbstractGenEntity implements KontZakTreeAware {
+public class Zak extends AbstractGenEntity implements KzTreeAware {
 
     private String ckont;
     private Integer czak;
@@ -345,18 +345,18 @@ public class Zak extends AbstractGenEntity implements KontZakTreeAware {
 //    }
 
     @Override
-    public List<KontZakTreeAware> getNodes() {
+    public List<KzTreeAware> getNodes() {
         return new ArrayList();
     }
 
 
 //    @Override
-//    public void setNodes(List<KontZakTreeAware> nodes) {
+//    public void setNodes(List<KzTreeAware> nodes) {
 ////        return new ArrayList();
 //    }
 
 //    @Override
-//    public void setNodes(Set<? extends KontZakTreeAware> zaks) {
+//    public void setNodes(Set<? extends KzTreeAware> zaks) {
 //        // Do nothing
 //    }
 

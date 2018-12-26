@@ -18,6 +18,14 @@ import java.util.stream.Stream;
 @SpringComponent
 public class DataGenerator implements HasLogger {
 
+    static private final String ROLE_ADMIN_NAME = "ROLE_ADMIN";
+    static private final String ROLE_USER_NAME = "ROLE_USER";
+    static private final String ROLE_MANAGER_NAME = "ROLE_MANAGER";
+
+    static private final String PERSON_ADMIN_USERNAME = "admin";
+    static private final String PERSON_USER_USERNAME = "user";
+    static private final String PERSON_MANAGER_USERNAME = "manag";
+
     @Autowired
     private ZakRepo zakRepo;
     @Autowired
@@ -39,52 +47,89 @@ public class DataGenerator implements HasLogger {
 
     @PostConstruct
     public void loadData() {
-        if (roleRepo.count() != 0L) {
-            getLogger().info("Using existing database");
-            return;
+//        if (roleRepo.count() != 0L) {
+//            getLogger().info("Using existing database");
+//            return;
+//        }
+
+        getLogger().info("START: Generating initial data");
+        getLogger().info("(1) Generating roles");
+
+        if (null == roleRepo.findTopByName(ROLE_ADMIN_NAME)) {
+            getLogger().info("    ...generating " + ROLE_ADMIN_NAME);
+            Set<Perm> adminPerms = new HashSet<>();
+            adminPerms.addAll(Arrays.asList(
+                    Perm.VIEW_ALL,
+                    Perm.MODIFY_ALL));
+            createRole(1L, ROLE_ADMIN_NAME, "Administrátor - všechna existující oprávnění", adminPerms);
         }
 
-        getLogger().info("Generating demo data");
-        getLogger().info("... generating roles");
+        if (null == roleRepo.findTopByName(ROLE_USER_NAME)) {
+            getLogger().info("    ...generating " + ROLE_USER_NAME);
+            Set<Perm> userPerms = new HashSet<>();
+            userPerms.addAll(Arrays.asList(
+                    Perm.DOCH_USE,
+                    Perm.ZAK_BASIC_READ));
+            createRole(2L, ROLE_USER_NAME, "Uživatel - běžná oprávnění", userPerms);
+        }
 
-        Set<Perm> adminPerms = new HashSet<>();
-        adminPerms.addAll(Arrays.asList(Perm.VIEW_ALL, Perm.MANAGE_ALL));
-        createRoleIfNotFound(1L, "ROLE_ADMIN", adminPerms);
+        if (null == roleRepo.findTopByName(ROLE_MANAGER_NAME)) {
+            getLogger().info("    ...generating " + ROLE_MANAGER_NAME);
+            Set<Perm> userPerms = new HashSet<>();
+            userPerms.addAll(Arrays.asList(
+                    Perm.DOCH_USE,
+                    Perm.ZAK_BASIC_READ,
+                    Perm.ZAK_EXT_READ,
+                    Perm.ZAK_BASIC_MODIFY,
+                    Perm.ZAK_EXT_MODIFY));
+            createRole(3L, ROLE_MANAGER_NAME, "Manager - jako ROLE_USER plus editace zakázek/honorářů a fakturace", userPerms);
+        }
 
-        Set<Perm> userPerms = new HashSet<>();
-        userPerms.addAll(Arrays.asList(
-                Perm.ZAK_VIEW_BASIC_READ,
-                Perm.ZAK_VIEW_BASIC_MANAGE));
-        createRoleIfNotFound(2L, "ROLE_USER", userPerms);
 
 
-        getLogger().info("... generating persons");
 
-        Person personAdmin = new Person();
-        Role adminRole = roleRepo.findTopByName("ROLE_ADMIN");
-        personAdmin.setId(1001L);
-        personAdmin.setJmeno("Admin");
-        personAdmin.setPrijmeni("Systemak");
-        personAdmin.setUsername("admin");
-        personAdmin.setPassword("admin");
-        personAdmin.setRoles(Stream.of(adminRole).collect(Collectors.toSet()));
-        personRepo.save(personAdmin);
+        getLogger().info("(2) Generating users");
 
-        Person personUser = new Person();
-        Role userRole = roleRepo.findTopByName("ROLE_USER");
-        personUser.setId(1002L);
-        personUser.setJmeno("User");
-        personUser.setPrijmeni("Běžný");
-        personUser.setUsername("user");
-        personUser.setPassword("user");
-        personUser.setRoles(Stream.of(userRole).collect(Collectors.toSet()));
-        personRepo.save(personUser);
+        if (null == personRepo.findTopByUsernameIgnoreCase(PERSON_ADMIN_USERNAME)) {
+            getLogger().info("    ...generating " + PERSON_ADMIN_USERNAME);
+            Person personAdmin = new Person();
+            personAdmin.setId(1001L);
+            personAdmin.setJmeno("Admin");
+            personAdmin.setPrijmeni("Systemak");
+            personAdmin.setUsername(PERSON_ADMIN_USERNAME);
+            personAdmin.setPassword(PERSON_ADMIN_USERNAME);
+            personAdmin.setRoles(Stream.of(roleRepo.findTopByName(ROLE_ADMIN_NAME))
+                    .collect(Collectors.toSet()));
+            personRepo.save(personAdmin);
+        }
 
-//        getLogger().info("... generating Zak");
-//        zakRepo.save(createZak("2018.01", "Zakázka NULA JEDNA"));
-//        zakRepo.save(createZak("2018.02", "Zakázka NULA DVA"));
+        if (null == personRepo.findTopByUsernameIgnoreCase(PERSON_USER_USERNAME)) {
+            getLogger().info("    ...generating " + PERSON_USER_USERNAME);
+            Person personUser = new Person();
+            personUser.setId(1002L);
+            personUser.setJmeno("User");
+            personUser.setPrijmeni("Běžný");
+            personUser.setUsername(PERSON_USER_USERNAME);
+            personUser.setPassword(PERSON_USER_USERNAME);
+            personUser.setRoles(Stream.of(roleRepo.findTopByName(ROLE_USER_NAME))
+                    .collect(Collectors.toSet()));
+            personRepo.save(personUser);
+        }
 
-        getLogger().info("Generated demo data");
+        if (null == personRepo.findTopByUsernameIgnoreCase(PERSON_MANAGER_USERNAME)) {
+            getLogger().info("    ...generating " + PERSON_MANAGER_USERNAME);
+            Person personUser = new Person();
+            personUser.setId(1003L);
+            personUser.setJmeno("Manager");
+            personUser.setPrijmeni("Zkušený");
+            personUser.setUsername(PERSON_MANAGER_USERNAME);
+            personUser.setPassword(PERSON_MANAGER_USERNAME);
+            personUser.setRoles(Stream.of(roleRepo.findTopByName(ROLE_MANAGER_NAME))
+                    .collect(Collectors.toSet()));
+            personRepo.save(personUser);
+        }
+
+        getLogger().info("END: Generating initial data");
     }
 
 //    private Zak createZak(String cisloZakazky, String text) {
@@ -95,17 +140,14 @@ public class DataGenerator implements HasLogger {
 //    }
 
     @Transactional
-    public Role createRoleIfNotFound(Long id, String name, Set<Perm> perms) {
+    public Role createRole(Long id, String name, String description, Set<Perm> perms) {
 
-        Role role = roleRepo.findTopByName(name);
-        if (role == null) {
-            role = new Role();
-            role.setId(id);
-            role.setName(name);
-            role.setDescription("Description of "+ name);
-            role.setPerms(perms);
-            roleRepo.save(role);
-        }
+        Role role = new Role();
+        role.setId(id);
+        role.setName(name);
+        role.setDescription(description);
+        role.setPerms(perms);
+        roleRepo.save(role);
         return role;
     }
 }

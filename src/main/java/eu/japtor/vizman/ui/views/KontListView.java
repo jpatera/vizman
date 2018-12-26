@@ -42,14 +42,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 
+import java.util.Collection;
+
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
 @Route(value = ROUTE_KONT, layout = MainView.class)
 @PageTitle(PAGE_TITLE_KONT_LIST)
 //@Tag(TAG_ZAK)    // Kurvi layout
-@Permissions({Perm.VIEW_ALL, Perm.MANAGE_ALL,
-        Perm.ZAK_VIEW_BASIC_READ, Perm.ZAK_VIEW_BASIC_MANAGE,
-        Perm.ZAK_VIEW_EXT_READ, Perm.ZAK_VIEW_EXT_MANAGE
+@Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL,
+        Perm.ZAK_BASIC_READ, Perm.ZAK_BASIC_MODIFY,
+        Perm.ZAK_EXT_READ, Perm.ZAK_EXT_MODIFY
 })
 public class KontListView extends VerticalLayout implements BeforeEnterObserver {
 
@@ -178,7 +180,7 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
 //                query -> (int) kontService.countByFilter(query.getFilter().orElse(null))
 //        );
 
-        kontDataProvider = new ListDataProvider<>(kontService.fetchAll());
+        kontDataProvider = new ListDataProvider<>((Collection<Kont>) kontService.fetchAll());
 
 //        DataProvider<Kont, String> kontDataProvider = DataProvider.fromFilteringCallbacks(
 //                query -> {

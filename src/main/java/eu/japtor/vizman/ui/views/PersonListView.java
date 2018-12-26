@@ -19,14 +19,12 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
-import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -53,8 +51,8 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 //@Route(value = ROUTE_PERSON, layout = MainView.class)
 //@PageTitle(PAGE_TITLE_PERSON)
 //@Tag(TAG_PERSON)
-@Permissions({Perm.VIEW_ALL, Perm.MANAGE_ALL
-        , Perm.PERSON_VIEW_BASIC_READ, Perm.PERSON_VIEW_EXT_READ
+@Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL
+        , Perm.PERSON_BASIC_READ, Perm.PERSON_EXT_READ
 })
 @SpringComponent
 @UIScope    // Without this annotation browser refresh throws exception

@@ -30,8 +30,18 @@ import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.ExtendedPagedTabs;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.vaadin.stefan.fullcalendar.Entry;
+import org.vaadin.stefan.fullcalendar.FullCalendar;
+import org.vaadin.stefan.fullcalendar.FullCalendarBuilder;
+import org.vaadin.stefan.fullcalendar.*;
 
 import javax.annotation.PostConstruct;
+
+import java.awt.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
@@ -39,7 +49,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 @PageTitle(PAGE_TITLE_CFG)
 //@Tag(TAG_CFG)
 // Note: @SpringComponent  ..must not be defined, otherwise refresh (in Chrome) throws exception
-@Permissions({Perm.VIEW_ALL, Perm.MANAGE_ALL})
+@Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL})
 public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
 
     private final TextField searchField = new TextField("", "Hleadat uživatele");
@@ -66,6 +76,9 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
 ////	public ProductsView(CrudEntityPresenter<Product> presenter) {
 //    }
 
+    private FullCalendar cal = FullCalendarBuilder.create().build();
+
+
     @PostConstruct
     public void init() {
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
@@ -89,13 +102,49 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
         Tab tabRole = new Tab("Role");
         Tab tabCin = new Tab("Činnosti");
         Tab tabSys = new Tab("Systém");
+        Tab tabCal = new Tab("Kalendář");
 
 //        personListView = new UserListView();
         cfgExtTabs.add(personListView, tabPerson);
         cfgExtTabs.add(roleListView, tabRole);
         cfgExtTabs.add(cinListView, tabCin);
         cfgExtTabs.add(cfgSysForm, tabSys);
+        cfgExtTabs.add(cal, tabCal);
+            //container.setFlexGrow(1, calendar);
 
+
+        Entry entry = new Entry();
+        entry.setTitle("Svatýho Dyndy");
+        entry.setStart(LocalDateTime.now());
+//        entry.setStart(LocalDate.now().withDayOfMonth(3).atTime(0, 0));
+        entry.setEnd(entry.getStart().plusDays(3));
+//        entry.setColor("#ff3333");
+        entry.setColor(Color.YELLOW.toString());
+        entry.setAllDay(true);
+        entry.setRenderingMode(Entry.RenderingMode.BACKGROUND);
+        entry.setDescription("DESC-DESC");
+
+        Entry entry2 = new Entry();
+        entry2.setTitle("Svatýho Dyndy 222");
+        entry2.setStart(LocalDateTime.now().plusDays(1));
+//        entry2.setStart(LocalDate.now().withDayOfMonth(3).atTime(0, 0));
+        entry2.setEnd(entry.getStart().plusDays(1));
+//        entry.setColor("#ff3333");
+        entry2.setColor(Color.RED.toString());
+        entry2.setAllDay(true);
+        entry2.setRenderingMode(Entry.RenderingMode.NORMAL);
+        entry2.setDescription("DESC-DESC 222");
+
+        cal.setLocale(CalendarLocale.CZECH);
+        cal.setNowIndicatorShown(true);
+        cal.setTimeslotsSelectable(true);
+        cal.setWeekNumbersVisible(true);
+        cal.setBusinessHours(
+                new BusinessHours(LocalTime.of(9, 0), LocalTime.of(17, 0),BusinessHours.DEFAULT_BUSINESS_WEEK)
+//                new BusinessHours(LocalTime.of(12, 0), LocalTime.of(15, 0), DayOfWeek.SATURDAY)
+        );
+        cal.addEntry(entry);
+        cal.addEntry(entry2);
         MemoryBuffer buffer = new MemoryBuffer();
         Upload upload = new Upload(buffer);
 //        upload.addSucceededListener(event -> {

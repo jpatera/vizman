@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.Calendar;
 
 @Entity
 @Table(name = "DOCH")
@@ -34,7 +35,6 @@ public class Doch extends AbstractGenEntity {
     private Boolean calcPrac;
     private String poznamka;
     private String tmp;
-
 
     @Basic
     @Column(name = "PERSON_ID")

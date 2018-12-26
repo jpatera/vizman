@@ -56,11 +56,11 @@ public class NavigationBar extends Div implements RouterLayout {
         dochLink.add(ICON_DOCH, new Text(TITLE_DOCH));
         dochLink.addClassName("main-layout__nav-item");
 
-        RouterLink kontTreeLink = new RouterLink(null, ZakBasicView.class);
+        RouterLink kzTreeLink = new RouterLink(null, ZakBasicView.class);
         Icon ICON_KONT_TREE = new Icon (VaadinIcon.TREE_TABLE);
         ICON_KONT_TREE.setColor("brown");
-        kontTreeLink.add(ICON_KONT_TREE, new Text(TITLE_KONT_TREE));
-        kontTreeLink.addClassName("main-layout__nav-item");
+        kzTreeLink.add(ICON_KONT_TREE, new Text(TITLE_KZ_TREE));
+        kzTreeLink.addClassName("main-layout__nav-item");
 
         RouterLink kontListLink = new RouterLink(null, KontListView.class);
         Icon ICON_KONT_LIST = new Icon (VaadinIcon.LIST);
@@ -105,7 +105,7 @@ public class NavigationBar extends Div implements RouterLayout {
 //        });
 
 
-        this.add(homeLink, dochLink, kontTreeLink, kontListLink, zakLink);
+        this.add(homeLink, dochLink, kzTreeLink, kontListLink, zakLink);
 //        if (SecurityUtils.isAccessGranted(UserListView.class)) {
 //            this.add(personLink);
 //        }

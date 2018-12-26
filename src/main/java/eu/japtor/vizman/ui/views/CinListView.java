@@ -29,8 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 
 
-@Permissions({Perm.VIEW_ALL, Perm.MANAGE_ALL
-        , Perm.CIN_VIEW_READ
+@Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL
+        , Perm.CIN_READ
 })
 @SpringComponent
 @UIScope
