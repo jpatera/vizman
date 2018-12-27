@@ -23,7 +23,8 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
      */
     public enum Operation {
         ADD("Zadání nového", "Zadání nové", "zadat", false),
-        EDIT("Editace", "Editace", "editovat", true);
+        EDIT("Editace", "Editace", "editovat", true),
+        DELETE("Zrušení", "ZrušeníEditace", "editovat", true);
 
         private final String nounInTitleForMaleItem;
         private final String nounInTitleForFemaleItem;
@@ -243,8 +244,8 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
      * @param additionalMessage
      *            Additional message (optional, may be empty)
      */
-    protected final void openConfirmationDialog(String title, String message,
-                                                String additionalMessage) {
+    protected final void openConfirmDeleteDialog(String title, String message,
+                                                 String additionalMessage) {
         close();
         confirmationDialog.open(title, message, additionalMessage, "Delete",
                 true, getCurrentItem(), this::deleteConfirmed, this::open);

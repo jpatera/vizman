@@ -9,9 +9,9 @@ public interface KontService {
 
     Kont getById(Long id);
 
-    Kont saveZak(Kont kont);
+    Kont saveKont(Kont kont);
 
-    void deleteZak(Kont kont);
+    void deleteKont(Kont kont);
 
     Kont getByObjednatel(String objednatel);
 

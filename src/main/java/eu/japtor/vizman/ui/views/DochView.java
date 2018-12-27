@@ -41,7 +41,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_DOCH;
 @SpringComponent
 @UIScope
 //@Push
-public class DochForm  extends VerticalLayout {
+public class DochView extends VerticalLayout {
 
     private ComboBox personSelectBox = new ComboBox();
     private DatePicker datePicker = new DatePicker();
@@ -101,7 +101,7 @@ public class DochForm  extends VerticalLayout {
 
 //    @Autowired
 //    public DochForm(Person dochPerson) {
-    public DochForm() {
+    public DochView() {
 //        super();
         buildForm();
 //        initDochData(dochPerson, dochDate);
@@ -338,13 +338,13 @@ public class DochForm  extends VerticalLayout {
 
     private static class TimeThread extends Thread {
         private final UI ui;
-        private final DochForm dochForm;
+        private final DochView dochView;
 
 //        private int count = 0;
 
-        public TimeThread(UI ui, DochForm dochForm) {
+        public TimeThread(UI ui, DochView dochView) {
             this.ui = ui;
-            this.dochForm = dochForm;
+            this.dochView = dochView;
         }
 
         @Override
@@ -357,7 +357,7 @@ public class DochForm  extends VerticalLayout {
 //                    String message = "This is update " + count++;
 
 //                    ui.access(() -> dochForm.view.add(new Span(message)));
-                    ui.access(() -> dochForm.updateDochClockTime());
+                    ui.access(() -> dochView.updateDochClockTime());
                 }
 
 //                // Inform that we are done

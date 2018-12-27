@@ -1,4 +1,4 @@
-package eu.japtor.vizman.ui.views;
+package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -288,7 +288,7 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
     protected void confirmDelete() {
         long personCount = personService.countAll();
 //        if (personCount > 0) {
-            openConfirmationDialog("Zrušit uživatele",
+            openConfirmDeleteDialog("Zrušit uživatele",
                     "Opravdu zrušit uživatele “" + getCurrentItem().getUsername() + "“ ?",
                     "Pokud bude uživatel zrušen, budou zrušena i s ním související data.");
 //        } else {

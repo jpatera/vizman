@@ -32,8 +32,7 @@ public class ConfirmationDialog<T extends Serializable> extends Dialog {
         cancelButton.addClickListener(e -> close());
         cancelButton.getElement().setAttribute("theme", "tertiary");
 
-        HorizontalLayout buttonBar = new HorizontalLayout(confirmButton,
-                cancelButton);
+        HorizontalLayout buttonBar = new HorizontalLayout(confirmButton, cancelButton);
         buttonBar.setClassName("buttons confirm-buttons");
 
         Div labels = new Div(messageLabel, extraMessageLabel);

@@ -22,10 +22,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
     private String text;
     private Boolean x;
     private BigDecimal honorar;
-
-    @Enumerated(EnumType.STRING)
-    private Mena mena;
-
     private BigDecimal rozprac;
     private String tmp;
     private Boolean arch;
@@ -130,15 +126,11 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
         this.honorar = honorar;
     }
 
-    @Override
-    @Column(name = "MENA")
-    @Transient
-    public Mena getMena() {
-        return mena;
-    }
 
-    public void setMena(Mena mena) {
-        this.mena = mena;
+    @Override
+    public Mena getMena() {
+        return null;
+//        return Mena.CZK;
     }
 
     @Basic

@@ -16,6 +16,7 @@
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSelectionModel;
@@ -26,6 +27,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.SortDirection;
@@ -45,12 +47,12 @@ import com.vaadin.flow.router.Route;
 import elemental.json.JsonObject;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.dataprovider.LazyHierarchicalKontProvider;
-import eu.japtor.vizman.backend.entity.Kont;
-import eu.japtor.vizman.backend.entity.KzTreeAware;
-import eu.japtor.vizman.backend.entity.Perm;
-import eu.japtor.vizman.backend.entity.ZakTyp;
+import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.ui.MainView;
+import eu.japtor.vizman.ui.components.AbstractEditorDialog;
+import eu.japtor.vizman.ui.components.EditItemSmallButton;
+import eu.japtor.vizman.ui.forms.KontFormDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,20 +76,22 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 })
 public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver {
 
+    private static final String MENA_COL_KEY = "mena-column";
+    public static final String HONORAR_COL_KEY = "honorar-column";
+
     Random rand = new Random();
-//    int n = rand.nextInt(50) + 1;
-
-
     private final H3 kontHeader = new H3(TITLE_KZ_TREE);
 
+    private KontFormDialog kontForm;
 //    private final Grid<Kont> kontGrid = new Grid<>();
 //    private final Grid<Zak> zakGrid = new Grid<>();
-    private TreeGrid<TreeAware> treeGrid;
+
     private TreeGrid<KzTreeAware> kzTreeGrid;
 
     VerticalLayout gridContainer = new VerticalLayout();
     HorizontalLayout viewToolBar = new HorizontalLayout();
-    HorizontalLayout toolBarSearch = new HorizontalLayout();
+    HorizontalLayout kzToolBar = new HorizontalLayout();
+//    HorizontalLayout toolBarSearch = new HorizontalLayout();
 
 
 //    class ZakText extends HtmlComponent implements KeyNotifier {
@@ -201,12 +205,16 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 
 //    public KontListView() {
 //        initView();
-//        initZakTreeGrid();
+//        initKzTreeGrid();
 //        updateZakGridContent();
 //    }
 
     @PostConstruct
     public void init() {
+
+        kontForm = new KontFormDialog(
+                this::saveKont, this::deleteKont, kontService);
+
         initView();
         initZakProvider();
         initGrid();
@@ -221,7 +229,8 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
     }
 
     private void initView() {
-        setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+        gridContainer.setClassName("view-container");
 
 //        this.setWidth("100%");
 //        this.setWidth("90vw");
@@ -243,11 +252,14 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 //        initNodeTreeGrid();
 //        gridContainer.add(treeGrid);
 
-        initZakTreeGrid();
-        gridContainer.setClassName("view-container");
+        initKzTreeGrid();
+        initKzToolBar();
 //        gridContainer.setAlignItems(Alignment.STRETCH);
+        gridContainer.add(kzToolBar);
+        gridContainer.add(new Hr());
         gridContainer.add(kzTreeGrid);
 
+        this.add();
         this.add(gridContainer);
 
     }
@@ -274,7 +286,8 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
     }
 
 
-    private void initZakTreeGrid() {
+
+    private void initKzTreeGrid() {
 //        gridContainer.setClassName("view-container");
 //        gridContainer.setAlignItems(Alignment.STRETCH);
 
@@ -316,33 +329,37 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
                 .setFlexGrow(0).setFrozen(true);
 
         kzTreeGrid.addHierarchyColumn(ckontValProv).setHeader(("ČK"))
-                .setFlexGrow(0).setFrozen(true).setWidth("9em").setResizable(true).setId("ckont-column")
+                .setFlexGrow(0).setFrozen(true).setWidth("9em").setResizable(true)
+//                .setId("ckont-column")
         ;
 //                .setFlexGrow(0).setWidth("7em").setResizable(true).setId("ckont-column");
 
         kzTreeGrid.addColumn(KzTreeAware::getCzak).setHeader("ČZ")
-                .setFlexGrow(0).setFrozen(true).setWidth("4em").setResizable(true).setId("czak-column")
+                .setFlexGrow(0).setFrozen(true).setWidth("4em").setResizable(true)
+//                .setId("czak-column")
         ;
-
-        kzTreeGrid.addColumn(KzTreeAware::getObjednatel).setHeader("Objednatel")
-                .setFlexGrow(0).setWidth("10em").setResizable(true).setKey("objednatel-column").setId("objednatel-column")
-        ;
-
-
 
         kzTreeGrid.addColumn(booleanRenderer)
                 .setHeader(("Arch"))
                 .setFlexGrow(0).setFrozen(true).setWidth("5em").setResizable(true)
-                .setId("arch-column");
+//                .setId("arch-column")
+        ;
 //                .setFlexGrow(0).setWidth("7em").setResizable(true).setId("ckont-column");
+
+        kzTreeGrid.addColumn(KzTreeAware::getObjednatel).setHeader("Objednatel")
+                .setFlexGrow(0).setWidth("10em").setResizable(true).setKey("objednatel-column")
+//                .setId("objednatel-column")
+        ;
 
         if (isMoneyAccessGranted()) {
             kzTreeGrid.addColumn(honorarCellRenderer).setHeader("Honorář")
                     .setFlexGrow(0).setWidth("8em").setResizable(true).setTextAlign(ColumnTextAlign.END)
-                    .setId("honorar-column");
+//                    .setId(HONORAR_COL_KEY)
+            ;
             kzTreeGrid.addColumn(KzTreeAware::getMena).setHeader("Měna")
                     .setFlexGrow(0).setWidth("6em").setResizable(true)
-                    .setId("mena-column");
+//                    .setId(MENA_COL_KEY)
+            ;
         }
 
 //        kzTreeGrid.addColumn(new ComponentRenderer<>(bean -> {
@@ -360,8 +377,12 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 //        kzTreeGrid.addColumn(zakTextValProv).setHeader("Text")
         kzTreeGrid.addColumn(zakTextRenderer).setHeader("Text")
                 .setFlexGrow(1).setResizable(true)
-                .setId("text-column");
+        ;
 //                .setFlexGrow(1).setWidth("6em").setResizable(false).setId("mena-column");
+
+        kzTreeGrid.addColumn(new ComponentRenderer<>(this::buildShowKontFormButton))
+                .setFlexGrow(0)
+        ;
 
 
 //        GridSelectionModel<?> selectionMode = kzTreeGrid.setSelectionMode(Grid.SelectionMode.MULTI);
@@ -439,7 +460,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         Grid.Column objednatelColumn = kzTreeGrid.getColumnByKey("objednatel-column");
         filterRow.getCell(objednatelColumn).setComponent(objednatelFilterField);
         objednatelFilterField.setSizeFull();
-        objednatelFilterField.setPlaceholder("Filtr...");
+        objednatelFilterField.setPlaceholder("Filtr (rozbitý)");
 
 
 
@@ -543,6 +564,19 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
     }
 
 
+    private Component buildShowKontFormButton(KzTreeAware kz) {
+        if (ZakTyp.KONT == kz.getTyp()) {
+            return new EditItemSmallButton(event -> kontForm.open(
+                    (Kont)kz, AbstractEditorDialog.Operation.EDIT));
+        } else if (ZakTyp.ZAK == kz.getTyp()) {
+            return new Span("--");
+//            return new EditItemSmallButton(event -> kontForm.open(
+//                    (Zak)kz, AbstractEditorDialog.Operation.EDIT));
+        } else {
+            return new Span("xx");
+        }
+    }
+
 //    private void initZakGridWithDataProvider() {
 //        treeGrid.setDataProvider(
 //            (sortOrders, offset, limit) -> {
@@ -608,6 +642,22 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
     }
 
 
+    private void saveKont(Kont kont, AbstractEditorDialog.Operation operation) {
+        Kont newInstance = kontService.saveKont(kont);
+        kzTreeGrid.getDataProvider().refreshItem(newInstance);
+        Notification.show(
+//                "User successfully " + operation.getNameInText() + "ed.", 3000, Position.BOTTOM_START);
+                "Kontrakt uložen", 3000, Notification.Position.BOTTOM_END);
+    }
+
+    private void deleteKont(Kont kont) {
+        String ckontDel = kont.getCkont();
+        kontService.deleteKont(kont);
+        kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+        kzTreeGrid.getDataProvider().refreshAll();
+
+        Notification.show("Kontrakt " + ckontDel + " zrušen.", 3000, Notification.Position.BOTTOM_END);
+    }
 
     private void updateZakGridContent() {
 //        List<Kont> zaks = kontRepo.findAll();
@@ -637,6 +687,142 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 //        return zakGrid;
 //    }
 
+    private void initKzToolBar() {
+
+        Button expandAllBtn = new Button("Rozbalit vše", VaadinIcon.CHEVRON_DOWN.create()
+                , e -> kzTreeGrid.expandRecursively(kzTreeGrid.getTreeData().getRootItems(),2));
+//                , e -> kzTreeGrid.expand());
+
+        Button collapseAllBtn = new Button("Sbalit vše", VaadinIcon.CHEVRON_UP.create()
+                , e -> kzTreeGrid.collapseRecursively(kzTreeGrid.getTreeData().getRootItems(),2));
+
+        RadioButtonGroup<String> archiveFilterRadio = new RadioButtonGroup();
+        archiveFilterRadio.setItems("Vše", "Aktivní", "Archivované");
+//        buttonShowArchive.addValueChangeListener(event -> setArchiveFilter(event));
+        archiveFilterRadio.getElement().setAttribute("theme", "horizontal");
+
+//        Button buttonPrevious = new Button("Previous", VaadinIcon.ANGLE_LEFT.create(), e -> calendar.previous());
+//        Button buttonNext = new Button("Next", VaadinIcon.ANGLE_RIGHT.create(), e -> calendar.next());
+//        buttonNext.setIconAfterText(true);
+//
+//
+//        // simulate the date picker light that we can use in polymer
+//        DatePicker gotoDate = new DatePicker();
+//        gotoDate.addValueChangeListener(event1 -> calendar.gotoDate(event1.getValue()));
+//        gotoDate.getElement().getStyle().set("visibility", "hidden");
+//        gotoDate.getElement().getStyle().set("position", "fixed");
+//        gotoDate.setWidth("0px");
+//        gotoDate.setHeight("0px");
+//        gotoDate.setWeekNumbersVisible(true);
+//        buttonDatePicker = new Button(VaadinIcon.CALENDAR.create());
+//        buttonDatePicker.getElement().appendChild(gotoDate.getElement());
+//        buttonDatePicker.addClickListener(event -> gotoDate.open());
+//
+//        Button buttonHeight = new Button("Calendar height", event -> new HeightDialog().open());
+//
+//        Checkbox cbWeekNumbers = new Checkbox("Week numbers", event -> calendar.setWeekNumbersVisible(event.getValue()));
+//
+//        ComboBox<Locale> comboBoxLocales = new ComboBox<>();
+//
+//        List<Locale> items = Arrays.asList(CalendarLocale.getAvailableLocales());
+//        comboBoxLocales.setItems(items);
+//        comboBoxLocales.setValue(CalendarLocale.getDefault());
+//        comboBoxLocales.addValueChangeListener(event -> calendar.setLocale(event.getValue()));
+//        comboBoxLocales.setRequired(true);
+//        comboBoxLocales.setPreventInvalidInput(true);
+//
+//        ComboBox<GroupEntriesBy> comboBoxGroupBy = new ComboBox<>("");
+//        comboBoxGroupBy.setPlaceholder("Group by...");
+//        comboBoxGroupBy.setItems(GroupEntriesBy.values());
+//        comboBoxGroupBy.setItemLabelGenerator(item -> {
+//            switch (item) {
+//                default:
+//                case NONE:
+//                    return "none";
+//                case RESOURCE_DATE:
+//                    return "group by resource / date";
+//                case DATE_RESOURCE:
+//                    return "group by date / resource";
+//            }
+//        });
+//        comboBoxGroupBy.addValueChangeListener(event -> ((Scheduler) calendar).setGroupEntriesBy(event.getValue()));
+//
+//        timezoneComboBox = new ComboBox<>("");
+//        timezoneComboBox.setItemLabelGenerator(Timezone::getClientSideValue);
+//        timezoneComboBox.setItems(Timezone.getAvailableZones());
+//        timezoneComboBox.setValue(Timezone.UTC);
+//        timezoneComboBox.addValueChangeListener(event -> {
+//            Timezone value = event.getValue();
+//            calendar.setTimezone(value != null ? value : Timezone.UTC);
+//        });
+//
+//        Button addThousand = new Button("Add 1000 entries", event -> {
+//            Button source = event.getSource();
+//            source.setEnabled(false);
+//            source.setText("Creating...");
+//            Optional<UI> optionalUI = getUI();
+//            optionalUI.ifPresent(ui -> {
+//                Executors.newSingleThreadExecutor().execute(() -> {
+//                    Timezone timezone = new Timezone(ZoneId.systemDefault());
+//                    Instant start = timezone.convertToUTC(LocalDate.now());
+//                    Instant end = timezone.convertToUTC(LocalDate.now().plusDays(1));
+//                    List<Entry> list = IntStream.range(0, 1000).mapToObj(i -> {
+//                        Entry entry = new Entry();
+//                        entry.setStart(start);
+//                        entry.setEnd(end);
+//                        entry.setAllDay(true);
+//                        entry.setTitle("Generated " + (i + 1));
+//                        return entry;
+//                    }).collect(Collectors.toList());
+//
+//                    ui.access(() -> {
+//                        calendar.addEntries(list);
+//                        source.setVisible(false);
+//                        Notification.show("Added 1,000 entries for today");
+//                    });
+//                });
+//            });
+//        });
+
+        kzToolBar.add(expandAllBtn, collapseAllBtn, archiveFilterRadio);
+    }
+
+    //    private void initViewToolBar(final Button reloadViewButton, final Button newItemButto)
+    private void initViewToolBar() {
+        // Build view toolbar
+        viewToolBar.setWidth("100%");
+        viewToolBar.setPadding(true);
+        viewToolBar.getStyle().
+
+                set("padding-bottom","5px");
+
+        Span viewTitle = new Span(TITLE_KZ_TREE.toUpperCase());
+        viewTitle.getStyle()
+                .set("font-size","var(--lumo-font-size-l)")
+                .set("font-weight","600")
+                .set("padding-right","0.75em");
+
+//        searchField = new SearchField(
+////                "Hledej uživatele...", event ->
+////                "Hledej uživatele...", event -> updateZakGridContent()
+//                "Hledej uživatele...",
+//                event -> ((ConfigurableFilterDataProvider) treeGrid.getDataProvider()).setFilter(event.getValue())
+//        );        toolBarSearch.add(viewTitle, searchField);
+
+//        HorizontalLayout searchToolBar = new HorizontalLayout(viewTitle, searchField);
+//        searchToolBar.setDefaultVerticalComponentAlignment(Alignment.CENTER);
+
+//        HorizontalLayout kzToolBar = new HorizontalLayout(reloadViewButton);
+//        kzToolBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+//
+//        HorizontalLayout toolBarItem = new HorizontalLayout(newItemButton);
+//        toolBarItem.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+
+        Span ribbon = new Span();
+//        kzToolBar.add(searchToolBar, kzToolBar, ribbon, toolBarItem);
+//        kzToolBar.add(searchToolBar,ribbon);
+        viewToolBar.expand(ribbon);
+    }
 
 // ===============================================================================
 
@@ -721,6 +907,73 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         return all;
     }
 
+
+
+//    public class HeightDialog extends Dialog {
+//        HeightDialog() {
+//            VerticalLayout dialogContainer = new VerticalLayout();
+//            add(dialogContainer);
+//
+//            TextField heightInput = new TextField("", "500", "e. g. 300");
+//            Button byPixels = new Button("Set by pixels", e -> {
+//                kzTreeGrid.setHeight(Integer.valueOf(heightInput.getValue()));
+//
+//                this.setSizeUndefined();
+//                setFlexStyles(false);
+//            });
+//            byPixels.getElement().setProperty("title", "Calendar height is fixed by pixels.");
+//            dialogContainer.add(new HorizontalLayout(heightInput, byPixels));
+//
+////            Button autoHeight = new Button("Auto height", e -> {
+////                kzTreeGrid.setHeightAuto();
+////
+////                this.setSizeUndefined();
+////                setFlexStyles(false);
+////            });
+////            autoHeight.getElement().setProperty("title", "Calendar height is set to auto.");
+////            dialogContainer.add(autoHeight);
+//
+////            Button heightByBlockParent = new Button("Height by block parent", e -> {
+////                kzTreeGrid.setHeightByParent();
+////                kzTreeGrid.setSizeFull();
+////
+////                this.setSizeFull();
+////                setFlexStyles(false);
+////            });
+////            heightByBlockParent.getElement().setProperty("title", "Container is display:block + setSizeFull(). Calendar height is set to parent + setSizeFull(). Body element kept unchanged.");
+////            dialogContainer.add(heightByBlockParent);
+//
+////            Button heightByBlockParentAndCalc = new Button("Height by block parent + calc()", e -> {
+////                calendar.setHeightByParent();
+////                calendar.getElement().getStyle().set("height", "calc(100vh - 450px)");
+////
+////                Demo.this.setSizeFull();
+////                setFlexStyles(false);
+////            });
+////            heightByBlockParentAndCalc.getElement().setProperty("title", "Container is display:block + setSizeFull(). Calendar height is set to parent + css height is calculated by calc(100vh - 450px) as example. Body element kept unchanged.");
+////            dialogContainer.add(heightByBlockParentAndCalc);
+//
+//            Button heightByFlexParent = new Button("Height by flex parent", e -> {
+//                calendar.setHeightByParent();
+//
+//                Demo.this.setSizeFull();
+//                setFlexStyles(true);
+//            });
+//            heightByFlexParent.getElement().setProperty("title", "Container is display:flex + setSizeFull(). Calendar height is set to parent + flex-grow: 1. Body element kept unchanged.");
+//            dialogContainer.add(heightByFlexParent);
+//
+//            Button heightByFlexParentAndBody = new Button("Height by flex parent and flex body", e -> {
+//                calendar.setHeightByParent();
+//
+//                Demo.this.setSizeUndefined();
+//                setFlexStyles(true);
+//
+//                UI.getCurrent().getElement().getStyle().set("display", "flex");
+//            });
+//            heightByFlexParentAndBody.getElement().setProperty("title", "Container is display:flex. Calendar height is set to parent + flex-grow: 1. Body element is set to display: flex.");
+//            dialogContainer.add(heightByFlexParentAndBody);
+//        }
+//    }
 
 // ===============================================================================
 
@@ -840,6 +1093,10 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         }
     }
 
+
+
+    private TreeGrid<TreeAware> treeGrid;
+
     private void initNodeTreeGrid() {
 
         treeGrid = new TreeGrid<>();
@@ -873,41 +1130,5 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 
 // =========================================
 
-    //    private void initViewToolBar(final Button reloadViewButton, final Button newItemButto)
-    private void initViewToolBar() {
-        // Build view toolbar
-        viewToolBar.setWidth("100%");
-        viewToolBar.setPadding(true);
-        viewToolBar.getStyle().
-
-                set("padding-bottom","5px");
-
-        Span viewTitle = new Span(TITLE_KZ_TREE.toUpperCase());
-        viewTitle.getStyle()
-                .set("font-size","var(--lumo-font-size-l)")
-                .set("font-weight","600")
-                .set("padding-right","0.75em");
-
-//        searchField = new SearchField(
-////                "Hledej uživatele...", event ->
-////                "Hledej uživatele...", event -> updateZakGridContent()
-//                "Hledej uživatele...",
-//                event -> ((ConfigurableFilterDataProvider) treeGrid.getDataProvider()).setFilter(event.getValue())
-//        );        toolBarSearch.add(viewTitle, searchField);
-
-//        HorizontalLayout searchToolBar = new HorizontalLayout(viewTitle, searchField);
-//        searchToolBar.setDefaultVerticalComponentAlignment(Alignment.CENTER);
-
-//        HorizontalLayout gridToolBar = new HorizontalLayout(reloadViewButton);
-//        gridToolBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-//
-//        HorizontalLayout toolBarItem = new HorizontalLayout(newItemButton);
-//        toolBarItem.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-
-        Span ribbon = new Span();
-//        viewToolBar.add(searchToolBar, gridToolBar, ribbon, toolBarItem);
-//        viewToolBar.add(searchToolBar,ribbon);
-        viewToolBar.expand(ribbon);
-    }
 
 }

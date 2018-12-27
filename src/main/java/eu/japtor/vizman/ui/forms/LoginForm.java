@@ -1,4 +1,4 @@
-package eu.japtor.vizman.ui.views;
+package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -12,6 +12,7 @@ import com.vaadin.flow.router.Route;
 @Route("login-form-2")
 //@Theme(value = Lumo.class, variant = Lumo.DARK)
 @HtmlImport("frontend://bower_components/iron-form/iron-form.html")
+// TODO: probably delete
 public class LoginForm  extends VerticalLayout {
 
     public LoginForm(){

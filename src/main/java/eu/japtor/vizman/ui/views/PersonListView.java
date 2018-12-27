@@ -39,6 +39,7 @@ import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.service.RoleService;
 import eu.japtor.vizman.ui.components.*;
+import eu.japtor.vizman.ui.forms.PersonEditorDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -199,13 +200,17 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         grid.setMultiSort(true);
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
         grid.setId("person-grid");  // .. same ID as is used in shared-styles grid's dom module
+
         grid.addColumn(Person::getStatus).setHeader("Status").setWidth("3em").setResizable(true)
             .setFrozen(true);
+
         grid.addColumn(Person::getUsername).setHeader("Username").setWidth("8em").setResizable(true)
             .setSortProperty("username")
             .setFrozen(true);
 //        personGrid.addColumn(Person::getPassword).setHeader("Password").setWidth("8em").setResizable(true);
+
         grid.addColumn(Person::getJmeno).setHeader("Jméno").setWidth("8em").setResizable(true);
+
         grid.addColumn(Person::getPrijmeni).setHeader("Příjmení").setWidth("8em").setResizable(true)
             .setSortProperty("prijmeni");
 
@@ -220,15 +225,15 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 
         grid.addColumn(Person::getNastup).setHeader("Nástup").setWidth("8em").setResizable(true);
         grid.addColumn(Person::getVystup).setHeader("Ukončení").setWidth("8em").setResizable(true);
-        grid.addColumn(new ComponentRenderer<>(this::createEditButton)).setFlexGrow(0);
+        grid.addColumn(new ComponentRenderer<>(this::buildEditButton)).setFlexGrow(0);
 //        getStyle().set("border", "1px solid #9E9E9E");    // Horizontal borders?
 
         return grid;
     }
 
-    private Button createEditButton(Person person) {
-        Button editBtn = new EditItemSmallButton(event -> personEditForm.open(person,
-                AbstractEditorDialog.Operation.EDIT));
+    private Button buildEditButton(Person person) {
+        Button editBtn = new EditItemSmallButton(event -> personEditForm.open(
+                person, AbstractEditorDialog.Operation.EDIT));
         return editBtn;
     }
 

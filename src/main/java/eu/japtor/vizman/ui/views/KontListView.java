@@ -235,14 +235,14 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
         HorizontalLayout searchToolBar = new HorizontalLayout(viewTitle, searchField);
         searchToolBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
-//        HorizontalLayout gridToolBar = new HorizontalLayout(reloadViewButton);
-//        gridToolBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+//        HorizontalLayout kzToolBar = new HorizontalLayout(reloadViewButton);
+//        kzToolBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 //
 //        HorizontalLayout toolBarItem = new HorizontalLayout(newItemButton);
 //        toolBarItem.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
         Span ribbon = new Span();
-//        viewToolBar.add(searchToolBar, gridToolBar, ribbon, toolBarItem);
+//        kzToolBar.add(searchToolBar, kzToolBar, ribbon, toolBarItem);
         viewToolBar.add(searchToolBar,ribbon);
         viewToolBar.expand(ribbon);
     }

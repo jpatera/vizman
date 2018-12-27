@@ -50,12 +50,12 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
-    public Kont saveZak(Kont kont) {
+    public Kont saveKont(Kont kont) {
         return kontRepo.save(kont);
     }
 
     @Override
-    public void deleteZak(Kont kont) {
+    public void deleteKont(Kont kont) {
         kontRepo.delete(kont);
     }
 

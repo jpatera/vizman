@@ -1,4 +1,4 @@
-package eu.japtor.vizman.ui.views;
+package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -152,7 +152,7 @@ public class RoleEditorDialog extends AbstractEditorDialog<Role> {
     protected void confirmDelete() {
         long roleCount = roleService.countAllRoles();
 //        if (personCount > 0) {
-            openConfirmationDialog("Zrušit roli",
+            openConfirmDeleteDialog("Zrušit roli",
                     "Opravdu zrušit roli '" + getCurrentItem().getName() + "' ?",
                     "");
 //        } else {

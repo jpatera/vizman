@@ -34,6 +34,7 @@ import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.service.RoleService;
 import eu.japtor.vizman.ui.components.*;
+import eu.japtor.vizman.ui.forms.RoleEditorDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -233,7 +234,7 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
         toolBarItem.setDefaultVerticalComponentAlignment(Alignment.CENTER);
 
         Span ribbon = new Span();
-//        viewToolBar.add(toolBarSearch, toolBarGrid, ribbon, toolBarItem);
+//        kzToolBar.add(toolBarSearch, toolBarGrid, ribbon, toolBarItem);
         viewToolBar.add(toolBarGrid, ribbon, toolBarItem);
         viewToolBar.expand(ribbon);
 

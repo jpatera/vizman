@@ -29,6 +29,8 @@ import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.ExtendedPagedTabs;
+import eu.japtor.vizman.ui.forms.PersonEditorDialog;
+import eu.japtor.vizman.ui.forms.SysPropsForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.stefan.fullcalendar.Entry;
 import org.vaadin.stefan.fullcalendar.FullCalendar;
@@ -38,8 +40,6 @@ import org.vaadin.stefan.fullcalendar.*;
 import javax.annotation.PostConstruct;
 
 import java.awt.*;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
