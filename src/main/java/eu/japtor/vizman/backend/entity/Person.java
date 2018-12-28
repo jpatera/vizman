@@ -13,6 +13,14 @@ import java.util.Set;
 @Table(name = "PERSON")
 public class Person extends AbstractEntity {
 
+    public static final GenderGrammar GENDER = GenderGrammar.MASCULINE;
+    public static final String NOMINATIVE_SINGULAR = "Uživatel";
+    public static final String NOMINATIVE_PLURAL = "Uživatelé";
+    public static final String GENITIVE_SINGULAR = "Uživatele";
+    public static final String GENITIVE_PLURAL = "Uživatelů";
+    public static final String ACCUSATIVE_SINGULAR = "Uživatele";
+    public static final String ACCUSATIVE_PLURAL = "Uživatele";
+
     //    @Column(name="STATUS")
     @Enumerated(EnumType.STRING)
     private PersonStatus status = PersonStatus.NEW;

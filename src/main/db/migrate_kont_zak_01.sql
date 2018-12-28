@@ -12,23 +12,27 @@ CREATE TABLE VIZMAN.CFGPROP (
 	VERSION INTEGER NOT NULL,
 	NAME VARCHAR(255) NOT NULL,
 	VALUE VARCHAR(255),
+	ORD INTEGER NOT NULL,
+	LABEL VARCHAR(64) NOT NULL,
+	DESCRIPTION VARCHAR(255),
+	RO BOOLEAN,
 	CONSTRAINT PK_CFGPROP PRIMARY KEY (NAME)
 );
 
-INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE)
-VALUES(1, 1, 'app.locale', 'cs_CZ');
+INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
+VALUES(1, 1, 'app.locale', 'cs_CZ', 110, 'Národní tøídìní a formáty', 'Národní tøídìní a formáty', true);
 
-INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE)
-VALUES(2, 1, 'project.root', 'projet-root-dir');
+INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
+VALUES(2, 1, 'app.project.root', '..\projet-root-dir', 120, 'Koøenový adresáø pro projekty', 'Koøenový adresáø pro projekty', false);
 
-INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE)
-VALUES(3, 1, 'document.root', 'document-root-dir');
+INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
+VALUES(3, 1, 'app.document.root', '..\document-root-dir', 130, 'Koøenový adresáø pro dokumeny', 'Koøenový adresáø pro dokumeny', false);
 
-INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE)
-VALUES(4, 1, 'pojist.koef', '0.35r');
+INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
+VALUES(4, 1, 'app.koef.pojist', '0.35', 140, 'Koeficient pojištìní', 'Používá se pøi výpoètech vyhodnocovacích tabulek', false);
 
-INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE)
-VALUES(5, 1, 'rezie.koef', '0.8');
+INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
+VALUES(5, 1, 'app.koef.rezie', '0.8', 150, 'Koeficient režie', 'Používá se pøi výpoètech vyhodnocovacích tabulek', false);
 
 
 COMMIT;
@@ -218,12 +222,6 @@ CREATE UNIQUE INDEX IDXQ_DOCH_PERSONID_DDATE_ ON VIZMAN.DOCH (PERSON_ID, D_DATE,
 -- TRUNCATE TABLE vizman.kont;
 DROP TABLE VIZMAN.ZAK;
 DROP TABLE VIZMAN.KONT;
-
-COMMIT;
-
-
-CREATE INDEX IDX_KONT_OBJEDNATEL ON VIZMAN.KONT (OBJEDNATEL);
-CREATE UNIQUE INDEX IDXQ_KONT_CKONT ON VIZMAN.KONT (CKONT);
 
 COMMIT;
 

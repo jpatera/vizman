@@ -8,4 +8,6 @@ public interface CfgPropRepo extends JpaRepository<CfgProp, Long> {
 
     public CfgProp findByName(String name);
 
+    public CfgProp findByNameOrderByOrd(String name);
+
 }

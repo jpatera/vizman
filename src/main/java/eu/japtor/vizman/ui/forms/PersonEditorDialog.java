@@ -10,6 +10,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.function.SerializablePredicate;
+import eu.japtor.vizman.backend.entity.GenderGrammar;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.service.PersonService;
@@ -56,7 +57,7 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
                               List<Role> allRoles,
                               PasswordEncoder passwordEncoder)
     {
-        super(true, "uživatele", "uživatele", itemSaver, itemDeleter);
+        super(GenderGrammar.MASCULINE, Person.NOMINATIVE_SINGULAR, Person.GENITIVE_SINGULAR, Person.ACCUSATIVE_SINGULAR, itemSaver, itemDeleter);
 
         setWidth("900px");
 //        setHeight("600px");
@@ -290,7 +291,7 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
 //        if (personCount > 0) {
             openConfirmDeleteDialog("Zrušit uživatele",
                     "Opravdu zrušit uživatele “" + getCurrentItem().getUsername() + "“ ?",
-                    "Pokud bude uživatel zrušen, budou zrušena i s ním související data.");
+                    "Pokud bude uživatel zrušen, budou zrušena i další s ním související data.");
 //        } else {
 //            doDelete(getCurrentItem());
 //        }

@@ -280,7 +280,7 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
         Role newInstance = roleService.saveRole(role);
         roleGrid.getDataProvider().refreshItem(newInstance);
         Notification.show(
-//                "User successfully " + operation.getNameInText() + "ed.", 3000, Position.BOTTOM_START);
+//                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
                 "Změny role uloženy", 3000, Notification.Position.BOTTOM_END);
         updateGridContent();
     }

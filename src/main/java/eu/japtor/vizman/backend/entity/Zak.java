@@ -1,5 +1,7 @@
 package eu.japtor.vizman.backend.entity;
 
+import jdk.nashorn.internal.objects.annotations.Function;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -9,6 +11,88 @@ import java.util.List;
 @Table(name = "ZAK")
 @SequenceGenerator(initialValue = 1, name = "id_gen", sequenceName = "zak_seq")
 public class Zak extends AbstractGenEntity implements KzTreeAware {
+
+    public static final GenderGrammar ZAK_GENDER = GenderGrammar.FEMININE;
+    public static final String ZAK_NOMINATIVE_SINGULAR = "Zakázka";
+    public static final String ZAK_NOMINATIVE_PLURAL = "Zakázky";
+    public static final String ZAK_GENITIVE_SINGULAR = "Zakázky";
+    public static final String ZAK_GENITIVE_PLURAL = "Zakázek";
+    public static final String ZAK_ACCUSATIVE_SINGULAR = "Zakázku";
+    public static final String ZAK_ACCUSATIVE_PLURAL = "Zakázky";
+
+    public static final GenderGrammar SUB_GENDER = GenderGrammar.FEMININE;
+    public static final String SUB_NOMINATIVE_SINGULAR = "Subdodávka";
+    public static final String SUB_NOMINATIVE_PLURAL = "Subdodávky";
+    public static final String SUB_GENITIVE_SINGULAR = "Subdodávky";
+    public static final String SUB_GENITIVE_PLURAL = "Subdodávek";
+    public static final String SUB_ACCUSATIVE_SINGULAR = "Subdodávku";
+    public static final String SUB_ACCUSATIVE_PLURAL = "Subdodávky";
+
+    public static final String TYP_UNKNOWN = "Neznámý typ položky";
+
+
+    public GenderGrammar getZakGender() {
+        switch (typ) {
+            case ZAK : return ZAK_GENDER;
+            case SUB : return SUB_GENDER;
+            default : return GenderGrammar.UNKNOWN;
+        }
+    }
+
+    @Function
+    public String getZakNominativeS() {
+        switch (typ) {
+            case ZAK : return ZAK_NOMINATIVE_SINGULAR;
+            case SUB : return SUB_NOMINATIVE_SINGULAR;
+            default : return TYP_UNKNOWN;
+        }
+    }
+
+    @Function
+    public String getZakNominativeP() {
+        switch (typ) {
+            case ZAK : return ZAK_NOMINATIVE_PLURAL;
+            case SUB : return SUB_NOMINATIVE_PLURAL;
+            default : return TYP_UNKNOWN;
+        }
+    }
+
+    @Function
+    public String getZakGenitiveS() {
+        switch (typ) {
+            case ZAK : return ZAK_GENITIVE_SINGULAR;
+            case SUB : return SUB_GENITIVE_SINGULAR;
+            default : return TYP_UNKNOWN;
+        }
+    }
+
+    @Function
+    public String getZakGenitiveP() {
+        switch (typ) {
+            case ZAK : return ZAK_GENITIVE_PLURAL;
+            case SUB : return SUB_GENITIVE_PLURAL;
+            default : return TYP_UNKNOWN;
+        }
+    }
+
+    @Function
+    public String getZakAccusativeS() {
+        switch (typ) {
+            case ZAK : return ZAK_ACCUSATIVE_SINGULAR;
+            case SUB : return SUB_ACCUSATIVE_SINGULAR;
+            default : return TYP_UNKNOWN;
+        }
+    }
+
+    @Function
+    public String getZakAccusativeP() {
+        switch (typ) {
+            case ZAK : return ZAK_ACCUSATIVE_PLURAL;
+            case SUB : return SUB_ACCUSATIVE_PLURAL;
+            default : return TYP_UNKNOWN;
+        }
+    }
+
 
     private String ckont;
     private Integer czak;

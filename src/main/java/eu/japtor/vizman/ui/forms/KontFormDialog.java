@@ -6,7 +6,9 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import eu.japtor.vizman.backend.entity.GenderGrammar;
 import eu.japtor.vizman.backend.entity.Kont;
+import eu.japtor.vizman.backend.entity.Mena;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.ZakService;
@@ -21,12 +23,13 @@ import java.util.function.Consumer;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
-//    private ComboBox<PersonStatus> statusField; // = new ComboBox("Status");
     private TextField objednatelField = new TextField("Objednatel"); // = new TextField("Username");
+    private TextField investorField = new TextField("Investor"); // = new TextField("Username");
     private TextField textField = new TextField("Text"); // = new TextField("Jméno");
+    private TextField menaField = new TextField("Měna");
     private TextField honorarField = new TextField("Honorář");
     private TextField datZadField = new TextField("Datum zadání");
-    private Checkbox archiveCheckbox; // = new DatePicker("Nástup");
+//    private Checkbox archiveCheckbox; // = new DatePicker("Nástup");
 
 //    private Grid<Zak> zakazkyGrid;
 
@@ -47,7 +50,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                           Consumer<Kont> itemDeleter,
                           KontService kontService)
     {
-        super(true, "uživatele", "uživatele", itemSaver, itemDeleter);
+        super(GenderGrammar.MASCULINE, Kont.NOMINATIVE_SINGULAR, Kont.GENITIVE_SINGULAR, Kont.ACCUSATIVE_SINGULAR, itemSaver, itemDeleter);
 
         setWidth("900px");
 //        setHeight("600px");
@@ -75,15 +78,18 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //        };
 
         initObjednatelField();
+        initInvestorField();
         initTextField();
+        initMenaField();
         initHonorarField();
         initDatZadField();
         initZakGrid();
 
         getFormLayout().add(objednatelField);
+        getFormLayout().add(investorField);
         getFormLayout().add(textField);
+        getFormLayout().add(menaField);
         getFormLayout().add(honorarField);
-        getFormLayout().add(datZadField);
         getFormLayout().add(datZadField);
         getFormLayout().add(buildZakGridContainer(zakGrid));
     }
@@ -142,8 +148,15 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                 .bind(Kont::getObjednatel, Kont::setObjednatel);
     }
 
+    private void initInvestorField() {
+        getBinder().forField(investorField)
+//                .withConverter(String::trim, String::trim)
+                .bind(Kont::getInvestor, Kont::setInvestor);
+    }
+
 
     private void initTextField() {
+        textField.getElement().setAttribute("colspan", "2");
         getBinder().forField(textField)
                 .bind(Kont::getText, Kont::setText);
     }
@@ -151,6 +164,18 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private void initDatZadField() {
     }
 
+
+    private void initMenaField() {
+        getBinder().forField(menaField)
+            .withConverter(mena -> Mena.valueOf(mena), menaEnum -> menaEnum.name())
+            .bind(Kont::getMena, Kont::setMena);
+
+//        final BeanItemContainer<Status> container = new BeanItemContainer<>(Status.class);
+//        container.addAll(EnumSet.allOf(Status.class));
+//        cStatus.setContainerDataSource(container);
+//        cStatus.setItemCaptionPropertyId("caption");
+//        basicContent.addComponent(cStatus);
+    }
 
     // TODO: shouldn't have been calculated from Zaks <
     private void initHonorarField() {
@@ -230,8 +255,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         if (nodesCount > 0) {
             new OkDialog().open(
                     "Zrušení kontraktu"
-                    , "Kontrakt " + getCurrentItem().getCkont() + " nelze zrušit"
-                    , "Obsahuje zakázky/poddodávky"
+                    , "Kontrakt " + getCurrentItem().getCkont() + " nelze zrušit, obsahuje zakázky/poddodávky"
+                    , ""
             );
         } else {
             openConfirmDeleteDialog("Zrušit kontrakt",

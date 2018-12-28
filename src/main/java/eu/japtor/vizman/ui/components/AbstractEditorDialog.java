@@ -10,6 +10,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.shared.Registration;
+import eu.japtor.vizman.backend.entity.GenderGrammar;
+import eu.japtor.vizman.backend.entity.Kont;
 
 import java.io.Serializable;
 import java.util.function.BiConsumer;
@@ -22,34 +24,50 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
      * an already existing item.
      */
     public enum Operation {
-        ADD("Zadání nového", "Zadání nové", "zadat", false),
-        EDIT("Editace", "Editace", "editovat", true),
-        DELETE("Zrušení", "ZrušeníEditace", "editovat", true);
+        ADD("Nový", "Nová", "Nové", "zadat", false),
+        EDIT("Editace", "Editace", "Editace", "editovat", true),
+        DELETE("Zrušení", "Zrušení", "Zrušení", "zrušit", true);
 
-        private final String nounInTitleForMaleItem;
-        private final String nounInTitleForFemaleItem;
-        private final String nameInText;
+        private final String titleOpNameForMasculine;
+        private final String titleOpNameForFeminine;
+        private final String titleOpNameForNeuter;
+        private final String opNameInText;
         private final boolean deleteEnabled;
 
-        Operation(String nounInTitleForMaleItem, String nameInTitleForFemaleItem,
-                  String nameInText, boolean deleteEnabled) {
-            this.nounInTitleForMaleItem = nounInTitleForMaleItem;
-            this.nounInTitleForFemaleItem = nameInTitleForFemaleItem;
-            this.nameInText = nameInText;
+        Operation(String titleOpNameForMasculine, String titleOpNameForFeminine, String titleOpNameForNeuter,
+                  String opNameInText, boolean deleteEnabled) {
+            this.titleOpNameForMasculine = titleOpNameForMasculine;
+            this.titleOpNameForFeminine = titleOpNameForFeminine;
+            this.titleOpNameForNeuter = titleOpNameForNeuter;
+            this.opNameInText = opNameInText;
             this.deleteEnabled = deleteEnabled;
         }
 
-        public String getNounInTitleForMaleItem() {
-            return nounInTitleForMaleItem;
+        public String getDialogTitle(final String itemName, final GenderGrammar itemGender) {
+            return getTitleOpName(itemGender) + " " + itemName.toLowerCase();
         }
 
-        public String getNounInTitleForFemaleItem() {
-            return nounInTitleForFemaleItem;
+        private String getTitleOpName(final GenderGrammar gender) {
+            switch (gender) {
+                case MASCULINE : return titleOpNameForMasculine;
+                case FEMININE : return titleOpNameForFeminine;
+                default : return titleOpNameForNeuter;
+            }
         }
 
-        public String getNameInText() {
-            return nameInText;
+        private String getOpNameInText() {
+            return opNameInText;
         }
+
+
+//        public String getTitleNounForMasculine() {
+//            return titleOpNameForMasculine;
+//        }
+//
+//        public String getTitleNounForFeminine() {
+//            return titleOpNameForFeminine;
+//        }
+
 
         public boolean isDeleteEnabled() {
             return deleteEnabled;
@@ -73,30 +91,33 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 
     private final ConfirmationDialog<T> confirmationDialog = new ConfirmationDialog<>();
 
-    private final boolean isItemMale;
-    private final String itemTypeNew;
-    private final String itemTypeEdit;
+    private final GenderGrammar itemGender;
+    private final String itemTypeNomS;
+    private final String itemTypeGenS;
+    private final String itemTypeAccS;
     private final BiConsumer<T, Operation> itemSaver;
     private final Consumer<T> itemDeleter;
 
     /**
      * Constructs a new instance.
      *
-     * @param itemTypeNew
+     * @param itemNameNominativeS
      *            The readable name of the item type in NEW dialog
-     * @param itemTypeEdit
+     * @param itemNameAccusativeS
      *            The readable name of the item type in EDIT dialog
      * @param itemSaver
      *            Callback to save the edited item
      * @param itemDeleter
      *            Callback to delete the edited item
      */
-    protected AbstractEditorDialog(final boolean isItemMale, final String itemTypeNew, final String itemTypeEdit,
-            BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
+    protected AbstractEditorDialog(GenderGrammar itemGender
+            , final String itemNameNominativeS, final String itemNameGenitiveS, final String itemNameAccusativeS
+            , BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
 
-        this.isItemMale = isItemMale;
-        this.itemTypeNew = itemTypeNew;
-        this.itemTypeEdit = itemTypeEdit;
+        this.itemGender = itemGender;
+        this.itemTypeNomS = itemNameNominativeS;
+        this.itemTypeGenS = itemNameGenitiveS;
+        this.itemTypeAccS = itemNameAccusativeS;
         this.itemSaver = itemSaver;
         this.itemDeleter = itemDeleter;
 
@@ -107,11 +128,11 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         setCloseOnOutsideClick(false);
     }
 
-    private String getNounForTitle(final boolean isItemMale) {
-        return isItemMale ?
-                currentOperation.getNounInTitleForMaleItem()
-                : currentOperation.getNounInTitleForFemaleItem();
-    }
+//    private String getNounForTitle(final boolean isItemMale) {
+//        return isItemMale ?
+//                currentOperation.getTitleOpName(GenderGrammar.MASCULINE)
+//                : currentOperation.getTitleNounForFeminine();
+//    }
 
 
     private void initTitle() {
@@ -186,7 +207,8 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     public void open(T item, final Operation operation) {
         currentOperation = operation;
         currentItem = item;
-        titleField.setText(buildDialogTitle(currentOperation));
+//        titleField.setText(buildDialogTitle(currentOperation));
+        titleField.setText(currentOperation.getDialogTitle(getItemName(currentOperation), itemGender));
 
         if (registrationForSave != null) {
             registrationForSave.remove();
@@ -196,18 +218,30 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 
         binder.readBean(currentItem);
 
-        deleteButton.setText("Smazat " + itemTypeEdit);
+        deleteButton.setText("Zrušit " + itemTypeAccS.toLowerCase());
         deleteButton.setEnabled(currentOperation.isDeleteEnabled());
 
         openSpecific();
         open();
     }
 
-    private String buildDialogTitle(final Operation operation) {
-        return (isItemMale ? currentOperation.getNounInTitleForMaleItem()
-                : currentOperation.getNounInTitleForFemaleItem())
-                + " " + (operation == Operation.ADD ? itemTypeNew : itemTypeEdit);
+    private String getItemName(final Operation operation) {
+        switch (operation) {
+            case ADD : return itemTypeNomS;
+            case EDIT : return itemTypeGenS;
+            case DELETE : return itemTypeAccS;
+            default : return itemTypeNomS;
+        }
     }
+
+//    private String buildDialogTitle(final Operation operation) {
+//        switch (operation) {
+//            case ADD :
+//        }
+//
+//        return (currentOperation.getTitleOpName(itemGender))
+//                + " " + (operation == Operation.ADD ? itemTypeNomS.toLowerCase() : itemTypeAccS.toLowerCase());
+//    }
 
     protected abstract void openSpecific();
 
@@ -247,7 +281,7 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     protected final void openConfirmDeleteDialog(String title, String message,
                                                  String additionalMessage) {
         close();
-        confirmationDialog.open(title, message, additionalMessage, "Delete",
+        confirmationDialog.open(title, message, additionalMessage, "Zrušit",
                 true, getCurrentItem(), this::deleteConfirmed, this::open);
     }
 

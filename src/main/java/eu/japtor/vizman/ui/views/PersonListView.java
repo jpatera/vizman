@@ -305,7 +305,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         Person newInstance = personService.savePerson(person);
         personGrid.getDataProvider().refreshItem(newInstance);
         Notification.show(
-//                "User successfully " + operation.getNameInText() + "ed.", 3000, Position.BOTTOM_START);
+//                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
                 "Změny uživatele uloženy", 3000, Notification.Position.BOTTOM_END);
         updateGridContent();
     }

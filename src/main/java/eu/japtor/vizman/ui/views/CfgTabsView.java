@@ -267,7 +267,7 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
 //        personService.savePerson(person);
 //
 //        Notification.show(
-////                "User successfully " + operation.getNameInText() + "ed.", 3000, Position.BOTTOM_START);
+////                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
 //                "Uživatel zrušen", 3000, Notification.Position.BOTTOM_START);
 //        updateView();
 //    }

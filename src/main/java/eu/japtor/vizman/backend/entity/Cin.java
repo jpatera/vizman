@@ -3,7 +3,7 @@ package eu.japtor.vizman.backend.entity;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "CIN", schema = "VIZMAN", catalog = "VIZMANDB")
+@Table(name = "CIN")
 public class Cin extends AbstractGenEntity {
 
     private Integer poradi;

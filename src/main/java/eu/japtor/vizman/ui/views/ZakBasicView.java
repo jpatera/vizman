@@ -646,7 +646,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         Kont newInstance = kontService.saveKont(kont);
         kzTreeGrid.getDataProvider().refreshItem(newInstance);
         Notification.show(
-//                "User successfully " + operation.getNameInText() + "ed.", 3000, Position.BOTTOM_START);
+//                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
                 "Kontrakt uložen", 3000, Notification.Position.BOTTOM_END);
     }
 

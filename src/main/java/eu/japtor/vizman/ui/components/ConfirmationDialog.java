@@ -4,8 +4,10 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.shared.Registration;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.util.function.Consumer;
@@ -15,7 +17,7 @@ public class ConfirmationDialog<T extends Serializable> extends Dialog {
     private final Div messageLabel = new Div();
     private final Div extraMessageLabel = new Div();
     private final Button confirmButton = new Button();
-    private final Button cancelButton = new Button("Cancel");
+    private final Button cancelButton = new Button("Zpět");
     private Registration registrationForConfirm;
     private Registration registrationForCancel;
 
@@ -26,21 +28,21 @@ public class ConfirmationDialog<T extends Serializable> extends Dialog {
         setCloseOnEsc(true);
         setCloseOnOutsideClick(false);
 
+        titleField.setClassName("confirm-title");
+
+        Div labels = new Div(messageLabel, extraMessageLabel);
+        labels.setClassName("confirm-text");
+
         confirmButton.addClickListener(e -> close());
-        confirmButton.getElement().setAttribute("theme", "tertiary");
-        confirmButton.setAutofocus(true);
+        confirmButton.getElement().setAttribute("theme", "secondary");
+
         cancelButton.addClickListener(e -> close());
         cancelButton.getElement().setAttribute("theme", "tertiary");
 
         HorizontalLayout buttonBar = new HorizontalLayout(confirmButton, cancelButton);
         buttonBar.setClassName("buttons confirm-buttons");
 
-        Div labels = new Div(messageLabel, extraMessageLabel);
-        labels.setClassName("confirm-text");
-
-        titleField.setClassName("confirm-title");
-
-        add(titleField, labels, buttonBar);
+        add(titleField, labels, new Hr(), buttonBar);
     }
 
     /**
@@ -69,30 +71,38 @@ public class ConfirmationDialog<T extends Serializable> extends Dialog {
      */
     public void open(String title, String message, String additionalMessage,
                      String actionName, boolean isDisruptive, T item, Consumer<T> confirmHandler,
-                     Runnable cancelHandler) {
+                     Runnable cancelHandler)
+    {
         titleField.setText(title);
         messageLabel.setText(message);
-        extraMessageLabel.setText(additionalMessage);
+        if (StringUtils.isEmpty(additionalMessage)) {
+            extraMessageLabel.setVisible(false);
+        } else {
+            extraMessageLabel.setText(additionalMessage);
+        }
+
         confirmButton.setText(actionName);
+        if (isDisruptive) {
+            confirmButton.getElement().setAttribute("theme", "secondary error");
+        }
 
         if (registrationForConfirm != null) {
             registrationForConfirm.remove();
         }
-        registrationForConfirm = confirmButton
-                .addClickListener(e -> confirmHandler.accept(item));
+        registrationForConfirm = confirmButton.addClickListener(e -> confirmHandler.accept(item));
+
         if (registrationForCancel != null) {
             registrationForCancel.remove();
         }
-        registrationForCancel = cancelButton
-                .addClickListener(e -> cancelHandler.run());
+        registrationForCancel = cancelButton.addClickListener(e -> cancelHandler.run());
+
         this.addOpenedChangeListener(e -> {
             if (!e.isOpened()) {
                 cancelHandler.run();
             }
         });
-        if (isDisruptive) {
-            confirmButton.getElement().setAttribute("theme", "tertiary error");
-        }
+
+        cancelButton.setAutofocus(true);
         open();
     }
 }
