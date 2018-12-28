@@ -69,7 +69,7 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
         setAlignItems(Alignment.STRETCH);
 
         newItemButton = new NewItemButton("Nový uživatel",
-                event -> roleEditForm.open(new Role(), AbstractEditorDialog.Operation.ADD)
+                event -> roleEditForm.open(new Role(), AbstractEditorDialog.Operation.ADD, "")
         );
 
         reloadViewButton = new ReloadViewButton("Znovu na49st tabulku",
@@ -206,8 +206,8 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
     }
 
     private Button createEditButton(Role role) {
-        Button editBtn = new EditItemSmallButton(event -> roleEditForm.open(role,
-                AbstractEditorDialog.Operation.EDIT));
+        Button editBtn = new EditItemGridButton(event -> roleEditForm.open(role,
+                AbstractEditorDialog.Operation.EDIT, ""));
         return editBtn;
     }
 

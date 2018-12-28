@@ -25,6 +25,7 @@ public class ConfirmationDialog<T extends Serializable> extends Dialog {
      * Constructor.
      */
     public ConfirmationDialog() {
+
         setCloseOnEsc(true);
         setCloseOnOutsideClick(false);
 
@@ -70,8 +71,8 @@ public class ConfirmationDialog<T extends Serializable> extends Dialog {
      *            The cancellation handler function
      */
     public void open(String title, String message, String additionalMessage,
-                     String actionName, boolean isDisruptive, T item, Consumer<T> confirmHandler,
-                     Runnable cancelHandler)
+                     String actionName, boolean isDisruptive, T item,
+                     Consumer<T> confirmHandler, Runnable cancelHandler)
     {
         titleField.setText(title);
         messageLabel.setText(message);

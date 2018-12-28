@@ -25,6 +25,7 @@ import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
@@ -51,7 +52,7 @@ import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.AbstractEditorDialog;
-import eu.japtor.vizman.ui.components.EditItemSmallButton;
+import eu.japtor.vizman.ui.components.EditItemGridButton;
 import eu.japtor.vizman.ui.forms.KontFormDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -231,6 +232,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
     private void initView() {
         this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         gridContainer.setClassName("view-container");
+        gridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
 
 //        this.setWidth("100%");
 //        this.setWidth("90vw");
@@ -294,6 +296,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         kzTreeGrid = new TreeGrid<>();
         kzTreeGrid.setWidth( "100%" );
         kzTreeGrid.setHeight( null );
+
 //        kzTreeGrid.addItemDoubleClickListener()setHeight( null );
         kzTreeGrid.getElement().addEventListener("keypress", e -> {
                 JsonObject eventData = e.getEventData();
@@ -380,7 +383,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         ;
 //                .setFlexGrow(1).setWidth("6em").setResizable(false).setId("mena-column");
 
-        kzTreeGrid.addColumn(new ComponentRenderer<>(this::buildShowKontFormButton))
+        kzTreeGrid.addColumn(new ComponentRenderer<>(this::buildViewEditButton))
                 .setFlexGrow(0)
         ;
 
@@ -564,13 +567,15 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
     }
 
 
-    private Component buildShowKontFormButton(KzTreeAware kz) {
+    private Component buildViewEditButton(KzTreeAware kz) {
         if (ZakTyp.KONT == kz.getTyp()) {
-            return new EditItemSmallButton(event -> kontForm.open(
-                    (Kont)kz, AbstractEditorDialog.Operation.EDIT));
+            return new EditItemGridButton(event -> kontForm.open(
+                    (Kont)kz, AbstractEditorDialog.Operation.EDIT,
+                    "[ Zadáno: " + ((Kont) kz).getDateCreate().toString()
+                            + " , Editováno: " + ((Kont) kz).getDateEdit().toString() + " ]"));
         } else if (ZakTyp.ZAK == kz.getTyp()) {
             return new Span("--");
-//            return new EditItemSmallButton(event -> kontForm.open(
+//            return new EditItemGridButton(event -> kontForm.open(
 //                    (Zak)kz, AbstractEditorDialog.Operation.EDIT));
         } else {
             return new Span("xx");

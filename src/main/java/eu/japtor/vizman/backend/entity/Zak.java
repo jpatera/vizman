@@ -4,6 +4,7 @@ import jdk.nashorn.internal.objects.annotations.Function;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -116,6 +117,8 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
     private BigDecimal r4;
     private String skupina;
     private BigDecimal rm;
+    private LocalDate dateCreate;
+    private LocalDate dateEdit;
 
 
     @Basic
@@ -178,6 +181,26 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
 
     public void setRokmeszad(String rokmeszad) {
         this.rokmeszad = rokmeszad;
+    }
+
+    @Basic
+    @Column(name = "DATE_CREATE")
+    public LocalDate getDateCreate() {
+        return dateCreate;
+    }
+
+    public void setDateCreate(LocalDate dateCreate) {
+        this.dateCreate = dateCreate;
+    }
+
+    @Basic
+    @Column(name = "DATE_EDIT")
+    public LocalDate getDateEdit() {
+        return dateEdit;
+    }
+
+    public void setDateEdit(LocalDate dateEdit) {
+        this.dateEdit = dateEdit;
     }
 
     @Basic
@@ -372,6 +395,7 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
 //        return result;
 //    }
 
+    // TODO: try eager - for better performance in TreeGrid ?
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_KONT")
     private Kont kont;

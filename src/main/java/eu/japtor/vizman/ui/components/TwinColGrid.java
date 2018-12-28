@@ -88,7 +88,7 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 
         private final VerticalLayout buttonContainer;
 
-        private Grid<T> draggedGrid;
+//        private Grid<T> draggedGrid;
 
 
         public TwinColGrid(final Collection<T> poolItems) {

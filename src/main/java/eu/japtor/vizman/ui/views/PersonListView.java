@@ -96,7 +96,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         );
 
         newItemButton = new NewItemButton("Nový uživatel",
-                event -> personEditForm.open(new Person(), AbstractEditorDialog.Operation.ADD)
+                event -> personEditForm.open(new Person(), AbstractEditorDialog.Operation.ADD, "")
         );
 
         reloadViewButton = new ReloadViewButton("Inicializovat tabulku",
@@ -232,8 +232,8 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
     }
 
     private Button buildEditButton(Person person) {
-        Button editBtn = new EditItemSmallButton(event -> personEditForm.open(
-                person, AbstractEditorDialog.Operation.EDIT));
+        Button editBtn = new EditItemGridButton(event -> personEditForm.open(
+                person, AbstractEditorDialog.Operation.EDIT, ""));
         return editBtn;
     }
 

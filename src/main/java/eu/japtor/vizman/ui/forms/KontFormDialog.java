@@ -1,19 +1,14 @@
 package eu.japtor.vizman.ui.forms;
 
-import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import eu.japtor.vizman.backend.entity.GenderGrammar;
-import eu.japtor.vizman.backend.entity.Kont;
-import eu.japtor.vizman.backend.entity.Mena;
-import eu.japtor.vizman.backend.entity.Zak;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
+import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.ZakService;
-import eu.japtor.vizman.ui.components.AbstractEditorDialog;
-import eu.japtor.vizman.ui.components.OkDialog;
+import eu.japtor.vizman.ui.components.*;
 import org.springframework.util.Assert;
 
 import java.util.function.BiConsumer;
@@ -26,9 +21,9 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private TextField objednatelField = new TextField("Objednatel"); // = new TextField("Username");
     private TextField investorField = new TextField("Investor"); // = new TextField("Username");
     private TextField textField = new TextField("Text"); // = new TextField("Jméno");
+    private TextField honorarField = new TextField("Honorář (suma ze zakázek/subdodávek)");
     private TextField menaField = new TextField("Měna");
-    private TextField honorarField = new TextField("Honorář");
-    private TextField datZadField = new TextField("Datum zadání");
+//    private Span datZadComp = new Span("Datum zadání");
 //    private Checkbox archiveCheckbox; // = new DatePicker("Nástup");
 
 //    private Grid<Zak> zakazkyGrid;
@@ -37,6 +32,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //    private Grid<Role> roleTwinGrid;
 
     Grid<Zak> zakGrid = new Grid();
+    Grid<KontDoc> docGrid = new Grid();
 
 //    @Autowired
     private KontService kontService;
@@ -45,6 +41,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
 ////    private ListDataProvider<Role> allRolesDataProvider;
 //    private Collection<Role> personRoles;
+    private final ConfirmationDialog<KontDoc> confirmDialog = new ConfirmationDialog<>();
+
 
     public KontFormDialog(BiConsumer<Kont, Operation> itemSaver,
                           Consumer<Kont> itemDeleter,
@@ -52,7 +50,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     {
         super(GenderGrammar.MASCULINE, Kont.NOMINATIVE_SINGULAR, Kont.GENITIVE_SINGULAR, Kont.ACCUSATIVE_SINGULAR, itemSaver, itemDeleter);
 
-        setWidth("900px");
+        setWidth("1200px");
 //        setHeight("600px");
 
 //        getFormLayout().setResponsiveSteps(
@@ -82,16 +80,19 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         initTextField();
         initMenaField();
         initHonorarField();
-        initDatZadField();
+//        initDatZadField();
         initZakGrid();
+        initDocGrid();
 
         getFormLayout().add(objednatelField);
         getFormLayout().add(investorField);
         getFormLayout().add(textField);
-        getFormLayout().add(menaField);
         getFormLayout().add(honorarField);
-        getFormLayout().add(datZadField);
-        getFormLayout().add(buildZakGridContainer(zakGrid));
+        getFormLayout().add(menaField);
+//        getFormLayout().add(datZadComp);
+        getUpperGridLayout().add(docGrid);
+        getLowerGridLayout().add(zakGrid);
+//        getFormLayout().add(buildZakGridContainer(zakGrid));
     }
 
     /**
@@ -100,7 +101,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     protected void openSpecific() {
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
-//        datZadField.setLocale(new Locale("cs", "CZ"));
+//        datZadComp.setLocale(new Locale("cs", "CZ"));
 //        vystupField.setLocale(new Locale("cs", "CZ"));
 
 
@@ -108,17 +109,11 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //                .bind(Person::getRoles, Person::setRoles);
 
 //        twinRolesGridField.initLeftItems(getCurrentItem().getRoles());
+        zakGrid.setItems(getCurrentItem().getNodes());
+        docGrid.setItems(getCurrentItem().getKontDocs());
 
     }
 
-
-    private VerticalLayout buildZakGridContainer(Grid<Zak> grid) {
-        VerticalLayout zakGridContainer = new VerticalLayout();
-        zakGridContainer.setClassName("view-container");
-        zakGridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
-        zakGridContainer.add(grid);
-        return zakGridContainer;
-    }
 
 //    private void initRoleGrid() {
 ////        roleTwinGrid.setId("person-grid");  // .. same ID as is used in shared-styles grid's dom module
@@ -161,8 +156,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                 .bind(Kont::getText, Kont::setText);
     }
 
-    private void initDatZadField() {
-    }
+//    private void initDatZadField() {
+//    }
 
 
     private void initMenaField() {
@@ -187,6 +182,18 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
     private void initZakGrid() {
         Assert.notNull(zakGrid, "ZakGrid must not be null");
+        zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        zakGrid.setId("zak-grid");
+        zakGrid.setClassName("vizman-simple-grid");
+        zakGrid.setHeight("12em");
+
+
+//        zakGrid.getElement().setAttribute("colspan", "2");
+//        zakGrid.getStyle().set("padding-right", "0em");
+//        zakGrid.getStyle().set("padding-left", "0em");
+//        zakGrid.getStyle().set("padding-top", "2.5em");
+//        zakGrid.getStyle().set("padding-bottom", "2.5em");
+
 //        this.allRolesDataProvider = DataProvider.ofCollection(roleRepo.findAll());
 //        this.personRoles = DataProvider.ofCollection(getCurrentItem().getRoles());
 
@@ -199,12 +206,41 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
 //        twinRolesGridField = new TwinColGrid<>(allRolesDataProvider)
 //        twinRolesGridField = new TwinColGrid<>(roleRepo.findAll())
-        zakGrid.addColumn(Zak::getCzak, "ČZ");
-        zakGrid.addColumn(Zak::getHonorar, "Honorář");
+        zakGrid.addColumn(Zak::getCzak).setHeader("ČZ");
+        zakGrid.addColumn(Zak::getHonorar).setHeader("Honorář");
 //        zakGrid.addColumn("Honorář CZK");
-        zakGrid.addColumn(Zak::getText, "Text");
+        zakGrid.addColumn(Zak::getText).setHeader("Text");
     }
 
+    private void initDocGrid() {
+        Assert.notNull(docGrid, "DocGrid must not be null");
+        docGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        docGrid.setId("doc-grid");
+        docGrid.setClassName("vizman-simple-grid");
+        docGrid.setHeight("12em");
+
+        docGrid.addColumn(KontDoc::getFilename).setHeader("Soubor");
+        docGrid.addColumn(KontDoc::getNote).setHeader("Poznámka");
+//        docGrid.addColumn("Honorář CZK");
+        docGrid.addColumn(KontDoc::getDateRegist).setHeader("Vloženo");
+        docGrid.addColumn(new ComponentRenderer<>(this::buildDocRemoveButton))
+                .setFlexGrow(0);
+    }
+
+    private Component buildDocRemoveButton(KontDoc kontDoc) {
+            return new RemoveItemGridButton(event -> {
+                close();
+                confirmDialog.open("Registrace dokumentu",
+                        "Zrušit registraci dokumentu?", "", "Zrušit",
+                        true, kontDoc, this::removeDocRegistration, this::open);
+            });
+    }
+
+    private void removeDocRegistration(KontDoc kontDoc) {
+
+        close();
+
+    }
 //    private void addTerminField() {
 //
 //        // Nastup field binder:

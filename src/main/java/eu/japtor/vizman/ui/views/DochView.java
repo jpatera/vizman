@@ -152,8 +152,7 @@ public class DochView extends VerticalLayout {
         clockContainer.setSizeFull();
         clockContainer.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
         clockContainer.setFlexGrow(1);
-        clockContainer.getStyle()
-                .set("colspan", "2")
+        clockContainer.getElement().setAttribute("colspan", "2")
 //                .set("width", "stretch")
 //                .set("align", "center")
         ;
