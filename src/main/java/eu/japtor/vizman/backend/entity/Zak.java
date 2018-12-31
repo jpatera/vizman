@@ -1,10 +1,13 @@
 package eu.japtor.vizman.backend.entity;
 
 import jdk.nashorn.internal.objects.annotations.Function;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,7 +102,7 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
     private Integer czak;
 
     @Enumerated(EnumType.STRING)
-    private ZakTyp typ;
+    private TypeZak typ;
 
     private String typDokladu;
     private Short rokzak;
@@ -118,7 +121,7 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
     private String skupina;
     private BigDecimal rm;
     private LocalDate dateCreate;
-    private LocalDate dateEdit;
+    private LocalDateTime dateUpdate;
 
 
     @Basic
@@ -145,11 +148,11 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
 
     @Basic
     @Column(name = "TYP")
-    public ZakTyp getTyp() {
+    public TypeZak getTyp() {
         return typ;
     }
 
-    public void setTyp(ZakTyp typ) {
+    public void setTyp(TypeZak typ) {
         this.typ = typ;
     }
 
@@ -194,13 +197,13 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
     }
 
     @Basic
-    @Column(name = "DATE_EDIT")
-    public LocalDate getDateEdit() {
-        return dateEdit;
+    @Column(name = "DATE_UPDATE")
+    public LocalDateTime getDateUpdate() {
+        return dateUpdate;
     }
 
-    public void setDateEdit(LocalDate dateEdit) {
-        this.dateEdit = dateEdit;
+    public void setDateUpdate(LocalDateTime dateUpdate) {
+        this.dateUpdate = dateUpdate;
     }
 
     @Basic
@@ -236,8 +239,7 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
 
     @Override
     public Mena getMena() {
-        return null;
-//        return Mena.CZK;
+        return getKont().getMena();
     }
 
     @Basic
@@ -340,6 +342,106 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
         this.rm = rm;
     }
 
+
+
+    // TODO: try EAGER - for better performance in TreeGrid ?
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ID_KONT")
+    private Kont kont;
+
+    public Kont getKont() {
+        return kont;
+    }
+
+//    public void setKont(Kont kont) {
+//        this.kont = kont;
+//    }
+
+
+    @OneToMany(mappedBy = "zak")
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<ZakDoc> zakDocs;
+
+    public List<ZakDoc> getZakDocs() {
+        return zakDocs;
+    }
+
+
+    @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER)
+    private List<Fakt> fakts;
+
+    public List<Fakt> getFakts() {
+        return fakts;
+    }
+//    public void setFakts(List<Fakt> fakts) {
+//        this.fakts = fakts;
+//    }
+
+// -----------------------------
+
+    @Override
+    public List<KzTreeAware> getNodes() {
+        return new ArrayList();
+    }
+
+
+//    @Override
+//    public void setNodes(List<KzTreeAware> nodes) {
+////        return new ArrayList();
+//    }
+
+//    @Override
+//    public void setNodes(Set<? extends KzTreeAware> zaks) {
+//        // Do nothing
+//    }
+
+    @Override
+    public String getObjednatel() {
+        return "";
+    }
+
+    public int getFaktsOver() {
+        int over = 0;
+        List<Fakt> fakts = getFakts();
+        for (Fakt fakt : fakts) {
+            if (fakt.getDateDuzp().isAfter(LocalDate.now())) {
+                over++;
+            }
+        }
+        return over;
+    }
+
+// ==================================================
+
+    @Override
+    public int hashCode() {
+        if (getId() == null) {
+            return super.hashCode();
+        }
+//        return 31 + getId().hashCode();
+
+        int result = (int) (getId() ^ (getId() >>> 32));
+        result = 31 * result + (int) (kont.getId() ^ (kont.getId() >>> 32));
+//        result = 31 * result + (int) (z ^ (z >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (getId() == null) {
+            // New entities are only equal if the instance is the same
+            return super.equals(other);
+        }
+        if (!(other instanceof Zak)) {
+            return false;
+        }
+        return (getId().equals(((Zak) other).getId()))
+                && (kont.getId().equals(((Zak) other).kont.getId()));
+    }
+
 //    @Override
 //    public boolean equals(Object o) {
 //        if (this == o) return true;
@@ -395,75 +497,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
 //        return result;
 //    }
 
-    // TODO: try eager - for better performance in TreeGrid ?
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_KONT")
-    private Kont kont;
-
-//    public Kont getZak() {
-//        return kont;
-//    }
-    public void setKont(Kont kont) {
-        this.kont = kont;
-    }
-
-    @Override
-    public int hashCode() {
-        if (getId() == null) {
-            return super.hashCode();
-        }
-//        return 31 + getId().hashCode();
-
-        int result = (int) (getId() ^ (getId() >>> 32));
-        result = 31 * result + (int) (kont.getId() ^ (kont.getId() >>> 32));
-//        result = 31 * result + (int) (z ^ (z >>> 32));
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (getId() == null) {
-            // New entities are only equal if the instance is the same
-            return super.equals(other);
-        }
-        if (!(other instanceof Zak)) {
-            return false;
-        }
-        return (getId().equals(((Zak) other).getId()))
-                && (kont.getId().equals(((Zak) other).kont.getId()));
-    }
-
 // ======================================
-
-
-//    @Override
-//    public BigDecimal getHonorar() {
-//        return honorar;
-//    }
-
-    @Override
-    public List<KzTreeAware> getNodes() {
-        return new ArrayList();
-    }
-
-
-//    @Override
-//    public void setNodes(List<KzTreeAware> nodes) {
-////        return new ArrayList();
-//    }
-
-//    @Override
-//    public void setNodes(Set<? extends KzTreeAware> zaks) {
-//        // Do nothing
-//    }
-
-    @Override
-    public String getObjednatel() {
-        return "";
-    }
-
 
 }

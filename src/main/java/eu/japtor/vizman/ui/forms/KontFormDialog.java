@@ -1,16 +1,37 @@
 package eu.japtor.vizman.ui.forms;
 
+import com.vaadin.flow.component.AbstractCompositeField;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Section;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextFieldVariant;
+import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.function.ValueProvider;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.ui.components.*;
 import org.springframework.util.Assert;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -18,11 +39,25 @@ import java.util.function.Consumer;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
+//    final NumberRenderer<Zak> moneyRenderer;
+    final NumberFormat moneyFormat;
+//    final NumberFormat numFormat;
+    final StringToBigDecimalConverter bigDecimalMoneyConverter;
+    final ValueProvider<Zak, String> honorProvider;
+//    final NumberRenderer<Zak> moneyRenderer;
+    final ComponentRenderer<HtmlComponent, Zak> moneyCellRenderer;
+
+    private TextField ckontField = new TextField("Číslo kontraktu"); // = new TextField("Username");
+    private Button ckontChangeBtn = new Button("Změnit č. kontraktu"); // = new TextField("Username");
+    private Checkbox archCheck = new Checkbox("Archiv"); // = new TextField("Username");
     private TextField objednatelField = new TextField("Objednatel"); // = new TextField("Username");
     private TextField investorField = new TextField("Investor"); // = new TextField("Username");
     private TextField textField = new TextField("Text"); // = new TextField("Jméno");
     private TextField honorarField = new TextField("Honorář (suma ze zakázek/subdodávek)");
+
+    private ComboBox<Mena> menaCombo = new ComboBox("Měna");
     private TextField menaField = new TextField("Měna");
+
 //    private Span datZadComp = new Span("Datum zadání");
 //    private Checkbox archiveCheckbox; // = new DatePicker("Nástup");
 
@@ -41,7 +76,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
 ////    private ListDataProvider<Role> allRolesDataProvider;
 //    private Collection<Role> personRoles;
-    private final ConfirmationDialog<KontDoc> confirmDialog = new ConfirmationDialog<>();
+    private final ConfirmationDialog<KontDoc> confirmDocDeregDialog = new ConfirmationDialog<>();
+    private final ConfirmationDialog<Zak> confirmZakOpenDialog = new ConfirmationDialog<>();
 
 
     public KontFormDialog(BiConsumer<Kont, Operation> itemSaver,
@@ -49,6 +85,64 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                           KontService kontService)
     {
         super(GenderGrammar.MASCULINE, Kont.NOMINATIVE_SINGULAR, Kont.GENITIVE_SINGULAR, Kont.ACCUSATIVE_SINGULAR, itemSaver, itemDeleter);
+
+
+        moneyFormat = new MoneyFormat(Locale.getDefault());
+
+//        moneyFormat = DecimalFormat.getInstance();
+//        if (moneyFormat instanceof DecimalFormat) {
+//            ((DecimalFormat)moneyFormat).setParseBigDecimal(true);
+//        }
+//        moneyFormat.setGroupingUsed(true);
+//        moneyFormat.setMinimumFractionDigits(2);
+//        moneyFormat.setMaximumFractionDigits(2);
+
+//        numFormat = DecimalFormat.getInstance(Locale.getDefault());
+//        if (numFormat instanceof DecimalFormat) {
+//            ((DecimalFormat)numFormat).setParseBigDecimal(true);
+//        }
+//        numFormat.setGroupingUsed(true);
+//        numFormat.setMinimumFractionDigits(2);
+//        numFormat.setMaximumFractionDigits(2);
+
+        bigDecimalMoneyConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
+            @Override
+            protected java.text.NumberFormat getFormat(Locale locale) {
+                NumberFormat numberFormat = super.getFormat(locale);
+                numberFormat.setGroupingUsed(true);
+                numberFormat.setMinimumFractionDigits(2);
+                numberFormat.setMaximumFractionDigits(2);
+                return numberFormat;
+            }
+        };
+
+        honorProvider = (zak) -> moneyFormat.format(zak.getHonorar());
+
+//        moneyRenderer = new NumberRenderer(honorProvider, numFormat);
+
+        moneyCellRenderer = new ComponentRenderer<>(kontZak -> {
+            Div comp = new Div();
+//            if (TypeZak.KONT == kontZak.getTyp()) {
+////            comp.getStyle().set("color", "darkmagenta");
+////            return new Emphasis(kontZak.getHonorar().toString());
+//                comp.getElement().appendChild(ElementFactory.createEmphasis(kontZak.getHonorar().toString()));
+//                comp.getStyle()
+////                    .set("color", "red")
+////                    .set("text-indent", "1em");
+////                        .set("padding-right", "1em")
+//                ;
+//            } else {
+                if ((null != kontZak) && (kontZak.getHonorar().compareTo(BigDecimal.ZERO) < 0)) {
+                    comp.getStyle()
+                            .set("color", "red")
+//                            .set("text-indent", "1em")
+                    ;
+                }
+//                comp.getElement().appendChild(ElementFactory.createSpan(numFormat.format(kontZak.getHonorar())));
+                comp.setText(moneyFormat.format(kontZak.getHonorar()));
+//            }
+            return comp;
+        });
 
         setWidth("1200px");
 //        setHeight("600px");
@@ -75,25 +169,57 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //            }
 //        };
 
+        initCkontField();
+        initArchCheck();
         initObjednatelField();
         initInvestorField();
         initTextField();
-        initMenaField();
+        initMenaCombo();
         initHonorarField();
 //        initDatZadField();
         initZakGrid();
         initDocGrid();
 
+        getFormLayout().add(ckontField);
+//        AbstractCompositeField box = new Composite();
+//        box.setMargin(false);
+//        box.setPadding(false);
+        FlexLayout box = new FlexLayout();
+        Span ribbon = new Span();
+        ribbon.setWidth("3em");
+        box.setAlignItems(FlexComponent.Alignment.BASELINE);
+        box.add(ckontChangeBtn, ribbon, archCheck);
+        getFormLayout().add(box);
+//        getFormLayout().addFormItem(ckontChangeBtn, archCheck);
         getFormLayout().add(objednatelField);
         getFormLayout().add(investorField);
         getFormLayout().add(textField);
         getFormLayout().add(honorarField);
-        getFormLayout().add(menaField);
+        getFormLayout().add(menaCombo);
 //        getFormLayout().add(datZadComp);
         getUpperGridLayout().add(docGrid);
         getLowerGridLayout().add(zakGrid);
 //        getFormLayout().add(buildZakGridContainer(zakGrid));
     }
+
+
+
+    public static class MoneyFormat extends DecimalFormat {
+
+        public MoneyFormat (Locale locale) {
+            super();
+//        moneyFormat = DecimalFormat.getInstance();
+//        if (moneyFormat instanceof DecimalFormat) {
+//            ((DecimalFormat)moneyFormat).setParseBigDecimal(true);
+//        }
+            NumberFormat numberFormat = NumberFormat.getInstance(locale);
+
+            this.setGroupingUsed(true);
+            this.setMinimumFractionDigits(2);
+            this.setMaximumFractionDigits(2);
+        }
+    }
+
 
     /**
      * Called by abstract parent dialog from its open(...) method.
@@ -130,6 +256,17 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //                .bind(Person::getStatus, Person::setStatus);
 //    }
 
+    private void initCkontField() {
+        ckontField.setReadOnly(true);
+        getBinder().forField(ckontField)
+                .bind(Kont::getCkont, Kont::setCkont);
+    }
+
+    private void initArchCheck() {
+        getBinder().forField(archCheck)
+                .bind(Kont::getArch, Kont::setArch);
+    }
+
     private void initObjednatelField() {
         getBinder().forField(objednatelField)
                 .withConverter(String::trim, String::trim)
@@ -160,9 +297,12 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //    }
 
 
-    private void initMenaField() {
-        getBinder().forField(menaField)
-            .withConverter(mena -> Mena.valueOf(mena), menaEnum -> menaEnum.name())
+    private void initMenaCombo() {
+        menaCombo.setItems(Mena.values());
+//        menaCombo.setDataProvider((DataProvider<Mena, String>) EnumSet.allOf(Mena.class));
+//        menaCombo.setItems(EnumSet.allOf(Mena.class));
+        getBinder().forField(menaCombo)
+//            .withConverter(mena -> Mena.valueOf(mena), menaEnum -> menaEnum.name())
             .bind(Kont::getMena, Kont::setMena);
 
 //        final BeanItemContainer<Status> container = new BeanItemContainer<>(Status.class);
@@ -172,20 +312,24 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //        basicContent.addComponent(cStatus);
     }
 
-    // TODO: shouldn't have been calculated from Zaks <
+
     private void initHonorarField() {
         honorarField.setReadOnly(true);
-        honorarField.setPreventInvalidInput(true);
-        honorarField.setSuffixComponent(new Span("CZK"));
-        honorarField.setValue("123 456,70");
+        honorarField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        getBinder().forField(honorarField)
+                .withConverter(bigDecimalMoneyConverter)
+                .bind(Kont::getHonorar, null);
     }
+
+
+    // ----------------------------------------------
 
     private void initZakGrid() {
         Assert.notNull(zakGrid, "ZakGrid must not be null");
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         zakGrid.setId("zak-grid");
         zakGrid.setClassName("vizman-simple-grid");
-        zakGrid.setHeight("12em");
+        zakGrid.setHeight("15em");
 
 
 //        zakGrid.getElement().setAttribute("colspan", "2");
@@ -194,22 +338,36 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //        zakGrid.getStyle().set("padding-top", "2.5em");
 //        zakGrid.getStyle().set("padding-bottom", "2.5em");
 
-//        this.allRolesDataProvider = DataProvider.ofCollection(roleRepo.findAll());
-//        this.personRoles = DataProvider.ofCollection(getCurrentItem().getRoles());
+        zakGrid.addColumn(Zak::getCzak).setHeader("ČZ")
+                .setWidth("3em").setFlexGrow(0)
+        ;
 
-//        twinGrid = new Grid<>();
-//        roleTwinGrid.setLeftDataProvider(personRoles);
-//        initRoleGrid();
-//        roleTwinGrid.addColumn(Role::getName).setHeader("Název").setWidth("3em").setResizable(true);
-//        roleTwinGrid.addColumn(Role::getDescription).setHeader("Popis").setWidth("8em").setResizable(true);
-//        this.add(roleGridContainer);
 
-//        twinRolesGridField = new TwinColGrid<>(allRolesDataProvider)
-//        twinRolesGridField = new TwinColGrid<>(roleRepo.findAll())
-        zakGrid.addColumn(Zak::getCzak).setHeader("ČZ");
-        zakGrid.addColumn(Zak::getHonorar).setHeader("Honorář");
-//        zakGrid.addColumn("Honorář CZK");
-        zakGrid.addColumn(Zak::getText).setHeader("Text");
+//        zakGrid.addColumn(new ComponentRenderer<>(this::createEditButton))
+//        zakGrid.addColumn(moneyRenderer).setHeader("Honorář")
+//        new NumberRenderer<>(Zak::getHonorar, sazbaFormat)
+
+//        zakGrid.addColumn(Zak::getHonorar).setHeader("Honorář")
+//                .setWidth("8em").setResizable(true).setTextAlign(ColumnTextAlign.END)
+//                .setFlexGrow(0)
+//        ;
+//        zakGrid.addColumn(moneyRenderer).setHeader("Honorář")
+        zakGrid.addColumn(moneyCellRenderer).setHeader("Honorář")
+                .setResizable(true)
+                .setTextAlign(ColumnTextAlign.END)
+                .setWidth("10em").setFlexGrow(0)
+        ;
+
+        zakGrid.addColumn(Zak::getText).setHeader("Text")
+                .setFlexGrow(1)
+        ;
+
+        zakGrid.addColumn(Zak::getFaktsOver).setHeader("Fakt.")
+                .setFlexGrow(0);
+        ;
+
+        zakGrid.addColumn(new ComponentRenderer<>(this::buildZakOpenButton))
+                .setFlexGrow(0);
     }
 
     private void initDocGrid() {
@@ -222,25 +380,43 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         docGrid.addColumn(KontDoc::getFilename).setHeader("Soubor");
         docGrid.addColumn(KontDoc::getNote).setHeader("Poznámka");
 //        docGrid.addColumn("Honorář CZK");
-        docGrid.addColumn(KontDoc::getDateRegist).setHeader("Vloženo");
+        docGrid.addColumn(KontDoc::getDateCreate).setHeader("Registrováno");
         docGrid.addColumn(new ComponentRenderer<>(this::buildDocRemoveButton))
                 .setFlexGrow(0);
     }
 
     private Component buildDocRemoveButton(KontDoc kontDoc) {
-            return new RemoveItemGridButton(event -> {
+            return new GridActionItemButton(event -> {
                 close();
-                confirmDialog.open("Registrace dokumentu",
-                        "Zrušit registraci dokumentu?", "", "Zrušit",
+                confirmDocDeregDialog.open("Zrušit registrace dokumentu ?",
+                        "", "", "Zrušit",
                         true, kontDoc, this::removeDocRegistration, this::open);
             });
     }
 
     private void removeDocRegistration(KontDoc kontDoc) {
-
         close();
-
     }
+
+
+    private Component buildZakOpenButton(Zak zak) {
+            return new GridActionItemButton(event -> {
+                close();
+                confirmZakOpenDialog.open("Zrušit zakázku ?",
+                        "", "", "Zrušit",
+//                        true, zak, this::openZakForm, this::open);
+                        true, zak, this::openZakForm, this::open);
+            });
+    }
+
+    private void openZakForm(Zak z) {
+        close();
+    }
+
+//    private void openZakForm(Zak zak) {
+//        close();
+//    }
+
 //    private void addTerminField() {
 //
 //        // Nastup field binder:

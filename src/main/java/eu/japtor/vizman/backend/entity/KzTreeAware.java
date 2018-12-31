@@ -7,7 +7,7 @@ public interface KzTreeAware<T extends KzTreeAware> {
 
     String getCkont();
     Integer getCzak();
-    ZakTyp getTyp();
+    TypeZak getTyp();
     Boolean getArch();
     String getObjednatel();
     String getText();

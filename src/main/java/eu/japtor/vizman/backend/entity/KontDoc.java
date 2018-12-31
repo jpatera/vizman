@@ -10,7 +10,8 @@ public class KontDoc extends AbstractEntity {
 
     private String filename;
     private String note;
-    private LocalDate dateRegist;
+    private LocalDate dateCreate;
+    private LocalDate dateUpdate;
 
     @Column(name = "FILENAME")
     public String getFilename() {
@@ -32,13 +33,22 @@ public class KontDoc extends AbstractEntity {
     }
 
 
-    @Column(name = "DATE_REGIST")
-    public LocalDate getDateRegist() {
-        return dateRegist;
+    @Column(name = "DATE_CREATE")
+    public LocalDate getDateCreate() {
+        return dateCreate;
     }
 
-    protected void setDateRegist(LocalDate dateRegist) {
-        this.dateRegist = dateRegist;
+    protected void setDateCreate(LocalDate dateCreate) {
+        this.dateCreate = dateCreate;
+    }
+
+    @Column(name = "DATE_UPDATE")
+    public LocalDate getDateUpdate() {
+        return dateUpdate;
+    }
+
+    protected void setDateUpdate(LocalDate dateUpdate) {
+        this.dateUpdate = dateUpdate;
     }
 
 

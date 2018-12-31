@@ -59,6 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -136,7 +137,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 //                })
         });
 
-        if (ZakTyp.ZAK == kontZak.getTyp() || ZakTyp.SUB == kontZak.getTyp()) {
+        if (TypeZak.KONT != kontZak.getTyp()) {
             comp.getStyle().set("text-indent", "1em");
         }
         return comp;
@@ -145,7 +146,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
     ValueProvider<KzTreeAware, String> ckontValProv = new ValueProvider() {
         @Override
         public Object apply(Object o) {
-            if (((KzTreeAware)o).getTyp() == ZakTyp.KONT) {
+            if (((KzTreeAware)o).getTyp() == TypeZak.KONT) {
                 return ((KzTreeAware)o).getCkont();
             } else {
                 return "";
@@ -155,7 +156,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 
     ComponentRenderer<HtmlComponent, KzTreeAware> honorarCellRenderer = new ComponentRenderer<>(kontZak -> {
         Paragraph comp = new Paragraph();
-        if (ZakTyp.KONT == kontZak.getTyp()) {
+        if (TypeZak.KONT == kontZak.getTyp()) {
 //            comp.getStyle().set("color", "darkmagenta");
 //            return new Emphasis(kontZak.getHonorar().toString());
             comp.getElement().appendChild(ElementFactory.createEmphasis(kontZak.getHonorar().toString()));
@@ -383,7 +384,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         ;
 //                .setFlexGrow(1).setWidth("6em").setResizable(false).setId("mena-column");
 
-        kzTreeGrid.addColumn(new ComponentRenderer<>(this::buildViewEditButton))
+        kzTreeGrid.addColumn(new ComponentRenderer<>(this::buildKontZakOpenButton))
                 .setFlexGrow(0)
         ;
 
@@ -453,7 +454,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 //                            .addFilter(KzTreeAware::getObjednatel, t ->
 //                                    StringUtils.containsIgnoreCase(t, objednatelFilterField.getValue())
 //                            )
-                            .addFilter(kz -> ZakTyp.KONT != kz.getTyp() || StringUtils.containsIgnoreCase(
+                            .addFilter(kz -> TypeZak.KONT != kz.getTyp() || StringUtils.containsIgnoreCase(
                                 kz.getObjednatel(), objednatelFilterField.getValue())
                             )
         );
@@ -567,13 +568,13 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
     }
 
 
-    private Component buildViewEditButton(KzTreeAware kz) {
-        if (ZakTyp.KONT == kz.getTyp()) {
+    private Component buildKontZakOpenButton(KzTreeAware kz) {
+        if (TypeZak.KONT == kz.getTyp()) {
             return new EditItemGridButton(event -> kontForm.open(
                     (Kont)kz, AbstractEditorDialog.Operation.EDIT,
-                    "[ Zadáno: " + ((Kont) kz).getDateCreate().toString()
-                            + " , Editováno: " + ((Kont) kz).getDateEdit().toString() + " ]"));
-        } else if (ZakTyp.ZAK == kz.getTyp()) {
+                    "[ Vytvořeno: " + ((Kont) kz).getDateCreate().toString()
+                            + " , Poslední změna: " + ((Kont) kz).getDateUpdate().toString() + " ]"));
+        } else if (TypeZak.ZAK == kz.getTyp()) {
             return new Span("--");
 //            return new EditItemGridButton(event -> kontForm.open(
 //                    (Zak)kz, AbstractEditorDialog.Operation.EDIT));
@@ -648,6 +649,48 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 
 
     private void saveKont(Kont kont, AbstractEditorDialog.Operation operation) {
+
+//        event -> {
+//            try {
+//                binder.writeBean(person);
+//                // A real application would also save the updated person
+//                // using the application's backend
+//            } catch (ValidationException e) {
+//                notifyValidationException(e);
+//            }
+
+        //INSERT:
+
+        // Check CKONT uniqueness
+
+        // Create valid dir in-memory structure
+
+        // Check if new kont dir does not exist
+
+        // Create kont dir structures
+
+        // Save kont
+
+
+
+        // EDIT:
+
+        // Check changed CKONT uniqueness
+
+        // If CKONT changed, create valid dir in-memory structure
+
+        // Check if current kont dir exists
+
+        // Check if changed kont dir does not exist exist
+
+        // Rename kont dir structures
+
+        // Save kont
+
+
+        File file = new File("location of file");
+        file.setReadOnly();
+
         Kont newInstance = kontService.saveKont(kont);
         kzTreeGrid.getDataProvider().refreshItem(newInstance);
         Notification.show(

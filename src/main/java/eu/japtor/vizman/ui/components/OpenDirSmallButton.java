@@ -7,13 +7,12 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 
 public class OpenDirSmallButton extends Button {
 
-    public OpenDirSmallButton(final ComponentEventListener openDir) {
+    public OpenDirSmallButton(final ComponentEventListener itemAction) {
         super();
         this.setText("");
-        this.setIcon(new Icon( VaadinIcon.BOMB));
+        this.setIcon(new Icon(VaadinIcon.BOMB));
 //        this.addClassName("review__edit");
         this.getElement().setAttribute("theme", "tertiary");
-        this.addClickListener(openDir);
+        this.addClickListener(itemAction);
     }
-
 }

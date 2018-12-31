@@ -2,6 +2,7 @@ package eu.japtor.vizman.backend.entity;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ZAKDOC")
@@ -9,7 +10,8 @@ public class ZakDoc extends AbstractEntity {
 
     private String filename;
     private String note;
-    private LocalDate dateRegist;
+    private LocalDate dateCreate;
+    private LocalDateTime dateUpdate;
 
     @Column(name = "FILENAME")
     public String getFilename() {
@@ -31,13 +33,22 @@ public class ZakDoc extends AbstractEntity {
     }
 
 
-    @Column(name = "DATE_REGIST")
-    public LocalDate getDateRegist() {
-        return dateRegist;
+    @Column(name = "DATE_CREATE")
+    public LocalDate getDateCreate() {
+        return dateCreate;
     }
 
-    protected void setDateRegist(LocalDate dateRegist) {
-        this.dateRegist = dateRegist;
+    protected void setDateCreate(LocalDate dateCreate) {
+        this.dateCreate = dateCreate;
+    }
+
+    @Column(name = "DATE_UPDATE")
+    public LocalDateTime getDateUpdate() {
+        return dateUpdate;
+    }
+
+    protected void setDateUpdate(LocalDateTime dateUpdate) {
+        this.dateUpdate = dateUpdate;
     }
 
     @ManyToOne(fetch = FetchType.LAZY)

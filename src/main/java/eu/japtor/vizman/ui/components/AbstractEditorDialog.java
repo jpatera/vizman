@@ -3,6 +3,7 @@ package eu.japtor.vizman.ui.components;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H6;
 import com.vaadin.flow.component.html.Paragraph;
@@ -157,9 +158,22 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         deleteButton.addClickListener(e -> deleteClicked());
         deleteButton.getElement().setAttribute("theme", "error");
 
-        buttonBar.add(saveButton, cancelButton, deleteButton);
+        HorizontalLayout leftBarPart = new HorizontalLayout();
+        leftBarPart.setSpacing(true);
+        HorizontalLayout rightBarPart = new HorizontalLayout();
+        rightBarPart.setSpacing(true);
+        leftBarPart.add(saveButton, deleteButton);
+        rightBarPart.add(cancelButton);
+
+//        buttonBar.getStyle().set("margin-top", "0.2em");
+        buttonBar.setSpacing(false);
+        buttonBar.setPadding(false);
+        buttonBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        buttonBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
+
+        buttonBar.add(leftBarPart, rightBarPart);
         buttonBar.setClassName("buttons");
-        buttonBar.setSpacing(true);
+//        buttonBar.setSpacing(true);
     }
 
     /**

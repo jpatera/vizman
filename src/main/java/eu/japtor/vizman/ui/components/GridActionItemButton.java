@@ -5,15 +5,14 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-public class RemoveItemGridButton extends Button {
+public class GridActionItemButton extends Button {
 
-    public RemoveItemGridButton(final ComponentEventListener removeItemEditDialog) {
+    public GridActionItemButton(final ComponentEventListener itemAction) {
         super();
         this.setText("");
 //        this.setIcon(new Icon("lumo", "edit"));
         this.setIcon(new Icon(VaadinIcon.FILE_REMOVE));
         this.getElement().setAttribute("theme", "tertiary");
-        this.addClickListener(removeItemEditDialog);
+        this.addClickListener(itemAction);
     }
-
 }
