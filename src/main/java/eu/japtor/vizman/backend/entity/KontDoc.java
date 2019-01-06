@@ -2,7 +2,7 @@ package eu.japtor.vizman.backend.entity;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.Set;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "KONTDOC")
@@ -11,7 +11,7 @@ public class KontDoc extends AbstractEntity {
     private String filename;
     private String note;
     private LocalDate dateCreate;
-    private LocalDate dateUpdate;
+    private LocalDateTime datetimeUpdate;
 
     @Column(name = "FILENAME")
     public String getFilename() {
@@ -42,13 +42,13 @@ public class KontDoc extends AbstractEntity {
         this.dateCreate = dateCreate;
     }
 
-    @Column(name = "DATE_UPDATE")
-    public LocalDate getDateUpdate() {
-        return dateUpdate;
+    @Column(name = "DATETIME_UPDATE")
+    public LocalDateTime getDatetimeUpdate() {
+        return datetimeUpdate;
     }
 
-    protected void setDateUpdate(LocalDate dateUpdate) {
-        this.dateUpdate = dateUpdate;
+    protected void setDatetimeUpdate(LocalDateTime datetimeUpdate) {
+        this.datetimeUpdate = datetimeUpdate;
     }
 
 

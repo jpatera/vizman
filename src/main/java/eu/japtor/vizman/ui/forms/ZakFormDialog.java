@@ -1,110 +1,149 @@
 package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.grid.ColumnTextAlign;
+import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextFieldVariant;
+import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import eu.japtor.vizman.backend.entity.*;
-import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.ZakService;
-import eu.japtor.vizman.ui.components.AbstractEditorDialog;
-import eu.japtor.vizman.ui.components.ConfirmationDialog;
-import eu.japtor.vizman.ui.components.GridActionItemButton;
-import eu.japtor.vizman.ui.components.OkDialog;
-import org.springframework.util.Assert;
+import eu.japtor.vizman.ui.components.*;
 
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class ZakFormDialog extends AbstractEditorDialog<Zak> {
+public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEnterObserver {
+
+    final NumberFormat moneyFormat;
+    final StringToBigDecimalConverter bigDecimalMoneyConverter;
+    final ValueProvider<Fakt, String> castkaProvider;
+    final ComponentRenderer<HtmlComponent, Fakt> moneyCellRenderer;
 
     private Mena zakMena;
-    private TextField objednatelField = new TextField("Objednatel"); // = new TextField("Username");
-    private TextField investorField = new TextField("Investor"); // = new TextField("Username");
-    private TextField textField = new TextField("Text"); // = new TextField("Jméno");
-    private TextField honorarField = new TextField("Honorář");
-    private TextField menaField = new TextField("Měna");
-//    private Span datZadComp = new Span("Datum zadání");
+
+    private TextField czakField;
+    private Button evidChangeBtn;
+    private Checkbox archCheck;
+    private TextField txtField;
+    private TextField honorarField;
+    private TextField menaField;
+
+    //    private Span datZadComp = new Span("Datum zadání");
 //    private Checkbox archiveCheckbox; // = new DatePicker("Nástup");
 
-    Grid<Fakt> faktGrid = new Grid();
-    Grid<ZakDoc> docGrid = new Grid();
+    private Grid<ZakDoc> docGrid;
+//    private HorizontalLayout docDirComponent;
+//    private FormLayout.FormItem docDirComponent;
+    private FlexLayout docDirComponent;
+//    private Paragraph docDirField;
+    private TextField docDirField;
+    private Button openDocDirBtn;
+    private HorizontalLayout docGridBar;
+    private Button registerDocButton;
 
-//    @Autowired
-    private ZakService zakService;
-//    private FaktService faktService;
 
+    private Grid<Fakt> faktGrid;
+    private Button newFaktButton;
 
-////    private ListDataProvider<Role> allRolesDataProvider;
-//    private Collection<Role> personRoles;
+    private ZakFormDialog zakFormDialog;
     private final ConfirmationDialog<ZakDoc> confirmDocUnregisterDialog = new ConfirmationDialog<>();
     private final ConfirmationDialog<Fakt> confirmFaktOpenDialog = new ConfirmationDialog<>();
 
+//    @Autowired
+    private ZakService zakService;
+
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+
+    }
 
     public ZakFormDialog(BiConsumer<Zak, Operation> itemSaver,
-                         Consumer<Zak> itemDeleter)
-//                         KontService kontService)
+                         Consumer<Zak> itemDeleter,
+                         ZakService zakService)
     {
-        super(GenderGrammar.MASCULINE, Kont.NOMINATIVE_SINGULAR
-                , Kont.GENITIVE_SINGULAR, Kont.ACCUSATIVE_SINGULAR
-                , itemSaver, itemDeleter);
-
-        setWidth("1200px");
-//        setHeight("600px");
-
-//        getFormLayout().setResponsiveSteps(
-//                new FormLayout.ResponsiveStep("0", 1),
-//                new FormLayout.ResponsiveStep("10em", 2),
-//                new FormLayout.ResponsiveStep("12em", 3));
+//        super(Zak.ZAK_GENDER, Zak.ZAK_NOMINATIVE_SINGULAR
+//                , Zak.ZAK_GENITIVE_SINGULAR, Zak.ZAK_ACCUSATIVE_SINGULAR
+//                , itemSaver, itemDeleter);
+        super(true, true, itemSaver, itemDeleter);
 
         this.zakService = zakService;
-//        this.zakService = zakService;
 
-//        getBinder().forField(jmenoField)
-//                .bind(Person::getJmeno, Person::setJmeno);
-//        this.passwordEncoder = new PasswordEncoder() {
-//            @Override
-//            public String encode(CharSequence rawPassword) {
-//                return null;
-//            }
-//
-//            @Override
-//            public boolean matches(CharSequence rawPassword, String encodedPassword) {
-//                return false;
-//            }
-//        };
+        setWidth("1200px");
+        //        setHeight("600px");
 
-//        initObjednatelField();
-//        initInvestorField();
-//        initTextField();
-//        initMenaField();
+        moneyFormat = new KontFormDialog.MoneyFormat(Locale.getDefault());
 
-        zakMena = getCurrentItem().getMena();
-        initHonorarField();
-//        initArchField();
+        bigDecimalMoneyConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
+            @Override
+            protected java.text.NumberFormat getFormat(Locale locale) {
+                NumberFormat numberFormat = super.getFormat(locale);
+                numberFormat.setGroupingUsed(true);
+                numberFormat.setMinimumFractionDigits(2);
+                numberFormat.setMaximumFractionDigits(2);
+                return numberFormat;
+            }
+        };
 
-        initFaktGrid();
-        initDocGrid();
+        castkaProvider = (fakt) -> moneyFormat.format(fakt.getCastka());
 
-        getFormLayout().add(objednatelField);
-        getFormLayout().add(investorField);
-        getFormLayout().add(textField);
-        getFormLayout().add(honorarField);
-        getFormLayout().add(menaField);
-//        getFormLayout().add(datZadComp);
-        getUpperGridLayout().add(docGrid);
-        getLowerGridLayout().add(faktGrid);
-//        getFormLayout().add(buildZakGridContainer(zakGrid));
+        moneyCellRenderer = new ComponentRenderer<>(fakt -> {
+            Div comp = new Div();
+            if ((null != fakt) && (fakt.getCastka().compareTo(BigDecimal.ZERO) < 0)) {
+                comp.getStyle()
+                        .set("color", "red")
+                ;
+            }
+            comp.setText(moneyFormat.format(fakt.getCastka()));
+            return comp;
+        });
+
+        ;
+
+        getFormLayout().add(initCzakField());
+        getFormLayout().add(initEvidArchComponent());
+        getFormLayout().add(initTextField());
+        getFormLayout().add(initHonorarField());
+//        getFormLayout().add(new Paragraph(""));
+        getFormLayout().add(initMenaField());
+
+//        getUpperGridCont().add(new Ribbon(Ribbon.Orientation.VERTICAL, "1em"));
+        getUpperGridCont().add(initDocDirComponent());
+//        getUpperGridCont().add(initDocGridBar());
+        getUpperGridCont().add(initDocGrid());
+
+        getLowerGridCont().add(initFaktGridBar());
+        getLowerGridCont().add(initFaktGrid());
+
     }
 
     /**
      * Called by abstract parent dialog from its open(...) method.
      */
     protected void openSpecific() {
+
+        // Mandatory, should be first
+        setItemNames(getCurrentItem().getTyp());
+
+
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
 //        datZadComp.setLocale(new Locale("cs", "CZ"));
@@ -115,17 +154,14 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> {
 //                .bind(Person::getRoles, Person::setRoles);
 
 //        twinRolesGridField.initLeftItems(getCurrentItem().getRoles());
+
+        zakMena = getCurrentItem().getMena();
+
         faktGrid.setItems(getCurrentItem().getFakts());
         docGrid.setItems(getCurrentItem().getZakDocs());
 
     }
 
-
-//    private void initRoleGrid() {
-////        roleTwinGrid.setId("person-grid");  // .. same ID as is used in shared-styles grid's dom module
-//        roleTwinGrid.addColumn(Role::getName).setHeader("Název").setWidth("3em").setResizable(true);
-//        roleTwinGrid.addColumn(Role::getDescription).setHeader("Popis").setWidth("8em").setResizable(true);
-//    }
 
 //    private void addStatusField() {
 //        statusField.setDataProvider(DataProvider.ofItems(PersonStatus.values()));
@@ -149,60 +185,123 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> {
 //                .bind(Zak::getObjednatel, Zak::setObjednatel);
 //    }
 
-
-    private void initTextField() {
-        textField.getElement().setAttribute("colspan", "2");
-        getBinder().forField(textField)
-                .bind(Zak::getText, Zak::setText);
+    private Component initCzakField() {
+        czakField = new TextField("Číslo zakázky");
+        czakField.setReadOnly(true);
+        czakField.getStyle()
+//                .set("background-color", "yellow")
+//                    .set("text-indent", "1em");
+                .set("padding-top", "0em");
+        getBinder().forField(czakField)
+                .withConverter(new StringToIntegerConverter("Neplatný formát čísla"))
+                .bind(Zak::getCzak, Zak::setCzak);
+        return czakField;
     }
 
+    private Component initEvidChangeButton() {
+        evidChangeBtn = new Button("Změnit evidenci");
+        evidChangeBtn.addClickListener(event -> {});
+        return evidChangeBtn;
+    }
 
-    private void initMenaField() {
+    private Component initArchCheck() {
+        archCheck = new Checkbox("Archiv"); // = new TextField("Username");
+        getBinder().forField(archCheck)
+                .bind(Zak::getArch, Zak::setArch);
+        return archCheck;
+    }
+
+    private Component initEvidArchComponent() {
+        FlexLayout evidArchCont = new FlexLayout();
+        evidArchCont.setAlignItems(FlexComponent.Alignment.BASELINE);
+        evidArchCont.add(initEvidChangeButton(), new Ribbon("3em"), initArchCheck());
+        return evidArchCont;
+    }
+
+    private Component initTextField() {
+        txtField = new TextField("Text zakázky");
+        txtField.getElement().setAttribute("colspan", "2");
+        getBinder().forField(txtField)
+                .bind(Zak::getText, Zak::setText);
+        txtField.setReadOnly(true);
+        return txtField;
+    }
+
+    private Component initMenaField() {
+        menaField = new TextField("Měna");
         getBinder().forField(menaField)
             .withConverter(mena -> Mena.valueOf(mena), menaEnum -> menaEnum.name())
             .bind(Zak::getMena, null);
-
-//        final BeanItemContainer<Status> container = new BeanItemContainer<>(Status.class);
-//        container.addAll(EnumSet.allOf(Status.class));
-//        cStatus.setContainerDataSource(container);
-//        cStatus.setItemCaptionPropertyId("caption");
-//        basicContent.addComponent(cStatus);
+        return menaField;
     }
 
-    private void initHonorarField() {
-//        honorarField.setSuffixComponent(new Span(zakMena.name()));
-        honorarField.setPreventInvalidInput(true);
-        honorarField.getElement().setProperty("textAlign", ColumnTextAlign.END.getPropertyValue());
-//        honorarField.setSuffixComponent(new Span(getCurrentItem().getKont().getMena().name()));
+    private Component initHonorarField() {
+        honorarField = new TextField("Honorář");
+//        honorarField.setReadOnly(true);
+        honorarField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        getBinder().forField(honorarField)
+                .withConverter(bigDecimalMoneyConverter)
+                .bind(Zak::getHonorar, Zak::setHonorar);
+        return honorarField;
     }
 
-    private void initFaktGrid() {
-        Assert.notNull(faktGrid, "ZakGrid must not be null");
-        faktGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        faktGrid.setId("fakt-grid");
-        faktGrid.setClassName("vizman-simple-grid");
-        faktGrid.setHeight("12em");
+    // ----------------------------------------------
 
-//        zakGrid.getElement().setAttribute("colspan", "2");
-//        zakGrid.getStyle().set("padding-right", "0em");
-//        zakGrid.getStyle().set("padding-left", "0em");
-//        zakGrid.getStyle().set("padding-top", "2.5em");
-//        zakGrid.getStyle().set("padding-bottom", "2.5em");
+    private Component initDocDirComponent() {
+        docDirComponent = new FlexLayout();
+        docDirComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
+        docDirComponent.setWidth("100%");
+        docDirComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
-        faktGrid.addColumn(Fakt::getPlneni).setHeader("Plnění [%]")
-                .setFlexGrow(0);
-        faktGrid.addColumn(Fakt::getCastka).setHeader("Částka [" + getCurrentItem().getMena().name() + "]")
-                .setFlexGrow(0);
-        faktGrid.addColumn(Fakt::getZaklad).setHeader("Zálad [" + getCurrentItem().getMena().name() + "]")
-                .setFlexGrow(0);
-        faktGrid.addColumn(Fakt::getText).setHeader("Text")
-                .setFlexGrow(1);
-        faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktOpenButton))
-                .setFlexGrow(0);
+        docDirComponent.add(
+                initDocDirField(),
+                new Ribbon(),
+                initRegisterDocButton()
+        );
+        return docDirComponent;
     }
 
-    private void initDocGrid() {
-        Assert.notNull(docGrid, "DocGrid must not be null");
+    private Component initDocDirField() {
+//        docDirField = new Paragraph();
+        docDirField = new OpenDirField(
+                "Dokumenty zakázky"
+                , "Adresář není zadán"
+                , event -> {}
+//                , event -> FileUtils.validatePathname(event.getValue()
+
+        );
+        docDirField.getStyle()
+                .set("padding-top", "0em");
+        docDirField.setWidth("100%");
+        docDirField.setPlaceholder("[zak-doc-root]\\neco\\...");
+//        docDirField.setReadOnly(true);
+        return docDirField;
+    }
+
+//    private Component initOpenDocDirBtn() {
+//        openDocDirBtn = new Button("Otevřít");
+//        openDocDirBtn.addClickListener(event -> {});
+//        return openDocDirBtn;
+//    }
+
+    private Component initRegisterDocButton() {
+        registerDocButton = new Button("+ Dokument");
+        registerDocButton.addClickListener(event -> {});
+        return registerDocButton;
+    }
+
+//    private Component initDocGridBar() {
+//        docGridBar = new HorizontalLayout();
+//        docGridBar.setWidth("100%");
+//        docGridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+//        docGridBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
+//        docGridBar.add(initRegisterDocButton());
+//        return docGridBar;
+//    }
+
+    private Component initDocGrid() {
+        docGrid = new Grid();
+        docGrid.setColumnReorderingAllowed(true);
         docGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         docGrid.setId("doc-grid");
         docGrid.setClassName("vizman-simple-grid");
@@ -214,15 +313,16 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> {
         docGrid.addColumn(ZakDoc::getDateCreate).setHeader("Vloženo");
         docGrid.addColumn(new ComponentRenderer<>(this::buildDocRemoveButton))
                 .setFlexGrow(0);
+        return docGrid;
     }
 
     private Component buildDocRemoveButton(ZakDoc kontDoc) {
-            return new GridActionItemButton(event -> {
-                close();
-                confirmDocUnregisterDialog.open("Registrace dokumentu",
-                        "Zrušit registraci dokumentu?", "", "Zrušit",
-                        true, kontDoc, this::removeDocRegistration, this::open);
-            });
+        return new GridItemOpenBtn(event -> {
+            close();
+            confirmDocUnregisterDialog.open("Registrace dokumentu",
+                    "Zrušit registraci dokumentu?", "", "Zrušit",
+                    true, kontDoc, this::removeDocRegistration, this::open);
+        });
     }
 
     private void removeDocRegistration(ZakDoc zakDoc) {
@@ -230,8 +330,81 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> {
     }
 
 
+    // ----------------------------------------------
+
+    private Component initNewFaktButton() {
+        newFaktButton = new Button("+ Fakturace");
+        newFaktButton.addClickListener(event -> zakFormDialog.open(
+                new Zak(ItemType.ZAK), AbstractEditorDialog.Operation.ADD)
+        );
+        return newFaktButton;
+    }
+
+    private Component initFaktGridTitle() {
+        H4 faktTitle = new H4();
+        faktTitle.setText(ItemNames.getNomS(ItemType.FAKT));
+        return faktTitle;
+    }
+
+    private Component initFaktGridBar() {
+        FlexLayout faktGridBar = new FlexLayout();
+        faktGridBar.setAlignItems(FlexComponent.Alignment.BASELINE);
+        faktGridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        faktGridBar.setWidth("100%");
+
+        faktGridBar.add(
+                initFaktGridTitle(),
+                new Ribbon(),
+                initNewFaktButton()
+        );
+        return faktGridBar;
+    }
+
+    private Component initFaktGrid() {
+        faktGrid = new Grid();
+
+        faktGrid.setColumnReorderingAllowed(true);
+        faktGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        faktGrid.setId("fakt-grid");
+        faktGrid.setClassName("vizman-simple-grid");
+        faktGrid.getStyle().set("marginTop", "0.5em");
+        faktGrid.setWidth( "100%" );
+        faktGrid.setHeight("12em");
+//        faktGrid.setHeight(null);
+
+//        zakGrid.getElement().setAttribute("colspan", "2");
+//        zakGrid.getStyle().set("padding-right", "0em");
+//        zakGrid.getStyle().set("padding-left", "0em");
+//        zakGrid.getStyle().set("padding-top", "2.5em");
+//        zakGrid.getStyle().set("padding-bottom", "2.5em");
+
+        faktGrid.addColumn(Fakt::getPlneni).setHeader("Plnění [%]")
+                .setFlexGrow(0);
+        faktGrid.addColumn(Fakt::getCastka).setHeader("Částka")
+                .setFlexGrow(0);
+        faktGrid.addColumn(Fakt::getZaklad).setHeader("Základ")
+                .setFlexGrow(0);
+//        faktGrid.addColumn(Fakt::getCastka).setHeader("Částka [" + getCurrentItem().getMena().name() + "]")
+//                .setFlexGrow(0);
+//        faktGrid.addColumn(Fakt::getZaklad).setHeader("Základ [" + getCurrentItem().getMena().name() + "]")
+//                .setFlexGrow(0);
+        faktGrid.addColumn(Fakt::getText).setHeader("Text")
+                .setFlexGrow(1);
+        faktGrid.addColumn(Fakt::getDateDuzp).setHeader("DUZP")
+                .setFlexGrow(0);
+        faktGrid.addColumn(Fakt::getDateVystav).setHeader("Vystaveno")
+                .setFlexGrow(0);
+        faktGrid.addColumn(Fakt::getDateTimeExport).setHeader("Exportováno")
+                .setFlexGrow(0);
+        faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktOpenButton))
+                .setFlexGrow(0);
+        return faktGrid;
+    }
+
+
+
     private Component buildFaktOpenButton(Fakt fakt) {
-            return new GridActionItemButton(event -> {
+            return new GridItemOpenBtn(event -> {
                 close();
                 confirmFaktOpenDialog.open("Otevřít fakturaci ?",
                         "", "", "Zrušit",

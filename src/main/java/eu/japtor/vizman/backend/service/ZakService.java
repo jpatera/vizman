@@ -8,6 +8,8 @@ public interface ZakService {
 
     Zak saveZak(Zak zak);
 
+    boolean deleteZak(Zak zak);
+
     Zak getZak(Long id);
 
     List<Zak> getAllZak();

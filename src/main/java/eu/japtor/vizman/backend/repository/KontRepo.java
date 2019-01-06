@@ -10,7 +10,13 @@ public interface KontRepo extends JpaRepository<Kont, Long> {
 
 //   Kont findTopByObjednatel(String objednatel);
 
-   Kont findTopByObjednatelIgnoreCase(String objednatel);
+    Kont findTopByObjednatelIgnoreCase(String objednatel);
+
+    Kont findTopByCkontIgnoreCase(String ckont);
+
+    Kont findTopByTextIgnoreCase(String text);
+
+    Kont findTopByDocdirIgnoreCase(String docdir);
 
     List<Kont> findAllByOrderByObjednatel();
 

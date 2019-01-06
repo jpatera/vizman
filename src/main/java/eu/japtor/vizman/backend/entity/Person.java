@@ -13,7 +13,7 @@ import java.util.Set;
 @Table(name = "PERSON")
 public class Person extends AbstractEntity {
 
-    public static final GenderGrammar GENDER = GenderGrammar.MASCULINE;
+    public static final GrammarGender GENDER = GrammarGender.MASCULINE;
     public static final String NOMINATIVE_SINGULAR = "Uživatel";
     public static final String NOMINATIVE_PLURAL = "Uživatelé";
     public static final String GENITIVE_SINGULAR = "Uživatele";

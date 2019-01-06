@@ -26,7 +26,7 @@ import java.util.Map;
 })
 @SpringComponent
 @UIScope
-public class SysPropsForm extends VerticalLayout {
+public class CfgPropsForm extends VerticalLayout {
 
     private Map<String, TextField> fieldMap = new LinkedHashMap<>();
     private Binder<AppCfg> binder = new Binder<>();
@@ -34,6 +34,13 @@ public class SysPropsForm extends VerticalLayout {
 
     @Autowired
     public CfgPropRepo cfgPropRepo;
+
+
+    public CfgPropsForm() {
+        setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+        setAlignItems(Alignment.STRETCH);
+//        this.setWidth("100%");
+    }
 
     @PostConstruct
     public void init() {
@@ -66,13 +73,21 @@ public class SysPropsForm extends VerticalLayout {
                 appCfg.setAppLocale(value);
                 binder.forField(field).bind(AppCfg::getAppLocale, null);
                 break;
-            case APP_DOCUMENT_ROOT:
-                appCfg.setAppDocumetRoot(value);
-                binder.forField(field).bind(AppCfg::getAppDocumetRoot, AppCfg::setAppDocumetRoot);
+            case APP_DOC_ROOT_LOCAL:
+                appCfg.setAppDocRootLocal(value);
+                binder.forField(field).bind(AppCfg::getAppDocRootLocal, AppCfg::setAppDocRootLocal);
                 break;
-            case APP_PROJECT_ROOT:
-                appCfg.setAppProjectRoot(value);
-                binder.forField(field).bind(AppCfg::getAppProjectRoot, AppCfg::setAppProjectRoot);
+            case APP_DOC_ROOT_SERVER:
+                appCfg.setAppDocRootServer(value);
+                binder.forField(field).bind(AppCfg::getAppDocRootServer, AppCfg::setAppDocRootServer);
+                break;
+            case APP_PROJ_ROOT_LOCAL:
+                appCfg.setAppProjRootLocal(value);
+                binder.forField(field).bind(AppCfg::getAppProjRootLocal, AppCfg::setAppProjRootLocal);
+                break;
+            case APP_PROJ_ROOT_SERVER:
+                appCfg.setAppProjRootServer(value);
+                binder.forField(field).bind(AppCfg::getAppProjRootServer, AppCfg::setAppProjRootServer);
                 break;
             case APP_KOEF_POJIST:
                 appCfg.setAppKoefPojist(value);
@@ -88,15 +103,19 @@ public class SysPropsForm extends VerticalLayout {
 
     private void buildPropsContainer() {
 
-        setClassName("view-container");
+//        setClassName("view-container");
         setAlignItems(Alignment.STRETCH);
 
-        Component propsHeader = new H4("SYSTÉM");
+        Component propsHeader = new H4("APLIKACE");
 
         VerticalLayout propContainer = new VerticalLayout();
+            propContainer.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+            propContainer.setAlignItems(Alignment.STRETCH);
         propContainer.add(fieldMap.get(CfgPropName.APP_LOCALE.getName()));
-        propContainer.add(fieldMap.get(CfgPropName.APP_PROJECT_ROOT.getName()));
-        propContainer.add(fieldMap.get(CfgPropName.APP_DOCUMENT_ROOT.getName()));
+        propContainer.add(fieldMap.get(CfgPropName.APP_PROJ_ROOT_LOCAL.getName()));
+        propContainer.add(fieldMap.get(CfgPropName.APP_PROJ_ROOT_SERVER.getName()));
+        propContainer.add(fieldMap.get(CfgPropName.APP_DOC_ROOT_LOCAL.getName()));
+        propContainer.add(fieldMap.get(CfgPropName.APP_DOC_ROOT_SERVER.getName()));
         propContainer.add(fieldMap.get(CfgPropName.APP_KOEF_POJIST.getName()));
         propContainer.add(fieldMap.get(CfgPropName.APP_KOEF_REZIE.getName()));
 

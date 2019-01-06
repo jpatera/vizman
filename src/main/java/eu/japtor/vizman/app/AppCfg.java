@@ -3,8 +3,10 @@ package eu.japtor.vizman.app;
 public class AppCfg {
 
     private String appLocale;
-    private String appProjectRoot;
-    private String appDocumetRoot;
+    private String appProjRootLocal;
+    private String appProjRootServer;
+    private String appDocRootLocal;
+    private String appDocRootServer;
     private String appKoefRezie;
     private String appKoefPojist;
 
@@ -17,21 +19,42 @@ public class AppCfg {
         this.appLocale = appLocale;
     }
 
-    public String getAppProjectRoot() {
-        return appProjectRoot;
+
+    public String getAppProjRootLocal() {
+        return appProjRootLocal;
     }
 
-    public void setAppProjectRoot(String appProjectRoot) {
-        this.appProjectRoot = appProjectRoot;
+    public void setAppProjRootLocal(String appProjRootLocal) {
+        this.appProjRootLocal = appProjRootLocal;
     }
 
-    public String getAppDocumetRoot() {
-        return appDocumetRoot;
+
+    public String getAppProjRootServer() {
+        return appProjRootServer;
     }
 
-    public void setAppDocumetRoot(String appDocumetRoot) {
-        this.appDocumetRoot = appDocumetRoot;
+    public void setAppProjRootServer(String appProjRootServer) {
+        this.appProjRootServer = appProjRootServer;
     }
+
+
+    public String getAppDocRootLocal() {
+        return appDocRootLocal;
+    }
+
+    public void setAppDocRootLocal(String appDocRootLocal) {
+        this.appDocRootLocal = appDocRootLocal;
+    }
+
+
+    public String getAppDocRootServer() {
+        return appDocRootServer;
+    }
+
+    public void setAppDocRootServer(String appDocRootServer) {
+        this.appDocRootServer = appDocRootServer;
+    }
+
 
     public String getAppKoefRezie() {
         return appKoefRezie;

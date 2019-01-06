@@ -1,6 +1,5 @@
 package eu.japtor.vizman.backend.entity;
 
-import jdk.nashorn.internal.objects.annotations.Function;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -10,91 +9,18 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 @Entity
 @Table(name = "ZAK")
 @SequenceGenerator(initialValue = 1, name = "id_gen", sequenceName = "zak_seq")
-public class Zak extends AbstractGenEntity implements KzTreeAware {
+public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, HasModifDates {
 
-    public static final GenderGrammar ZAK_GENDER = GenderGrammar.FEMININE;
-    public static final String ZAK_NOMINATIVE_SINGULAR = "Zakázka";
-    public static final String ZAK_NOMINATIVE_PLURAL = "Zakázky";
-    public static final String ZAK_GENITIVE_SINGULAR = "Zakázky";
-    public static final String ZAK_GENITIVE_PLURAL = "Zakázek";
-    public static final String ZAK_ACCUSATIVE_SINGULAR = "Zakázku";
-    public static final String ZAK_ACCUSATIVE_PLURAL = "Zakázky";
-
-    public static final GenderGrammar SUB_GENDER = GenderGrammar.FEMININE;
-    public static final String SUB_NOMINATIVE_SINGULAR = "Subdodávka";
-    public static final String SUB_NOMINATIVE_PLURAL = "Subdodávky";
-    public static final String SUB_GENITIVE_SINGULAR = "Subdodávky";
-    public static final String SUB_GENITIVE_PLURAL = "Subdodávek";
-    public static final String SUB_ACCUSATIVE_SINGULAR = "Subdodávku";
-    public static final String SUB_ACCUSATIVE_PLURAL = "Subdodávky";
-
-    public static final String TYP_UNKNOWN = "Neznámý typ položky";
-
-
-    public GenderGrammar getZakGender() {
-        switch (typ) {
-            case ZAK : return ZAK_GENDER;
-            case SUB : return SUB_GENDER;
-            default : return GenderGrammar.UNKNOWN;
-        }
+    public Zak() {
     }
 
-    @Function
-    public String getZakNominativeS() {
-        switch (typ) {
-            case ZAK : return ZAK_NOMINATIVE_SINGULAR;
-            case SUB : return SUB_NOMINATIVE_SINGULAR;
-            default : return TYP_UNKNOWN;
-        }
-    }
-
-    @Function
-    public String getZakNominativeP() {
-        switch (typ) {
-            case ZAK : return ZAK_NOMINATIVE_PLURAL;
-            case SUB : return SUB_NOMINATIVE_PLURAL;
-            default : return TYP_UNKNOWN;
-        }
-    }
-
-    @Function
-    public String getZakGenitiveS() {
-        switch (typ) {
-            case ZAK : return ZAK_GENITIVE_SINGULAR;
-            case SUB : return SUB_GENITIVE_SINGULAR;
-            default : return TYP_UNKNOWN;
-        }
-    }
-
-    @Function
-    public String getZakGenitiveP() {
-        switch (typ) {
-            case ZAK : return ZAK_GENITIVE_PLURAL;
-            case SUB : return SUB_GENITIVE_PLURAL;
-            default : return TYP_UNKNOWN;
-        }
-    }
-
-    @Function
-    public String getZakAccusativeS() {
-        switch (typ) {
-            case ZAK : return ZAK_ACCUSATIVE_SINGULAR;
-            case SUB : return SUB_ACCUSATIVE_SINGULAR;
-            default : return TYP_UNKNOWN;
-        }
-    }
-
-    @Function
-    public String getZakAccusativeP() {
-        switch (typ) {
-            case ZAK : return ZAK_ACCUSATIVE_PLURAL;
-            case SUB : return SUB_ACCUSATIVE_PLURAL;
-            default : return TYP_UNKNOWN;
-        }
+    public Zak(ItemType typ) {
+        this.typ = typ;
     }
 
 
@@ -102,12 +28,13 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
     private Integer czak;
 
     @Enumerated(EnumType.STRING)
-    private TypeZak typ;
+    private ItemType typ;
 
-    private String typDokladu;
+//    private String typDokladu;
     private Short rokzak;
     private String rokmeszad;
     private String text;
+    private String docdir;
     private Boolean x;
     private BigDecimal honorar;
     private BigDecimal rozprac;
@@ -121,7 +48,7 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
     private String skupina;
     private BigDecimal rm;
     private LocalDate dateCreate;
-    private LocalDateTime dateUpdate;
+    private LocalDateTime datetimeUpdate;
 
 
     @Basic
@@ -144,27 +71,25 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
         this.czak = czak;
     }
 
-    // TODO: add TYP (KONT, ZAK, SUB, FAK)
-
     @Basic
     @Column(name = "TYP")
-    public TypeZak getTyp() {
+    public ItemType getTyp() {
         return typ;
     }
 
-    public void setTyp(TypeZak typ) {
+    public void setTyp(ItemType typ) {
         this.typ = typ;
     }
 
-    @Basic
-    @Column(name = "TYP_DOKLADU")
-    public String getTypDokladu() {
-        return typDokladu;
-    }
-
-    public void setTypDokladu(String typDokladu) {
-        this.typDokladu = typDokladu;
-    }
+//    @Basic
+//    @Column(name = "TYP_DOKLADU")
+//    public String getTypDokladu() {
+//        return typDokladu;
+//    }
+//
+//    public void setTypDokladu(String typDokladu) {
+//        this.typDokladu = typDokladu;
+//    }
 
     @Basic
     @Column(name = "ROKZAK")
@@ -197,13 +122,13 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
     }
 
     @Basic
-    @Column(name = "DATE_UPDATE")
-    public LocalDateTime getDateUpdate() {
-        return dateUpdate;
+    @Column(name = "DATETIME_UPDATE")
+    public LocalDateTime getDatetimeUpdate() {
+        return datetimeUpdate;
     }
 
-    public void setDateUpdate(LocalDateTime dateUpdate) {
-        this.dateUpdate = dateUpdate;
+    public void setDatetimeUpdate(LocalDateTime datetimeUpdate) {
+        this.datetimeUpdate = datetimeUpdate;
     }
 
     @Basic
@@ -214,6 +139,16 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    @Basic
+    @Column(name = "DOCDIR")
+    public String getDocdir() {
+        return docdir;
+    }
+
+    public void setDocdir(String docdir) {
+        this.docdir = docdir;
     }
 
     @Basic
@@ -376,6 +311,17 @@ public class Zak extends AbstractGenEntity implements KzTreeAware {
 //    public void setFakts(List<Fakt> fakts) {
 //        this.fakts = fakts;
 //    }
+
+    @Transient
+    private Predicate<Fakt> overTermsPredicate = fakt ->
+            ((null != fakt.getDateVystav()) &&  (fakt.getDateDuzp().isAfter(LocalDate.now())));
+
+    @Transient
+    public Integer getOverTerms() {
+        long over = getFakts().stream()
+                .filter(overTermsPredicate).count();
+        return new Integer((int)over);
+    }
 
 // -----------------------------
 

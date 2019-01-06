@@ -5,9 +5,9 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-public class GridActionItemButton extends Button {
+public class GridItemFileRemoveBtn extends Button {
 
-    public GridActionItemButton(final ComponentEventListener itemAction) {
+    public GridItemFileRemoveBtn(final ComponentEventListener itemAction) {
         super();
         this.setText("");
 //        this.setIcon(new Icon("lumo", "edit"));

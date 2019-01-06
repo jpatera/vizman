@@ -4,6 +4,7 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.repository.KontRepo;
+import eu.japtor.vizman.ui.components.OkDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,21 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
+    public Kont getByCkont(String ckont) {
+        return kontRepo.findTopByCkontIgnoreCase(ckont);
+    }
+
+    @Override
+    public Kont getByText(String text) {
+        return kontRepo.findTopByTextIgnoreCase(text);
+    }
+
+    @Override
+    public Kont getByDocdir(String docdir) {
+        return kontRepo.findTopByDocdirIgnoreCase(docdir);
+    }
+
+    @Override
     public Kont getByObjednatel(String objednatel) {
         return kontRepo.findTopByObjednatelIgnoreCase(objednatel);
     }
@@ -55,8 +71,9 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
-    public void deleteKont(Kont kont) {
-        kontRepo.delete(kont);
+    public boolean deleteKont(Kont kont) {
+        new OkDialog().open("Rušení kontrakt; není zatím implementováno", "", "");
+        return false;
     }
 
     /**

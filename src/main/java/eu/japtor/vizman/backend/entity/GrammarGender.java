@@ -1,5 +1,5 @@
 package eu.japtor.vizman.backend.entity;
 
-public enum GenderGrammar {
+public enum GrammarGender {
     MASCULINE, FEMININE, NEUTER, UNKNOWN
 }

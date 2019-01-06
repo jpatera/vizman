@@ -11,9 +11,15 @@ public interface KontService {
 
     Kont saveKont(Kont kont);
 
-    void deleteKont(Kont kont);
+    boolean deleteKont(Kont kont);
 
     Kont getByObjednatel(String objednatel);
+
+    Kont getByCkont(String ckont);
+
+    Kont getByText(String text);
+
+    Kont getByDocdir(String docdir);
 
     List<? super Kont> fetchAll();
 

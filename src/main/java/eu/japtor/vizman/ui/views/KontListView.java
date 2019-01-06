@@ -38,6 +38,7 @@ import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.repository.KontRepo;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.ui.MainView;
+import eu.japtor.vizman.ui.components.Ribbon;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -241,9 +242,9 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
 //        HorizontalLayout toolBarItem = new HorizontalLayout(newItemButton);
 //        toolBarItem.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
-        Span ribbon = new Span();
 //        kzToolBar.add(searchToolBar, kzToolBar, ribbon, toolBarItem);
-        viewToolBar.add(searchToolBar,ribbon);
+        Ribbon ribbon = new Ribbon("3em");
+        viewToolBar.add(searchToolBar, ribbon);
         viewToolBar.expand(ribbon);
     }
 

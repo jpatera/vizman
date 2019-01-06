@@ -60,7 +60,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 public class PersonListView extends VerticalLayout implements BeforeEnterObserver {
 
     private PersonEditorDialog personEditForm;
-    private final TextField searchField;
+    private final SearchField searchField;
     private final Button newItemButton;
     private final Button reloadViewButton;
     private Grid<Person> personGrid;
@@ -225,14 +225,14 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 
         grid.addColumn(Person::getNastup).setHeader("Nástup").setWidth("8em").setResizable(true);
         grid.addColumn(Person::getVystup).setHeader("Ukončení").setWidth("8em").setResizable(true);
-        grid.addColumn(new ComponentRenderer<>(this::buildEditButton)).setFlexGrow(0);
+        grid.addColumn(new ComponentRenderer<>(this::buildEditBtn)).setFlexGrow(0);
 //        getStyle().set("border", "1px solid #9E9E9E");    // Horizontal borders?
 
         return grid;
     }
 
-    private Button buildEditButton(Person person) {
-        Button editBtn = new EditItemGridButton(event -> personEditForm.open(
+    private Button buildEditBtn(Person person) {
+        Button editBtn = new GridItemEditBtn(event -> personEditForm.open(
                 person, AbstractEditorDialog.Operation.EDIT, ""));
         return editBtn;
     }
@@ -259,7 +259,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         HorizontalLayout toolBarItem = new HorizontalLayout(newItemButton);
         toolBarItem.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
-        Span ribbon = new Span();
+        Ribbon ribbon = new Ribbon();
         viewToolBar.add(searchToolBar, gridToolBar, ribbon, toolBarItem);
         viewToolBar.expand(ribbon);
 

@@ -3,7 +3,7 @@ package eu.japtor.vizman.ui.forms;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.TextField;
-import eu.japtor.vizman.backend.entity.GenderGrammar;
+import eu.japtor.vizman.backend.entity.GrammarGender;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.service.PersonService;
@@ -34,7 +34,8 @@ public class RoleEditorDialog extends AbstractEditorDialog<Role> {
                             RoleService roleService,
                             List<Perm> allPerms)
     {
-        super(GenderGrammar.FEMININE, "role", "role","roli", itemSaver, itemDeleter);
+//        super(GrammarGender.FEMININE, "role", "role","roli", itemSaver, itemDeleter);
+        super(itemSaver, itemDeleter);
 
         setWidth("900px");
 //        setHeight("600px");

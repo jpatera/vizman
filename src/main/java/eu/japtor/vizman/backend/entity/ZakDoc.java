@@ -11,7 +11,7 @@ public class ZakDoc extends AbstractEntity {
     private String filename;
     private String note;
     private LocalDate dateCreate;
-    private LocalDateTime dateUpdate;
+    private LocalDateTime datetimeUpdate;
 
     @Column(name = "FILENAME")
     public String getFilename() {
@@ -42,13 +42,13 @@ public class ZakDoc extends AbstractEntity {
         this.dateCreate = dateCreate;
     }
 
-    @Column(name = "DATE_UPDATE")
-    public LocalDateTime getDateUpdate() {
-        return dateUpdate;
+    @Column(name = "DATETIME_UPDATE")
+    public LocalDateTime getDatetimeUpdate() {
+        return datetimeUpdate;
     }
 
-    protected void setDateUpdate(LocalDateTime dateUpdate) {
-        this.dateUpdate = dateUpdate;
+    protected void setDatetimeUpdate(LocalDateTime datetimeUpdate) {
+        this.datetimeUpdate = datetimeUpdate;
     }
 
     @ManyToOne(fetch = FetchType.LAZY)

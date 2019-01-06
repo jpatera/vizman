@@ -206,7 +206,7 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
     }
 
     private Button createEditButton(Role role) {
-        Button editBtn = new EditItemGridButton(event -> roleEditForm.open(role,
+        Button editBtn = new GridItemEditBtn(event -> roleEditForm.open(role,
                 AbstractEditorDialog.Operation.EDIT, ""));
         return editBtn;
     }
@@ -233,8 +233,8 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
         HorizontalLayout toolBarItem = new HorizontalLayout(newItemButton);
         toolBarItem.setDefaultVerticalComponentAlignment(Alignment.CENTER);
 
-        Span ribbon = new Span();
 //        kzToolBar.add(toolBarSearch, toolBarGrid, ribbon, toolBarItem);
+        Ribbon ribbon = new Ribbon("3em");
         viewToolBar.add(toolBarGrid, ribbon, toolBarItem);
         viewToolBar.expand(ribbon);
 

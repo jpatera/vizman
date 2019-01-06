@@ -109,6 +109,7 @@ public class DochView extends VerticalLayout {
 
     @PostConstruct
     public void init() {
+        this.setAlignSelf(Alignment.CENTER);
         initUpperDochGrid();
         initLowerDochGrid();
         initData();

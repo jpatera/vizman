@@ -3,8 +3,10 @@ package eu.japtor.vizman.app;
 public enum CfgPropName {
 
     APP_LOCALE("app.locale"),
-    APP_PROJECT_ROOT("app.project.root"),
-    APP_DOCUMENT_ROOT("app.document.root"),
+    APP_PROJ_ROOT_LOCAL("app.project.root.local"),
+    APP_PROJ_ROOT_SERVER("app.project.root.server"),
+    APP_DOC_ROOT_LOCAL("app.document.root.local"),
+    APP_DOC_ROOT_SERVER("app.document.root.server"),
     APP_KOEF_REZIE("app.koef.rezie"),
     APP_KOEF_POJIST("app.koef.pojist"),
     ;

@@ -45,9 +45,10 @@ public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
                           Consumer<Fakt> itemDeleter)
 //                          FaktService faktService)
     {
-        super(GenderGrammar.MASCULINE, Kont.NOMINATIVE_SINGULAR
-                , Kont.GENITIVE_SINGULAR, Kont.ACCUSATIVE_SINGULAR
-                , itemSaver, itemDeleter);
+//        super(GrammarGender.MASCULINE, Kont.NOMINATIVE_SINGULAR
+//                , Kont.GENITIVE_SINGULAR, Kont.ACCUSATIVE_SINGULAR
+//                , itemSaver, itemDeleter);
+        super(itemSaver, itemDeleter);
 
         setWidth("1200px");
 //        setHeight("600px");

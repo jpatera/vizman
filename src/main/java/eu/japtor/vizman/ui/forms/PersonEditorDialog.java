@@ -10,7 +10,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.function.SerializablePredicate;
-import eu.japtor.vizman.backend.entity.GenderGrammar;
+import eu.japtor.vizman.backend.entity.GrammarGender;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.service.PersonService;
@@ -57,7 +57,8 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
                               List<Role> allRoles,
                               PasswordEncoder passwordEncoder)
     {
-        super(GenderGrammar.MASCULINE, Person.NOMINATIVE_SINGULAR, Person.GENITIVE_SINGULAR, Person.ACCUSATIVE_SINGULAR, itemSaver, itemDeleter);
+//        super(GrammarGender.MASCULINE, Person.NOMINATIVE_SINGULAR, Person.GENITIVE_SINGULAR, Person.ACCUSATIVE_SINGULAR, itemSaver, itemDeleter);
+        super(itemSaver, itemDeleter);
 
         setWidth("900px");
 //        setHeight("600px");

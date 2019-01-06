@@ -29,7 +29,7 @@ import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.repository.ZakRepo;
 import eu.japtor.vizman.ui.MainView;
-import eu.japtor.vizman.ui.components.OpenDirSmallButton;
+import eu.japtor.vizman.ui.components.OpenDirBtn;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -99,7 +99,6 @@ public class ZakListView extends VerticalLayout implements BeforeEnterObserver {
 
         zakGrid.addColumn(Zak::getSkupina).setHeader("Skupina").setWidth("4em").setResizable(true);
         zakGrid.addColumn(Zak::getHonorar).setHeader("Honorář").setWidth("4em").setResizable(true);
-        zakGrid.addColumn(new ComponentRenderer<>(this::createOpenDirButton)).setFlexGrow(0);
         zakGrid.addColumn(Zak::getRm).setHeader("RM").setWidth("4em").setResizable(true);
         zakGrid.addColumn(Zak::getR1).setHeader("R1").setWidth("4em").setResizable(true);
         zakGrid.addColumn(Zak::getR2).setHeader("R2").setWidth("4em").setResizable(true);
@@ -108,11 +107,6 @@ public class ZakListView extends VerticalLayout implements BeforeEnterObserver {
 
         container.add(zakHeader, zakGrid);
         add(container);
-    }
-
-    private Button createOpenDirButton(Zak zak) {
-        Button openDirBtn = new OpenDirSmallButton(event -> openDir("C:/"));
-        return openDirBtn;
     }
 
     private void openDir(String path) {

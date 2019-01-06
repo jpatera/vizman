@@ -48,22 +48,22 @@ public class VizmanConst {
 	public static final String TAG_DOCH = "doch-form";
 	public static final String ROUTE_DOCH = "doch";
 
-	public static final String TITLE_KONT_LIST = "Kontrakty L";
+	public static final String TITLE_KONT_LIST = "Kontrakty";
 	public static final String PAGE_TITLE_KONT_LIST = PAGE_TITLE_BASE + " - " + TITLE_KONT_LIST;
 	public static final String TAG_KONT_LIST = "kont-list-view";
 	public static final String ROUTE_KONT = "kontlist";
 
-	public static final String TITLE_KZ_TREE = "Zakázky TREE";
+	public static final String TITLE_KZ_TREE = "Kont/Zak";
 	public static final String PAGE_TITLE_KZ_TREE = PAGE_TITLE_BASE + " - " + TITLE_KZ_TREE;
 	public static final String TAG_KZ_TREE = "kz-tree-view";
 	public static final String ROUTE_KZ_TREE = "kztree";
 
-	public static final String TITLE_ZAK = "Zakázky";
+	public static final String TITLE_ZAK = "Vyhodnocení";
 	public static final String PAGE_TITLE_ZAK = PAGE_TITLE_BASE + " - " + TITLE_ZAK;
 	public static final String TAG_ZAK = "zak-list-view";
 	public static final String ROUTE_ZAK = "zak";
 
-	public static final String TITLE_PRUH = "Proužek";
+	public static final String TITLE_PRUH = "Proužky";
 	public static final String ROUTE_PRUH = "pruh";
 
 	public static final String ROUTE_DEFAULT = ROUTE_ZAK;

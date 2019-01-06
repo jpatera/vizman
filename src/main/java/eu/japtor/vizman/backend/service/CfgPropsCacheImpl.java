@@ -1,4 +1,4 @@
-package eu.japtor.vizman.app;
+package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.backend.entity.CfgProp;
 import eu.japtor.vizman.backend.repository.CfgPropRepo;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class CfgProps {
+public class CfgPropsCacheImpl implements CfgPropsCache {
 
     private Map<String, CfgProp> propsByName = new HashMap<>();
     private List<CfgProp> propList;
@@ -37,6 +37,7 @@ public class CfgProps {
         loadPropsFromDb();
     }
 
+    @Override
     public void loadPropsFromDb() {
         propList = cfgPropRepo.findAll();
         for (CfgProp cfgProp : propList) {
@@ -44,6 +45,7 @@ public class CfgProps {
         }
     }
 
+    @Override
     public String getValue(final String propName) {
         return propsByName.get(propName).getValue();
     }

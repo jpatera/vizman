@@ -7,16 +7,17 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "FAKT")
-public class Fakt extends AbstractEntity {
+public class Fakt extends AbstractEntity implements HasModifDates {
 
     private BigDecimal plneni;
     private BigDecimal zaklad;
     private BigDecimal castka;
     private String text;
     private LocalDate dateDuzp;
+    private LocalDate dateVystav;
     private LocalDateTime dateTimeExport;
     private LocalDate dateCreate;
-    private LocalDate dateUpdate;
+    private LocalDateTime datetimeUpdate;
 
 
     @Column(name = "PLNENI")
@@ -68,7 +69,17 @@ public class Fakt extends AbstractEntity {
     }
 
 
-    @Column(name = "DATE_EXPORT")
+    @Column(name = "DATE_VYSTAV")
+    public LocalDate getDateVystav() {
+        return dateVystav;
+    }
+
+    public void setDateVystav(LocalDate dateVystav) {
+        this.dateVystav = dateVystav;
+    }
+
+
+    @Column(name = "DATETIME_EXPORT")
     public LocalDateTime getDateTimeExport() {
         return dateTimeExport;
     }
@@ -88,13 +99,13 @@ public class Fakt extends AbstractEntity {
     }
 
 
-    @Column(name = "DATE_UPDATE", insertable = false, updatable = false)
-    public LocalDate getDateUpdate() {
-        return dateUpdate;
+    @Column(name = "DATETIME_UPDATE", insertable = false, updatable = false)
+    public LocalDateTime getDatetimeUpdate() {
+        return datetimeUpdate;
     }
 
-    protected void setDateUpdate(LocalDate dateUpdate) {
-        this.dateUpdate = dateUpdate;
+    protected void setDatetimeUpdate(LocalDateTime datetimeUpdate) {
+        this.datetimeUpdate = datetimeUpdate;
     }
 
     @Transient

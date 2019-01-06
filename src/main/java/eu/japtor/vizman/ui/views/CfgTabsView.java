@@ -30,7 +30,7 @@ import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.ExtendedPagedTabs;
 import eu.japtor.vizman.ui.forms.PersonEditorDialog;
-import eu.japtor.vizman.ui.forms.SysPropsForm;
+import eu.japtor.vizman.ui.forms.CfgPropsForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.stefan.fullcalendar.Entry;
 import org.vaadin.stefan.fullcalendar.FullCalendar;
@@ -69,7 +69,7 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
     CinListView cinListView;
 
     @Autowired
-    SysPropsForm cfgSysForm;
+    CfgPropsForm appCfgForm;
 
 //    @Autowired
 //    public CfgTabsView() {
@@ -77,6 +77,7 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
 //    }
 
     private FullCalendar cal = FullCalendarBuilder.create().build();
+    private VerticalLayout curr = new VerticalLayout();
 
 
     @PostConstruct
@@ -101,15 +102,17 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
         Tab tabPerson = new Tab("Uživatelé");
         Tab tabRole = new Tab("Role");
         Tab tabCin = new Tab("Činnosti");
-        Tab tabSys = new Tab("Systém");
         Tab tabCal = new Tab("Kalendář");
+        Tab tabCurr = new Tab("Měny");
+        Tab tabAppCfg = new Tab("Aplikace");
 
 //        personListView = new UserListView();
         cfgExtTabs.add(personListView, tabPerson);
         cfgExtTabs.add(roleListView, tabRole);
         cfgExtTabs.add(cinListView, tabCin);
-        cfgExtTabs.add(cfgSysForm, tabSys);
         cfgExtTabs.add(cal, tabCal);
+        cfgExtTabs.add(curr, tabCurr);
+        cfgExtTabs.add(appCfgForm, tabAppCfg);
             //container.setFlexGrow(1, calendar);
 
 

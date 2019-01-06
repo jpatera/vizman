@@ -1,29 +1,32 @@
 package eu.japtor.vizman.ui.components;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.H6;
-import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.shared.Registration;
-import eu.japtor.vizman.backend.entity.GenderGrammar;
+import eu.japtor.vizman.backend.entity.*;
 
 import java.io.Serializable;
+import java.time.format.DateTimeFormatter;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public abstract class AbstractEditorDialog <T extends Serializable>  extends Dialog {
 
+    private final static DateTimeFormatter titleCreateDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private final static DateTimeFormatter titleModifDateFormatter = DateTimeFormatter.ofPattern("EEEE yyyy-MM-dd HH:mm");
+
     private final HorizontalLayout titleLayout = new HorizontalLayout();
     private final H3 titleMain = new H3();
-    private final H6 titleExt = new H6();
+    private Div titleMiddle = new Div();
+    private final H6 titleEnd = new H6();
     private Button saveButton;
     private Button cancelButton;
     private Button deleteButton;
@@ -45,50 +48,72 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 
     private final ConfirmationDialog<T> confirmationDialog = new ConfirmationDialog<>();
 
-    private final GenderGrammar itemGender;
-    private final String itemTypeNomS;
-    private final String itemTypeGenS;
-    private final String itemTypeAccS;
-    private final BiConsumer<T, Operation> itemSaver;
-    private final Consumer<T> itemDeleter;
+    private GrammarGender itemGender;
+    private String itemTypeNomS;
+    private String itemTypeGenS;
+    private String itemTypeAccuS;
+    private BiConsumer<T, Operation> itemSaver;
+    private Consumer<T> itemDeleter;
 
     protected Operation currentOperation;
+
+//    Map<GrammarShapes, String> itemNameMap;
+
+
+    protected AbstractEditorDialog(BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
+        this(false, false, itemSaver, itemDeleter);
+    }
 
     /**
      * Constructs a new instance.
      *
-     * @param itemNameNominativeS
-     *            The readable name of the item type in NEW dialog
-     * @param itemNameAccusativeS
-     *            The readable name of the item type in EDIT dialog
+//     * @param itemGender
+//     *            Gender of the item name
+//     * @param itemNameMap
+//     *            Map of readable names/shapes for titles, buttons, etc
      * @param itemSaver
      *            Callback to save the edited item
      * @param itemDeleter
      *            Callback to delete the edited item
      */
-    protected AbstractEditorDialog(
-            GenderGrammar itemGender , final String itemNameNominativeS
-            , final String itemNameGenitiveS, final String itemNameAccusativeS
-            , BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
+    protected AbstractEditorDialog(boolean useUpperGrid, boolean useLowerGrid,
+                    BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
+//    protected AbstractEditorDialog(
+//            final GrammarGender itemGender, final Map<GrammarShapes, String> itemNameMap
+//            , BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
+//    protected AbstractEditorDialog(
+//            GrammarGender itemGender , final String itemNameNominativeS
+//            , final String itemNameGenitiveS, final String itemNameAccusativeS
+//            , BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
 
-        this.itemGender = itemGender;
-        this.itemTypeNomS = itemNameNominativeS;
-        this.itemTypeGenS = itemNameGenitiveS;
-        this.itemTypeAccS = itemNameAccusativeS;
+//        this.itemNameMap = itemNameMap;
+//        this.itemGender = itemGender;
+
         this.itemSaver = itemSaver;
         this.itemDeleter = itemDeleter;
 
-        initDialogTitle();
+        DateTimeFormatter dochTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        DateTimeFormatter dochDateHeaderFormatter = DateTimeFormatter.ofPattern("EEEE, dd.MM.yyyy");
+
+//        initDialogTitle();
         initFormLayout();
         initUpperGridContainer();
         initLowerGridContainer();
         initDialogButtonBar();
 
-        upperPane.add(formLayout, upperGridContainer);
-        lowerPane.add(lowerGridContainer);
-
         dialogPane.setAlignItems(FlexComponent.Alignment.STRETCH);
-        dialogPane.add(titleLayout, upperPane, new Paragraph(), lowerPane, buttonBar);
+        dialogPane.add(initDialogTitle(), new Hr());
+        upperPane.add(formLayout);
+        if (useUpperGrid) {
+            upperPane.add(upperGridContainer);
+        }
+        dialogPane.add(upperPane);
+        dialogPane.add(new Paragraph());
+        if (useLowerGrid) {
+            lowerPane.add(lowerGridContainer);
+            dialogPane.add(lowerPane);
+        }
+        dialogPane.add(buttonBar);
         this.add(dialogPane);
 
         this.setCloseOnEsc(true);
@@ -97,13 +122,13 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 
 //    private String getNounForTitle(final boolean isItemMale) {
 //        return isItemMale ?
-//                currentOperation.getTitleOpName(GenderGrammar.MASCULINE)
+//                currentOperation.getTitleOperName(GrammarGender.MASCULINE)
 //                : currentOperation.getTitleNounForFeminine();
 //    }
 
 
-    private void initDialogTitle() {
-        titleMain.getStyle().set("margin-top", "0.2em");
+    private Component initDialogTitle() {
+        titleMain.getStyle().set("marginTop", "0.2em");
         titleLayout.setSpacing(false);
         titleLayout.setPadding(false);
 //        titleLayout.getStyle()
@@ -112,7 +137,8 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 //            .set("margin", "0");
         titleLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         titleLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
-        titleLayout.add(titleMain, titleExt);
+        titleLayout.add(titleMain, titleMiddle, titleEnd);
+        return titleLayout;
     }
 
     private void initFormLayout() {
@@ -146,23 +172,25 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 
     private void initDialogButtonBar() {
 
+        cancelButton = new Button("Zpět");
+        cancelButton.addClickListener(e -> close());
+
         saveButton = new Button("Uložit");
         saveButton.setAutofocus(true);
         saveButton.getElement().setAttribute("theme", "primary");
 
-        cancelButton = new Button("Zpět");
-        cancelButton.addClickListener(e -> close());
-
 //        deleteButton = new Button("Zrušit " + getNounForTitle(isItemMale) );
         deleteButton = new Button("Zrušit");
-        deleteButton.addClickListener(e -> deleteClicked());
         deleteButton.getElement().setAttribute("theme", "error");
+        deleteButton.addClickListener(e -> deleteClicked());
+//        deleteButton.addClickListener(e -> deleteClicked());
 
         HorizontalLayout leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);
+        leftBarPart.add(saveButton, deleteButton);
+
         HorizontalLayout rightBarPart = new HorizontalLayout();
         rightBarPart.setSpacing(true);
-        leftBarPart.add(saveButton, deleteButton);
         rightBarPart.add(cancelButton);
 
 //        buttonBar.getStyle().set("margin-top", "0.2em");
@@ -186,11 +214,11 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         return formLayout;
     }
 
-    protected final VerticalLayout getUpperGridLayout() {
+    protected final VerticalLayout getUpperGridCont() {
         return upperGridContainer;
     }
 
-    protected final VerticalLayout getLowerGridLayout() {
+    protected final VerticalLayout getLowerGridCont() {
         return lowerGridContainer;
     }
 
@@ -212,21 +240,57 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         return currentItem;
     }
 
+
+    public void open(T item, final Operation operation) {
+        openInternal(item, operation, null, null, null);
+    }
+
+    public void open(T item, final Operation operation
+            , String titleItemNameText) {
+        openInternal(item, operation, titleItemNameText, null, null);
+    }
+
+    public void open(T item, final Operation operation
+            , String titleItemNameText, String titleEndText)
+    {
+        openInternal(item, operation, titleItemNameText, null, titleEndText);
+    }
+
     /**
      * Opens the given item for editing in the dialog.
-     *
-     * @param item
-     *            The item to edit; it may be an existing or a newly created
-     *            instance
-     * @param operation
-     *            The operation being performed on the item
      */
-    public void open(T item, final Operation operation, String titleExtText) {
+    private void openInternal(T item, final Operation operation
+            , String titleItemNameText, Component titleMiddleComponent, String titleEndText)
+    {
+
+        setDefaultItemNames();  // Set general default names
         currentOperation = operation;
         currentItem = item;
+
+        openSpecific();
+
+        if ((null == titleItemNameText) && (currentItem instanceof HasItemType)) {
+            setItemNames(((HasItemType) currentItem).getTyp());  // Set general default names
+//            titleItemNameText = ItemNames.getNomS(((HasItemType) currentItem).getTyp());
+        }
+
+        if ((null == titleEndText) && (currentItem instanceof HasModifDates)) {
+            if (operation == Operation.ADD) {
+                titleEndText = "";
+            } else {
+                titleEndText = "[ Vytvořeno: " + ((HasModifDates) currentItem).getDateCreate().format(titleCreateDateFormatter)
+                        + ", Poslední změna: " + ((HasModifDates) currentItem).getDatetimeUpdate().format(titleModifDateFormatter) + " ]";
+            }
+        }
+
 //        titleLayout.setText(buildDialogTitle(currentOperation));
         titleMain.setText(currentOperation.getDialogTitle(getItemName(currentOperation), itemGender));
-        titleExt.setText(titleExtText);
+        if (null != titleMiddleComponent) {
+            titleMiddle.removeAll();;
+            titleMiddle.add(titleMiddleComponent);
+        }
+        titleEnd.setText(titleEndText);
+
 
         if (registrationForSave != null) {
             registrationForSave.remove();
@@ -234,20 +298,38 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         registrationForSave = saveButton
                 .addClickListener(e -> saveClicked(currentOperation));
 
-        binder.readBean(currentItem);
+        saveButton.setText("Uložit " + itemTypeAccuS.toLowerCase());
+//        saveButton.setEnabled();
 
-        deleteButton.setText("Zrušit " + itemTypeAccS.toLowerCase());
+        deleteButton.setText("Zrušit " + itemTypeAccuS.toLowerCase());
         deleteButton.setEnabled(currentOperation.isDeleteEnabled());
 
-        openSpecific();
-        open();
+        if (currentOperation != Operation.ADD) {
+            binder.readBean(currentItem);
+        } else {
+            binder.removeBean();
+            binder.readBean(currentItem);
+        }
+
+        this.open();
+    }
+
+    public void setDefaultItemNames() {
+        setItemNames(ItemType.UNKNOWN);
+    }
+
+    public void setItemNames(ItemType itemType) {
+        this.itemGender = ItemNames.getItemGender(itemType);
+        this.itemTypeNomS = ItemNames.getNomS(itemType);
+        this.itemTypeGenS = ItemNames.getGenS(itemType);
+        this.itemTypeAccuS = ItemNames.getAccuS(itemType);
     }
 
     private String getItemName(final Operation operation) {
         switch (operation) {
             case ADD : return itemTypeNomS;
             case EDIT : return itemTypeGenS;
-            case DELETE : return itemTypeAccS;
+            case DELETE : return itemTypeAccuS;
             default : return itemTypeNomS;
         }
     }
@@ -257,15 +339,15 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 //            case ADD :
 //        }
 //
-//        return (currentOperation.getTitleOpName(itemGender))
-//                + " " + (operation == Operation.ADD ? itemTypeNomS.toLowerCase() : itemTypeAccS.toLowerCase());
+//        return (currentOperation.getTitleOperName(itemGender))
+//                + " " + (operation == Operation.ADD ? itemTypeNomS.toLowerCase() : itemTypeAccuS.toLowerCase());
 //    }
 
     protected abstract void openSpecific();
 
     private void saveClicked(Operation operation) {
-        boolean isValid = binder.writeBeanIfValid(currentItem);
 
+        boolean isValid = binder.writeBeanIfValid(currentItem);
         if (isValid) {
             itemSaver.accept(currentItem, operation);
             close();
@@ -326,50 +408,40 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
      * an already existing item.
      */
     public enum Operation {
-        ADD("Nový", "Nová", "Nové", "zadat", false),
-        EDIT("Editace", "Editace", "Editace", "editovat", true),
-        DELETE("Zrušení", "Zrušení", "Zrušení", "zrušit", true);
+        ADD("Nový", "Nová", "Nové", "Přidat", "zadat", false),
+        EDIT("Editace", "Editace", "Editace", "Změnit", "editovat", true),
+        DELETE("Zrušení", "Zrušení", "Zrušení", "Odebrat", "zrušit", true);
 
-        private final String titleOpNameForMasculine;
-        private final String titleOpNameForFeminine;
-        private final String titleOpNameForNeuter;
+        private final String titleOperNameForMasculine;
+        private final String titleOperNameForFeminine;
+        private final String titleOperNameForNeuter;
+        private final String titleOperNameForUnknown;
         private final String opNameInText;
         private final boolean deleteEnabled;
 
-        Operation(String titleOpNameForMasculine, String titleOpNameForFeminine, String titleOpNameForNeuter,
+        Operation(String titleOperNameForMasculine, String titleOperNameForFeminine,
+                  String titleOperNameForNeuter, String titleOperNameForUnknown,
                   String opNameInText, boolean deleteEnabled) {
-            this.titleOpNameForMasculine = titleOpNameForMasculine;
-            this.titleOpNameForFeminine = titleOpNameForFeminine;
-            this.titleOpNameForNeuter = titleOpNameForNeuter;
+            this.titleOperNameForMasculine = titleOperNameForMasculine;
+            this.titleOperNameForFeminine = titleOperNameForFeminine;
+            this.titleOperNameForNeuter = titleOperNameForNeuter;
+            this.titleOperNameForUnknown = titleOperNameForUnknown;
             this.opNameInText = opNameInText;
             this.deleteEnabled = deleteEnabled;
         }
 
-        public String getDialogTitle(final String itemName, final GenderGrammar itemGender) {
-            return getTitleOpName(itemGender) + " " + itemName.toLowerCase();
+        public String getDialogTitle(final String itemName, final GrammarGender itemGender) {
+            return getTitleOperName(itemGender) + " " + itemName.toUpperCase();
         }
 
-        private String getTitleOpName(final GenderGrammar gender) {
+        private String getTitleOperName(final GrammarGender gender) {
             switch (gender) {
-                case MASCULINE : return titleOpNameForMasculine;
-                case FEMININE : return titleOpNameForFeminine;
-                default : return titleOpNameForNeuter;
+                case MASCULINE : return titleOperNameForMasculine;
+                case FEMININE : return titleOperNameForFeminine;
+                case NEUTER : return titleOperNameForNeuter;
+                default : return titleOperNameForUnknown;
             }
         }
-
-        private String getOpNameInText() {
-            return opNameInText;
-        }
-
-
-//        public String getTitleNounForMasculine() {
-//            return titleOpNameForMasculine;
-//        }
-//
-//        public String getTitleNounForFeminine() {
-//            return titleOpNameForFeminine;
-//        }
-
 
         public boolean isDeleteEnabled() {
             return deleteEnabled;

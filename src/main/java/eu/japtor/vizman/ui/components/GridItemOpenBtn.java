@@ -5,13 +5,13 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-public class OpenDirSmallButton extends Button {
+public class GridItemOpenBtn extends Button {
 
-    public OpenDirSmallButton(final ComponentEventListener itemAction) {
+    public GridItemOpenBtn(final ComponentEventListener itemAction) {
         super();
         this.setText("");
-        this.setIcon(new Icon(VaadinIcon.BOMB));
-//        this.addClassName("review__edit");
+//        this.setIcon(new Icon("lumo", "edit"));
+        this.setIcon(new Icon(VaadinIcon.EDIT));
         this.getElement().setAttribute("theme", "tertiary");
         this.addClickListener(itemAction);
     }

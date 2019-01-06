@@ -4,6 +4,8 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -39,7 +41,7 @@ import javax.annotation.PostConstruct;
 //@BodySize(height = "100vh", width = "100vw")
 //@Push(PushMode.MANUAL)
 @Push
-public class MainView extends Div implements RouterLayout, BeforeEnterObserver, HasLogger {
+public class MainView extends VerticalLayout implements RouterLayout, BeforeEnterObserver, HasLogger {
 
     //    @Id("navigationBar")
     @Autowired  // Must not be used in constructor, only in @PostConstruct
@@ -52,7 +54,11 @@ public class MainView extends Div implements RouterLayout, BeforeEnterObserver, 
 
 //        addClassName("main-layout");
 
-//        this.setWidth("100%");
+        this.setWidth("100%");
+//        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+        this.setAlignItems(FlexComponent.Alignment.STRETCH);
+        this.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        this.setClassName("main-layout");
 //        this.setHeight("100%");
 //    public MainView(NavigationBar navigationBar) {
 //        this.navigationBar = navigationBar;
