@@ -51,6 +51,7 @@ import eu.japtor.vizman.backend.dataprovider.LazyHierarchicalKontProvider;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.ZakService;
+import eu.japtor.vizman.backend.utils.FormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.AbstractEditorDialog;
 import eu.japtor.vizman.ui.components.GridItemEditBtn;
@@ -192,7 +193,8 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         if (ItemType.KONT == kz.getTyp()) {
 //            comp.getStyle().set("color", "darkmagenta");
 //            return new Emphasis(kontZak.getHonorar().toString());
-            comp.getElement().appendChild(ElementFactory.createEmphasis(kz.getHonorar().toString()));
+            comp.getElement().appendChild(ElementFactory.createEmphasis(
+                    FormatUtils.moneyFormat.format(kz.getHonorar())));
             comp.getStyle()
 //                    .set("color", "red")
 //                    .set("text-indent", "1em");
@@ -203,7 +205,8 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
                         .set("color", "red")
                         .set("text-indent", "1em");
             }
-            comp.getElement().appendChild(ElementFactory.createSpan(kz.getHonorar().toString()));
+            comp.getElement().appendChild(ElementFactory.createSpan(
+                    FormatUtils.moneyFormat.format(kz.getHonorar())));
         }
         return comp;
     });
@@ -330,6 +333,17 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
     }
 
 
+    ComponentRenderer<HtmlComponent, BigDecimal> moneyCellRenderer = new ComponentRenderer<>(money -> {
+        Div comp = new Div();
+        if ((null != money) && (money.compareTo(BigDecimal.ZERO) < 0)) {
+            comp.getStyle()
+                    .set("color", "red")
+//                            .set("text-indent", "1em")
+            ;
+        }
+        comp.setText(FormatUtils.moneyFormat.format(money));
+        return comp;
+    });
 
     private Component initKzTreeGrid() {
 //        gridContainer.setClassName("view-container");
@@ -425,16 +439,16 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         if (isMoneyAccessGranted()) {
             kzTreeGrid.addColumn(honorarCellRenderer).setHeader("Honorář")
                     .setFlexGrow(0)
-                    .setWidth("8em")
+                    .setWidth("9em")
                     .setResizable(true)
                     .setTextAlign(ColumnTextAlign.END)
-//                    .setId(HONORAR_COL_KEY)
+                    .setKey(HONORAR_COL_KEY)
             ;
             kzTreeGrid.addColumn(menaValProv).setHeader("Měna")
                     .setFlexGrow(0)
                     .setWidth("6em")
                     .setResizable(true)
-//                    .setId(MENA_COL_KEY)
+                    .setKey(MENA_COL_KEY)
             ;
         }
 

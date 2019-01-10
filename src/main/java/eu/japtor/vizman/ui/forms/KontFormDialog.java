@@ -17,13 +17,14 @@ import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
+import eu.japtor.vizman.backend.bean.EvidKont;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.ZakService;
+import eu.japtor.vizman.backend.utils.FormatUtils;
 import eu.japtor.vizman.ui.components.*;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.function.BiConsumer;
@@ -33,7 +34,6 @@ import java.util.function.Consumer;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
-    final NumberFormat moneyFormat;
     final StringToBigDecimalConverter bigDecimalMoneyConverter;
     final ValueProvider<Zak, String> honorProvider;
     final ComponentRenderer<HtmlComponent, Zak> moneyCellRenderer;
@@ -102,7 +102,6 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //        setHeight("600px");
 
 
-        moneyFormat = new MoneyFormat(Locale.getDefault());
 
 //        moneyFormat = DecimalFormat.getInstance();
 //        if (moneyFormat instanceof DecimalFormat) {
@@ -131,7 +130,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
             }
         };
 
-        honorProvider = (zak) -> moneyFormat.format(zak.getHonorar());
+        honorProvider = (zak) -> FormatUtils.moneyFormat.format(zak.getHonorar());
 
 //        moneyRenderer = new NumberRenderer(honorProvider, numFormat);
 
@@ -155,7 +154,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                     ;
                 }
 //                comp.getElement().appendChild(ElementFactory.createSpan(numFormat.format(kontZak.getHonorar())));
-                comp.setText(moneyFormat.format(zak.getHonorar()));
+                comp.setText(FormatUtils.moneyFormat.format(zak.getHonorar()));
 //            }
             return comp;
         });
@@ -216,12 +215,19 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
     }
 
-    private void saveEvid(Kont kont, AbstractEditorDialog.Operation operation) {
+    private void saveEvid(EvidKont evidKont) {
 //        Zak newInstance = zakService.saveZak(zak);
-        this.getBinder().readBean(kont);
+//        this.getBinder().readBean(evidKont);
+        getCurrentItem().setCkont(evidKont.getCkont());
+        getCurrentItem().setText(evidKont.getText());
+        getCurrentItem().setFolder(evidKont.getFolder());
+
+//        getBinder().readBean(getBinder().getBean());
+        getBinder().readBean(getCurrentItem());
+
         Notification.show(
 //                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
-                "Evidence kontraktu zadána", 3000, Notification.Position.BOTTOM_END);
+                "Číslo a text kontraktu změněny", 3000, Notification.Position.BOTTOM_END);
 //        updateGridContent();
     }
 
@@ -246,21 +252,21 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
 
 
-    public static class MoneyFormat extends DecimalFormat {
-
-        public MoneyFormat (Locale locale) {
-            super();
-//        moneyFormat = DecimalFormat.getInstance();
-//        if (moneyFormat instanceof DecimalFormat) {
-//            ((DecimalFormat)moneyFormat).setParseBigDecimal(true);
+//    public static class MoneyFormat extends DecimalFormat {
+//
+//        public MoneyFormat (Locale locale) {
+//            super();
+////        moneyFormat = DecimalFormat.getInstance();
+////        if (moneyFormat instanceof DecimalFormat) {
+////            ((DecimalFormat)moneyFormat).setParseBigDecimal(true);
+////        }
+//            NumberFormat numberFormat = NumberFormat.getInstance(locale);
+//
+//            this.setGroupingUsed(true);
+//            this.setMinimumFractionDigits(2);
+//            this.setMaximumFractionDigits(2);
 //        }
-            NumberFormat numberFormat = NumberFormat.getInstance(locale);
-
-            this.setGroupingUsed(true);
-            this.setMinimumFractionDigits(2);
-            this.setMaximumFractionDigits(2);
-        }
-    }
+//    }
 
 
     /**
@@ -310,9 +316,17 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         return ckontField;
     }
 
+
     private Component initEvidChangeButton() {
-        evidChangeButton = new Button("Změnit evidenci");
-        evidChangeButton.addClickListener(event -> {kontEvidFormDialog.open();});
+        evidChangeButton = new Button("Evidence");
+        evidChangeButton.addClickListener(event -> {
+            EvidKont evidKont = new EvidKont(
+                    getCurrentItem().getCkont()
+                    , getCurrentItem().getText()
+                    , getCurrentItem().getFolder()
+                );
+                kontEvidFormDialog.open(evidKont,  "Zadání/editace evidence");
+        });
         return evidChangeButton;
     }
 

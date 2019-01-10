@@ -34,8 +34,7 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
     private Short rokzak;
     private String rokmeszad;
     private String text;
-    private String docdir;
-    private Boolean x;
+    private String folder;
     private BigDecimal honorar;
     private BigDecimal rozprac;
     private String tmp;
@@ -143,23 +142,14 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
 
     @Basic
     @Column(name = "DOCDIR")
-    public String getDocdir() {
-        return docdir;
+    public String getFolder() {
+        return folder;
     }
 
-    public void setDocdir(String docdir) {
-        this.docdir = docdir;
+    public void setFolder(String docdir) {
+        this.folder = docdir;
     }
 
-    @Basic
-    @Column(name = "X")
-    public Boolean getX() {
-        return x;
-    }
-
-    public void setX(Boolean x) {
-        this.x = x;
-    }
 
     @Basic
     @Column(name = "HONORAR")

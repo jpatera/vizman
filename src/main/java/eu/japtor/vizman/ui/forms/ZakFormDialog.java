@@ -20,6 +20,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.ZakService;
+import eu.japtor.vizman.backend.utils.FormatUtils;
 import eu.japtor.vizman.ui.components.*;
 
 import java.math.BigDecimal;
@@ -32,7 +33,6 @@ import java.util.function.Consumer;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEnterObserver {
 
-    final NumberFormat moneyFormat;
     final StringToBigDecimalConverter bigDecimalMoneyConverter;
     final ValueProvider<Fakt, String> castkaProvider;
     final ComponentRenderer<HtmlComponent, Fakt> moneyCellRenderer;
@@ -90,8 +90,6 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         setWidth("1200px");
         //        setHeight("600px");
 
-        moneyFormat = new KontFormDialog.MoneyFormat(Locale.getDefault());
-
         bigDecimalMoneyConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
             @Override
             protected java.text.NumberFormat getFormat(Locale locale) {
@@ -103,7 +101,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
             }
         };
 
-        castkaProvider = (fakt) -> moneyFormat.format(fakt.getCastka());
+        castkaProvider = (fakt) -> FormatUtils.moneyFormat.format(fakt.getCastka());
 
         moneyCellRenderer = new ComponentRenderer<>(fakt -> {
             Div comp = new Div();
@@ -112,7 +110,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
                         .set("color", "red")
                 ;
             }
-            comp.setText(moneyFormat.format(fakt.getCastka()));
+            comp.setText(FormatUtils.moneyFormat.format(fakt.getCastka()));
             return comp;
         });
 
@@ -199,7 +197,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
     }
 
     private Component initEvidChangeButton() {
-        evidChangeBtn = new Button("Změnit evidenci");
+        evidChangeBtn = new Button("Evidence");
         evidChangeBtn.addClickListener(event -> {});
         return evidChangeBtn;
     }

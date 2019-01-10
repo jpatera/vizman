@@ -47,7 +47,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
     @Override
     public Kont getByDocdir(String docdir) {
-        return kontRepo.findTopByDocdirIgnoreCase(docdir);
+        return kontRepo.findTopByFolderIgnoreCase(docdir);
     }
 
     @Override

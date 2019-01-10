@@ -22,17 +22,20 @@ CREATE TABLE VIZMAN.CFGPROP (
 INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
 VALUES(1, 1, 'app.locale', 'cs_CZ', 110, 'Národní tøídìní a formáty', 'Národní tøídìní a formáty', true);
 
-INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
-VALUES(2, 1, 'app.project.root.local', 'L:\\projet-root-dir', 120, 'Koøenový adresáø pro projekty (stanice)', 'Koøenový adresáø pro projekty z pohledu pracovních stanic', false);
 
 INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
-VALUES(2, 1, 'app.project.root.server', '\\proj_path\projet-root-dir', 120, 'Koøenový adresáø pro projekty (server)', 'Koøenový adresáø pro projekty z pohledu serveru', false);
+VALUES(3, 1, 'app.document.root.local', 'L:\VizMan', 130, 'Koøenový adresáø pro dokumeny (stanice)', 'Koøenový adresáø pro dokumeny z pohledu pracovních stanic', false);
 
 INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
-VALUES(3, 1, 'app.document.root.local', 'T:\\document-root-dir', 130, 'Koøenový adresáø pro dokumeny (stanice)', 'Koøenový adresáø pro dokumeny z pohledu pracovních stanic', false);
+VALUES(3, 1, 'app.document.root.server', '\\pc-server7\VizMan', 130, 'Koøenový adresáø pro dokumeny (server)', 'Koøenový adresáø pro dokumeny z pohledu serveru', false);
+
 
 INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
-VALUES(3, 1, 'app.document.root.server', '\\doc_path\document-root-dir', 130, 'Koøenový adresáø pro dokumeny (server)', 'Koøenový adresáø pro dokumeny z pohledu serveru', false);
+VALUES(2, 1, 'app.project.root.local', 'S:\PROJEKT', 120, 'Koøenový adresáø pro projekty (stanice)', 'Koøenový adresáø pro projekty z pohledu pracovních stanic', false);
+
+INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
+VALUES(2, 1, 'app.project.root.server', '\\pc-server7\PROJEKT', 120, 'Koøenový adresáø pro projekty (server)', 'Koøenový adresáø pro projekty z pohledu serveru', false);
+
 
 INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
 VALUES(4, 1, 'app.koef.pojist', '0.35', 140, 'Koeficient pojištìní', 'Používá se pøi výpoètech vyhodnocovacích tabulek', false);
@@ -88,9 +91,14 @@ CREATE TABLE VIZMAN.PERSON (
 INSERT INTO VIZMAN.PERSON
 (ID, VERSION, STATUS, JMENO, PRIJMENI, PASSWORD, USERNAME, NASTUP, VYSTUP, SAZBA)
 VALUES(1001, 0, 'ACTIVE', 'Admin', 'Systemak', 'admin', 'admin', NULL, NULL, 0);
+
 INSERT INTO VIZMAN.PERSON
 (ID, VERSION, STATUS, JMENO, PRIJMENI, PASSWORD, USERNAME, NASTUP, VYSTUP, SAZBA)
 VALUES(1002, 0, 'ACTIVE', 'User', 'Bìžný user', 'user', 'user', NULL, NULL, 0);
+
+INSERT INTO VIZMAN.PERSON
+(ID, VERSION, STATUS, USERNAME, PASSWORD, JMENO, PRIJMENI, NASTUP, VYSTUP, SAZBA)
+VALUES(1003, 0, 'NEW', 'manag', 'manag', 'Manager', 'Zkušený', NULL, NULL, 0);
 
 INSERT INTO VIZMAN.PERSON
 (ID, VERSION, STATUS, JMENO, PRIJMENI, PASSWORD, USERNAME, NASTUP, VYSTUP, SAZBA, STATUS)
@@ -137,6 +145,19 @@ CREATE TABLE VIZMAN.PERSON_ROLE (
 -- CREATE UNIQUE INDEX IDXQ_PK_PERSON_ROLE ON VIZMAN.PERSON_ROLE (PERSON_ID,ROLE_ID);
 -- CREATE INDEX IDX_FK_PERSON_ROLE_ROLE ON VIZMAN.PERSON_ROLE (ROLE_ID);
 -- CREATE INDEX IDX_FK_PERSON_ROLE_PERSON ON VIZMAN.PERSON_ROLE (PERSON_ID);
+
+--  =============================================
+
+-- DROP TABLE ROLE_PERM
+
+CREATE TABLE VIZMAN.ROLE_PERM (
+	ROLE_ID BIGINT NOT NULL,
+	PERM VARCHAR(255),
+	CONSTRAINT FK_ROLE_PERM_ROLE FOREIGN KEY (ROLE_ID) REFERENCES VIZMAN."ROLE"(ID) ON DELETE RESTRICT ON UPDATE RESTRICT
+);
+
+CREATE INDEX IDX_ROLE_PERM_ROLE_ID ON VIZMAN.ROLE_PERM (ROLE_ID);
+
 
 --  =============================================
 
@@ -268,7 +289,7 @@ CREATE TABLE VIZMAN.KONT (
 	OBJEDNATEL VARCHAR(127),
 	MENA VARCHAR(5),
 	TEXT VARCHAR(127),
-	DOCDIR VARCHAR(127),
+	FOLDER VARCHAR(127),
 	TMP VARCHAR(8),	-- Mozna uplne vypustit?	
 	DATE_CREATE DATE,
 	DATETIME_UPDATE DATETIME AS NOW() NOT NULL,
@@ -353,17 +374,17 @@ CREATE TABLE VIZMAN.ZAK (
 	R2 DECIMAL(19,2),
 	R3 DECIMAL(19,2),
 	R4 DECIMAL(19,2),
+	ROZPRAC DECIMAL(19,2),
 	R_ZAL INTEGER,
 	RM DECIMAL(19,2),
 	ROKMESZAD VARCHAR(8),
 	ROKZAK SMALLINT,
-	ROZPRAC DECIMAL(19,2),
 	SKUPINA VARCHAR(3),
 	TEXT VARCHAR(127),
-	DOCDIR VARCHAR(127),
+	FOLDER VARCHAR(127),
 	TMP VARCHAR(8),	-- Mozna uplne vypustit?
 --	TYP_DOKLADU VARCHAR(5),
-	X BOOLEAN,
+--	X BOOLEAN,
 	ID_KONT BIGINT,
 	DATE_CREATE DATE,
 	DATETIME_UPDATE DATETIME AS NOW() NOT NULL,
@@ -466,20 +487,20 @@ CREATE UNIQUE INDEX IDXQ_ZAK ON VIZMAN.ZAK (CKONT, CZAK);
 
 
 INSERT INTO VIZMAN.ZAK
-	(ID, VERSION, CKONT, CZAK, TYP, ARCH, HONORAR, R1, R2, R3, R4, R_ZAL, RM, DATE_CREATE, DATETIME_UPDATE, ROKMESZAD, ROKZAK, ROZPRAC, SKUPINA, TEXT, TMP, X, ID_KONT)
-VALUES(1148, 1, '58016.1-1', 2, 'ZAK', false, 200000.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Ausführungsplanung Fussgängerbrücke II', NULL, NULL, 1146);
+	(ID, VERSION, CKONT, CZAK, TYP, ARCH, HONORAR, R1, R2, R3, R4, R_ZAL, RM, DATE_CREATE, DATETIME_UPDATE, ROKMESZAD, ROKZAK, ROZPRAC, SKUPINA, TEXT, TMP, ID_KONT)
+VALUES(1148, 1, '58016.1-1', 2, 'ZAK', false, 200000.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Ausführungsplanung Fussgängerbrücke II', NULL, 1146);
 
 INSERT INTO VIZMAN.ZAK
-	(ID, VERSION, CKONT, CZAK, TYP, ARCH, HONORAR, R1, R2, R3, R4, R_ZAL, RM, DATE_CREATE, DATETIME_UPDATE, ROKMESZAD, ROKZAK, ROZPRAC, SKUPINA, TEXT, TMP, X, ID_KONT)
-VALUES(1149, 1, '58016.1-1', 3, 'AKV', false, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Ausführungsplanung Fussgängerbrücke II', NULL, NULL, 1146);
+	(ID, VERSION, CKONT, CZAK, TYP, ARCH, HONORAR, R1, R2, R3, R4, R_ZAL, RM, DATE_CREATE, DATETIME_UPDATE, ROKMESZAD, ROKZAK, ROZPRAC, SKUPINA, TEXT, TMP, ID_KONT)
+VALUES(1149, 1, '58016.1-1', 3, 'AKV', false, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Ausführungsplanung Fussgängerbrücke II', NULL, 1146);
 
 INSERT INTO VIZMAN.ZAK
-	(ID, VERSION, CKONT, CZAK, TYP, ARCH, HONORAR, R1, R2, R3, R4, R_ZAL, RM, DATE_CREATE, DATETIME_UPDATE, ROKMESZAD, ROKZAK, ROZPRAC, SKUPINA, TEXT, TMP, X, ID_KONT)
-VALUES(1150, 1, '58016.1-1', 4, 'ZAK', false, 200000.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Ausführungsplanung Fussgängerbrücke III', NULL, NULL, 1146);
+	(ID, VERSION, CKONT, CZAK, TYP, ARCH, HONORAR, R1, R2, R3, R4, R_ZAL, RM, DATE_CREATE, DATETIME_UPDATE, ROKMESZAD, ROKZAK, ROZPRAC, SKUPINA, TEXT, TMP, ID_KONT)
+VALUES(1150, 1, '58016.1-1', 4, 'ZAK', false, 200000.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Ausführungsplanung Fussgängerbrücke III', NULL, 1146);
 
 INSERT INTO VIZMAN.ZAK
-	(ID, VERSION, CKONT, CZAK, TYP, ARCH, HONORAR, R1, R2, R3, R4, R_ZAL, RM, DATE_CREATE, DATETIME_UPDATE, ROKMESZAD, ROKZAK, ROZPRAC, SKUPINA, TEXT, TMP, X, ID_KONT)
-VALUES(1151, 1, '58016.1-1', 101, 'SUB', false, -30000.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Rýsování', NULL, NULL, 1146);
+	(ID, VERSION, CKONT, CZAK, TYP, ARCH, HONORAR, R1, R2, R3, R4, R_ZAL, RM, DATE_CREATE, DATETIME_UPDATE, ROKMESZAD, ROKZAK, ROZPRAC, SKUPINA, TEXT, TMP, ID_KONT)
+VALUES(1151, 1, '58016.1-1', 101, 'SUB', false, -30000.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Rýsování', NULL, 1146);
 
 
 

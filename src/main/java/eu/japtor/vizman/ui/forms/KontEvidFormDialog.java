@@ -1,47 +1,28 @@
 package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.data.validator.StringLengthValidator;
-import com.vaadin.flow.function.SerializablePredicate;
-import eu.japtor.vizman.backend.entity.Kont;
-import eu.japtor.vizman.backend.entity.Person;
-import eu.japtor.vizman.backend.entity.Role;
+import eu.japtor.vizman.backend.bean.EvidKont;
 import eu.japtor.vizman.backend.service.KontService;
-import eu.japtor.vizman.backend.service.PersonService;
-import eu.japtor.vizman.ui.components.AbstractEditorDialog;
-import eu.japtor.vizman.ui.components.TwinColGrid;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import eu.japtor.vizman.ui.components.SimpleEditorDialog;
 
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class KontEvidFormDialog extends AbstractEditorDialog<Kont> {
+public class KontEvidFormDialog extends SimpleEditorDialog<EvidKont> {
 
     private TextField ckontField;
     private TextField textField;
-    private TextField docDirField;
-    private TextField projDirField;
+    private TextField folderField;
 
     private KontService kontService;
 
 
-    public KontEvidFormDialog(BiConsumer<Kont, Operation> itemSaver, KontService kontService) {
+    public KontEvidFormDialog(Consumer<EvidKont> itemSaver, KontService kontService) {
 
-        super(itemSaver, null);
+        super(itemSaver);
         this.setWidth("700px");
 //        this.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.STRETCH);
         this.setSizeFull();;
@@ -56,7 +37,7 @@ public class KontEvidFormDialog extends AbstractEditorDialog<Kont> {
 
         getFormLayout().add(initCkontField());
         getFormLayout().add(initTextField());
-        getFormLayout().add(initDocDirField());
+        getFormLayout().add(initFolderField());
     }
 
     /**
@@ -78,38 +59,41 @@ public class KontEvidFormDialog extends AbstractEditorDialog<Kont> {
     private Component initCkontField() {
         ckontField = new TextField("Číslo kontraktu");
         getBinder().forField(ckontField)
-                .withValidator(new StringLengthValidator(
-                        "Číslo kontraktu musí mít 1-16 znaků",
-                        1, 16))
-                .withValidator(
-                        ckont -> kontService.getByCkont(ckont) == null,
-                        "Kontrakt s tímto číslem již existuje, zvol jiné číslo")
-                .bind(Kont::getCkont, Kont::setCkont);
+//                .withValidator(new StringLengthValidator(
+//                        "Číslo kontraktu musí mít 1-16 znaků",
+//                        1, 16))
+//                .withValidator(
+//                        ckont -> kontService.getByCkont(ckont) == null,
+//                        "Kontrakt s tímto číslem již existuje, zvol jiné číslo")
+                .bind(EvidKont::getCkont, EvidKont::setCkont);
         return ckontField;
     }
 
     private Component initTextField() {
         textField = new TextField("Text kontraktu");
-        getBinder().forField(ckontField)
-                .withValidator(new StringLengthValidator(
-                        "Text kontraktu musí mít alespoň jeden znak",
-                        1, null))
-                .withValidator(
-                        text -> kontService.getByText(text) == null,
-                        "Kontrakt se stejným textem již existuje, zadej jiný text")
-                .bind(Kont::getText, Kont::setText);
+        textField.getElement().setAttribute("colspan", "2");
+        getBinder().forField(textField)
+//                .withValidator(new StringLengthValidator(
+//                        "Text kontraktu musí mít alespoň jeden znak",
+//                        1, null))
+//                .withValidator(
+//                        text -> kontService.getByText(text) == null,
+//                        "Kontrakt se stejným textem již existuje, zadej jiný text")
+                .bind(EvidKont::getText, EvidKont::setText);
         return textField;
     }
 
-    private Component initDocDirField() {
-        docDirField = new TextField("Adresář pro dokumenty kontraktu");
-        getBinder().forField(docDirField)
-                .withValidator(
-                        docdir -> kontService.getByDocdir(docdir) == null,
-                        "Kontrakt se stejným dokumentovým adresářem již existuje, zadej jiný text")
-                .bind(Kont::getDocdir, Kont::setDocdir);
-        docDirField.setReadOnly(true);
-        return docDirField;
+
+    private Component initFolderField() {
+        folderField = new TextField("Složka kontraktu");
+        folderField.getElement().setAttribute("colspan", "2");
+        getBinder().forField(folderField)
+//                .withValidator(
+//                        docdir -> kontService.getByDocdir(docdir) == null,
+//                        "Adresář stejného jména již existuje, zadej jiné číslo kontraktu nebo text")
+                .bind(EvidKont::getFolder, EvidKont::setFolder);
+        folderField.setReadOnly(true);
+        return folderField;
     }
 
 
