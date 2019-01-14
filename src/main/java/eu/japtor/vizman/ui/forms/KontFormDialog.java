@@ -8,25 +8,26 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
-import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
 import eu.japtor.vizman.backend.bean.EvidKont;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.service.FaktService;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.backend.utils.FormatUtils;
 import eu.japtor.vizman.ui.components.*;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -34,13 +35,8 @@ import java.util.function.Consumer;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
-    final StringToBigDecimalConverter bigDecimalMoneyConverter;
     final ValueProvider<Zak, String> honorProvider;
     final ComponentRenderer<HtmlComponent, Zak> moneyCellRenderer;
-
-//    final NumberRenderer<Zak> moneyRenderer;
-//    final NumberFormat numFormat;
-//    final NumberRenderer<Zak> moneyRenderer;
 
     private TextField ckontField;
     private Button evidChangeButton;
@@ -50,6 +46,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private TextField textField;
     private TextField honorarField = new TextField("Honorář (suma ze zakázek a subdodávek)");
     private ComboBox<Mena> menaCombo;
+//    private Text kontFolderText;
+
 //    private TextField menaField = new TextField("Měna");
 
 //    private Span datZadComp = new Span("Datum zadání");
@@ -64,12 +62,10 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private HorizontalLayout docDirCont;
     private FlexLayout docDirComponent;
     private TextField docDirField;
-    private Button openDocDirButton;
-    private HorizontalLayout docGridBar;
+    private Button openDocDirBtn;
     private Button registerDocButton;
 
     private Grid<Zak> zakGrid;
-    private HorizontalLayout zakGridBar;
     private Button newZakButton;
     private Button newAkvButton;
     private Button newSubButton;
@@ -77,12 +73,13 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private KontEvidFormDialog kontEvidFormDialog;
 
     private ZakFormDialog zakFormDialog;
-    private final ConfirmationDialog<KontDoc> confirmDocDeregDialog = new ConfirmationDialog<>();
-    private final ConfirmationDialog<Zak> confirmZakOpenDialog = new ConfirmationDialog<>();
+    private final ConfirmationDialog<KontDoc> confirmDocUnregisterDialog = new ConfirmationDialog<>();
+//    private final ConfirmationDialog<Zak> confirmZakOpenDialog = new ConfirmationDialog<>();
 
 //    @Autowired
     private KontService kontService;
     private ZakService zakService;
+    private FaktService faktService;
 
 
 ////    private ListDataProvider<Role> allRolesDataProvider;
@@ -92,13 +89,16 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
     public KontFormDialog(BiConsumer<Kont, Operation> itemSaver,
                           Consumer<Kont> itemDeleter,
-                          KontService kontService)
+                          KontService kontService,
+                          ZakService zakService,
+                          FaktService faktService)
     {
         super(true, true, itemSaver, itemDeleter);
 
         this.kontService = kontService;
+        this.zakService = zakService;
 
-        setWidth("1200px");
+        setWidth("1300px");
 //        setHeight("600px");
 
 
@@ -119,16 +119,16 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //        numFormat.setMinimumFractionDigits(2);
 //        numFormat.setMaximumFractionDigits(2);
 
-        bigDecimalMoneyConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
-            @Override
-            protected java.text.NumberFormat getFormat(Locale locale) {
-                NumberFormat numberFormat = super.getFormat(locale);
-                numberFormat.setGroupingUsed(true);
-                numberFormat.setMinimumFractionDigits(2);
-                numberFormat.setMaximumFractionDigits(2);
-                return numberFormat;
-            }
-        };
+//        bigDecimalMoneyConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
+//            @Override
+//            protected java.text.NumberFormat getFormat(Locale locale) {
+//                NumberFormat numberFormat = super.getFormat(locale);
+//                numberFormat.setGroupingUsed(true);
+//                numberFormat.setMinimumFractionDigits(2);
+//                numberFormat.setMaximumFractionDigits(2);
+//                return numberFormat;
+//            }
+//        };
 
         honorProvider = (zak) -> FormatUtils.moneyFormat.format(zak.getHonorar());
 
@@ -182,47 +182,35 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //        };
 
 
-        kontEvidFormDialog = new KontEvidFormDialog(this::saveEvid, kontService);
-        zakFormDialog = new ZakFormDialog(this::saveZak, this::deleteZak, zakService);
+        kontEvidFormDialog = new KontEvidFormDialog(this::saveKontEvid, kontService);
+        zakFormDialog = new ZakFormDialog(this::saveZak, this::deleteZak, zakService, faktService);
 
-//        initCkontField();
-//        initObjednatelField();
-//        initInvestorField();
-//        initTextField();
-//        initMenaCombo();
-//        initHonorarField();
-//        initDatZadField();
+        getFormLayout().add(
+                initCkontField()
+                , initEvidArchComponent()
+                , initTextField()
+                , initObjednatelField()
+                , initInvestorField()
+                , initHonorarField()
+                , initMenaCombo()
+        );
 
-//        initDocGridBar();
-//        initDocGrid();
+        getUpperGridCont().add(
+                initDocDirComponent()
+                , initDocGridBar()
+                , initDocGrid()
+        );
 
-        getFormLayout().add(initCkontField());
-        getFormLayout().add(initEvidArchComponent());
-        getFormLayout().add(initTextField());
-        getFormLayout().add(initObjednatelField());
-        getFormLayout().add(initInvestorField());
-        getFormLayout().add(initHonorarField());
-        getFormLayout().add(initMenaCombo());
-//        getFormLayout().add(datZadComp);
-
-        getUpperGridCont().add(initDocDirComponent());
-//        getUpperGridCont().add(initDocGridBar());
-        getUpperGridCont().add(initDocGrid());
-
-        getLowerGridCont().add(initZakGridBar());
-        getLowerGridCont().add(initZakGrid());
-//        getFormLayout().add(buildZakGridContainer(zakGrid));
-
+        getLowerGridCont().add(
+                initZakGridBar()
+                , initZakGrid()
+        );
     }
 
-    private void saveEvid(EvidKont evidKont) {
-//        Zak newInstance = zakService.saveZak(zak);
-//        this.getBinder().readBean(evidKont);
+    private void saveKontEvid(EvidKont evidKont) {
         getCurrentItem().setCkont(evidKont.getCkont());
         getCurrentItem().setText(evidKont.getText());
         getCurrentItem().setFolder(evidKont.getFolder());
-
-//        getBinder().readBean(getBinder().getBean());
         getBinder().readBean(getCurrentItem());
 
         Notification.show(
@@ -289,6 +277,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //        twinRolesGridField.initLeftItems(getCurrentItem().getRoles());
         zakGrid.setItems(getCurrentItem().getNodes());
         docGrid.setItems(getCurrentItem().getKontDocs());
+//        kontFolderText.setText(getCurrentItem().getFolder());
 
     }
 
@@ -324,14 +313,25 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                     getCurrentItem().getCkont()
                     , getCurrentItem().getText()
                     , getCurrentItem().getFolder()
-                );
-                kontEvidFormDialog.open(evidKont,  "Zadání/editace evidence");
+            );
+            if (null == getCurrentItem().getId()) {
+                kontEvidFormDialog.open(
+                        evidKont
+                        , AbstractEditorDialog.Operation.ADD
+                        , "Zadání EVIDENCE KONTRAKTU");
+            } else {
+                kontEvidFormDialog.open(
+                        evidKont
+                        , Operation.EDIT
+                        , "Změna EVIDENCE KONTRAKTU");
+            }
         });
         return evidChangeButton;
     }
 
     private Component initArchCheck() {
         archCheck = new Checkbox("Archiv");
+        archCheck.getElement().setAttribute("theme", "secondary");
         archCheck.setReadOnly(true);
         getBinder().forField(archCheck)
                 .bind(Kont::getArch, null);
@@ -341,7 +341,11 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private Component initEvidArchComponent() {
         FlexLayout evidArchCont = new FlexLayout();
         evidArchCont.setAlignItems(FlexComponent.Alignment.BASELINE);
-        evidArchCont.add(initEvidChangeButton(), new Ribbon("3em"), initArchCheck());
+        evidArchCont.add(
+                initEvidChangeButton()
+                , new Ribbon("3em")
+                , initArchCheck()
+        );
         return evidArchCont;
     }
 
@@ -401,12 +405,18 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         honorarField.setReadOnly(true);
         honorarField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
         getBinder().forField(honorarField)
-                .withConverter(bigDecimalMoneyConverter)
+                .withConverter(FormatUtils.bigDecimalMoneyConverter)
                 .bind(Kont::getHonorar, null);
         return honorarField;
     }
 
     // ------------------------------------------
+
+//    private Component initKontFolderText() {
+//        kontFolderText = new Text("");
+//        return kontFolderText;
+//    }
+
 
     private Component initDocDirComponent() {
 //        docDirComponent = new HorizontalLayout();
@@ -421,11 +431,11 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         docDirComponent.add(
 //                new Label("Adresář"),
 //                new Ribbon(),
-                initDocDirField(),
+                initDocDirField()
 //                new Ribbon(),
 //                initOpenDocDirBtn(),
-                new Ribbon(),
-                initRegisterDocButton()
+//                new Ribbon(),
+//                initRegisterDocButton()
         );
         return docDirComponent;
     }
@@ -433,10 +443,14 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private Component initDocDirField() {
 //        docDirField = new Paragraph();
         docDirField = new OpenDirField(
-                "Dokumenty kontraktu"
+//                "Dokumenty kontraktu"
+                null
                 , "Adresář není zadán"
+                , "D:\\vizman-doc-root"
+                , "D:\\vizman-proj-root"
                 , event -> {}
-//                , event -> FileUtils.validatePathname(event.getValue()
+                , event -> {}
+//                , event -> VmFileUtils.validatePathname(event.getValue()
 
         );
         docDirField.getStyle()
@@ -444,6 +458,9 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         docDirField.setWidth("100%");
         docDirField.setPlaceholder("[zak-doc-root]\\neco\\...");
 //        docDirField.setReadOnly(true);
+        getBinder().forField(docDirField)
+                .bind(Kont::getFolder, null);
+
         return docDirField;
     }
 
@@ -454,21 +471,28 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //    }
 
     private Component initRegisterDocButton() {
-        registerDocButton = new Button("+ Dokument");
-        registerDocButton.addClickListener(event -> {});
+        registerDocButton = new NewItemButton("Dokument", event -> {});
         return registerDocButton;
     }
 
-//    private Component initDocGridBar() {
-//        docGridBar = new HorizontalLayout();
-//        docGridBar.setWidth("100%");
-//        docGridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-//        docGridBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
-//        docGridBar.add(
-//                initRegisterDocButton()
-//        );
-//        return docGridBar;
-//    }
+    private Component initDocGridBar() {
+        FlexLayout docGridBar = new FlexLayout();
+        docGridBar.setWidth("100%");
+        docGridBar.setAlignItems(FlexComponent.Alignment.BASELINE);
+        docGridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        docGridBar.add(
+                initDocGridTitle(),
+                new Ribbon(),
+                initRegisterDocButton()
+        );
+        return docGridBar;
+    }
+
+    private Component initDocGridTitle() {
+        H4 docGridTitle = new H4();
+        docGridTitle.setText("Dokumenty");
+        return docGridTitle;
+    }
 
     private Component initDocGrid() {
         docGrid = new Grid<>();
@@ -490,7 +514,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private Component buildDocRemoveButton(KontDoc kontDoc) {
         return new GridItemFileRemoveBtn(event -> {
             close();
-            confirmDocDeregDialog.open("Zrušit registrace dokumentu ?",
+            confirmDocUnregisterDialog.open("Zrušit registrace dokumentu ?",
                     "", "", "Zrušit",
                     true, kontDoc, this::removeDocRegistration, this::open);
         });
@@ -502,25 +526,33 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
     // ----------------------------------------------
 
+    private Component initZakGridTitle() {
+        H4 zakTitle = new H4();
+        zakTitle.setText(ItemNames.getNomP(ItemType.ZAK));
+        zakTitle.getStyle().set("margin", "0");
+        return zakTitle;
+    }
 
     private Component initNewZakButton() {
-        newZakButton = new NewItemButton("Zakázka", null);
-        newZakButton.addClickListener(event -> zakFormDialog.open(new Zak(ItemType.ZAK)
-                , AbstractEditorDialog.Operation.ADD, "Zakázka"));
+        newZakButton = new NewItemButton(ItemNames.getNomP(ItemType.ZAK), event ->
+                zakFormDialog.open(new Zak(ItemType.ZAK)
+                    , AbstractEditorDialog.Operation.ADD, ItemNames.getNomS(ItemType.ZAK))
+        );
+//                        new Zak(ItemType.ZAK), AbstractEditorDialog.Operation.ADD);
         return newZakButton;
     }
 
     private Component initNewAkvButton() {
-        newAkvButton = new NewItemButton("Akvizice", null);
-        newAkvButton.addClickListener(event -> zakFormDialog.open(new Zak(ItemType.AKV)
-                , AbstractEditorDialog.Operation.ADD, "Akvizice"));
+        newAkvButton = new NewItemButton(ItemNames.getNomS(ItemType.AKV), event ->
+                zakFormDialog.open(new Zak(ItemType.AKV)
+                    , AbstractEditorDialog.Operation.ADD, ItemNames.getNomS(ItemType.AKV)));
         return newAkvButton;
     }
 
     private Component initNewSubButton() {
-        newSubButton = new NewItemButton("Subdodávka", null);
-        newSubButton.addClickListener(event -> zakFormDialog.open(new Zak(ItemType.SUB)
-                , AbstractEditorDialog.Operation.ADD, "Subdodávka"));
+        newSubButton = new NewItemButton(ItemNames.getNomS(ItemType.SUB), event ->
+                zakFormDialog.open(new Zak(ItemType.SUB)
+                    , AbstractEditorDialog.Operation.ADD, ItemNames.getNomS(ItemType.SUB)));
         return newSubButton;
     }
 
@@ -528,15 +560,20 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //    Button newSubButton = new NewItemButton("Subdodávka", null);
 
     private Component initZakGridBar() {
-        zakGridBar = new HorizontalLayout();
-        zakGridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-        zakGridBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
+        FlexLayout zakGridBar = new FlexLayout();
         zakGridBar.setWidth("100%");
-
+        zakGridBar.setAlignItems(FlexComponent.Alignment.BASELINE);
+        zakGridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         zakGridBar.add(
-                initNewZakButton(),
-                initNewAkvButton(),
-                initNewSubButton()
+                initZakGridTitle(),
+                new Ribbon(),
+                new FlexLayout(
+                    initNewZakButton(),
+                    new Ribbon(),
+                    initNewAkvButton(),
+                    new Ribbon(),
+                    initNewSubButton()
+                )
 //                new Button("Nová akvizice", event -> {}),
 //                new Button("Nová subdodávka", event -> {})
         );
@@ -549,6 +586,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         zakGrid.setId("zak-grid");
         zakGrid.setClassName("vizman-simple-grid");
+        zakGrid.getStyle().set("marginTop", "0.5em");
         zakGrid.setHeight("15em");
 
 
@@ -562,6 +600,23 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                 .setWidth("3em").setFlexGrow(0)
         ;
 
+        ComponentRenderer<Component, Zak> booleanRenderer = new ComponentRenderer<>(zak -> {
+//        this.getElement().setAttribute("theme", "small icon secondary");
+            Icon icoTrue = new Icon(VaadinIcon.CHECK);
+            icoTrue.setSize("0.8em");
+            icoTrue.getStyle().set("theme", "small icon secondary");
+            Icon icoFalse = new Icon(VaadinIcon.MINUS);
+            icoFalse.setSize("0.8em");
+            icoFalse.getStyle().set("theme", "small icon secondary");
+            return zak.getArch() ? icoTrue : icoFalse;
+        });
+
+        zakGrid.addColumn(booleanRenderer)
+                .setHeader(("Arch"))
+                .setFlexGrow(0)
+                .setWidth("5em")
+                .setResizable(true)
+        ;
 
 //        zakGrid.addColumn(new ComponentRenderer<>(this::createEditButton))
 //        zakGrid.addColumn(moneyRenderer).setHeader("Honorář")
@@ -571,21 +626,17 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //                .setWidth("8em").setResizable(true).setTextAlign(ColumnTextAlign.END)
 //                .setFlexGrow(0)
 //        ;
-//        zakGrid.addColumn(moneyRenderer).setHeader("Honorář")
         zakGrid.addColumn(moneyCellRenderer).setHeader("Honorář")
                 .setResizable(true)
                 .setTextAlign(ColumnTextAlign.END)
                 .setWidth("10em").setFlexGrow(0)
         ;
-
         zakGrid.addColumn(Zak::getText).setHeader("Text")
                 .setFlexGrow(1)
         ;
-
         zakGrid.addColumn(Zak::getFaktsOver).setHeader("Fakt.")
                 .setFlexGrow(0)
         ;
-
         zakGrid.addColumn(new ComponentRenderer<>(this::buildZakOpenBtn))
                 .setFlexGrow(0)
         ;

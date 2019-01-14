@@ -16,10 +16,10 @@ public class KontRepoCustomImpl implements KontRepoCustom {
     EntityManager em;
 
     @Override
-    public String[] getAllFirmaArray() {
-        Query query = em.createQuery("select distinct kont.getObjednatel from Kont kont");
-        List<String> firmaList = query.getResultList();
-        String[] firmaArray = new String[firmaList.size()];
-        return firmaList.toArray(firmaArray);
+    public String[] getAllObjednatelArray() {
+        Query query = em.createQuery("select distinct kont.objednatel from Kont kont");
+        List<String> objednatelList = query.getResultList();
+        String[] objednatelArray = new String[objednatelList.size()];
+        return objednatelList.toArray(objednatelArray);
     }
 }

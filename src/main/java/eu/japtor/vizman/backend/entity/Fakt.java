@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 @Table(name = "FAKT")
 public class Fakt extends AbstractEntity implements HasModifDates {
 
+    @Enumerated(EnumType.STRING)
+    private ItemType typ;
+
+    private Integer cfakt;
     private BigDecimal plneni;
     private BigDecimal zaklad;
     private BigDecimal castka;
@@ -19,6 +23,30 @@ public class Fakt extends AbstractEntity implements HasModifDates {
     private LocalDate dateCreate;
     private LocalDateTime datetimeUpdate;
 
+    // TODO: add ItemType
+//    public Fakt() {
+//        this.typ = ItemType.FAKT;
+//    }
+
+    @Basic
+    @Column(name = "TYP")
+    public ItemType getTyp() {
+        return typ;
+    }
+
+    public void setTyp(ItemType typ) {
+        this.typ = typ;
+    }
+
+    @Basic
+    @Column(name = "CFAKT")
+    public Integer getCfakt() {
+        return cfakt;
+    }
+
+    public void setCfakt(Integer cfakt) {
+        this.cfakt = cfakt;
+    }
 
     @Column(name = "PLNENI")
     public BigDecimal getPlneni() {
@@ -84,8 +112,12 @@ public class Fakt extends AbstractEntity implements HasModifDates {
         return dateTimeExport;
     }
 
-    public void setDateTimeExport(LocalDateTime dateExport) {
-        this.dateTimeExport = dateExport;
+    public void setDateTimeExport(LocalDateTime dateTimeExport) {
+        this.dateTimeExport = dateTimeExport;
+    }
+
+    public String getDateTimeExportStr() {
+        return null == dateTimeExport ? null : dateTimeExport.toString();
     }
 
 

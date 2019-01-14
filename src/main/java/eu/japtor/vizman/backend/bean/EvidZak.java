@@ -1,27 +1,34 @@
 package eu.japtor.vizman.backend.bean;
 
-import eu.japtor.vizman.backend.entity.HasItemType;
-import eu.japtor.vizman.backend.entity.ItemType;
-
-public class EvidKont implements java.io.Serializable {
+public class EvidZak implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
 
-    String ckont;
+    Long kontId;
+    Integer czak;
     String text;
     String folder;
 
-    public EvidKont(String ckont, String text, String folder) {
-        this.ckont = ckont;
+    public EvidZak(Long kontId, Integer czak, String text, String folder) {
+        this.kontId = kontId;
+        this.czak = czak;
         this.text = text;
         this.folder = folder;
     }
 
-    public String getCkont() {
-        return ckont;
+    public Long getKontId() {
+        return kontId;
     }
 
-    public void setCkont(String ckont) {
-        this.ckont = ckont;
+    public void setKontId(Long kontId) {
+        this.kontId = kontId;
+    }
+
+    public Integer getCzak() {
+        return czak;
+    }
+
+    public void setCzak(Integer czak) {
+        this.czak = czak;
     }
 
     public String getText() {

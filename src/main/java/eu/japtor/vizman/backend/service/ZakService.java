@@ -1,18 +1,28 @@
 package eu.japtor.vizman.backend.service;
 
+import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.Zak;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ZakService {
+
+    Integer getNewCfakt(Zak zak);
+
+    Integer getNewCfakt(Long zakId);
+
+    BigDecimal getSumPlneni(Long faktId);
 
     Zak saveZak(Zak zak);
 
     boolean deleteZak(Zak zak);
 
-    Zak getZak(Long id);
+    boolean zakIdExistsInKont(Long kontId, Integer czak);
 
-    List<Zak> getAllZak();
+    Zak getById(Long id);
 
-    long countZak();
+    List<Zak> fetchAll();
+
+    long countAll();
 }

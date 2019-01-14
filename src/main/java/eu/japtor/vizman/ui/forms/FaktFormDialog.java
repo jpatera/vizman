@@ -1,13 +1,17 @@
 package eu.japtor.vizman.ui.forms;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
+import com.vaadin.flow.data.converter.LocalDateToDateConverter;
+import com.vaadin.flow.data.converter.StringToDateConverter;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.service.FaktService;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.ZakService;
+import eu.japtor.vizman.backend.utils.FormatUtils;
 import eu.japtor.vizman.ui.components.AbstractEditorDialog;
 import eu.japtor.vizman.ui.components.ConfirmationDialog;
 
@@ -18,39 +22,31 @@ import java.util.function.Consumer;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
 
-    private Mena faktMena;
-    private TextField plneniField = new TextField("Plnění [%]"); // = new TextField("Jméno");
-    private TextField zakladField = new TextField("Ze základu (honoráře)"); // = new TextField("Jméno");
-    private TextField castkaField = new TextField("Fakturovaná částka"); // = new TextField("Jméno");
-    private TextField dateTimeExportField = new TextField("Export"); // = new TextField("Jméno");
-    private DatePicker dateDuzpField = new DatePicker("DUZP"); // = new TextField("Jméno");
-    private TextField textField = new TextField("Text"); // = new TextField("Jméno");
+    private TextField plneniField;
+    private TextField zakladField;
+    private TextField castkaField;
+    private TextField dateTimeExportField;
+    private DatePicker dateDuzpField;
+    private TextField textField;
 //    private TextField menaField = new TextField("Měna");
 
     Grid<Fakt> faktGrid = new Grid();
     Grid<ZakDoc> docGrid = new Grid();
 
 //    @Autowired
-    private KontService kontService;
-    private ZakService zakService;
-
-
-////    private ListDataProvider<Role> allRolesDataProvider;
-//    private Collection<Role> personRoles;
-    private final ConfirmationDialog<KontDoc> confirmDocDeregDialog = new ConfirmationDialog<>();
-    private final ConfirmationDialog<Zak> confirmZakOpenDialog = new ConfirmationDialog<>();
+    private FaktService faktService;
 
 
     public FaktFormDialog(BiConsumer<Fakt, Operation> itemSaver,
-                          Consumer<Fakt> itemDeleter)
-//                          FaktService faktService)
+                          Consumer<Fakt> itemDeleter,
+                          FaktService faktService)
     {
 //        super(GrammarGender.MASCULINE, Kont.NOMINATIVE_SINGULAR
 //                , Kont.GENITIVE_SINGULAR, Kont.ACCUSATIVE_SINGULAR
 //                , itemSaver, itemDeleter);
         super(itemSaver, itemDeleter);
 
-        setWidth("1200px");
+        setWidth("900px");
 //        setHeight("600px");
 
 //        getFormLayout().setResponsiveSteps(
@@ -58,21 +54,14 @@ public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
 //                new FormLayout.ResponsiveStep("10em", 2),
 //                new FormLayout.ResponsiveStep("12em", 3));
 
-        this.kontService = kontService;
+        this.faktService = faktService;
 
-        faktMena = getCurrentItem().getMena();
-        initPlneniField();
-        initCastkaField();
-        initDateDuzpField();
-        initTextField();
-        initDateTimeExportField();
-
-        getFormLayout().add(plneniField);
-        getFormLayout().add(zakladField);
-        getFormLayout().add(castkaField);
-        getFormLayout().add(dateDuzpField);
-        getFormLayout().add(textField);
-        getFormLayout().add(dateTimeExportField);
+        getFormLayout().add(initPlneniField());
+        getFormLayout().add(initDateDuzpField());
+        getFormLayout().add(initTextField());
+        getFormLayout().add(initZakladField());
+        getFormLayout().add(initCastkaField());
+        getFormLayout().add(initDateTimeExportField());
     }
 
     /**
@@ -84,6 +73,8 @@ public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
 //        datZadComp.setLocale(new Locale("cs", "CZ"));
 //        vystupField.setLocale(new Locale("cs", "CZ"));
 
+        castkaField.setSuffixComponent(new Span(getCurrentItem().getMena().name()));
+
 
 //        getBinder().forField(twinRolesGridField)
 //                .bind(Person::getRoles, Person::setRoles);
@@ -94,23 +85,13 @@ public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
 
     }
 
-
-    private void initCastkaField() {
-        castkaField.setSuffixComponent(new Span(faktMena.name()));
-        castkaField.setReadOnly(true);
-        getBinder().forField(castkaField)
-                .withConverter(
-                        new StringToBigDecimalConverter("Must enter a number"))
-                .bind(Fakt::getCastka, null);
-    }
-
-    private void initPlneniField() {
-        plneniField.setPattern("[0-9]3.[0-9]");
-        plneniField.setPreventInvalidInput(true);
+    private Component initPlneniField() {
+        plneniField = new TextField("Plnění [%]"); // = new TextField("Jméno");
+        plneniField.setPattern("^100(\\.(0{0,2})?)?$|^\\d{1,2}(\\.(\\d{0,2}))?$");
+//        plneniField.setPreventInvalidInput(true);
         plneniField.setSuffixComponent(new Span("[%]"));
         getBinder().forField(plneniField)
-                .withConverter(
-                        new StringToBigDecimalConverter("Must enter a number"))
+                .withConverter(FormatUtils.bigDecimalMoneyConverter)
 
 //                .withConverter(String::trim, String::trim)
 //                .withValidator(new StringLengthValidator(
@@ -121,25 +102,55 @@ public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
 //                            true : kontService.getByObjednatel(objednatel) == null,
 //                        "Uživatel s tímto jménem již existuje, zvol jiné jméno")
                 .bind(Fakt::getPlneni, Fakt::setPlneni);
+        return plneniField;
     }
 
 
-    private void initDateDuzpField() {
+    private Component initDateDuzpField() {
+        dateDuzpField = new DatePicker("DUZP");
         getBinder().forField(dateDuzpField)
 //                .withConverter(String::trim, String::trim)
                 .bind(Fakt::getDateDuzp, Fakt::setDateDuzp);
+        return dateDuzpField;
     }
 
-    private void initDateTimeExportField() {
-        dateTimeExportField.setValue(getCurrentItem().getDateTimeExport().toString());
-    }
-
-    private void initTextField() {
+    private Component initTextField() {
+        textField = new TextField("Text fakturace");
         textField.getElement().setAttribute("colspan", "2");
         getBinder().forField(textField)
                 .bind(Fakt::getText, Fakt::setText);
+        return textField;
     }
 
+    private Component initCastkaField() {
+        castkaField = new TextField("Fakturovaná částka");
+        castkaField.setReadOnly(true);
+//        castkaField.setSuffixComponent(new Span(faktMena.name()));
+        getBinder().forField(castkaField)
+                .withConverter(FormatUtils.bigDecimalMoneyConverter)
+                .bind(Fakt::getCastka, null);
+        return castkaField;
+    }
+
+    private Component initZakladField() {
+        zakladField = new TextField("Fakturovaná částka");
+        zakladField.setReadOnly(true);
+//        castkaField.setSuffixComponent(new Span(faktMena.name()));
+        getBinder().forField(zakladField)
+                .withConverter(FormatUtils.bigDecimalMoneyConverter)
+                .bind(Fakt::getZaklad, null);
+        return zakladField;
+    }
+
+    private Component initDateTimeExportField() {
+//        dateTimeExportField.setValue(getCurrentItem().getDateTimeExport().toString());
+        dateTimeExportField = new TextField("Export");
+        dateTimeExportField.setReadOnly(true);
+        getBinder().forField(dateTimeExportField)
+//                .withConverter(new LocalDateToDateConverter())
+                .bind(Fakt::getDateTimeExportStr, null);
+        return dateTimeExportField;
+    }
 
     @Override
     protected void confirmDelete() {

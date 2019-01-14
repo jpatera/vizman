@@ -1,12 +1,15 @@
 package eu.japtor.vizman.ui.components;
 
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.value.ValueChangeMode;
+import eu.japtor.vizman.backend.utils.VmFileUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class OpenDirField extends TextField {
 
@@ -17,56 +20,89 @@ public class OpenDirField extends TextField {
         okIcon.setColor("green");
     }
 
-    Button openDirBtn;
+    private String docRoot;
+    private String projRoot;
+    private Button openDocDirBtn;
+    private Button openProjDirBtn;
 
 
     public OpenDirField(
             final String label
             , final String placeholder
-            , ValueChangeListener updateContent
+            , final String docRoot
+            , final String projRoot
+            , ValueChangeListener openDocDir
+            , ValueChangeListener openProjDir
     ) {
         super();
         this.setLabel(label);
         this.setPlaceholder(placeholder);
-        this.setSuffixComponent(initOpenDirBtn());
+        this.docRoot = docRoot;
+        this.projRoot = projRoot;
+        this.setSuffixComponent(initOpenDocDirBtn(event ->
+                openDocDir(VmFileUtils.getKontDocPath(this.docRoot, this.getValue())))
+        );
 //        this.addClassName("view-toolbar__search-field");
 //        this.setHeight("32px");
 //        this.getStyle().set("theme", "small");
-        this.addValueChangeListener(updateContent);
-        this.setValueChangeMode(ValueChangeMode.EAGER);
+//        this.addValueChangeListener(openProjDir);
+//        this.setValueChangeMode(ValueChangeMode.EAGER);
 
 //        this.setPrefixComponent(warningIcon);
 //        updateContent.valueChanged(new ValueChangeEvent<Object>() {
 //        });
-        this.setValue(this.getValue());
+//        this.setValue(this.getValue());
+    }
+
+    public boolean verifyPath() {
+        return true;
     }
 
     public void showDirNotFoundWarning(boolean showWarning) {
         this.setPrefixComponent(showWarning ? warningIcon : okIcon);
     }
 
-    private Button initOpenDirBtn() {
-//        openDirBtn = new Button();
-        openDirBtn = new OpenDirBtn(event -> openDir(this.getValue()));
-//        openDirBtn.setText("");
+    private Button initOpenDocDirBtn(
+            ComponentEventListener openDocDirListener
+    ) {
+//        openDocDirBtn = new Button();
+//        openDocDirBtn = new OpenDirBtn(event -> openDir(this.getValue()));
+        openDocDirBtn = new OpenDirBtn(openDocDirListener);
+//        openDocDirBtn.setText("");
 //        clearBtn.setIcon(new Icon("lumo", "cross"));
 //        Icon openDirIcon = new Icon(VaadinIcon.FOLDER_OPEN);
 //        openDirIcon.setSize("20px");
-//        openDirBtn.setIcon(openDirIcon);
+//        openDocDirBtn.setIcon(openDirIcon);
 //        this.addClassName("review__edit");
-        openDirBtn.getStyle()
+        openDocDirBtn.getStyle()
                 .set("theme", "icon small primary")
                 .set("margin", "0");
-        openDirBtn.setHeight("25px");
+        openDocDirBtn.setHeight("25px");
 
 //        clearBtn.getElement().setAttribute("theme", "small");
 //        clearBtn.getElement().setAttribute("size", "");
-        return  openDirBtn;
+        return openDocDirBtn;
     }
 
-    private void openDir(String path) {
+    private void openDocDir(Path docDirPath) {
         try {
-            Runtime.getRuntime().exec("explorer.exe /select," + path);
+            File docDir = docDirPath.toFile();
+            if (!docDir.exists()) {
+                new OkDialog().open(
+                        "Dokumentový adresář"
+                        , "Adresář \"" + docDirPath.toString() + "\" nenalezen"
+                        , ""
+                );
+                return;
+            } else if (!docDir.isDirectory()) {
+                new OkDialog().open(
+                        "Dokumentový adresář"
+                        , "Cesta \"" + docDirPath.toString() + "\" neodkazuje na adresář ale na soubor"
+                        , ""
+                );
+                return;
+            }
+            Runtime.getRuntime().exec("explorer.exe /select," + docDir.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }

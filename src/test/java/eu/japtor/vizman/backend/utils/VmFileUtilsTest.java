@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class FileUtilsTest {
+class VmFileUtilsTest {
 
     @Test
     void testSanitizeFilename() {
@@ -24,7 +24,7 @@ class FileUtilsTest {
         String pathToTest = "žščřďťň ŽŠČŘĎŤŇ áäéíóúůüý ÁÄÉÍÓÚŮÜÝ";
         String expectedPath = "zscrdtn ZSCRDTN aaeiouuuy AAEIOUUUYxx";
         assertThat("Normalized string is not as expected"
-                , FileUtils.normalizeFilepath(pathToTest), is(expectedPath));
+                , VmFileUtils.normalizeDirname(pathToTest), is(expectedPath));
     }
 
 }

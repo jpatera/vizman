@@ -16,21 +16,11 @@ import java.util.function.Predicate;
 @SequenceGenerator(initialValue = 1, name = "id_gen", sequenceName = "zak_seq")
 public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, HasModifDates {
 
-    public Zak() {
-    }
-
-    public Zak(ItemType typ) {
-        this.typ = typ;
-    }
-
-
-    private String ckont;
-    private Integer czak;
-
     @Enumerated(EnumType.STRING)
     private ItemType typ;
 
-//    private String typDokladu;
+    private String ckontOrig;
+    private Integer czak;
     private Short rokzak;
     private String rokmeszad;
     private String text;
@@ -50,14 +40,24 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
     private LocalDateTime datetimeUpdate;
 
 
-    @Basic
-    @Column(name = "CKONT")
-    public String getCkont() {
-        return ckont;
+    public Zak() {
+        this(ItemType.ZAK);
     }
 
-    public void setCkont(String czak) {
-        this.ckont = czak;
+    public Zak(ItemType typ) {
+        super();
+        this.typ = typ;
+    }
+
+
+    @Basic
+    @Column(name = "CKONT_ORIG")
+    public String getCkontOrig() {
+        return ckontOrig;
+    }
+
+    public void setCkontOrig(String ckontOrig) {
+        this.ckontOrig = ckontOrig;
     }
 
     @Basic
@@ -141,7 +141,7 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
     }
 
     @Basic
-    @Column(name = "DOCDIR")
+    @Column(name = "FOLDER")
     public String getFolder() {
         return folder;
     }
@@ -157,7 +157,7 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         return honorar;
     }
 
-    public void setHonorar(BigDecimal honorc) {
+    public void setHonorar(BigDecimal honorar) {
         this.honorar = honorar;
     }
 
@@ -268,8 +268,7 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
     }
 
 
-
-    // TODO: try EAGER - for better performance in TreeGrid ?
+    // TODO: try LAZY - for better performance in TreeGrid ?
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_KONT")
     private Kont kont;
@@ -302,6 +301,17 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
 //        this.fakts = fakts;
 //    }
 
+
+    @Transient
+    public Long getKontId() {
+        return getKont().getId();
+    }
+
+    @Transient
+    public String getCkont() {
+        return getKont().getCkont();
+    }
+
     @Transient
     private Predicate<Fakt> overTermsPredicate = fakt ->
             ((null != fakt.getDateVystav()) &&  (fakt.getDateDuzp().isAfter(LocalDate.now())));
@@ -311,6 +321,25 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         long over = getFakts().stream()
                 .filter(overTermsPredicate).count();
         return new Integer((int)over);
+    }
+
+    @Transient
+    public Integer getLastCfakt() {
+        return getFakts().stream()
+                .mapToInt(fakt -> fakt.getCfakt())
+                .max().orElse(1);
+    }
+
+    @Transient
+    public Integer getNewCfakt() {
+        return getLastCfakt() + 1;
+    }
+
+    @Transient
+    public BigDecimal getSumPlneni() {
+        return getFakts().stream()
+                .map(fakt -> fakt.getPlneni())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
 // -----------------------------

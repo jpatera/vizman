@@ -12,16 +12,13 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.utils.FormatUtils;
 
 import java.io.Serializable;
-import java.time.format.DateTimeFormatter;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public abstract class AbstractEditorDialog <T extends Serializable>  extends Dialog {
-
-    private final static DateTimeFormatter titleCreateDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private final static DateTimeFormatter titleModifDateFormatter = DateTimeFormatter.ofPattern("EEEE yyyy-MM-dd HH:mm");
 
     private final HorizontalLayout titleLayout = new HorizontalLayout();
     private final H3 titleMain = new H3();
@@ -39,7 +36,6 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     private final VerticalLayout upperGridContainer = new VerticalLayout();
     private final VerticalLayout lowerGridContainer = new VerticalLayout();
     HorizontalLayout upperPane = new HorizontalLayout();
-    HorizontalLayout lowerPane = new HorizontalLayout();
     HorizontalLayout buttonBar = new HorizontalLayout();
     VerticalLayout dialogPane = new VerticalLayout();
 
@@ -92,9 +88,6 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         this.itemSaver = itemSaver;
         this.itemDeleter = itemDeleter;
 
-        DateTimeFormatter dochTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-        DateTimeFormatter dochDateHeaderFormatter = DateTimeFormatter.ofPattern("EEEE, dd.MM.yyyy");
-
 //        initDialogTitle();
         initFormLayout();
         initUpperGridContainer();
@@ -105,13 +98,16 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         dialogPane.add(initDialogTitle(), new Hr());
         upperPane.add(formLayout);
         if (useUpperGrid) {
+            upperPane.add(new Ribbon());
             upperPane.add(upperGridContainer);
         }
         dialogPane.add(upperPane);
         dialogPane.add(new Paragraph());
         if (useLowerGrid) {
-            lowerPane.add(lowerGridContainer);
-            dialogPane.add(lowerPane);
+//            HorizontalLayout lowerPane = new HorizontalLayout();
+//            lowerPane.add(lowerGridContainer);
+//            dialogPane.add(lowerPane);
+            dialogPane.add(lowerGridContainer);
         }
         dialogPane.add(buttonBar);
         this.add(dialogPane);
@@ -245,15 +241,16 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         openInternal(item, operation, null, null, null);
     }
 
-    public void open(T item, final Operation operation
-            , String titleItemNameText) {
+    public void open(T item, final Operation operation, String titleItemNameText) {
         openInternal(item, operation, titleItemNameText, null, null);
     }
 
-    public void open(T item, final Operation operation
-            , String titleItemNameText, String titleEndText)
-    {
+    public void open(T item, final Operation operation, String titleItemNameText, String titleEndText) {
         openInternal(item, operation, titleItemNameText, null, titleEndText);
+    }
+
+    public void open(T item, final Operation operation, String titleItemNameText, Component titleMiddleComponent, String titleEndText) {
+        openInternal(item, operation, titleItemNameText, titleMiddleComponent, titleEndText);
     }
 
     /**
@@ -278,15 +275,15 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
             if (operation == Operation.ADD) {
                 titleEndText = "";
             } else {
-                titleEndText = "[ Vytvořeno: " + ((HasModifDates) currentItem).getDateCreate().format(titleCreateDateFormatter)
-                        + ", Poslední změna: " + ((HasModifDates) currentItem).getDatetimeUpdate().format(titleModifDateFormatter) + " ]";
+                titleEndText = "[ Vytvořeno: " + ((HasModifDates) currentItem).getDateCreate().format(FormatUtils.basicDateFormatter)
+                        + ", Poslední změna: " + ((HasModifDates) currentItem).getDatetimeUpdate().format(FormatUtils.titleModifDateFormatter) + " ]";
             }
         }
 
 //        titleLayout.setText(buildDialogTitle(currentOperation));
         titleMain.setText(currentOperation.getDialogTitle(getItemName(currentOperation), itemGender));
+        titleMiddle.removeAll();
         if (null != titleMiddleComponent) {
-            titleMiddle.removeAll();;
             titleMiddle.add(titleMiddleComponent);
         }
         titleEnd.setText(titleEndText);
@@ -434,7 +431,7 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
             return getTitleOperName(itemGender) + " " + itemName.toUpperCase();
         }
 
-        private String getTitleOperName(final GrammarGender gender) {
+        public String getTitleOperName(final GrammarGender gender) {
             switch (gender) {
                 case MASCULINE : return titleOperNameForMasculine;
                 case FEMININE : return titleOperNameForFeminine;

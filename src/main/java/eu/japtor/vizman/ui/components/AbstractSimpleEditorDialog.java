@@ -12,16 +12,12 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.utils.FormatUtils;
 
 import java.io.Serializable;
-import java.time.format.DateTimeFormatter;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public abstract class SimpleEditorDialog<T extends Serializable> extends Dialog {
-
-    private final static DateTimeFormatter titleCreateDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private final static DateTimeFormatter titleModifDateFormatter = DateTimeFormatter.ofPattern("EEEE yyyy-MM-dd HH:mm");
+public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends Dialog {
 
     private final HorizontalLayout titleLayout = new HorizontalLayout();
     private final H3 titleMain = new H3();
@@ -42,6 +38,7 @@ public abstract class SimpleEditorDialog<T extends Serializable> extends Dialog 
 
     private Binder<T> binder = new Binder<>();
     private T currentItem;
+    private AbstractEditorDialog.Operation operation;
 
     private final ConfirmationDialog<T> confirmationDialog = new ConfirmationDialog<>();
 
@@ -55,7 +52,7 @@ public abstract class SimpleEditorDialog<T extends Serializable> extends Dialog 
 //    Map<GrammarShapes, String> itemNameMap;
 
 
-//    protected SimpleEditorDialog(Consumer<T> itemSaver) {
+//    protected AbstractSimpleEditorDialog(Consumer<T> itemSaver) {
 //        this(false, false, itemSaver);
 //    }
 
@@ -69,8 +66,8 @@ public abstract class SimpleEditorDialog<T extends Serializable> extends Dialog 
      * @param itemSaver
      *            Callback to save the edited item
      */
-    protected SimpleEditorDialog(Consumer<T> itemSaver) {
-
+    protected AbstractSimpleEditorDialog(Consumer<T> itemSaver)
+    {
         this.itemSaver = itemSaver;
 
 //        initDialogTitle();
@@ -87,6 +84,41 @@ public abstract class SimpleEditorDialog<T extends Serializable> extends Dialog 
 
         this.setCloseOnEsc(true);
         this.setCloseOnOutsideClick(false);
+
+        setupEventListeners();
+    }
+
+    public void setupEventListeners() {
+//        getGrid().addSelectionListener(e -> {
+//            e.getFirstSelectedItem().ifPresent(entity -> {
+//                navigateToEntity(entity.getId().toString());
+//                getGrid().deselectAll();
+//            });
+//        });
+//
+//        getForm().getButtons().addSaveListener(e -> getPresenter().save());
+//        getForm().getButtons().addCancelListener(e -> getPresenter().cancel());
+//
+//        getDialog().getElement().addEventListener("opened-changed", e -> {
+//            if (!getDialog().isOpened()) {
+//                getPresenter().cancel();
+//            }
+//        });
+//
+//        getForm().getButtons().addDeleteListener(e -> getPresenter().delete());
+//
+//        getSearchBar().addActionClickListener(e -> getPresenter().createNew());
+//        getSearchBar()
+//                .addFilterChangeListener(e -> getPresenter().filter(getSearchBar().getFilter()));
+//
+//        getSearchBar().setActionText("New " + entityName);
+//        getBinder().addValueChangeListener(e -> getPresenter().onValueChange(isDirty()));
+
+        binder.addValueChangeListener(e -> onValueChange(isDirty()));
+    }
+
+    public boolean isDirty() {
+        return getBinder().hasChanges();
     }
 
     private Component initDialogTitle() {
@@ -112,15 +144,19 @@ public abstract class SimpleEditorDialog<T extends Serializable> extends Dialog 
 //        add(div);
     }
 
+    public void onValueChange(boolean isDirty) {
+        saveButton.setEnabled(isDirty);
+    }
 
     private void initDialogButtonBar() {
 
         cancelButton = new Button("Zpět");
+        cancelButton.setAutofocus(true);
         cancelButton.addClickListener(e -> close());
 
         saveButton = new Button("Uložit");
-        saveButton.setAutofocus(true);
         saveButton.getElement().setAttribute("theme", "primary");
+        saveButton.setEnabled(false);
 
         HorizontalLayout leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);
@@ -171,43 +207,56 @@ public abstract class SimpleEditorDialog<T extends Serializable> extends Dialog 
     }
 
 
-    public void open(T item) {
-        openInternal(item, null, null, null);
+    public void open(T item, AbstractEditorDialog.Operation operation) {
+        openInternal(item, operation, null, null, null);
     }
 
-    public void open(T item, String titleItemNameText) {
-        openInternal(item, titleItemNameText, null, null);
+    public void open(T item, AbstractEditorDialog.Operation operation
+                     , String titleItemNameText) {
+        openInternal(item, operation, titleItemNameText, null, null);
     }
 
-    public void open(T item, String titleItemNameText, String titleEndText)
-    {
-        openInternal(item, titleItemNameText, null, titleEndText);
+    public void open(T item, AbstractEditorDialog.Operation operation
+                     , String titleItemNameText, String titleEndText) {
+        openInternal(item, operation, titleItemNameText, null, titleEndText);
     }
 
     /**
      * Opens the given item for editing in the dialog.
      */
-    private void openInternal(T item, String titleItemNameText, Component titleMiddleComponent, String titleEndText)
+    private void openInternal(T item, AbstractEditorDialog.Operation operation
+                              , String titleMainText, Component titleMiddleComponent, String titleEndText)
     {
-
         setDefaultItemNames();  // Set general default names
-        currentItem = item;
+        this.currentItem = item;
+        this.operation = operation;
+        binder.removeBean();
+        binder.readBean(currentItem);
 
         openSpecific();
 
-        if ((null == titleItemNameText) && (currentItem instanceof HasItemType)) {
-            setItemNames(((HasItemType) currentItem).getTyp());  // Set general default names
-//            titleItemNameText = ItemNames.getNomS(((HasItemType) currentItem).getTyp());
+        String titleMainTextInternal = "";
+        if (null == titleMainText) {
+//            if (currentItem instanceof HasItemType) {
+//                setItemNames(((HasItemType) currentItem).getTyp());  // Set general default names
+//                titleItemNameText = ItemNames.getNomS(((HasItemType) currentItem).getTyp());
+//            } else {
+            titleMainTextInternal =
+                    operation.getTitleOperName(GrammarGender.FEMININE)
+                    + ItemNames.getNomS(ItemType.UNKNOWN);
+        } else {
+            titleMainTextInternal = titleMainText;
         }
 
+
         if ((null == titleEndText) && (currentItem instanceof HasModifDates)) {
-                titleEndText = "[ Vytvořeno: " + ((HasModifDates) currentItem).getDateCreate().format(titleCreateDateFormatter)
-                        + ", Poslední změna: " + ((HasModifDates) currentItem).getDatetimeUpdate().format(titleModifDateFormatter) + " ]";
+                titleEndText = "[ Vytvořeno: " + ((HasModifDates) currentItem).getDateCreate().format(FormatUtils.basicDateFormatter)
+                        + ", Poslední změna: " + ((HasModifDates) currentItem).getDatetimeUpdate().format(FormatUtils.titleModifDateFormatter) + " ]";
         }
 
 //        titleLayout.setText(buildDialogTitle(currentOperation));
 //        titleMain.setText(currentOperation.getDialogTitle(getItemName(currentOperation), itemGender));
-        titleMain.setText("Editace");
+        titleMain.setText(titleMainTextInternal);
         if (null != titleMiddleComponent) {
             titleMiddle.removeAll();;
             titleMiddle.add(titleMiddleComponent);
@@ -222,11 +271,7 @@ public abstract class SimpleEditorDialog<T extends Serializable> extends Dialog 
                 .addClickListener(e -> saveClicked());
 
         saveButton.setText("Uložit " + itemTypeAccuS.toLowerCase());
-//        saveButton.setEnabled();
-
-
-        binder.removeBean();
-        binder.readBean(currentItem);
+        saveButton.setEnabled(false);
 
         this.open();
     }
@@ -267,13 +312,13 @@ public abstract class SimpleEditorDialog<T extends Serializable> extends Dialog 
         }
     }
 
-    private void deleteClicked() {
-        if (confirmationDialog.getElement().getParent() == null) {
-            getUI().ifPresent(ui -> ui.add(confirmationDialog));
-        }
-        confirmDelete();
-    }
+//    private void deleteClicked() {
+//        if (confirmationDialog.getElement().getParent() == null) {
+//            getUI().ifPresent(ui -> ui.add(confirmationDialog));
+//        }
+//        confirmDelete();
+//    }
 
-    protected abstract void confirmDelete();
+//    protected abstract void confirmDelete();
 
 }

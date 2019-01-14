@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface KontRepo extends JpaRepository<Kont, Long> {
+public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
 //   Kont findTopByObjednatel(String objednatel);
 

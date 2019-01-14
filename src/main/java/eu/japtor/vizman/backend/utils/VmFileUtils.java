@@ -1,16 +1,18 @@
 package eu.japtor.vizman.backend.utils;
 
+import eu.japtor.vizman.backend.service.CfgPropsCache;
+import org.apache.commons.io.FileUtils;
 import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class FileUtils {
+public class VmFileUtils {
 
     /**
      * Replace illegal characters in a filename with "_"
@@ -40,12 +42,25 @@ public class FileUtils {
     }
 
 
-    public static String normalizeFilepath(String filepath) {
-        filepath = Normalizer.normalize(filepath, Normalizer.Form.NFD);
-        filepath = filepath.replaceAll("\\p{M}", "");   // for unicode
+    public static String normalizeDirname(final String dirname) {
+        String normDirname = Normalizer.normalize(dirname, Normalizer.Form.NFD);
+        normDirname = normDirname.replaceAll("\\p{M}", "");   // for unicode
+        normDirname = normDirname.replaceAll(" ", "_");   // for unicode
 //        filepath = filepath.replaceAll("[^\\p{ASCII}]", "");    // otherwise
-        return filepath;
+        return normDirname;
     }
+
+    public static String NormalizeDirnamesAndJoin(final String dirname1, final String dirname2) {
+        return normalizeDirname(dirname1) + "__" + normalizeDirname(dirname2);
+    }
+
+    public static Path getKontDocPath(final String docRoot, final String kontFolder) {
+        Path path = Paths.get(docRoot, kontFolder);
+//        Path path2 = path.resolve(path);
+//        Path path3 = path.relativize(path);
+        return path;
+    }
+
 
 
     static List<ProjFolder> rootZakProjFolders;

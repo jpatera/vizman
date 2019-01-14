@@ -51,7 +51,7 @@ public class NavigationBar extends Div implements RouterLayout {
         homeLink.addClassName("main-layout__nav-item");
 
         RouterLink dochLink = new RouterLink(null, DochView.class);
-        Icon ICON_DOCH = new Icon (VaadinIcon.BELL);
+        Icon ICON_DOCH = new Icon (VaadinIcon.CLOCK);
         ICON_DOCH.setColor("blue");
         dochLink.add(ICON_DOCH, new Text(TITLE_DOCH));
         dochLink.addClassName("main-layout__nav-item");

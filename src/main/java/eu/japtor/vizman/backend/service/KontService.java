@@ -19,7 +19,7 @@ public interface KontService {
 
     Kont getByText(String text);
 
-    Kont getByDocdir(String docdir);
+    Kont getByFolder(String folder);
 
     List<? super Kont> fetchAll();
 

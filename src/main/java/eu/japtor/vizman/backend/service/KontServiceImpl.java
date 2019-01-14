@@ -25,6 +25,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
         this.kontRepo = kontRepo;
     }
 
+
     @Override
     public List<QuerySortOrder> getDefaultSortOrders() {
         return DEFAULT_SORT_ORDER;
@@ -46,8 +47,8 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
-    public Kont getByDocdir(String docdir) {
-        return kontRepo.findTopByFolderIgnoreCase(docdir);
+    public Kont getByFolder(String folder) {
+        return kontRepo.findTopByFolderIgnoreCase(folder);
     }
 
     @Override
@@ -72,7 +73,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
     @Override
     public boolean deleteKont(Kont kont) {
-        new OkDialog().open("Rušení kontrakt; není zatím implementováno", "", "");
+        new OkDialog().open("Rušení kontraktů není implementováno", "", "");
         return false;
     }
 

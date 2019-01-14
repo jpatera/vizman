@@ -1,20 +1,34 @@
 package eu.japtor.vizman.backend.utils;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 public class FormatUtils {
 
 //    final static NumberFormat moneyFormat = new MoneyFormat(Locale.getDefault());
     public final static NumberFormat moneyFormat = new MoneyFormat();
+    public static final StringToBigDecimalConverter bigDecimalMoneyConverter;
+    public final static DateTimeFormatter basicDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public final static DateTimeFormatter basicDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    public final static DateTimeFormatter titleModifDateFormatter = DateTimeFormatter.ofPattern("EEEE yyyy-MM-dd HH:mm");
+
+    static {
+        bigDecimalMoneyConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
+            @Override
+            protected java.text.NumberFormat getFormat(Locale locale) {
+                NumberFormat numberFormat = super.getFormat(locale);
+                numberFormat.setGroupingUsed(true);
+                numberFormat.setMinimumFractionDigits(2);
+                numberFormat.setMaximumFractionDigits(2);
+                return numberFormat;
+            }
+        };
+    }
+
 
     public static class MoneyFormat extends DecimalFormat {
 

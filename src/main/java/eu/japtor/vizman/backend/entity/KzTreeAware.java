@@ -14,6 +14,7 @@ public interface KzTreeAware<T extends KzTreeAware> {
     BigDecimal getHonorar();
     Mena getMena();
     Short getRokzak();
+    String getSkupina();
     List<T> getNodes();
     Integer getOverTerms();
 }
