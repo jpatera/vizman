@@ -407,7 +407,8 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     public enum Operation {
         ADD("Nový", "Nová", "Nové", "Přidat", "zadat", false),
         EDIT("Editace", "Editace", "Editace", "Změnit", "editovat", true),
-        DELETE("Zrušení", "Zrušení", "Zrušení", "Odebrat", "zrušit", true);
+        DELETE("Zrušení", "Zrušení", "Zrušení", "Odebrat", "zrušit", true),
+        VYSTAV("Vystavení", "Vystavení", "Vystavení", "Vystavit", "vystavit", false);
 
         private final String titleOperNameForMasculine;
         private final String titleOperNameForFeminine;

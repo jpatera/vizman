@@ -7,12 +7,16 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 
 public class OpenDirBtn extends Button {
 
-    public OpenDirBtn(final ComponentEventListener itemAction) {
+    public OpenDirBtn(final Icon btnIcon, final ComponentEventListener itemAction) {
         super();
+        this.setHeight("25px");
         this.setText("");
-        this.setIcon(new Icon(VaadinIcon.FOLDER_OPEN));
+        this.setIcon(btnIcon);
 //        this.addClassName("review__edit");
-        this.getStyle().set("theme", "tertiary");
+        this.getStyle()
+//                .set("theme", "tertiary");
+                .set("theme", "icon small primary")
+                .set("margin", "0");
         this.addClickListener(itemAction);
     }
 }

@@ -11,6 +11,7 @@ import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.utils.VmFileUtils;
 import eu.japtor.vizman.ui.components.AbstractEditorDialog;
 import eu.japtor.vizman.ui.components.AbstractSimpleEditorDialog;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.function.Consumer;
 
@@ -22,7 +23,10 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
     private TextField textField;
     private TextField folderField;
 
-    AbstractEditorDialog.Operation operation;
+    private String ckontOrig;
+    private String textOrig;
+    private String folderOrig;
+
     private KontService kontService;
 
 
@@ -31,7 +35,6 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
         super(itemSaver);
         this.setWidth("750px");
         this.kontService = kontService;
-        this.operation = operation;
 
         getFormLayout().add(initCkontField());
         getFormLayout().add(initTextField());
@@ -98,6 +101,9 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
      */
     @Override
     protected void openSpecific() {
+        ckontOrig = getCurrentItem().getCkont();
+        textOrig = getCurrentItem().getText();
+        folderOrig = getCurrentItem().getFolder();
     }
 
     private Component initCkontField() {
@@ -110,13 +116,25 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
         ckontField.setValueChangeMode(ValueChangeMode.EAGER);
 
         getBinder().forField(ckontField)
+                .withValidator(
+                        ckont -> !StringUtils.isEmpty(ckont)
+                        , "Číslo kontraktu nesmí být prázdné"
+                )
                 .withValidator(new StringLengthValidator(
                         "Číslo kontraktu musí mít mezi 3-16 znaky",
                         3, 16)
                 )
-                .withValidator(
-                        ckont -> kontService.getByCkont(ckont) == null,
-                        "Toto číslo kontraktu již existuje, zvol jiné"
+                .withValidator(ckont ->
+                    ((AbstractEditorDialog.Operation.ADD == getOperation())
+                        && (kontService.getByCkont(ckont) == null)
+                    )
+                    ||
+                    ((AbstractEditorDialog.Operation.EDIT == getOperation())
+                        && ((ckont.equals(ckontOrig))
+                                || (kontService.getByCkont(ckont) == null)
+                            )
+                    )
+                    , "Toto číslo kontraktu již existuje, zvol jiné"
                 )
                 .bind(EvidKont::getCkont, EvidKont::setCkont);
         return ckontField;

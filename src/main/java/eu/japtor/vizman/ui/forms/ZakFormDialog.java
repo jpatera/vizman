@@ -45,6 +45,10 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
     private TextField honorarField;
     private TextField menaField;
 
+    private Integer czakOrig;
+    private String textOrig;
+    private String folderOrig;
+
     //    private Span datZadComp = new Span("Datum zadání");
 //    private Checkbox archiveCheckbox; // = new DatePicker("Nástup");
 
@@ -52,8 +56,8 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 //    private HorizontalLayout docDirComponent;
 //    private FormLayout.FormItem docDirComponent;
     private FlexLayout docDirComponent;
-//    private Paragraph docDirField;
-    private TextField docDirField;
+//    private Paragraph zakDocFolderField;
+    private KzFolderField zakDocFolderField;
     private Button openDocDirBtn;
     private Button registerDocButton;
 
@@ -148,6 +152,9 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         // Mandatory, should be first
         setItemNames(getCurrentItem().getTyp());
 
+        czakOrig = getCurrentItem().getCzak();
+        textOrig = getCurrentItem().getText();
+        folderOrig = getCurrentItem().getFolder();
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -164,6 +171,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 
         faktGrid.setItems(getCurrentItem().getFakts());
         docGrid.setItems(getCurrentItem().getZakDocs());
+        zakDocFolderField.setParentFolder(getCurrentItem().getKont().getFolder());
 
     }
 
@@ -250,7 +258,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
             } else {
                 zakEvidFormDialog.open(
                         evidZak
-                        , Operation.EDIT
+                        , AbstractEditorDialog.Operation.EDIT
                         , "Změna EVIDENCE ZAKÁZKY");
             }
         });
@@ -316,40 +324,25 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         docDirComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
         docDirComponent.setWidth("100%");
         docDirComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-
-        docDirComponent.add(
-                initDocDirField()
-//                new Ribbon(),
-//                initRegisterDocButton()
-        );
+        docDirComponent.add(initZakDocFolderField());
         return docDirComponent;
     }
 
-    private Component initDocDirField() {
-//        docDirField = new Paragraph();
-        docDirField = new OpenDirField(
-                "Dokumenty zakázky"
-                , "Adresář není zadán"
+    private Component initZakDocFolderField() {
+        zakDocFolderField = new KzFolderField(
+                null
                 , "D:\\vizman-doc-root"
                 , "D:\\vizman-proj-root"
-                , event -> {}
-                , event -> {}
-//                , event -> VmFileUtils.validatePathname(event.getValue()
-
         );
-        docDirField.getStyle()
-                .set("padding-top", "0em");
-        docDirField.setWidth("100%");
-        docDirField.setPlaceholder("[zak-doc-root]\\neco\\...");
-//        docDirField.setReadOnly(true);
-        return docDirField;
+        zakDocFolderField.setWidth("100%");
+        zakDocFolderField.getStyle().set("padding-top", "0em");
+//        zakDocFolderField.setReadOnly(true);
+        getBinder().forField(zakDocFolderField)
+                .bind(Zak::getFolder, null);
+
+        return zakDocFolderField;
     }
 
-//    private Component initOpenDocDirBtn() {
-//        openDocDirBtn = new Button("Otevřít");
-//        openDocDirBtn.addClickListener(event -> {});
-//        return openDocDirBtn;
-//    }
 
     private Component initRegisterDocButton() {
         registerDocButton = new Button("+ Dokument");
@@ -455,7 +448,28 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 //        zakGrid.getStyle().set("padding-top", "2.5em");
 //        zakGrid.getStyle().set("padding-bottom", "2.5em");
 
+        faktGrid.addColumn(Fakt::getCfakt).setHeader("ČF")
+                .setFlexGrow(0)
+        ;
         faktGrid.addColumn(Fakt::getPlneni).setHeader("Plnění [%]")
+                .setFlexGrow(0)
+        ;
+//        faktGrid.addColumn(Fakt::getCastka).setHeader("Částka [" + getCurrentItem().getMena().name() + "]")
+//                .setFlexGrow(0)
+//        ;
+//        faktGrid.addColumn(Fakt::getZaklad).setHeader("Základ [" + getCurrentItem().getMena().name() + "]")
+//                .setFlexGrow(0)
+//        ;
+        faktGrid.addColumn(Fakt::getDateDuzp).setHeader("DUZP")
+                .setFlexGrow(0)
+        ;
+        faktGrid.addColumn(Fakt::getText).setHeader("Text")
+                .setFlexGrow(1)
+        ;
+        faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktVystavBtn))
+                .setFlexGrow(0)
+        ;
+        faktGrid.addColumn(Fakt::getDateVystav).setHeader("Vystaveno")
                 .setFlexGrow(0)
         ;
         faktGrid.addColumn(Fakt::getCastka).setHeader("Částka")
@@ -466,33 +480,31 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         faktGrid.addColumn(Fakt::getZaklad).setHeader("Základ")
                 .setFlexGrow(0)
         ;
-//        faktGrid.addColumn(Fakt::getCastka).setHeader("Částka [" + getCurrentItem().getMena().name() + "]")
-//                .setFlexGrow(0)
-//        ;
-//        faktGrid.addColumn(Fakt::getZaklad).setHeader("Základ [" + getCurrentItem().getMena().name() + "]")
-//                .setFlexGrow(0)
-//        ;
-        faktGrid.addColumn(Fakt::getText).setHeader("Text")
-                .setFlexGrow(1)
-        ;
-        faktGrid.addColumn(Fakt::getDateDuzp).setHeader("DUZP")
-                .setFlexGrow(0)
-        ;
-        faktGrid.addColumn(Fakt::getDateVystav).setHeader("Vystaveno")
-                .setFlexGrow(0)
-        ;
         faktGrid.addColumn(Fakt::getDateTimeExport).setHeader("Exportováno")
                 .setFlexGrow(0)
         ;
-        faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktOpenButton))
+        faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktOpenBtn))
                 .setFlexGrow(0)
         ;
         return faktGrid;
     }
 
+    private Component buildFaktVystavBtn(Fakt fakt) {
+        return new GridFaktVystavBtn(event -> {
+//                this.close();
+            faktFormDialog.open(
+                    fakt, AbstractEditorDialog.Operation.VYSTAV,
+                    "[ Vytvořeno: " + fakt.getDateCreate().toString()
+                            + " , Poslední změna: " + fakt.getDatetimeUpdate().toString() + " ]");
 
+//                confirmFaktOpenDialog.open("Otevřít fakturaci ?",
+//                        "", "", "Zrušit",
+////                        true, zak, this::openZakForm, this::open);
+//                        true, fakt, this::openFaktForm, this::open);
+        });
+    }
 
-    private Component buildFaktOpenButton(Fakt fakt) {
+    private Component buildFaktOpenBtn(Fakt fakt) {
             return new GridItemOpenBtn(event -> {
 //                this.close();
                 faktFormDialog.open(

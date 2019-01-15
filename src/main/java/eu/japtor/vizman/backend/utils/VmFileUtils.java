@@ -54,12 +54,12 @@ public class VmFileUtils {
         return normalizeDirname(dirname1) + "__" + normalizeDirname(dirname2);
     }
 
-    public static Path getKontDocPath(final String docRoot, final String kontFolder) {
-        Path path = Paths.get(docRoot, kontFolder);
-//        Path path2 = path.resolve(path);
-//        Path path3 = path.relativize(path);
-        return path;
-    }
+//    public static Path getKontDocPath(final String docRoot, final String kontFolder) {
+//        Path path = Paths.get(docRoot, kontFolder);
+////        Path path2 = path.resolve(path);
+////        Path path3 = path.relativize(path);
+//        return path;
+//    }
 
 
 

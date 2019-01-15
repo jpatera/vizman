@@ -14,7 +14,6 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -46,7 +45,10 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private TextField textField;
     private TextField honorarField = new TextField("Honorář (suma ze zakázek a subdodávek)");
     private ComboBox<Mena> menaCombo;
-//    private Text kontFolderText;
+
+    private String ckontOrig;
+    private String textOrig;
+    private String folderOrig;
 
 //    private TextField menaField = new TextField("Měna");
 
@@ -59,9 +61,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //    private Grid<Role> roleTwinGrid;
 
     private Grid<KontDoc> docGrid;
-    private HorizontalLayout docDirCont;
     private FlexLayout docDirComponent;
-    private TextField docDirField;
+    private KzFolderField kontDocFolderField;
     private Button openDocDirBtn;
     private Button registerDocButton;
 
@@ -265,6 +266,10 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         // Mandatory, should be first
         setItemNames(getCurrentItem().getTyp());
 
+        ckontOrig = getCurrentItem().getCkont();
+        textOrig = getCurrentItem().getText();
+        folderOrig = getCurrentItem().getFolder();
+
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
 //        datZadComp.setLocale(new Locale("cs", "CZ"));
@@ -277,6 +282,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //        twinRolesGridField.initLeftItems(getCurrentItem().getRoles());
         zakGrid.setItems(getCurrentItem().getNodes());
         docGrid.setItems(getCurrentItem().getKontDocs());
+        kontDocFolderField.setParentFolder(null);
 //        kontFolderText.setText(getCurrentItem().getFolder());
 
     }
@@ -431,7 +437,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         docDirComponent.add(
 //                new Label("Adresář"),
 //                new Ribbon(),
-                initDocDirField()
+                initKontDocFolderField()
 //                new Ribbon(),
 //                initOpenDocDirBtn(),
 //                new Ribbon(),
@@ -440,28 +446,19 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         return docDirComponent;
     }
 
-    private Component initDocDirField() {
-//        docDirField = new Paragraph();
-        docDirField = new OpenDirField(
-//                "Dokumenty kontraktu"
+    private Component initKontDocFolderField() {
+        kontDocFolderField = new KzFolderField(
                 null
-                , "Adresář není zadán"
                 , "D:\\vizman-doc-root"
                 , "D:\\vizman-proj-root"
-                , event -> {}
-                , event -> {}
-//                , event -> VmFileUtils.validatePathname(event.getValue()
-
         );
-        docDirField.getStyle()
-                .set("padding-top", "0em");
-        docDirField.setWidth("100%");
-        docDirField.setPlaceholder("[zak-doc-root]\\neco\\...");
-//        docDirField.setReadOnly(true);
-        getBinder().forField(docDirField)
+        kontDocFolderField.setWidth("100%");
+        kontDocFolderField.getStyle().set("padding-top", "0em");
+//        kontDocFolderField.setReadOnly(true);
+        getBinder().forField(kontDocFolderField)
                 .bind(Kont::getFolder, null);
 
-        return docDirField;
+        return kontDocFolderField;
     }
 
 //    private Component initOpenDocDirBtn() {

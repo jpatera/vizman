@@ -5,15 +5,13 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Emphasis;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
-import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import eu.japtor.vizman.backend.bean.EvidKont;
 import eu.japtor.vizman.backend.bean.EvidZak;
-import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.backend.utils.VmFileUtils;
 import eu.japtor.vizman.ui.components.AbstractEditorDialog;
 import eu.japtor.vizman.ui.components.AbstractSimpleEditorDialog;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.function.Consumer;
 
@@ -25,7 +23,10 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
     private TextField textField;
     private TextField folderField;
 
-    AbstractEditorDialog.Operation operation;
+    private Integer czakOrig;
+    private String textOrig;
+    private String folderOrig;
+
     private ZakService zakService;
     private Long kontId;
 
@@ -34,12 +35,10 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
 
         super(itemSaver);
         this.setWidth("750px");
-        this.kontId = kontId;
         this.zakService = zakService;
-        this.operation = operation;
 
         getFormLayout().add(
-                initCkontField()
+                initCzakField()
                 , initTextField()
                 , initFolderField()
                 , initInfoField()
@@ -53,9 +52,13 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
      */
     @Override
     protected void openSpecific() {
+        this.czakOrig = getCurrentItem().getCzak();
+        this.textOrig = getCurrentItem().getText();
+        this.folderOrig = getCurrentItem().getFolder();
+        this.kontId = getCurrentItem().getKontId();
     }
 
-    private Component initCkontField() {
+    private Component initCzakField() {
         czakField = new TextField("Číslo zakázky");
         czakField.addValueChangeListener(event -> {
             folderField.setValue(
@@ -65,6 +68,10 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
         czakField.setValueChangeMode(ValueChangeMode.EAGER);
 
         getBinder().forField(czakField)
+                .withValidator(
+                        czak -> !StringUtils.isEmpty(czak)
+                        , "Číslo zakázky nesmí být prázdné"
+                )
                 .withConverter(new StringToIntegerConverter(
                         "Číslo zakázky musí být celé číslo")
                 )
@@ -72,11 +79,20 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
 //                        "Číslo zakázky musí být celé číslo",
 //                        3, 16)
 //                )
-                .withValidator(
-                        czak -> {
-                            return zakService.zakIdExistsInKont(kontId, czak);
-                        },
-                        "Toto číslo zakázky v rámci kontraktu již existuje, zvol jiné"
+                .withValidator(czak ->
+                    ((AbstractEditorDialog.Operation.ADD == getOperation())
+                            && (!zakService.zakIdExistsInKont(kontId, czak))
+                    )
+                    ||
+                    ((AbstractEditorDialog.Operation.EDIT == getOperation())
+                            && ((czak.equals(czakOrig))
+                                || (!zakService.zakIdExistsInKont(kontId, czak))
+                        )
+                    )
+//                        {
+//                            return zakService.zakIdExistsInKont(kontId, czak);
+//                        },
+                    , "Toto číslo zakázky v rámci kontraktu již existuje, zvol jiné"
                 )
                 .bind(EvidZak::getCzak, EvidZak::setCzak);
         return czakField;
@@ -85,7 +101,6 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
     private Component initTextField() {
         textField = new TextField("Text zakázky");
         textField.getElement().setAttribute("colspan", "2");
-
         textField.addValueChangeListener(event -> {
             folderField.setValue(
                 VmFileUtils.NormalizeDirnamesAndJoin(czakField.getValue(), event.getValue())

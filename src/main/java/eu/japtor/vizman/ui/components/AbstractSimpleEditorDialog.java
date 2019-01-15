@@ -38,6 +38,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 
     private Binder<T> binder = new Binder<>();
     private T currentItem;
+
     private AbstractEditorDialog.Operation operation;
 
     private final ConfirmationDialog<T> confirmationDialog = new ConfirmationDialog<>();
@@ -66,8 +67,8 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
      * @param itemSaver
      *            Callback to save the edited item
      */
-    protected AbstractSimpleEditorDialog(Consumer<T> itemSaver)
-    {
+    protected AbstractSimpleEditorDialog(Consumer<T> itemSaver) {
+
         this.itemSaver = itemSaver;
 
 //        initDialogTitle();
@@ -177,6 +178,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 //        buttonBar.setSpacing(true);
     }
 
+
     /**
      * Gets the form layout, where additional components can be added for
      * displaying or editing the item's properties.
@@ -206,6 +208,8 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
         return currentItem;
     }
 
+
+    protected abstract void openSpecific();
 
     public void open(T item, AbstractEditorDialog.Operation operation) {
         openInternal(item, operation, null, null, null);
@@ -300,8 +304,6 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 //                + " " + (operation == Operation.ADD ? itemTypeNomS.toLowerCase() : itemTypeAccuS.toLowerCase());
 //    }
 
-    protected abstract void openSpecific();
-
     private void saveClicked() {
         boolean isValid = binder.writeBeanIfValid(currentItem);
         if (isValid) {
@@ -311,6 +313,11 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
             BinderValidationStatus<T> status = binder.validate();
         }
     }
+
+    public AbstractEditorDialog.Operation getOperation() {
+        return operation;
+    }
+
 
 //    private void deleteClicked() {
 //        if (confirmationDialog.getElement().getParent() == null) {
