@@ -7,29 +7,54 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "FAKT")
-public class Fakt extends AbstractEntity implements HasModifDates {
+public class Fakt extends AbstractGenIdEntity implements HasModifDates {
 
     @Enumerated(EnumType.STRING)
+    @Basic
+    @Column(name = "TYP")
     private ItemType typ;
 
+    @Basic
+    @Column(name = "CFAKT")
     private Integer cfakt;
-    private BigDecimal plneni;
-    private BigDecimal zaklad;
-    private BigDecimal castka;
-    private String text;
+
+    @Column(name = "DATE_DUZP")
     private LocalDate dateDuzp;
+
+    @Column(name = "PLNENI")
+    private BigDecimal plneni;
+
+    @Column(name = "TEXT")
+    private String text;
+
+    @Column(name = "CASTKA")
+    private BigDecimal castka;
+
+    @Column(name = "ZAKLAD")
+    private BigDecimal zaklad;
+
+    @Column(name = "DATE_VYSTAV")
     private LocalDate dateVystav;
+
+    @Column(name = "DATETIME_EXPORT")
     private LocalDateTime dateTimeExport;
+
+    @Column(name = "DATE_CREATE", updatable = false)
     private LocalDate dateCreate;
+
+    @Column(name = "DATETIME_UPDATE", insertable = false, updatable = false)
     private LocalDateTime datetimeUpdate;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ID_ZAK")
+    private Zak zak;
+
 
     // TODO: add ItemType
 //    public Fakt() {
 //        this.typ = ItemType.FAKT;
 //    }
 
-    @Basic
-    @Column(name = "TYP")
     public ItemType getTyp() {
         return typ;
     }
@@ -38,8 +63,6 @@ public class Fakt extends AbstractEntity implements HasModifDates {
         this.typ = typ;
     }
 
-    @Basic
-    @Column(name = "CFAKT")
     public Integer getCfakt() {
         return cfakt;
     }
@@ -48,7 +71,6 @@ public class Fakt extends AbstractEntity implements HasModifDates {
         this.cfakt = cfakt;
     }
 
-    @Column(name = "PLNENI")
     public BigDecimal getPlneni() {
         return plneni;
     }
@@ -58,7 +80,6 @@ public class Fakt extends AbstractEntity implements HasModifDates {
     }
 
 
-    @Column(name = "CASTKA")
     public BigDecimal getCastka() {
         return castka;
     }
@@ -67,7 +88,6 @@ public class Fakt extends AbstractEntity implements HasModifDates {
         this.castka = castka;
     }
 
-    @Column(name = "ZAKLAD")
     public BigDecimal getZaklad() {
         return zaklad;
     }
@@ -77,7 +97,6 @@ public class Fakt extends AbstractEntity implements HasModifDates {
     }
 
 
-    @Column(name = "TEXT")
     public String getText() {
         return text;
     }
@@ -87,7 +106,6 @@ public class Fakt extends AbstractEntity implements HasModifDates {
     }
 
 
-    @Column(name = "DATE_DUZP")
     public LocalDate getDateDuzp() {
         return dateDuzp;
     }
@@ -97,7 +115,6 @@ public class Fakt extends AbstractEntity implements HasModifDates {
     }
 
 
-    @Column(name = "DATE_VYSTAV")
     public LocalDate getDateVystav() {
         return dateVystav;
     }
@@ -107,7 +124,6 @@ public class Fakt extends AbstractEntity implements HasModifDates {
     }
 
 
-    @Column(name = "DATETIME_EXPORT")
     public LocalDateTime getDateTimeExport() {
         return dateTimeExport;
     }
@@ -121,7 +137,6 @@ public class Fakt extends AbstractEntity implements HasModifDates {
     }
 
 
-    @Column(name = "DATE_CREATE", updatable = false)
     public LocalDate getDateCreate() {
         return dateCreate;
     }
@@ -131,7 +146,6 @@ public class Fakt extends AbstractEntity implements HasModifDates {
     }
 
 
-    @Column(name = "DATETIME_UPDATE", insertable = false, updatable = false)
     public LocalDateTime getDatetimeUpdate() {
         return datetimeUpdate;
     }
@@ -145,15 +159,12 @@ public class Fakt extends AbstractEntity implements HasModifDates {
         return getZak().getMena();
     }
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ID_ZAK")
-    private Zak zak;
 
     public Zak getZak() {
         return zak;
     }
 
-//    public void setZak(Zak zak) {
-//        this.zak = zak;
-//    }
+    public void setZak(Zak zak) {
+        this.zak = zak;
+    }
 }

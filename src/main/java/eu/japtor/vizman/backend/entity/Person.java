@@ -11,90 +11,42 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "PERSON")
-public class Person extends AbstractEntity {
+public class Person extends AbstractGenIdEntity {
 
     public static final GrammarGender GENDER = GrammarGender.MASCULINE;
-    public static final String NOMINATIVE_SINGULAR = "Uživatel";
-    public static final String NOMINATIVE_PLURAL = "Uživatelé";
-    public static final String GENITIVE_SINGULAR = "Uživatele";
-    public static final String GENITIVE_PLURAL = "Uživatelů";
-    public static final String ACCUSATIVE_SINGULAR = "Uživatele";
-    public static final String ACCUSATIVE_PLURAL = "Uživatele";
+//    public static final String NOMINATIVE_SINGULAR = "Uživatel";
+//    public static final String NOMINATIVE_PLURAL = "Uživatelé";
+//    public static final String GENITIVE_SINGULAR = "Uživatele";
+//    public static final String GENITIVE_PLURAL = "Uživatelů";
+//    public static final String ACCUSATIVE_SINGULAR = "Uživatele";
+//    public static final String ACCUSATIVE_PLURAL = "Uživatele";
 
     //    @Column(name="STATUS")
     @Enumerated(EnumType.STRING)
     private PersonStatus status = PersonStatus.NEW;
-    public PersonStatus getStatus() {
-        return status;
-    }
-    public void setStatus(PersonStatus status) {
-        this.status = status;
-    }
 
     //    @Column(name="USERNAME")
     private String username = "";
-    public String getUsername() {
-        return username;
-    }
-    public void setUsername(String username) {
-        this.username = username;
-    }
 
     //    @Column(name="PASSWORD")
     private String password = "";
-    public String getPassword() {
-        return password;
-    }
-    public void setPassword(String password) {
-        this.password = password;
-    }
 
-//    @Column(name="JMENO")
+    //    @Column(name="JMENO")
     private String jmeno = "";
-    public String getJmeno() {
-        return jmeno;
-    }
-    public void setJmeno(String jmeno) {
-        this.jmeno = jmeno;
-    }
 
     //    @Column(name="PRIJMENI")
     private String prijmeni = "";
-    public String getPrijmeni() {
-        return prijmeni;
-    }
-    public void setPrijmeni(String prijmeni) {
-        this.prijmeni = prijmeni;
-    }
 
     //    @Column(name="NASTUP")
 //    @Temporal(TemporalType.TIMESTAMP)
     private LocalDate nastup;
-    public LocalDate getNastup() {
-        return nastup;
-    }
-    public void setNastup(LocalDate nastup) {
-        this.nastup = nastup;
-    }
 
-//    @Column(name="VYSTUP")
+    //    @Column(name="VYSTUP")
 //    @Temporal(TemporalType.TIMESTAMP)
     private LocalDate vystup;
-    public LocalDate getVystup() {
-        return vystup;
-    }
-    public void setVystup(LocalDate vystup) {
-        this.vystup = vystup;
-    }
 
     //    @Column(name="SAZBA")
     private BigDecimal sazba = BigDecimal.ZERO;
-    public BigDecimal getSazba() {
-        return sazba;
-    }
-    public void setSazba(BigDecimal sazba) {
-        this.sazba = sazba;
-    }
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -104,6 +56,71 @@ public class Person extends AbstractEntity {
             inverseJoinColumns = @JoinColumn(
                     name = "role_id", referencedColumnName = "id"))
     private Set<Role> roles;
+
+
+
+    public Person() {
+        roles = new HashSet<>();
+    }
+
+
+    public PersonStatus getStatus() {
+        return status;
+    }
+    public void setStatus(PersonStatus status) {
+        this.status = status;
+    }
+
+
+    public String getUsername() {
+        return username;
+    }
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getJmeno() {
+        return jmeno;
+    }
+    public void setJmeno(String jmeno) {
+        this.jmeno = jmeno;
+    }
+
+    public String getPrijmeni() {
+        return prijmeni;
+    }
+    public void setPrijmeni(String prijmeni) {
+        this.prijmeni = prijmeni;
+    }
+
+    public LocalDate getNastup() {
+        return nastup;
+    }
+    public void setNastup(LocalDate nastup) {
+        this.nastup = nastup;
+    }
+
+    public LocalDate getVystup() {
+        return vystup;
+    }
+    public void setVystup(LocalDate vystup) {
+        this.vystup = vystup;
+    }
+
+    public BigDecimal getSazba() {
+        return sazba;
+    }
+    public void setSazba(BigDecimal sazba) {
+        this.sazba = sazba;
+    }
+
     public Set<Role> getRoles() {
         return roles;
     }
@@ -111,9 +128,6 @@ public class Person extends AbstractEntity {
         this.roles = roles;
     }
 
-    public Person() {
-        roles = new HashSet<>();
-    }
 
     @Override
     public String toString() {

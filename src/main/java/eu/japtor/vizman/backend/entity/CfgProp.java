@@ -6,16 +6,27 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "CFGPROP")
-public class CfgProp extends AbstractEntity {
-
-    private String name;
-    private String value;
-    private Integer ord;
-    private String label;
-    private String description;
-    private Boolean ro;
+public class CfgProp extends AbstractGenIdEntity {
 
     @Column(name = "NAME")
+    private String name;
+
+    @Column(name = "VALUE")
+    private String value;
+
+    @Column(name = "ORD")
+    private Integer ord;
+
+    @Column(name = "LABEL")
+    private String label;
+
+    @Column(name = "DESCRIPTION")
+    private String description;
+
+    @Column(name = "RO")
+    private Boolean ro;
+
+
     public String getName() {
         return name;
     }
@@ -24,7 +35,6 @@ public class CfgProp extends AbstractEntity {
         this.name = name;
     }
 
-    @Column(name = "VALUE")
     public String getValue() {
         return value;
     }
@@ -33,7 +43,6 @@ public class CfgProp extends AbstractEntity {
         this.value = value;
     }
 
-    @Column(name = "ORD")
     public Integer getOrd() {
         return ord;
     }
@@ -42,7 +51,6 @@ public class CfgProp extends AbstractEntity {
         this.ord = ord;
     }
 
-    @Column(name = "LABEL")
     public String getLabel() {
         return label;
     }
@@ -51,7 +59,6 @@ public class CfgProp extends AbstractEntity {
         this.label = label;
     }
 
-    @Column(name = "DESCRIPTION")
     public String getDescription() {
         return description;
     }
@@ -60,7 +67,6 @@ public class CfgProp extends AbstractEntity {
         this.description = description;
     }
 
-    @Column(name = "RO")
     public Boolean getRo() {
         return ro;
     }
@@ -68,25 +74,4 @@ public class CfgProp extends AbstractEntity {
     protected void setRo(Boolean ro) {
         this.ro = ro;
     }
-
-
-
-//    public enum CfgPropName {
-//        APP_LOCALE("app.locale"),
-//        APP_PROJECT_ROOT("app.project.root"),
-//        APP_DOCUMENT_ROOT("app.document.root"),
-//        APP_KOEF_REZIE("app.rezie.koef"),
-//        APP_KOEF_POJIST("app.pojist.koef")
-//        ;
-//
-//        public String getName() {
-//            return name;
-//        }
-//
-//        private final String name;
-//
-//        CfgPropName(String name) {
-//            this.name = name;
-//        }
-//    }
 }

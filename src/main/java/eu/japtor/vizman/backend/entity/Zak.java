@@ -9,49 +9,118 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 @Entity
 @Table(name = "ZAK")
-@SequenceGenerator(initialValue = 1, name = "id_gen", sequenceName = "zak_seq")
-public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, HasModifDates {
+//@SequenceGenerator(initialValue = 1, name = "id_gen", sequenceName = "zak_seq")
+public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasModifDates {
 
     @Enumerated(EnumType.STRING)
+    @Basic
+    @Column(name = "TYP")
     private ItemType typ;
-
-    private String ckontOrig;
-    private Integer czak;
-    private Short rokzak;
-    private String rokmeszad;
-    private String text;
-    private String folder;
-    private BigDecimal honorar;
-    private BigDecimal rozprac;
-    private String tmp;
-    private Boolean arch;
-    private Integer rZal;
-    private BigDecimal r1;
-    private BigDecimal r2;
-    private BigDecimal r3;
-    private BigDecimal r4;
-    private String skupina;
-    private BigDecimal rm;
-    private LocalDate dateCreate;
-    private LocalDateTime datetimeUpdate;
-
-
-    public Zak() {
-        this(ItemType.ZAK);
-    }
-
-    public Zak(ItemType typ) {
-        super();
-        this.typ = typ;
-    }
-
 
     @Basic
     @Column(name = "CKONT_ORIG")
+    private String ckontOrig;
+
+    @Basic
+    @Column(name = "CZAK")
+    private Integer czak;
+
+    @Basic
+    @Column(name = "SKUPINA")
+    private String skupina;
+
+    @Basic
+    @Column(name = "ROKZAK")
+    private Short rokzak;
+
+    @Basic
+    @Column(name = "ROKMESZAD")
+    private String rokmeszad;
+
+    @Basic
+    @Column(name = "TEXT")
+    private String text;
+
+    @Basic
+    @Column(name = "FOLDER")
+    private String folder;
+
+    @Basic
+    @Column(name = "HONORAR")
+    private BigDecimal honorar;
+
+    @Basic
+    @Column(name = "ROZPRAC")
+    private BigDecimal rozprac;
+
+    @Basic
+    @Column(name = "TMP")
+    private String tmp;
+
+    @Basic
+    @Column(name = "ARCH")
+    private Boolean arch;
+
+    @Basic
+    @Column(name = "DATE_CREATE")
+    private LocalDate dateCreate;
+
+    @Basic
+    @Column(name = "DATETIME_UPDATE")
+    private LocalDateTime datetimeUpdate;
+
+    // TODO: try LAZY - for better performance in TreeGrid ?
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ID_KONT")
+    private Kont kont;
+
+    @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER)
+    private List<Fakt> fakts;
+
+    @OneToMany(mappedBy = "zak")
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<ZakDoc> zakDocs;
+
+
+
+
+
+    @Basic
+    @Column(name = "R_ZAL")
+    private Integer rZal;
+
+    @Basic
+    @Column(name = "R1")
+    private BigDecimal r1;
+
+    @Basic
+    @Column(name = "R2")
+    private BigDecimal r2;
+
+    @Basic
+    @Column(name = "R3")
+    private BigDecimal r3;
+
+    @Basic
+    @Column(name = "R4")
+
+    private BigDecimal r4;
+
+    @Basic
+    @Column(name = "RM")
+    private BigDecimal rm;
+
+
+
+
+
+
+
     public String getCkontOrig() {
         return ckontOrig;
     }
@@ -60,8 +129,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.ckontOrig = ckontOrig;
     }
 
-    @Basic
-    @Column(name = "CZAK")
     public Integer getCzak() {
         return czak;
     }
@@ -70,8 +137,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.czak = czak;
     }
 
-    @Basic
-    @Column(name = "TYP")
     public ItemType getTyp() {
         return typ;
     }
@@ -90,8 +155,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
 //        this.typDokladu = typDokladu;
 //    }
 
-    @Basic
-    @Column(name = "ROKZAK")
     public Short getRokzak() {
         return rokzak;
     }
@@ -100,8 +163,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.rokzak = rokzak;
     }
 
-    @Basic
-    @Column(name = "ROKMESZAD")
     public String getRokmeszad() {
         return rokmeszad;
     }
@@ -110,8 +171,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.rokmeszad = rokmeszad;
     }
 
-    @Basic
-    @Column(name = "DATE_CREATE")
     public LocalDate getDateCreate() {
         return dateCreate;
     }
@@ -120,8 +179,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.dateCreate = dateCreate;
     }
 
-    @Basic
-    @Column(name = "DATETIME_UPDATE")
     public LocalDateTime getDatetimeUpdate() {
         return datetimeUpdate;
     }
@@ -130,8 +187,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.datetimeUpdate = datetimeUpdate;
     }
 
-    @Basic
-    @Column(name = "TEXT")
     public String getText() {
         return text;
     }
@@ -140,8 +195,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.text = text;
     }
 
-    @Basic
-    @Column(name = "FOLDER")
     public String getFolder() {
         return folder;
     }
@@ -150,9 +203,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.folder = docdir;
     }
 
-
-    @Basic
-    @Column(name = "HONORAR")
     public BigDecimal getHonorar() {
         return honorar;
     }
@@ -167,8 +217,9 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         return getKont().getMena();
     }
 
-    @Basic
-    @Column(name = "ROZPRAC")
+
+
+
     public BigDecimal getRozprac() {
         return rozprac;
     }
@@ -177,8 +228,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.rozprac = rozprac;
     }
 
-    @Basic
-    @Column(name = "TMP")
     public String getTmp() {
         return tmp;
     }
@@ -187,8 +236,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.tmp = tmp;
     }
 
-    @Basic
-    @Column(name = "ARCH")
     public Boolean getArch() {
         return arch;
     }
@@ -197,8 +244,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.arch = arch;
     }
 
-    @Basic
-    @Column(name = "R_ZAL")
     public Integer getrZal() {
         return rZal;
     }
@@ -207,8 +252,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.rZal = rZal;
     }
 
-    @Basic
-    @Column(name = "R1")
     public BigDecimal getR1() {
         return r1;
     }
@@ -217,8 +260,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.r1 = r1;
     }
 
-    @Basic
-    @Column(name = "R2")
     public BigDecimal getR2() {
         return r2;
     }
@@ -227,8 +268,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.r2 = r2;
     }
 
-    @Basic
-    @Column(name = "R3")
     public BigDecimal getR3() {
         return r3;
     }
@@ -237,8 +276,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.r3 = r3;
     }
 
-    @Basic
-    @Column(name = "R4")
     public BigDecimal getR4() {
         return r4;
     }
@@ -247,8 +284,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.r4 = r4;
     }
 
-    @Basic
-    @Column(name = "SKUPINA")
     public String getSkupina() {
         return skupina;
     }
@@ -257,8 +292,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         this.skupina = skupina;
     }
 
-    @Basic
-    @Column(name = "RM")
     public BigDecimal getRm() {
         return rm;
     }
@@ -268,10 +301,6 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
     }
 
 
-    // TODO: try LAZY - for better performance in TreeGrid ?
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ID_KONT")
-    private Kont kont;
 
     public Kont getKont() {
         return kont;
@@ -281,18 +310,9 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
 //        this.kont = kont;
 //    }
 
-
-    @OneToMany(mappedBy = "zak")
-    @LazyCollection(LazyCollectionOption.FALSE)
-    private List<ZakDoc> zakDocs;
-
     public List<ZakDoc> getZakDocs() {
         return zakDocs;
     }
-
-
-    @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER)
-    private List<Fakt> fakts;
 
     public List<Fakt> getFakts() {
         return fakts;
@@ -342,6 +362,20 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+
+
+    public Zak() {
+        this(ItemType.ZAK);
+    }
+
+    public Zak(ItemType typ) {
+        super();
+        this.typ = typ;
+
+        UUID uuid = UUID.randomUUID();
+        String randomUUIDString = uuid.toString();
+    }
+
 // -----------------------------
 
     @Override
@@ -365,6 +399,7 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         return "";
     }
 
+    @Transient
     public int getFaktsOver() {
         int over = 0;
         List<Fakt> fakts = getFakts();
@@ -376,36 +411,57 @@ public class Zak extends AbstractGenEntity implements KzTreeAware, HasItemType, 
         return over;
     }
 
-// ==================================================
 
     @Override
     public int hashCode() {
+//		return 31;
         if (getId() == null) {
             return super.hashCode();
         }
-//        return 31 + getId().hashCode();
-
-        int result = (int) (getId() ^ (getId() >>> 32));
-        result = 31 * result + (int) (kont.getId() ^ (kont.getId() >>> 32));
-//        result = 31 * result + (int) (z ^ (z >>> 32));
-        return result;
+        return 31 + getId().hashCode();
     }
 
     @Override
     public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (getId() == null) {
-            // New entities are only equal if the instance is the same
-            return super.equals(other);
-        }
-        if (!(other instanceof Zak)) {
-            return false;
-        }
-        return (getId().equals(((Zak) other).getId()))
-                && (kont.getId().equals(((Zak) other).kont.getId()));
+        if (this == other) return true;
+        if (!(other instanceof AbstractGenIdEntity)) return false;
+        return getId() != null && getId().equals(((AbstractGenIdEntity) other).getId());
+//		if (id == null) {
+//			// New entities are only equal if the instance is the same
+//			return super.equals(other);
+//		}
     }
+
+// ==================================================
+//
+//    @Override
+//    public int hashCode() {
+//        if (getId() == null) {
+//            return super.hashCode();
+//        }
+////        return 31 + getId().hashCode();
+//
+//        int result = (int) (getId() ^ (getId() >>> 32));
+//        result = 31 * result + (int) (kont.getId() ^ (kont.getId() >>> 32));
+////        result = 31 * result + (int) (z ^ (z >>> 32));
+//        return result;
+//    }
+//
+//    @Override
+//    public boolean equals(Object other) {
+//        if (this == other) {
+//            return true;
+//        }
+//        if (getId() == null) {
+//            // New entities are only equal if the instance is the same
+//            return super.equals(other);
+//        }
+//        if (!(other instanceof Zak)) {
+//            return false;
+//        }
+//        return (getId().equals(((Zak) other).getId()))
+//                && (kont.getId().equals(((Zak) other).kont.getId()));
+//    }
 
 //    @Override
 //    public boolean equals(Object o) {

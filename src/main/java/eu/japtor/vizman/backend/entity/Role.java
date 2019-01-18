@@ -6,24 +6,12 @@ import java.util.Set;
 
 @Entity
 @Table(name = "ROLE")
-public class Role extends AbstractEntity {
+public class Role extends AbstractGenIdEntity {
 
     public String name;
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String description;
-    public String getDescription() {
-        return description;
-    }
-    public void setDescription(String description) {
-        this.description = description;
-    }
 
+    // TODO: List ?
     @ManyToMany(mappedBy = "roles")
     private Set<Person> persons;
 
@@ -32,6 +20,23 @@ public class Role extends AbstractEntity {
     @CollectionTable(name="role_perm")
     @Column(name="perm", nullable=false) // Column name in role_perm
     private Set<Perm> perms = new HashSet<>();
+
+
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+
     public Set<Perm> getPerms() {
         return perms;
     }

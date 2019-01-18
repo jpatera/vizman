@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "CIN")
-public class Cin extends AbstractGenEntity {
+public class Cin extends AbstractGenIdEntity {
 
     private Integer poradi;
     private String cinT1;

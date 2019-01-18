@@ -1,16 +1,14 @@
 package eu.japtor.vizman.backend.entity;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.Calendar;
 
 @Entity
 @Table(name = "DOCH")
-@SequenceGenerator(initialValue = 100001, name = "id_gen", sequenceName = "doch_seq")
-public class Doch extends AbstractGenEntity {
+//@SequenceGenerator(initialValue = 100001, name = "id_gen", sequenceName = "doch_seq")
+public class Doch extends AbstractGenIdEntity {
 
     private Long personId;
     private String userLogin;

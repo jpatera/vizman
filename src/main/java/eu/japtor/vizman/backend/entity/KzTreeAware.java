@@ -2,6 +2,7 @@ package eu.japtor.vizman.backend.entity;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 public interface KzTreeAware<T extends KzTreeAware> {
 

@@ -6,14 +6,25 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ZAKDOC")
-public class ZakDoc extends AbstractEntity {
-
-    private String filename;
-    private String note;
-    private LocalDate dateCreate;
-    private LocalDateTime datetimeUpdate;
+public class ZakDoc extends AbstractGenIdEntity {
 
     @Column(name = "FILENAME")
+    private String filename;
+
+    @Column(name = "NOTE")
+    private String note;
+
+    @Column(name = "DATE_CREATE")
+    private LocalDate dateCreate;
+
+    @Column(name = "DATETIME_UPDATE")
+    private LocalDateTime datetimeUpdate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_ZAK")
+    private Zak zak;
+
+
     public String getFilename() {
         return filename;
     }
@@ -23,7 +34,6 @@ public class ZakDoc extends AbstractEntity {
     }
 
 
-    @Column(name = "NOTE")
     public String getNote() {
         return note;
     }
@@ -33,7 +43,6 @@ public class ZakDoc extends AbstractEntity {
     }
 
 
-    @Column(name = "DATE_CREATE")
     public LocalDate getDateCreate() {
         return dateCreate;
     }
@@ -42,7 +51,7 @@ public class ZakDoc extends AbstractEntity {
         this.dateCreate = dateCreate;
     }
 
-    @Column(name = "DATETIME_UPDATE")
+
     public LocalDateTime getDatetimeUpdate() {
         return datetimeUpdate;
     }
@@ -51,7 +60,12 @@ public class ZakDoc extends AbstractEntity {
         this.datetimeUpdate = datetimeUpdate;
     }
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_ZAK")
-    private Zak zak;
+
+    public Zak getZak() {
+        return zak;
+    }
+
+    public void setZak(Zak zak) {
+        this.zak = zak;
+    }
 }
