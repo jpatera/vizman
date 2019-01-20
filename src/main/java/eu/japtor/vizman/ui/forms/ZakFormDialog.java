@@ -16,6 +16,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -34,11 +35,13 @@ import java.util.function.Consumer;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEnterObserver {
 
+    private final static String FAKT_VYSTAV_COL_KEY = "fakt-vystav-col";
+
     final ValueProvider<Fakt, String> castkaProvider;
     final ComponentRenderer<HtmlComponent, Fakt> moneyCellRenderer;
 
     private TextField czakField;
-    private Button evidChangeBtn;
+    private Button zakEvidButton;
     private Checkbox archCheck;
     private TextField textField;
     private TextField skupinaField;
@@ -66,7 +69,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
     private Button newFaktButton;
 
     private FaktFormDialog faktFormDialog;
-    private final ConfirmationDialog<ZakDoc> confirmDocUnregisterDialog = new ConfirmationDialog<>();
+    private final ConfirmationDialog<ZakDoc> confirmDocUnregisterDialog;
     private ZakEvidFormDialog zakEvidFormDialog;
 //    private final ConfirmationDialog<Fakt> confirmFaktOpenDialog = new ConfirmationDialog<>();
 
@@ -89,6 +92,11 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 
         this.zakService = zakService;
         this.faktService = faktService;
+        this.addOpenedChangeListener(event -> {
+            if (Operation.ADD == currentOperation) {
+                zakEvidButton.click();
+            }
+        });
 
         setWidth("1200px");
         //        setHeight("600px");
@@ -120,6 +128,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 
         zakEvidFormDialog = new ZakEvidFormDialog(this::saveZakEvid, zakService);
         faktFormDialog = new FaktFormDialog(this::saveFakt, this::deleteFakt, faktService);
+        confirmDocUnregisterDialog = new ConfirmationDialog<>();
 
         getFormLayout().add(
                 initCzakField()
@@ -161,18 +170,9 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 //        datZadComp.setLocale(new Locale("cs", "CZ"));
 //        vystupField.setLocale(new Locale("cs", "CZ"));
 
-
-//        getBinder().forField(twinRolesGridField)
-//                .bind(Person::getRoles, Person::setRoles);
-
-//        twinRolesGridField.initLeftItems(getCurrentItem().getRoles());
-
-        Mena zakMena = getCurrentItem().getMena();
-
         faktGrid.setItems(getCurrentItem().getFakts());
         docGrid.setItems(getCurrentItem().getZakDocs());
         zakDocFolderField.setParentFolder(getCurrentItem().getKont().getFolder());
-
     }
 
     private void saveZakEvid(EvidZak evidZak, Operation operation) {
@@ -180,10 +180,11 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         getCurrentItem().setText(evidZak.getText());
         getCurrentItem().setFolder(evidZak.getFolder());
         getBinder().readBean(getCurrentItem());
+        formFieldValuesChanged();
 
         Notification.show(
 //                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
-                "Číslo a text zakázky změněny", 3000, Notification.Position.BOTTOM_END);
+                "Nové číslo a text zakázky uloženy", 3000, Notification.Position.BOTTOM_END);
 //        updateGridContent();
     }
 
@@ -203,6 +204,26 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 
         Notification.show("Rušení fakturací není implementováno.", 3000, Notification.Position.BOTTOM_END);
 //        updateFaktGridContent();
+    }
+
+    @Override
+    protected void confirmDelete() {
+
+        new OkDialog().open("Zrušení zakázky", "Rušení zakázek není implementováno", "");
+
+//        long nodesCount = getCurrentItem().getNodes().size();
+//        if (nodesCount > 0) {
+//            new OkDialog().open(
+//                    "Zrušení zakázky"
+//                    , "Zakázku " + getCurrentItem().getCkont() + " nelze zrušit, obsahuje fakturace"
+//                    , ""
+//            );
+//        } else {
+//            openConfirmDeleteDialog("Zrušit zakázku ?",
+//                    "Opravdu zrušit zakázku “" + getCurrentItem().getCkont() + "“ ?",
+//                    "Pokud bude kontrakt zrušen, budou zrušena i další s ním související data.");
+////            doDelete(getCurrentItem());
+//        }
     }
 
 
@@ -241,9 +262,9 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         return czakField;
     }
 
-    private Component initEvidChangeButton() {
-        evidChangeBtn = new Button("Evidence");
-        evidChangeBtn.addClickListener(event -> {
+    private Component initZakEvidButton() {
+        zakEvidButton = new Button("Evidence");
+        zakEvidButton.addClickListener(event -> {
             EvidZak evidZak = new EvidZak(
                     getCurrentItem().getKontId()
                     , getCurrentItem().getCzak()
@@ -262,7 +283,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
                         , "Změna EVIDENCE ZAKÁZKY");
             }
         });
-        return evidChangeBtn;
+        return zakEvidButton;
     }
 
     private Component initArchCheck() {
@@ -277,7 +298,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         FlexLayout evidArchCont = new FlexLayout();
         evidArchCont.setAlignItems(FlexComponent.Alignment.BASELINE);
         evidArchCont.add(
-                initEvidChangeButton()
+                initZakEvidButton()
                 , new Ribbon("3em")
                 , initArchCheck()
         );
@@ -297,6 +318,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         skupinaField = new TextField("Skupina");
         getBinder().forField(skupinaField)
                 .bind(Zak::getSkupina, Zak::setSkupina);
+        skupinaField.setValueChangeMode(ValueChangeMode.EAGER);
         return skupinaField;
     }
 
@@ -315,10 +337,12 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         getBinder().forField(honorarField)
                 .withConverter(FormatUtils.bigDecimalMoneyConverter)
                 .bind(Zak::getHonorar, Zak::setHonorar);
+        honorarField.setValueChangeMode(ValueChangeMode.EAGER);
         return honorarField;
     }
 
     // ----------------------------------------------
+
 
     private Component initDocDirComponent() {
         docDirComponent = new FlexLayout();
@@ -346,8 +370,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 
 
     private Component initRegisterDocButton() {
-        registerDocButton = new Button("+ Dokument");
-        registerDocButton.addClickListener(event -> {});
+        registerDocButton = new NewItemButton("Dokument", event -> {});
         return registerDocButton;
     }
 
@@ -381,7 +404,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         docGrid.addColumn(ZakDoc::getFilename).setHeader("Soubor");
         docGrid.addColumn(ZakDoc::getNote).setHeader("Poznámka");
 //        docGrid.addColumn("Honorář CZK");
-        docGrid.addColumn(ZakDoc::getDateCreate).setHeader("Vloženo");
+        docGrid.addColumn(ZakDoc::getDateCreate).setHeader("Registrováno");
         docGrid.addColumn(new ComponentRenderer<>(this::buildDocRemoveButton))
                 .setFlexGrow(0);
         return docGrid;
@@ -390,8 +413,8 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
     private Component buildDocRemoveButton(ZakDoc kontDoc) {
         return new GridItemOpenBtn(event -> {
             close();
-            confirmDocUnregisterDialog.open("Registrace dokumentu",
-                    "Zrušit registraci dokumentu?", "", "Zrušit",
+            confirmDocUnregisterDialog.open("Zrušit registraci dokumentu ?",
+                    "", "", "Zrušit",
                     true, kontDoc, this::removeDocRegistration, this::open);
         });
     }
@@ -441,13 +464,6 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         faktGrid.getStyle().set("marginTop", "0.5em");
         faktGrid.setWidth( "100%" );
         faktGrid.setHeight("12em");
-//        faktGrid.setHeight(null);
-
-//        zakGrid.getElement().setAttribute("colspan", "2");
-//        zakGrid.getStyle().set("padding-right", "0em");
-//        zakGrid.getStyle().set("padding-left", "0em");
-//        zakGrid.getStyle().set("padding-top", "2.5em");
-//        zakGrid.getStyle().set("padding-bottom", "2.5em");
 
         faktGrid.addColumn(Fakt::getCfakt).setHeader("ČF")
                 .setFlexGrow(0)
@@ -455,12 +471,6 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         faktGrid.addColumn(Fakt::getPlneni).setHeader("Plnění [%]")
                 .setFlexGrow(0)
         ;
-//        faktGrid.addColumn(Fakt::getCastka).setHeader("Částka [" + getCurrentItem().getMena().name() + "]")
-//                .setFlexGrow(0)
-//        ;
-//        faktGrid.addColumn(Fakt::getZaklad).setHeader("Základ [" + getCurrentItem().getMena().name() + "]")
-//                .setFlexGrow(0)
-//        ;
         faktGrid.addColumn(Fakt::getDateDuzp).setHeader("DUZP")
                 .setFlexGrow(0)
         ;
@@ -469,6 +479,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         ;
         faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktVystavBtn))
                 .setFlexGrow(0)
+                .setKey(FAKT_VYSTAV_COL_KEY)
         ;
         faktGrid.addColumn(Fakt::getDateVystav).setHeader("Vystaveno")
                 .setFlexGrow(0)
@@ -491,7 +502,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
     }
 
     private Component buildFaktVystavBtn(Fakt fakt) {
-        return new GridFaktVystavBtn(event -> {
+        Button btn = new GridFaktVystavBtn(event -> {
 //                this.close();
             faktFormDialog.open(
                     fakt, Operation.VYSTAV,
@@ -503,25 +514,22 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 ////                        true, zak, this::openZakForm, this::open);
 //                        true, fakt, this::openFaktForm, this::open);
         });
+//        btn.setEnabled(false);
+        return btn;
     }
 
     private Component buildFaktOpenBtn(Fakt fakt) {
-            return new GridItemOpenBtn(event -> {
-//                this.close();
-                faktFormDialog.open(
-                        fakt, Operation.EDIT,
-                        "[ Vytvořeno: " + fakt.getDateCreate().toString()
-                                + " , Poslední změna: " + fakt.getDatetimeUpdate().toString() + " ]");
-
-//                confirmFaktOpenDialog.open("Otevřít fakturaci ?",
-//                        "", "", "Zrušit",
-////                        true, zak, this::openZakForm, this::open);
-//                        true, fakt, this::openFaktForm, this::open);
-            });
+        Button btn = new GridItemOpenBtn(event -> openFaktForm(fakt));
+//        btn.setEnabled(false);
+        return btn;
     }
 
     private void openFaktForm(Fakt fakt) {
-        close();
+//        this.close();
+        faktFormDialog.open(
+            fakt, Operation.EDIT,
+            "[ Vytvořeno: " + fakt.getDateCreate().toString()
+                    + " , Poslední změna: " + fakt.getDatetimeUpdate().toString() + " ]");
     }
 
 
@@ -568,22 +576,4 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 //    }
 
 
-    @Override
-    protected void confirmDelete() {
-
-        long nodesCount = getCurrentItem().getNodes().size();
-        if (nodesCount > 0) {
-            new OkDialog().open(
-                    "Zrušení zakázky"
-                    , "Zakázku " + getCurrentItem().getCkont() + " nelze zrušit, obsahuje fakturace"
-                    , ""
-            );
-        } else {
-            openConfirmDeleteDialog("Zrušit zakázku ?",
-                    "Opravdu zrušit kontrakt “" + getCurrentItem().getCkont() + "“ ?",
-                    "Pokud bude kontrakt zrušen, budou zrušena i další s ním související data.");
-//        } else {
-//            doDelete(getCurrentItem());
-        }
-    }
 }

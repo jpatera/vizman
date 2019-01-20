@@ -31,7 +31,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
+import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.SortDirection;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -63,9 +65,11 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static eu.japtor.vizman.app.security.SecurityUtils.isMoneyAccessGranted;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
+import static java.lang.Integer.min;
 
 //import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 //import com.vaadin.flow.data.provider.ListDataProvider;
@@ -95,6 +99,9 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 
     Random rand = new Random();
     private final H3 kontHeader = new H3(TITLE_KZ_TREE);
+
+    private Kont kontOrig;
+    private Zak zakOrig;
 
     private KontFormDialog kontFormDialog;
     private ZakFormDialog zakForm;
@@ -255,7 +262,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         icoZakArchived.setSize("0.8em");
         icoZakArchived.getStyle()
                 .set("theme", "small icon secondary")
-                .set("padding-bottom","1em");
+                .set("padding-left","1em");
         ;
         Icon icoKontActive = new Icon(VaadinIcon.ELLIPSIS_H);
         icoKontActive.setSize("0.8em");
@@ -267,9 +274,6 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         icoKontActive.getStyle()
                 .set("theme", "small icon secondary")
         ;
-        if (ItemType.KONT != kz.getTyp()) {
-            icoZakArchived.getStyle().set("padding-left", "1em");
-        }
         return ItemType.KONT == kz.getTyp() ?
                 (kz.getArch() ? icoKontArchived : icoKontActive)
                 : kz.getArch() ? icoZakArchived : new Span();
@@ -723,6 +727,8 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
                         , new Div(new Text("10"))
                 );
 
+                kontOrig = (Kont)kz;
+                zakOrig = null;
                 kontFormDialog.open(
                     (Kont)kz, Operation.EDIT
                     , null, kontFaktFlags, null);
@@ -735,6 +741,8 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
                 Div zakFaktFlags = new Div();
                 zakFaktFlags.add(new Span("5"), new Ribbon(), new Span("1"), new Ribbon(), new Span("10"));
 
+                kontOrig = null;
+                zakOrig = (Zak)kz;
                 zakForm.open(
                     (Zak) kz, Operation.EDIT
                     , null, zakFaktFlags, null);
@@ -854,25 +862,62 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         File file = new File("location of file");
         file.setReadOnly();
 
-        Kont newInstance = kontService.saveKont(kont);
-        kzTreeGrid.getDataProvider().refreshItem(newInstance);
+        Kont newKont = kontService.saveKont(kont);
+        if (Operation.EDIT == operation) {
+            kzTreeGrid.getDataProvider().refreshItem(newKont);
+        } else {
+//            if (null == archRadioValue || )
+//            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+//            kzTreeGrid.getDataProvider().refreshAll();
+
+              if (archFilterRadio.getValue() == RADIO_KONT_ACTIVE) {
+                  archFilterRadio.setValue(RADIO_KONT_ARCH);
+              } else {
+                  reloadTreeProvider(archFilterRadio.getValue());
+              }
+        }
+        kzTreeGrid.select(newKont);
         Notification.show(
 //                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
-                "Kontrakt uložen", 3000, Notification.Position.BOTTOM_END);
+                "Kontrakt uložen", 4000, Notification.Position.BOTTOM_END);
     }
 
-    private void deleteKont(Kont kont) {
-        String ckontDel = kont.getCkont();
-        kontService.deleteKont(kont);
+    private void deleteKont(final Kont kont) {
+        Kont kontDel = kont;
+        int kontDelIdx = kzTreeGrid.getDataCommunicator().getIndex(kontDel);
+        Stream<KzTreeAware> stream = kzTreeGrid.getDataCommunicator()
+                .fetchFromProvider(kontDelIdx + 1, 1);
+        KzTreeAware newSelectedKont = stream.findFirst().orElse(null);
 
-        boolean deleted = kontService.deleteKont(kont);
+        boolean deleted = kontService.deleteKont(kontDel);
         if (!deleted) {
-            return;
+            new OkDialog().open("Kontrakt " + kontDel.getCkont() + " nebyl zrušen.", "","");
         } else {
-            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-            kzTreeGrid.getDataProvider().refreshAll();
-            Notification.show("Kontrakt " + ckontDel + " zrušen.", 3000, Notification.Position.BOTTOM_END);
-            return;
+
+//            GenericModel bean = myGrid.getSelectedRow();
+//            ListDataProvider<GenericModel> dataProvider=(ListDataProvider<GenericModel>) myGrid.getDataProvider();
+//            List<GenericModel> ItemsList=(List<GenericModel>) dataProvider.getItems();
+
+//            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+//            kzTreeGrid.getDataProvider().refreshAll();
+//
+//            HierarchicalDataProvider dataProvider = kzTreeGrid.getDataProvider();
+//            List<KzTreeAware> itemsList =(List<KzTreeAware>) dataProvider. getItems();
+//            int index=itemsList.indexOf(bean);//index of the selected item
+//            GenericModel newSelectedBean=itemsList.get(index+1);
+//            dataProvider.getItems().remove(bean);
+//            dataProvider.refreshAll();
+//            myGrid.select(newSelectedBean);
+//            myGrid.scrollTo(index+1);
+
+//            kzTreeGrid.getDataCommunicator().getKeyMapper().remove(kontDel);
+//            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+//            kzTreeGrid.getDataProvider().refreshAll();
+
+            reloadTreeProvider(archFilterRadio.getValue());
+            kzTreeGrid.getSelectionModel().select(newSelectedKont);
+
+            new OkDialog().open("Kontrakt " + kontDel.getCkont() + " je zrušen", "","");
         }
     }
 

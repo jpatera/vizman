@@ -1,5 +1,7 @@
 package eu.japtor.vizman.backend.service;
 
+import com.vaadin.external.org.slf4j.Logger;
+import com.vaadin.external.org.slf4j.LoggerFactory;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.backend.entity.Kont;
@@ -14,6 +16,8 @@ import java.util.List;
 
 @Service
 public class KontServiceImpl extends AbstractSortableService implements KontService {
+
+    private final static Logger LOG = LoggerFactory.getLogger(KontServiceImpl.class);
 
     private final KontRepo kontRepo;
     private static final List<QuerySortOrder> DEFAULT_SORT_ORDER =
@@ -95,8 +99,13 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
     @Override
     public boolean deleteKont(Kont kont) {
-        new OkDialog().open("Rušení kontraktů není implementováno", "", "");
-        return false;
+        try {
+            kontRepo.delete(kont);
+        } catch (Exception e) {
+            LOG.error("Error while deleting kontrakt", e);
+            return false;
+        }
+        return true;
     }
 
     /**

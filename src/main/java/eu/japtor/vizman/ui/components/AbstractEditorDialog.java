@@ -1,6 +1,7 @@
 package eu.japtor.vizman.ui.components;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -10,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.utils.FormatUtils;
@@ -332,7 +334,7 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         }
 
         if ((null == titleEndText) && (currentItem instanceof HasModifDates)) {
-            if (operation == Operation.ADD) {
+            if (currentOperation == Operation.ADD) {
                 titleEndText = "";
             } else {
                 titleEndText = "[ Vytvořeno: " + ((HasModifDates) currentItem).getDateCreate().format(FormatUtils.basicDateFormatter)
@@ -368,7 +370,7 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         this.open();
     }
 
-    public void formFieldValuesChenged() {
+    public void formFieldValuesChanged() {
         saveButton.setEnabled(true);
     }
 
