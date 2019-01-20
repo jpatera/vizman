@@ -11,8 +11,10 @@ import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.backend.utils.VmFileUtils;
 import eu.japtor.vizman.ui.components.AbstractEditorDialog;
 import eu.japtor.vizman.ui.components.AbstractSimpleEditorDialog;
+import eu.japtor.vizman.ui.components.Operation;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 //@SpringComponent
@@ -31,7 +33,7 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
     private Long kontId;
 
 
-    public ZakEvidFormDialog (Consumer<EvidZak> itemSaver, ZakService zakService) {
+    public ZakEvidFormDialog (BiConsumer<EvidZak, Operation> itemSaver, ZakService zakService) {
 
         super(itemSaver);
         this.setWidth("750px");
@@ -80,11 +82,11 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
 //                        3, 16)
 //                )
                 .withValidator(czak ->
-                    ((AbstractEditorDialog.Operation.ADD == getOperation())
+                    ((Operation.ADD == getOperation())
                             && (!zakService.zakIdExistsInKont(kontId, czak))
                     )
                     ||
-                    ((AbstractEditorDialog.Operation.EDIT == getOperation())
+                    ((Operation.EDIT == getOperation())
                             && ((czak.equals(czakOrig))
                                 || (!zakService.zakIdExistsInKont(kontId, czak))
                         )

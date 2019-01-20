@@ -15,6 +15,7 @@ import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.utils.FormatUtils;
 
 import java.io.Serializable;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends Dialog {
@@ -39,7 +40,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
     private Binder<T> binder = new Binder<>();
     private T currentItem;
 
-    private AbstractEditorDialog.Operation operation;
+    private Operation operation;
 
     private final ConfirmationDialog<T> confirmationDialog = new ConfirmationDialog<>();
 
@@ -47,7 +48,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
     private String itemTypeNomS;
     private String itemTypeGenS;
     private String itemTypeAccuS;
-    private Consumer<T> itemSaver;
+    private BiConsumer<T, Operation> itemSaver;
 
 
 //    Map<GrammarShapes, String> itemNameMap;
@@ -67,7 +68,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
      * @param itemSaver
      *            Callback to save the edited item
      */
-    protected AbstractSimpleEditorDialog(Consumer<T> itemSaver) {
+    protected AbstractSimpleEditorDialog(BiConsumer<T, Operation> itemSaver) {
 
         this.itemSaver = itemSaver;
 
@@ -90,36 +91,11 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
     }
 
     public void setupEventListeners() {
-//        getGrid().addSelectionListener(e -> {
-//            e.getFirstSelectedItem().ifPresent(entity -> {
-//                navigateToEntity(entity.getId().toString());
-//                getGrid().deselectAll();
-//            });
-//        });
-//
-//        getForm().getButtons().addSaveListener(e -> getPresenter().save());
-//        getForm().getButtons().addCancelListener(e -> getPresenter().cancel());
-//
-//        getDialog().getElement().addEventListener("opened-changed", e -> {
-//            if (!getDialog().isOpened()) {
-//                getPresenter().cancel();
-//            }
-//        });
-//
-//        getForm().getButtons().addDeleteListener(e -> getPresenter().delete());
-//
-//        getSearchBar().addActionClickListener(e -> getPresenter().createNew());
-//        getSearchBar()
-//                .addFilterChangeListener(e -> getPresenter().filter(getSearchBar().getFilter()));
-//
-//        getSearchBar().setActionText("New " + entityName);
-//        getBinder().addValueChangeListener(e -> getPresenter().onValueChange(isDirty()));
-
         binder.addValueChangeListener(e -> onValueChange(isDirty()));
     }
 
     public boolean isDirty() {
-        return getBinder().hasChanges();
+        return binder.hasChanges();
     }
 
     private Component initDialogTitle() {
@@ -211,16 +187,16 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 
     protected abstract void openSpecific();
 
-    public void open(T item, AbstractEditorDialog.Operation operation) {
+    public void open(T item, Operation operation) {
         openInternal(item, operation, null, null, null);
     }
 
-    public void open(T item, AbstractEditorDialog.Operation operation
+    public void open(T item, Operation operation
                      , String titleItemNameText) {
         openInternal(item, operation, titleItemNameText, null, null);
     }
 
-    public void open(T item, AbstractEditorDialog.Operation operation
+    public void open(T item, Operation operation
                      , String titleItemNameText, String titleEndText) {
         openInternal(item, operation, titleItemNameText, null, titleEndText);
     }
@@ -228,8 +204,12 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
     /**
      * Opens the given item for editing in the dialog.
      */
-    private void openInternal(T item, AbstractEditorDialog.Operation operation
-                              , String titleMainText, Component titleMiddleComponent, String titleEndText)
+    private void openInternal(
+            T item
+            , Operation operation
+            , String titleMainText
+            , Component titleMiddleComponent
+            , String titleEndText)
     {
         setDefaultItemNames();  // Set general default names
         this.currentItem = item;
@@ -271,9 +251,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
         if (registrationForSave != null) {
             registrationForSave.remove();
         }
-        registrationForSave = saveButton
-                .addClickListener(e -> saveClicked());
-
+        registrationForSave = saveButton.addClickListener(e -> saveClicked(operation));
         saveButton.setText("Uložit " + itemTypeAccuS.toLowerCase());
         saveButton.setEnabled(false);
 
@@ -304,17 +282,17 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 //                + " " + (operation == Operation.ADD ? itemTypeNomS.toLowerCase() : itemTypeAccuS.toLowerCase());
 //    }
 
-    private void saveClicked() {
+    private void saveClicked(Operation operation) {
         boolean isValid = binder.writeBeanIfValid(currentItem);
         if (isValid) {
-            itemSaver.accept(currentItem);
+            itemSaver.accept(currentItem, operation);
             close();
         } else {
             BinderValidationStatus<T> status = binder.validate();
         }
     }
 
-    public AbstractEditorDialog.Operation getOperation() {
+    public Operation getOperation() {
         return operation;
     }
 

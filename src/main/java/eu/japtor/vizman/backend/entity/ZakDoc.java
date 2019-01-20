@@ -1,5 +1,7 @@
 package eu.japtor.vizman.backend.entity;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,6 +17,7 @@ public class ZakDoc extends AbstractGenIdEntity {
     private String note;
 
     @Column(name = "DATE_CREATE")
+    @CreationTimestamp
     private LocalDate dateCreate;
 
     @Column(name = "DATETIME_UPDATE")

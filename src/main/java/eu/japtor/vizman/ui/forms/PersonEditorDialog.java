@@ -14,6 +14,7 @@ import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.ui.components.AbstractEditorDialog;
+import eu.japtor.vizman.ui.components.Operation;
 import eu.japtor.vizman.ui.components.TwinColGrid;
 import org.springframework.security.crypto.password.PasswordEncoder;
 

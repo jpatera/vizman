@@ -1,5 +1,7 @@
 package eu.japtor.vizman.backend.entity;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -16,6 +18,11 @@ import java.util.function.Predicate;
 @Table(name = "ZAK")
 //@SequenceGenerator(initialValue = 1, name = "id_gen", sequenceName = "zak_seq")
 public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasModifDates {
+
+//    @GeneratedValue(generator = "uuid2")
+//    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID uuid;
 
     @Enumerated(EnumType.STRING)
     @Basic
@@ -68,6 +75,7 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
 
     @Basic
     @Column(name = "DATE_CREATE")
+    @CreationTimestamp
     private LocalDate dateCreate;
 
     @Basic
@@ -371,6 +379,7 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     public Zak(ItemType typ) {
         super();
         this.typ = typ;
+        this.uuid = UUID.randomUUID();
 
         UUID uuid = UUID.randomUUID();
         String randomUUIDString = uuid.toString();
@@ -414,11 +423,11 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
 
     @Override
     public int hashCode() {
-//		return 31;
-        if (getId() == null) {
-            return super.hashCode();
-        }
-        return 31 + getId().hashCode();
+        return uuid.hashCode();
+//        if (getId() == null) {
+//            return super.hashCode();
+//        }
+//        return 31 + getId().hashCode();
     }
 
     @Override

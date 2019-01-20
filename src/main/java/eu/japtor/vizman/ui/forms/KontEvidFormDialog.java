@@ -11,8 +11,10 @@ import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.utils.VmFileUtils;
 import eu.japtor.vizman.ui.components.AbstractEditorDialog;
 import eu.japtor.vizman.ui.components.AbstractSimpleEditorDialog;
+import eu.japtor.vizman.ui.components.Operation;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 //@SpringComponent
@@ -30,10 +32,12 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
     private KontService kontService;
 
 
-    public KontEvidFormDialog(Consumer<EvidKont> itemSaver, KontService kontService) {
-
+    public KontEvidFormDialog(BiConsumer<EvidKont, Operation> itemSaver,
+                              KontService kontService)
+    {
         super(itemSaver);
         this.setWidth("750px");
+
         this.kontService = kontService;
 
         getFormLayout().add(initCkontField());
@@ -125,11 +129,11 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
                         3, 16)
                 )
                 .withValidator(ckont ->
-                    ((AbstractEditorDialog.Operation.ADD == getOperation())
+                    ((Operation.ADD == getOperation())
                         && (kontService.getByCkont(ckont) == null)
                     )
                     ||
-                    ((AbstractEditorDialog.Operation.EDIT == getOperation())
+                    ((Operation.EDIT == getOperation())
                         && ((ckont.equals(ckontOrig))
                                 || (kontService.getByCkont(ckont) == null)
                             )

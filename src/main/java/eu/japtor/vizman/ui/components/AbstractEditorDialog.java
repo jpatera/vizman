@@ -32,12 +32,13 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 //    private final Button deleteButton = new Button("Zrušit " + getNounForTitle(isItemMale) );
     private Registration registrationForSave;
 
-    private final FormLayout formLayout = new FormLayout();
-    private final VerticalLayout upperGridContainer = new VerticalLayout();
-    private final VerticalLayout lowerGridContainer = new VerticalLayout();
+    private FormLayout formLayout;
+    private VerticalLayout upperGridContainer;
+    private VerticalLayout lowerGridContainer;
     HorizontalLayout upperPane = new HorizontalLayout();
+    VerticalLayout upperLeftPane;
     HorizontalLayout buttonBar = new HorizontalLayout();
-    VerticalLayout dialogPane = new VerticalLayout();
+    VerticalLayout dialogPane;
 
     private Binder<T> binder = new Binder<>();
     private T currentItem;
@@ -56,7 +57,10 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 //    Map<GrammarShapes, String> itemNameMap;
 
 
-    protected AbstractEditorDialog(BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
+    protected AbstractEditorDialog(
+            BiConsumer<T, Operation> itemSaver,
+            Consumer<T> itemDeleter)
+    {
         this(false, false, itemSaver, itemDeleter);
     }
 
@@ -72,8 +76,12 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
      * @param itemDeleter
      *            Callback to delete the edited item
      */
-    protected AbstractEditorDialog(boolean useUpperGrid, boolean useLowerGrid,
-                    BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
+    protected AbstractEditorDialog(
+            boolean useUpperGrid,
+            boolean useLowerGrid,
+            BiConsumer<T, Operation> itemSaver,
+            Consumer<T> itemDeleter)
+    {
 //    protected AbstractEditorDialog(
 //            final GrammarGender itemGender, final Map<GrammarShapes, String> itemNameMap
 //            , BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
@@ -88,32 +96,77 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         this.itemSaver = itemSaver;
         this.itemDeleter = itemDeleter;
 
-//        initDialogTitle();
-        initFormLayout();
-        initUpperGridContainer();
-        initLowerGridContainer();
-        initDialogButtonBar();
+        upperLeftPane = new VerticalLayout();
+        upperLeftPane.setAlignItems(FlexComponent.Alignment.STRETCH);
+        upperLeftPane.setSpacing(false);
+        upperLeftPane.setPadding(false);
+        upperLeftPane.add(initFormLayout());
+        upperLeftPane.add(new Paragraph(""));
+        upperLeftPane.add(initDialogButtonBar());
 
-        dialogPane.setAlignItems(FlexComponent.Alignment.STRETCH);
-        dialogPane.add(initDialogTitle(), new Hr());
-        upperPane.add(formLayout);
+        upperPane.add( upperLeftPane);
         if (useUpperGrid) {
             upperPane.add(new Ribbon());
-            upperPane.add(upperGridContainer);
+            upperPane.add(initUpperGridContainer());
         }
+
+        dialogPane = new VerticalLayout();
+        dialogPane.setAlignItems(FlexComponent.Alignment.STRETCH);
+        dialogPane.add(initDialogTitle(), new Hr());
         dialogPane.add(upperPane);
         dialogPane.add(new Paragraph());
         if (useLowerGrid) {
 //            HorizontalLayout lowerPane = new HorizontalLayout();
 //            lowerPane.add(lowerGridContainer);
 //            dialogPane.add(lowerPane);
-            dialogPane.add(lowerGridContainer);
+            dialogPane.add(initLowerGridContainer());
         }
-        dialogPane.add(buttonBar);
+//        dialogPane.add(buttonBar);
         this.add(dialogPane);
 
         this.setCloseOnEsc(true);
         this.setCloseOnOutsideClick(false);
+
+        setupEventListeners();
+    }
+
+
+    public void setupEventListeners() {
+
+        binder.addValueChangeListener(e -> onValueChange(isDirty()));
+
+//        getGrid().addSelectionListener(e -> {
+//            e.getFirstSelectedItem().ifPresent(entity -> {
+//                navigateToEntity(entity.getId().toString());
+//                getGrid().deselectAll();
+//            });
+//        });
+//
+//        getForm().getButtons().addSaveListener(e -> getPresenter().save());
+//        getForm().getButtons().addCancelListener(e -> getPresenter().cancel());
+//
+//        getDialog().getElement().addEventListener("opened-changed", e -> {
+//            if (!getDialog().isOpened()) {
+//                getPresenter().cancel();
+//            }
+//        });
+//
+//        getForm().getButtons().addDeleteListener(e -> getPresenter().delete());
+//
+//        getSearchBar().addActionClickListener(e -> getPresenter().createNew());
+//        getSearchBar()
+//                .addFilterChangeListener(e -> getPresenter().filter(getSearchBar().getFilter()));
+//
+//        getSearchBar().setActionText("New " + entityName);
+//        getBinder().addValueChangeListener(e -> getPresenter().onValueChange(isDirty()));
+    }
+
+    public void onValueChange(boolean isDirty) {
+        saveButton.setEnabled(isDirty);
+    }
+
+    public boolean isDirty() {
+        return binder.hasChanges();
     }
 
 //    private String getNounForTitle(final boolean isItemMale) {
@@ -137,23 +190,28 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         return titleLayout;
     }
 
-    private void initFormLayout() {
+    private Component initFormLayout() {
+        formLayout = new FormLayout();
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("25em", 2));
 //        Div div = new Div(formLayout);
 //        div.addClassName("has-padding");
         formLayout.addClassName("has-padding");
 //        add(div);
+        return formLayout;
     }
 
-    private void initUpperGridContainer() {
+    private Component initUpperGridContainer() {
+        upperGridContainer = new VerticalLayout();
         upperGridContainer.setClassName("view-container");
         upperGridContainer.setSpacing(false);
         upperGridContainer.setPadding(false);
 //        upperGridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
+        return upperGridContainer;
     }
 
-    private void initLowerGridContainer() {
+    private Component initLowerGridContainer() {
+        lowerGridContainer = new VerticalLayout();
         lowerGridContainer.setClassName("view-container");
         lowerGridContainer.setSpacing(false);
         lowerGridContainer.setPadding(false);
@@ -162,11 +220,12 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 //        gridContainer.getStyle().set("padding-left", "0em");
 //        gridContainer.getStyle().set("padding-top", "2.5em");
 //        gridContainer.getStyle().set("padding-bottom", "2.5em");
-
 //        lowerGridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
+        return lowerGridContainer;
     }
 
-    private void initDialogButtonBar() {
+    private Component initDialogButtonBar() {
+        buttonBar = new HorizontalLayout();
 
         cancelButton = new Button("Zpět");
         cancelButton.addClickListener(e -> close());
@@ -198,6 +257,8 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         buttonBar.add(leftBarPart, rightBarPart);
         buttonBar.setClassName("buttons");
 //        buttonBar.setSpacing(true);
+
+        return buttonBar;
     }
 
     /**
@@ -259,7 +320,6 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     private void openInternal(T item, final Operation operation
             , String titleItemNameText, Component titleMiddleComponent, String titleEndText)
     {
-
         setDefaultItemNames();  // Set general default names
         currentOperation = operation;
         currentItem = item;
@@ -288,19 +348,6 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         }
         titleEnd.setText(titleEndText);
 
-
-        if (registrationForSave != null) {
-            registrationForSave.remove();
-        }
-        registrationForSave = saveButton
-                .addClickListener(e -> saveClicked(currentOperation));
-
-        saveButton.setText("Uložit " + itemTypeAccuS.toLowerCase());
-//        saveButton.setEnabled();
-
-        deleteButton.setText("Zrušit " + itemTypeAccuS.toLowerCase());
-        deleteButton.setEnabled(currentOperation.isDeleteEnabled());
-
         if (currentOperation != Operation.ADD) {
             binder.readBean(currentItem);
         } else {
@@ -308,7 +355,21 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
             binder.readBean(currentItem);
         }
 
+        if (registrationForSave != null) {
+            registrationForSave.remove();
+        }
+        registrationForSave = saveButton.addClickListener(e -> saveClicked(currentOperation));
+        saveButton.setText("Uložit " + itemTypeAccuS.toLowerCase());
+        saveButton.setEnabled(false);
+
+        deleteButton.setText("Zrušit " + itemTypeAccuS.toLowerCase());
+        deleteButton.setEnabled(currentOperation.isDeleteEnabled());
+
         this.open();
+    }
+
+    public void formFieldValuesChenged() {
+        saveButton.setEnabled(true);
     }
 
     public void setDefaultItemNames() {
@@ -343,7 +404,6 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     protected abstract void openSpecific();
 
     private void saveClicked(Operation operation) {
-
         boolean isValid = binder.writeBeanIfValid(currentItem);
         if (isValid) {
             itemSaver.accept(currentItem, operation);
@@ -397,52 +457,4 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         doDelete(item);
     }
 
-
-    // ================================================================
-
-    /**
-     * The operations supported by this dialog. Delete is enabled when editing
-     * an already existing item.
-     */
-    public enum Operation {
-        ADD("Nový", "Nová", "Nové", "Přidat", "zadat", false),
-        EDIT("Editace", "Editace", "Editace", "Změnit", "editovat", true),
-        DELETE("Zrušení", "Zrušení", "Zrušení", "Odebrat", "zrušit", true),
-        VYSTAV("Vystavení", "Vystavení", "Vystavení", "Vystavit", "vystavit", false);
-
-        private final String titleOperNameForMasculine;
-        private final String titleOperNameForFeminine;
-        private final String titleOperNameForNeuter;
-        private final String titleOperNameForUnknown;
-        private final String opNameInText;
-        private final boolean deleteEnabled;
-
-        Operation(String titleOperNameForMasculine, String titleOperNameForFeminine,
-                  String titleOperNameForNeuter, String titleOperNameForUnknown,
-                  String opNameInText, boolean deleteEnabled) {
-            this.titleOperNameForMasculine = titleOperNameForMasculine;
-            this.titleOperNameForFeminine = titleOperNameForFeminine;
-            this.titleOperNameForNeuter = titleOperNameForNeuter;
-            this.titleOperNameForUnknown = titleOperNameForUnknown;
-            this.opNameInText = opNameInText;
-            this.deleteEnabled = deleteEnabled;
-        }
-
-        public String getDialogTitle(final String itemName, final GrammarGender itemGender) {
-            return getTitleOperName(itemGender) + " " + itemName.toUpperCase();
-        }
-
-        public String getTitleOperName(final GrammarGender gender) {
-            switch (gender) {
-                case MASCULINE : return titleOperNameForMasculine;
-                case FEMININE : return titleOperNameForFeminine;
-                case NEUTER : return titleOperNameForNeuter;
-                default : return titleOperNameForUnknown;
-            }
-        }
-
-        public boolean isDeleteEnabled() {
-            return deleteEnabled;
-        }
-    }
 }

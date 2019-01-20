@@ -34,6 +34,9 @@ import java.util.function.Consumer;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
+
+    private final static String ZAK_EDIT_COL_KEY = "zakedit-col";
+
     final ValueProvider<Zak, String> honorProvider;
     final ComponentRenderer<HtmlComponent, Zak> moneyCellRenderer;
 
@@ -72,9 +75,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private Button newSubButton;
 
     private KontEvidFormDialog kontEvidFormDialog;
-
     private ZakFormDialog zakFormDialog;
-    private final ConfirmationDialog<KontDoc> confirmDocUnregisterDialog = new ConfirmationDialog<>();
+    private ConfirmationDialog<KontDoc> confirmDocUnregisterDialog;
 //    private final ConfirmationDialog<Zak> confirmZakOpenDialog = new ConfirmationDialog<>();
 
 //    @Autowired
@@ -95,14 +97,11 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                           FaktService faktService)
     {
         super(true, true, itemSaver, itemDeleter);
-
-        this.kontService = kontService;
-        this.zakService = zakService;
-
         setWidth("1300px");
 //        setHeight("600px");
 
-
+        this.kontService = kontService;
+        this.zakService = zakService;
 
 //        moneyFormat = DecimalFormat.getInstance();
 //        if (moneyFormat instanceof DecimalFormat) {
@@ -133,30 +132,15 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
         honorProvider = (zak) -> FormatUtils.moneyFormat.format(zak.getHonorar());
 
-//        moneyRenderer = new NumberRenderer(honorProvider, numFormat);
-
 //        moneyCellRenderer = new ComponentRenderer<>(kontZak -> {
         moneyCellRenderer = new ComponentRenderer<>(zak -> {
             Div comp = new Div();
-//            if (ItemType.KONT == kontZak.getTyp()) {
-////            comp.getStyle().set("color", "darkmagenta");
-////            return new Emphasis(kontZak.getHonorar().toString());
-//                comp.getElement().appendChild(ElementFactory.createEmphasis(kontZak.getHonorar().toString()));
-//                comp.getStyle()
-////                    .set("color", "red")
-////                    .set("text-indent", "1em");
-////                        .set("padding-right", "1em")
-//                ;
-//            } else {
                 if ((null != zak) && (zak.getHonorar().compareTo(BigDecimal.ZERO) < 0)) {
                     comp.getStyle()
                             .set("color", "red")
-//                            .set("text-indent", "1em")
                     ;
                 }
-//                comp.getElement().appendChild(ElementFactory.createSpan(numFormat.format(kontZak.getHonorar())));
                 comp.setText(FormatUtils.moneyFormat.format(zak.getHonorar()));
-//            }
             return comp;
         });
 
@@ -185,6 +169,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
         kontEvidFormDialog = new KontEvidFormDialog(this::saveKontEvid, kontService);
         zakFormDialog = new ZakFormDialog(this::saveZak, this::deleteZak, zakService, faktService);
+        confirmDocUnregisterDialog = new ConfirmationDialog<>();
 
         getFormLayout().add(
                 initCkontField()
@@ -208,19 +193,29 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         );
     }
 
-    private void saveKontEvid(EvidKont evidKont) {
+
+    private void saveKontEvid(EvidKont evidKont, Operation operation) {
         getCurrentItem().setCkont(evidKont.getCkont());
         getCurrentItem().setText(evidKont.getText());
         getCurrentItem().setFolder(evidKont.getFolder());
         getBinder().readBean(getCurrentItem());
+        formFieldValuesChenged();
+        setChangeDependantControls(false);
 
         Notification.show(
 //                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
-                "Číslo a text kontraktu změněny", 3000, Notification.Position.BOTTOM_END);
+                "Nové číslo a text kontraktu akceptovány", 3000, Notification.Position.BOTTOM_END);
 //        updateGridContent();
     }
 
-    private void saveZak(Zak zak, AbstractEditorDialog.Operation operation) {
+    private void setChangeDependantControls(boolean enable) {
+//        zakGrid.getColumnByKey(ZAK_EDIT_COL_KEY).getElement(). fff
+        newAkvButton.setEnabled(enable);
+        newZakButton.setEnabled(enable);
+        newSubButton.setEnabled(enable);
+    }
+
+    private void saveZak(Zak zak, Operation operation) {
         Zak newInstance = zakService.saveZak(zak);
         zakGrid.getDataProvider().refreshItem(newInstance);
         Notification.show(
@@ -306,6 +301,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private Component initCkontField() {
         ckontField = new TextField("Číslo kontraktu");
         ckontField.setReadOnly(true);
+        ckontField.getStyle()
+                .set("padding-top", "0em");
         getBinder().forField(ckontField)
                 .bind(Kont::getCkont, Kont::setCkont);
         return ckontField;
@@ -323,7 +320,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
             if (null == getCurrentItem().getId()) {
                 kontEvidFormDialog.open(
                         evidKont
-                        , AbstractEditorDialog.Operation.ADD
+                        , Operation.ADD
                         , "Zadání EVIDENCE KONTRAKTU");
             } else {
                 kontEvidFormDialog.open(
@@ -533,7 +530,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private Component initNewZakButton() {
         newZakButton = new NewItemButton(ItemNames.getNomP(ItemType.ZAK), event ->
                 zakFormDialog.open(new Zak(ItemType.ZAK)
-                    , AbstractEditorDialog.Operation.ADD, ItemNames.getNomS(ItemType.ZAK))
+                    , Operation.ADD, ItemNames.getNomS(ItemType.ZAK))
         );
 //                        new Zak(ItemType.ZAK), AbstractEditorDialog.Operation.ADD);
         return newZakButton;
@@ -542,14 +539,14 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private Component initNewAkvButton() {
         newAkvButton = new NewItemButton(ItemNames.getNomS(ItemType.AKV), event ->
                 zakFormDialog.open(new Zak(ItemType.AKV)
-                    , AbstractEditorDialog.Operation.ADD, ItemNames.getNomS(ItemType.AKV)));
+                    , Operation.ADD, ItemNames.getNomS(ItemType.AKV)));
         return newAkvButton;
     }
 
     private Component initNewSubButton() {
         newSubButton = new NewItemButton(ItemNames.getNomS(ItemType.SUB), event ->
                 zakFormDialog.open(new Zak(ItemType.SUB)
-                    , AbstractEditorDialog.Operation.ADD, ItemNames.getNomS(ItemType.SUB)));
+                    , Operation.ADD, ItemNames.getNomS(ItemType.SUB)));
         return newSubButton;
     }
 
@@ -586,6 +583,29 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         zakGrid.getStyle().set("marginTop", "0.5em");
         zakGrid.setHeight("15em");
 
+//        Button this::buildZakOpenBtn
+//        ComponentRenderer<Component, Zak> zakEditRenderer = new ComponentRenderer<>(
+//                this::buildZakOpenBtn
+//        );
+//        zakEditRenderer.
+
+        Icon icoTrue = new Icon(VaadinIcon.CHECK);
+        icoTrue.setSize("0.8em");
+        icoTrue.getStyle().set("theme", "small icon secondary");
+        Icon icoFalse = new Icon(VaadinIcon.MINUS);
+        icoFalse.setSize("0.8em");
+        icoFalse.getStyle().set("theme", "small icon secondary");
+
+        ComponentRenderer<Component, Zak> zakArchRenderer = new ComponentRenderer<>(zak -> {
+//        this.getElement().setAttribute("theme", "small icon secondary");
+//            Icon icoTrue = new Icon(VaadinIcon.CHECK);
+//            icoTrue.setSize("0.8em");
+//            icoTrue.getStyle().set("theme", "small icon secondary");
+//            Icon icoFalse = new Icon(VaadinIcon.MINUS);
+//            icoFalse.setSize("0.8em");
+//            icoFalse.getStyle().set("theme", "small icon secondary");
+            return zak.getArch() ? icoTrue : icoFalse;
+        });
 
 //        zakGrid.getElement().setAttribute("colspan", "2");
 //        zakGrid.getStyle().set("padding-right", "0em");
@@ -593,26 +613,26 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //        zakGrid.getStyle().set("padding-top", "2.5em");
 //        zakGrid.getStyle().set("padding-bottom", "2.5em");
 
+        zakGrid.addColumn(Zak::getTyp).setHeader("Typ")
+                .setWidth("5em").setFlexGrow(0)
+        ;
+        zakGrid.addColumn(new ComponentRenderer<>(this::buildZakOpenBtn))
+                .setFlexGrow(0)
+                .setKey(ZAK_EDIT_COL_KEY)
+        ;
+        zakGrid.addColumn(zakArchRenderer)
+                .setHeader(("Arch"))
+                .setFlexGrow(0)
+                .setWidth("4em")
+                .setResizable(true)
+        ;
+
         zakGrid.addColumn(Zak::getCzak).setHeader("ČZ")
                 .setWidth("3em").setFlexGrow(0)
         ;
 
-        ComponentRenderer<Component, Zak> booleanRenderer = new ComponentRenderer<>(zak -> {
-//        this.getElement().setAttribute("theme", "small icon secondary");
-            Icon icoTrue = new Icon(VaadinIcon.CHECK);
-            icoTrue.setSize("0.8em");
-            icoTrue.getStyle().set("theme", "small icon secondary");
-            Icon icoFalse = new Icon(VaadinIcon.MINUS);
-            icoFalse.setSize("0.8em");
-            icoFalse.getStyle().set("theme", "small icon secondary");
-            return zak.getArch() ? icoTrue : icoFalse;
-        });
-
-        zakGrid.addColumn(booleanRenderer)
-                .setHeader(("Arch"))
-                .setFlexGrow(0)
-                .setWidth("5em")
-                .setResizable(true)
+        zakGrid.addColumn(Zak::getRokzak).setHeader("Rok")
+                .setWidth("5em").setFlexGrow(0)
         ;
 
 //        zakGrid.addColumn(new ComponentRenderer<>(this::createEditButton))
@@ -628,24 +648,22 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                 .setTextAlign(ColumnTextAlign.END)
                 .setWidth("10em").setFlexGrow(0)
         ;
-        zakGrid.addColumn(Zak::getText).setHeader("Text")
-                .setFlexGrow(1)
-        ;
         zakGrid.addColumn(Zak::getFaktsOver).setHeader("Fakt.")
                 .setFlexGrow(0)
         ;
-        zakGrid.addColumn(new ComponentRenderer<>(this::buildZakOpenBtn))
-                .setFlexGrow(0)
+        zakGrid.addColumn(Zak::getText).setHeader("Text")
+                .setFlexGrow(1)
         ;
+
         return zakGrid;
     }
 
 
     private Component buildZakOpenBtn(Zak zak) {
-            return new GridItemOpenBtn(event -> {
+        Button btn = new GridItemOpenBtn(event -> {
 //                this.close();
                 zakFormDialog.open(
-                        zak, AbstractEditorDialog.Operation.EDIT,
+                        zak, Operation.EDIT,
                         "[ Vytvořeno: " + (zak).getDateCreate().toString()
                                 + " , Poslední změna: " + (zak.getDatetimeUpdate().toString() + " ]"));
 
@@ -654,6 +672,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 ////                        true, zak, this::openZakForm, this::open);
 //                        true, zak, this::openZakForm, this::close);
             });
+//        btn.setEnabled(false);
+        return btn;
     }
 
     private void openZakForm(Zak zak) {

@@ -175,7 +175,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 
     }
 
-    private void saveZakEvid(EvidZak evidZak) {
+    private void saveZakEvid(EvidZak evidZak, Operation operation) {
         getCurrentItem().setCzak(evidZak.getCzak());
         getCurrentItem().setText(evidZak.getText());
         getCurrentItem().setFolder(evidZak.getFolder());
@@ -187,7 +187,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 //        updateGridContent();
     }
 
-    private void saveFakt(Fakt fakt, AbstractEditorDialog.Operation operation) {
+    private void saveFakt(Fakt fakt, Operation operation) {
         Fakt newInstance = faktService.saveFakt(fakt);
         faktGrid.getDataProvider().refreshItem(newInstance);
         Notification.show(
@@ -253,12 +253,12 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
             if (null == getCurrentItem().getId()) {
                 zakEvidFormDialog.open(
                         evidZak
-                        , AbstractEditorDialog.Operation.ADD
+                        , Operation.ADD
                         , "Zadání EVIDENCE ZAKÁZKY");
             } else {
                 zakEvidFormDialog.open(
                         evidZak
-                        , AbstractEditorDialog.Operation.EDIT
+                        , Operation.EDIT
                         , "Změna EVIDENCE ZAKÁZKY");
             }
         });
@@ -267,6 +267,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 
     private Component initArchCheck() {
         archCheck = new Checkbox("Archiv"); // = new TextField("Username");
+        archCheck.getElement().setAttribute("theme", "secondary");
         getBinder().forField(archCheck)
                 .bind(Zak::getArch, Zak::setArch);
         return archCheck;
@@ -412,7 +413,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
     private Component initNewFaktButton() {
         newFaktButton = new NewItemButton(ItemNames.getNomS(ItemType.FAKT), event ->
 // TODO: add ItemType to Fakt !!!
-                faktFormDialog.open(new Fakt(), AbstractEditorDialog.Operation.ADD, "Fakturace")
+                faktFormDialog.open(new Fakt(), Operation.ADD, "Fakturace")
 //                zakFormDialog.open(new Zak(ItemType.FAKT), AbstractEditorDialog.Operation.ADD)
         );
         return newFaktButton;
@@ -493,7 +494,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         return new GridFaktVystavBtn(event -> {
 //                this.close();
             faktFormDialog.open(
-                    fakt, AbstractEditorDialog.Operation.VYSTAV,
+                    fakt, Operation.VYSTAV,
                     "[ Vytvořeno: " + fakt.getDateCreate().toString()
                             + " , Poslední změna: " + fakt.getDatetimeUpdate().toString() + " ]");
 
@@ -508,7 +509,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
             return new GridItemOpenBtn(event -> {
 //                this.close();
                 faktFormDialog.open(
-                        fakt, AbstractEditorDialog.Operation.EDIT,
+                        fakt, Operation.EDIT,
                         "[ Vytvořeno: " + fakt.getDateCreate().toString()
                                 + " , Poslední změna: " + fakt.getDatetimeUpdate().toString() + " ]");
 

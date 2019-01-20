@@ -58,7 +58,29 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
     @Override
     public List<Kont> fetchAll() {
-        return kontRepo.findAllByOrderByObjednatel();
+        return kontRepo.findAllByOrderByCkontDesc();
+    }
+
+    @Override
+    public List<Kont> fetchHavingSomeZaksActive() {
+//        return kontRepo.findByArchTrueOrderByCkontDesc();
+        return kontRepo.findHavingSomeZaksActive();
+    }
+
+    @Override
+    public List<Kont> fetchHavingAllZaksArchived() {
+        return kontRepo.findHavingAllZaksArchived();
+
+
+//        return kontRepo.findByArchFalseOrderByCkontDesc();
+//
+//        QProduct qProduct = QProduct.product;
+//        BooleanExpression predicate = qProduct.type.eq("pizza")
+//                .and((qProduct.actualPrice.subtract(qProduct.planPrice)).gt(20L));
+//
+//        List<Kont> konts = kontRepo.findAll(predicate, pageable);
+//        List<Kont> konts = productRepository.findAll(predicate, pageable);
+//        return ...;
     }
 
     @Override

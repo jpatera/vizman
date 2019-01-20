@@ -1,5 +1,7 @@
 package eu.japtor.vizman.backend.entity;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -40,6 +42,7 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates {
     private LocalDateTime dateTimeExport;
 
     @Column(name = "DATE_CREATE", updatable = false)
+    @CreationTimestamp
     private LocalDate dateCreate;
 
     @Column(name = "DATETIME_UPDATE", insertable = false, updatable = false)

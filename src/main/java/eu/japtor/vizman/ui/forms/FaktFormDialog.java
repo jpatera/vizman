@@ -14,6 +14,7 @@ import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.backend.utils.FormatUtils;
 import eu.japtor.vizman.ui.components.AbstractEditorDialog;
 import eu.japtor.vizman.ui.components.ConfirmationDialog;
+import eu.japtor.vizman.ui.components.Operation;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
