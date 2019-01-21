@@ -122,20 +122,8 @@ public class VzmFileUtils {
         }
     }
 
+// ----------------------------------------------------------
 
-    public static boolean createKontProjDirs(String projRoot, String kontFolder) {
-
-        Path kontDirProjRootPath = getKontDocRootPath(projRoot, kontFolder);
-        if (!kontDirProjRootPath.toFile().exists()) {
-            try {
-                Files.createDirectories(kontDirProjRootPath);
-                return true;
-            } catch (IOException ioExceptionObj) {
-                System.out.println("Problem Occured While Creating The Directory Structure = " + ioExceptionObj.getMessage());
-            }
-        }
-        return false;
-    }
 
     public static boolean kontProjRootExists(String projRoot, String kontFolder) {
         return kontProjRootExists(getKontProjRootPath(projRoot, kontFolder));
@@ -152,14 +140,12 @@ public class VzmFileUtils {
         );
     }
 
+    public static boolean createKontProjDirs(String projRoot, String kontFolder) {
 
-
-    public static boolean createKontDocDirs(String docRoot, String kontFolder) {
-
-        Path kontDirDocRootPath = getKontDocRootPath(docRoot, kontFolder);
-        if (!kontDirDocRootPath.toFile().exists()) {
+        Path kontDirProjRootPath = getKontDocRootPath(projRoot, kontFolder);
+        if (!kontDirProjRootPath.toFile().exists()) {
             try {
-                Files.createDirectories(kontDirDocRootPath);
+                Files.createDirectories(kontDirProjRootPath);
                 return true;
             } catch (IOException ioExceptionObj) {
                 System.out.println("Problem Occured While Creating The Directory Structure = " + ioExceptionObj.getMessage());
@@ -167,6 +153,9 @@ public class VzmFileUtils {
         }
         return false;
     }
+
+// ----------------------------------------------------------
+
 
     public static boolean kontDocRootExists(String docRoot, String kontFolder) {
         return kontDocRootExists(getKontDocRootPath(docRoot, kontFolder));
@@ -182,4 +171,97 @@ public class VzmFileUtils {
                 , null == kontFolder ? "###-NOT-SET-KONT-DOC-FOLDER-###" : kontFolder
         );
     }
+
+    public static boolean createKontDocDirs(String docRoot, String kontFolder) {
+
+        Path kontDocRootPath = getKontDocRootPath(docRoot, kontFolder);
+        if (!kontDocRootPath.toFile().exists()) {
+            try {
+                Files.createDirectories(kontDocRootPath);
+                Path zeroSodPath = Paths.get(kontDocRootPath.toString(), "0__SOD");
+                Files.createDirectories(zeroSodPath);
+                return true;
+            } catch (IOException ioExceptionObj) {
+                System.out.println("Problem Occured While Creating The Directory Structure = " + ioExceptionObj.getMessage());
+            }
+        }
+        return false;
+    }
+
+// --------------------------------------------------
+
+
+    public static boolean zakProjRootExists(String projRoot, String kontFolder, String zakFolder) {
+        return zakProjRootExists(getZakProjRootPath(projRoot, kontFolder, zakFolder));
+    }
+
+    public static boolean zakProjRootExists(Path zakProjRootPath) {
+        return (zakProjRootPath.toFile().exists());
+    }
+
+    public static Path getZakProjRootPath(String projRoot, String kontFolder, String zakFolder) {
+        return Paths.get(
+                null == projRoot ? "###-NOT-SET-KONT-PROJ-ROOT-###" : projRoot
+                , null == kontFolder ? "###-NOT-SET-KONT-PROJ-FOLDER-###" : kontFolder
+                , null == zakFolder ? "###-NOT-SET-ZAK-PROJ-FOLDER-###" : zakFolder
+        );
+    }
+
+    public static boolean createZakProjDirs(String projRoot, String kontFolder, String zakFolder) {
+
+        Path zakProjRootPath = getZakProjRootPath(projRoot, kontFolder, zakFolder);
+        if (!zakProjRootPath.toFile().exists()) {
+            try {
+                Files.createDirectories(zakProjRootPath);
+                Path inzenyringPath = Paths.get(zakProjRootPath.toString(), "INZENYRING");
+                Files.createDirectories(inzenyringPath);
+                Path orgPath = Paths.get(zakProjRootPath.toString(), "ORG");
+                Files.createDirectories(orgPath);
+                return true;
+            } catch (IOException ioExceptionObj) {
+                System.out.println("Problem Occured While Creating The Directory Structure = " + ioExceptionObj.getMessage());
+            }
+        }
+        return false;
+    }
+
+// --------------------------------------------------
+
+
+    public static boolean zakDocRootExists(String docRoot, String kontFolder, String zakFolder) {
+        return zakDocRootExists(getZakDocRootPath(docRoot, kontFolder, zakFolder));
+    }
+
+    public static boolean zakDocRootExists(Path zakDocRootPath) {
+        return (zakDocRootPath.toFile().exists());
+    }
+
+    public static Path getZakDocRootPath(String docRoot, String kontFolder, String zakFolder) {
+        return Paths.get(
+                null == docRoot ? "###-NOT-SET-KONT-DOC-ROOT-###" : docRoot
+                , null == kontFolder ? "###-NOT-SET-KONT-DOC-FOLDER-###" : kontFolder
+                , null == zakFolder ? "###-NOT-SET-ZAK-DOC-FOLDER-###" : zakFolder
+        );
+    }
+
+    public static boolean createZakDocDirs(String docRoot, String kontFolder, String zakFolder) {
+
+        Path zakDocRootPath = getZakDocRootPath(docRoot, kontFolder, zakFolder);
+        if (!zakDocRootPath.toFile().exists()) {
+            try {
+                Files.createDirectories(zakDocRootPath);
+                Path dopisyPath = Paths.get(zakDocRootPath.toString(), "Odesilaci_dopisy");
+                Files.createDirectories(dopisyPath);
+                Path fakturyPath = Paths.get(zakDocRootPath.toString(), "Faktury");
+                Files.createDirectories(fakturyPath);
+                return true;
+            } catch (IOException ioExceptionObj) {
+                System.out.println("Problem Occured While Creating The Directory Structure = " + ioExceptionObj.getMessage());
+            }
+        }
+        return false;
+    }
+
+
+
 }

@@ -52,11 +52,17 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates {
     @JoinColumn(name = "ID_ZAK")
     private Zak zak;
 
+    public Fakt() {
 
-    // TODO: add ItemType
-//    public Fakt() {
-//        this.typ = ItemType.FAKT;
-//    }
+    }
+
+    public Fakt(final Zak zakParent, final ItemType itemType) {
+        this.zak = zakParent;
+        this.typ = itemType;
+        this.plneni = BigDecimal.valueOf(0);
+        this.castka = BigDecimal.valueOf(0);
+        this.zaklad = BigDecimal.valueOf(0);
+    }
 
     public ItemType getTyp() {
         return typ;
@@ -159,7 +165,7 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates {
 
     @Transient
     public Mena getMena() {
-        return getZak().getMena();
+        return (null == getZak()) ? null : getZak().getMena();
     }
 
 

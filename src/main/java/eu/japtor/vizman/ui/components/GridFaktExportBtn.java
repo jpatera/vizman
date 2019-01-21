@@ -5,13 +5,13 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-public class GridFaktVystavBtn extends Button {
+public class GridFaktExportBtn extends Button {
 
-    public GridFaktVystavBtn(final ComponentEventListener itemAction) {
+    public GridFaktExportBtn(final ComponentEventListener itemAction) {
         super();
         this.setText("");
 //        this.setIcon(new Icon("lumo", "edit"));
-        this.setIcon(new Icon(VaadinIcon.COINS));
+        this.setIcon(new Icon(VaadinIcon.ARROW_FORWARD));
         this.getElement().setAttribute("theme", "tertiary");
         this.addClickListener(itemAction);
     }

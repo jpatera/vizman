@@ -63,7 +63,6 @@ import javax.annotation.PostConstruct;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Stream;
@@ -104,7 +103,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
     private Zak zakOrig;
 
     private KontFormDialog kontFormDialog;
-    private ZakFormDialog zakForm;
+    private ZakFormDialog zakFormDialog;
 //    private final Grid<Kont> kontGrid = new Grid<>();
 //    private final Grid<Zak> zakGrid = new Grid<>();
 
@@ -148,9 +147,11 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 
         kontFormDialog = new KontFormDialog(
                 this::saveKont, this::deleteKont
-                , kontService, zakService, faktService, cfgPropsCache);
+                , kontService, zakService, faktService
+                , cfgPropsCache
+        );
 
-        zakForm = new ZakFormDialog(
+        zakFormDialog = new ZakFormDialog(
                 this::saveZak, this::deleteZak
                 , zakService, faktService, cfgPropsCache);
 
@@ -747,7 +748,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 
                 kontOrig = ((Zak)kz).getKont();
                 zakOrig = (Zak)kz;
-                zakForm.openDialog(
+                zakFormDialog.openDialog(
                     (Zak) kz, kontOrig, Operation.EDIT
                     , null, zakFaktFlags, null);
 //                    "[ Vytvořeno: " + ((Zak) kz).getDateCreate().toString()
@@ -994,14 +995,50 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         // Save kont
 
 
+
+        if (Operation.EDIT == operation) {
+//            VzmFileUtils.renameZakProjDirs(cfgPropsCache.getValue("app.project.root.server"), kont.getFolder());
+        } else if (Operation.ADD == operation){
+            if (!VzmFileUtils.createZakProjDirs(getProjRootServer(), zak.getKont().getFolder(), zak.getFolder())) {
+                new OkDialog().open("Adresáře zakázky"
+                        , "Projektové adresáře se nepodařilo vytvořit", "");
+            };
+            if (!VzmFileUtils.createZakDocDirs(getDocRootServer(), zak.getKont().getFolder(), zak.getFolder())) {
+                new OkDialog().open("Adresáře zakázky"
+                        , "Dokumentové adresáře se nepodařilo vytvořit", "");
+            };
+//            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
+//            kontProjRootDir.setReadOnly();
+        } else {
+        }
+
         File file = new File("location of file");
         file.setReadOnly();
 
-        Zak newInstance = zakService.saveZak(zak);
-        kzTreeGrid.getDataProvider().refreshItem(newInstance);
-        Notification.show(
-//                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
-                "Zakázka uložena", 3000, Notification.Position.BOTTOM_END);
+        Zak savedZak = zakService.saveZak(zak);
+        new OkDialog().open("Zakázka " + savedZak.getKont().getCkont() + "/" + savedZak.getCzak() + " uložena"
+                , "", "");
+
+        if (Operation.EDIT == operation) {
+            kzTreeGrid.getDataProvider().refreshItem(savedZak);
+        } else {
+//            if (null == archRadioValue || )
+            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+            kzTreeGrid.getDataProvider().refreshAll();
+
+//            if (archFilterRadio.getValue() == RADIO_KONT_ACTIVE) {
+//                archFilterRadio.setValue(RADIO_KONT_ARCH);
+//            } else {
+//                reloadTreeProvider(archFilterRadio.getValue());
+//            }
+        }
+
+//        kzTreeGrid.getDataProvider().refreshAll();
+//        Notification.show(
+////                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
+//                "Zakázka uložena", 3000, Notification.Position.BOTTOM_END);
+
+        kzTreeGrid.select(savedZak);
     }
 
 

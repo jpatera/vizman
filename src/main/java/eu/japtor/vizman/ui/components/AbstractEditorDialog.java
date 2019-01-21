@@ -41,6 +41,7 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     VerticalLayout upperLeftPane;
     HorizontalLayout buttonBar = new HorizontalLayout();
     VerticalLayout dialogPane;
+    HorizontalLayout leftBarPart;
 
     private Binder<T> binder = new Binder<>();
     private T currentItem;
@@ -61,8 +62,8 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 
     protected AbstractEditorDialog(
             BiConsumer<T, Operation> itemSaver,
-            Consumer<T> itemDeleter)
-    {
+            Consumer<T> itemDeleter
+    ){
         this(false, false, itemSaver, itemDeleter);
     }
 
@@ -82,8 +83,8 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
             boolean useUpperGrid,
             boolean useLowerGrid,
             BiConsumer<T, Operation> itemSaver,
-            Consumer<T> itemDeleter)
-    {
+            Consumer<T> itemDeleter
+    ){
 //    protected AbstractEditorDialog(
 //            final GrammarGender itemGender, final Map<GrammarShapes, String> itemNameMap
 //            , BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
@@ -132,6 +133,9 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         setupEventListeners();
     }
 
+    public Component getLowerGridContainer() {
+        return lowerGridContainer;
+    }
 
     public void setupEventListeners() {
 
@@ -177,6 +181,9 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 //                : currentOperation.getTitleNounForFeminine();
 //    }
 
+    public HorizontalLayout getLeftBarPart() {
+        return leftBarPart;
+    }
 
     private Component initDialogTitle() {
         titleMain.getStyle().set("marginTop", "0.2em");
@@ -242,7 +249,7 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         deleteButton.addClickListener(e -> deleteClicked());
 //        deleteButton.addClickListener(e -> deleteClicked());
 
-        HorizontalLayout leftBarPart = new HorizontalLayout();
+        leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);
         leftBarPart.add(saveButton, deleteButton);
 

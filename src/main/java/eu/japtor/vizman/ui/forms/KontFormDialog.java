@@ -9,6 +9,7 @@ import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -25,9 +26,11 @@ import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.FaktService;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.ZakService;
+import eu.japtor.vizman.backend.utils.VzmFileUtils;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.*;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -51,6 +54,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private ComboBox<Mena> menaCombo;
 
     private Kont kontOrig;
+    private Zak zakOrig;
 //    private String ckontOrig;
 //    private String textOrig;
 //    private String folderOrig;
@@ -97,9 +101,10 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                           KontService kontService,
                           ZakService zakService,
                           FaktService faktService,
-                          CfgPropsCache cfgPropsCache)
-    {
+                          CfgPropsCache cfgPropsCache
+    ){
         super(true, true, itemSaver, itemDeleter);
+        this.getLeftBarPart().add(initKontEvidButton());
         setWidth("1300px");
 //        setHeight("600px");
 
@@ -181,13 +186,18 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                 this::saveKontEvid, kontService
                 , getDocRootServer(), getProjRootServer()
         );
+
         zakFormDialog = new ZakFormDialog(
-                this::saveZak, this::deleteZak, zakService, faktService, cfgPropsCache);
+                this::saveZak, this::deleteZak, zakService, faktService
+                , cfgPropsCache
+        );
+//        zakFormDialog.getLeftBarPart().add(initKontEvidButton());
+
         confirmDocUnregisterDialog = new ConfirmationDialog<>();
 
         getFormLayout().add(
                 initCkontField()
-                , initEvidArchComponent()
+                , initArchCheck()
                 , initTextField()
                 , initObjednatelField()
                 , initInvestorField()
@@ -288,12 +298,33 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     }
 
     private void saveZak(Zak zak, Operation operation) {
-        Zak newZak = zakService.saveZak(zak);
-        new OkDialog().open("Zakázka " + newZak.getKont().getCkont() + "/" + newZak.getCzak() + " uložena"
+
+
+        if (Operation.EDIT == operation) {
+//            VzmFileUtils.renameZakProjDirs(cfgPropsCache.getValue("app.project.root.server"), kont.getFolder());
+        } else if (Operation.ADD == operation){
+            if (!VzmFileUtils.createZakProjDirs(getProjRootServer(), zak.getKont().getFolder(), zak.getFolder())) {
+                new OkDialog().open("Adresáře zakázky"
+                        , "Projektové adresáře se nepodařilo vytvořit", "");
+            };
+            if (!VzmFileUtils.createZakDocDirs(getDocRootServer(), zak.getKont().getFolder(), zak.getFolder())) {
+                new OkDialog().open("Adresáře zakázky"
+                        , "Dokumentové adresáře se nepodařilo vytvořit", "");
+            };
+//            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
+//            kontProjRootDir.setReadOnly();
+        } else {
+        }
+
+        File file = new File("location of file");
+        file.setReadOnly();
+
+        Zak savedZak = zakService.saveZak(zak);
+        new OkDialog().open("Zakázka " + savedZak.getKont().getCkont() + "/" + savedZak.getCzak() + " uložena"
                 , "", "");
 
         if (Operation.EDIT == operation) {
-            zakGrid.getDataProvider().refreshItem(newZak);
+            zakGrid.getDataProvider().refreshItem(savedZak);
         } else {
 //            if (null == archRadioValue || )
             zakGrid.getDataCommunicator().getKeyMapper().removeAll();
@@ -306,7 +337,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //            }
         }
 
-        zakGrid.select(newZak);
+        zakGrid.select(savedZak);
 
 //        Notification.show(
 //                "Změny zakázky uloženy", 3000, Notification.Position.BOTTOM_END);
@@ -389,6 +420,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         return kontEvidButton;
     }
 
+
     private Component initArchCheck() {
         archCheck = new Checkbox("Archiv");
         archCheck.getElement().setAttribute("theme", "secondary");
@@ -398,16 +430,16 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         return archCheck;
     }
 
-    private Component initEvidArchComponent() {
-        FlexLayout evidArchCont = new FlexLayout();
-        evidArchCont.setAlignItems(FlexComponent.Alignment.BASELINE);
-        evidArchCont.add(
-                initKontEvidButton()
-                , new Ribbon("3em")
-                , initArchCheck()
-        );
-        return evidArchCont;
-    }
+//    private Component initEvidArchComponent() {
+//        FlexLayout evidArchCont = new FlexLayout();
+//        evidArchCont.setAlignItems(FlexComponent.Alignment.BASELINE);
+//        evidArchCont.add(
+//                initKontEvidButton()
+//                , new Ribbon("3em")
+//                , initArchCheck()
+//        );
+//        return evidArchCont;
+//    }
 
     private Component initTextField() {
         textField = new TextField("Text kontraktu");
@@ -589,8 +621,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
     private Component initNewSubButton() {
         newSubButton = new NewItemButton(ItemNames.getNomS(ItemType.SUB), event ->
-                zakFormDialog.openDialog(new Zak(ItemType.SUB, kontOrig.getNewCzak(), kontOrig), kontOrig
-                , Operation.ADD, null, new FlexLayout(), null)
+                    zakFormDialog.openDialog(new Zak(ItemType.SUB, kontOrig.getNewCzak(), kontOrig),
+                    kontOrig , Operation.ADD, null, new FlexLayout(), null)
         );
         return newSubButton;
     }
@@ -642,6 +674,9 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         zakGrid.addColumn(Zak::getTyp).setHeader("Typ")
                 .setWidth("5em").setFlexGrow(0)
         ;
+        zakGrid.addColumn(Zak::getCzak).setHeader("ČZ")
+                .setWidth("3em").setFlexGrow(0)
+        ;
         zakGrid.addColumn(new ComponentRenderer<>(this::buildZakOpenBtn))
                 .setFlexGrow(0)
                 .setKey(ZAK_EDIT_COL_KEY)
@@ -652,15 +687,9 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                 .setWidth("4em")
                 .setResizable(true)
         ;
-
-        zakGrid.addColumn(Zak::getCzak).setHeader("ČZ")
-                .setWidth("3em").setFlexGrow(0)
-        ;
-
         zakGrid.addColumn(Zak::getRokzak).setHeader("Rok")
                 .setWidth("5em").setFlexGrow(0)
         ;
-
         zakGrid.addColumn(moneyCellRenderer).setHeader("Honorář")
                 .setResizable(true)
                 .setTextAlign(ColumnTextAlign.END)
@@ -685,10 +714,17 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
     private void openZakForm(Zak zak) {
 //        this.close();
-        zakFormDialog.open(
-            zak, Operation.EDIT,
-            "[ Vytvořeno: " + (zak).getDateCreate().toString()
-                    + " , Poslední změna: " + (zak.getDatetimeUpdate().toString() + " ]"));
+        Div zakFaktFlags = new Div();
+        zakFaktFlags.add(new Span("5"), new Ribbon(), new Span("1"), new Ribbon(), new Span("10"));
+
+        kontOrig = (getCurrentItem());
+        zakOrig = zak;
+        zakFormDialog.openDialog(
+                zak, kontOrig, Operation.EDIT
+                , null, zakFaktFlags, null
+        );
+//            "[ Vytvořeno: " + (zak).getDateCreate().toString()
+//                    + " , Poslední změna: " + (zak.getDatetimeUpdate().toString() + " ]"));
 
 //                confirmZakOpenDialog.open("Otevrit zakázku ?",
 //                        "", "", "Zrušit",

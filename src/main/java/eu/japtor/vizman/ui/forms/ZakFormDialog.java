@@ -38,6 +38,7 @@ import java.util.function.Consumer;
 public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEnterObserver {
 
     private final static String FAKT_VYSTAV_COL_KEY = "fakt-vystav-col";
+    private final static String FAKT_EXPORT_COL_KEY = "fakt-export-col";
 
     final ValueProvider<Fakt, String> castkaProvider;
     final ComponentRenderer<HtmlComponent, Fakt> moneyCellRenderer;
@@ -89,9 +90,10 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
                          Consumer<Zak> itemDeleter,
                          ZakService zakService,
                          FaktService faktService,
-                         CfgPropsCache cfgPropsCache)
-    {
+                         CfgPropsCache cfgPropsCache
+    ){
         super(true, true, itemSaver, itemDeleter);
+        getLeftBarPart().add(initZakEvidButton());
 
         this.zakService = zakService;
         this.faktService = faktService;
@@ -136,11 +138,13 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         confirmDocUnregisterDialog = new ConfirmationDialog<>();
 
         getFormLayout().add(
-                initCzakField()
-                , initEvidArchComponent()
+                initCzakSkupinaComponent()
+//                , initEvidArchComponent()
+//                new Paragraph(" ")
+                , initArchCheck()
                 , initTextField()
-                , initSkupinaField()
-                , new Paragraph("")
+//                , initSkupinaField()
+//                , new Paragraph("")
                 , initHonorarField()
                 , initMenaField()
         );
@@ -165,8 +169,9 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 //        openDialog(item, parentKont, operation, titleItemNameText, zakFaktFlags, titleEndText);
 //    }
 
-    public void openDialog(Zak zak, Kont parentKont, Operation operation
-                    , String titleItemNameText, Component zakFaktFlags, String titleEndText) {
+    public void openDialog(
+            Zak zak, Kont parentKont, Operation operation,
+            String titleItemNameText, Component zakFaktFlags, String titleEndText) {
 
         // Mandatory, should be first
         setItemNames(zak.getTyp());
@@ -182,6 +187,8 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 
         this.parentKont = parentKont;
         zakDocFolderField.setParentFolder(parentKont.getFolder());
+
+        getLowerGridCont().setVisible(ItemType.SUB != zak.getTyp());
 
         openInternal(zak, operation, titleItemNameText, zakFaktFlags, titleEndText);
     }
@@ -295,6 +302,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
     private Component initCzakField() {
         czakField = new TextField("Číslo zakázky");
         czakField.setReadOnly(true);
+        czakField.setWidth("8em");
         czakField.getStyle()
 //                .set("background-color", "yellow")
 //                    .set("text-indent", "1em");
@@ -329,6 +337,19 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         return zakEvidButton;
     }
 
+    private Component initCzakSkupinaComponent() {
+        FlexLayout czakSkupinaComponent = new FlexLayout();
+        czakSkupinaComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
+        czakSkupinaComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+//        Width("100%");
+        czakSkupinaComponent.add(
+                initCzakField()
+                , new Ribbon()
+                , initSkupinaField()
+        );
+        return czakSkupinaComponent;
+    }
+
     private Component initArchCheck() {
         archCheck = new Checkbox("Archiv"); // = new TextField("Username");
         archCheck.getElement().setAttribute("theme", "secondary");
@@ -336,17 +357,16 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
                 .bind(Zak::getArch, Zak::setArch);
         return archCheck;
     }
-
-    private Component initEvidArchComponent() {
-        FlexLayout evidArchCont = new FlexLayout();
-        evidArchCont.setAlignItems(FlexComponent.Alignment.BASELINE);
-        evidArchCont.add(
-                initZakEvidButton()
-                , new Ribbon("3em")
-                , initArchCheck()
-        );
-        return evidArchCont;
-    }
+//    private Component initEvidArchComponent() {
+//        FlexLayout evidArchCont = new FlexLayout();
+//        evidArchCont.setAlignItems(FlexComponent.Alignment.BASELINE);
+//        evidArchCont.add(
+////                initZakEvidButton()
+////                , new Ribbon("3em")
+//                initArchCheck()
+//        );
+//        return evidArchCont;
+//    }
 
     private Component initTextField() {
         textField = new TextField("Text zakázky");
@@ -359,6 +379,9 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 
     private Component initSkupinaField() {
         skupinaField = new TextField("Skupina");
+        skupinaField.setWidth("8em");
+        czakField.getStyle()
+                .set("padding-top", "0em");
         getBinder().forField(skupinaField)
                 .bind(Zak::getSkupina, Zak::setSkupina);
         skupinaField.setValueChangeMode(ValueChangeMode.EAGER);
@@ -487,9 +510,10 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
     }
 
     private Component initNewFaktButton() {
-        newFaktButton = new NewItemButton(ItemNames.getNomS(ItemType.FAKT), event ->
-// TODO: add ItemType to Fakt !!!
-                faktFormDialog.open(new Fakt(), Operation.ADD, "Fakturace")
+        newFaktButton = new NewItemButton(ItemNames.getNomS(ItemType.FAKT), event -> {
+            Fakt fakt = new Fakt(getCurrentItem(), ItemType.FAKT);
+            faktFormDialog.open(fakt, Operation.ADD, "Fakturace");
+        }
 //                zakFormDialog.open(new Zak(ItemType.FAKT), AbstractEditorDialog.Operation.ADD)
         );
         return newFaktButton;
@@ -521,6 +545,9 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         faktGrid.addColumn(Fakt::getCfakt).setHeader("ČF")
                 .setFlexGrow(0)
         ;
+        faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktOpenBtn))
+                .setFlexGrow(0)
+        ;
         faktGrid.addColumn(Fakt::getPlneni).setHeader("Plnění [%]")
                 .setFlexGrow(0)
         ;
@@ -545,12 +572,14 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         faktGrid.addColumn(Fakt::getZaklad).setHeader("Základ")
                 .setFlexGrow(0)
         ;
-        faktGrid.addColumn(Fakt::getDateTimeExport).setHeader("Exportováno")
+        faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktExportBtn))
+                .setFlexGrow(0)
+                .setKey(FAKT_EXPORT_COL_KEY)
+        ;
+        faktGrid.addColumn(Fakt::getDateTimeExport).setHeader("Exportováno ")
                 .setFlexGrow(0)
         ;
-        faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktOpenBtn))
-                .setFlexGrow(0)
-        ;
+
         return faktGrid;
     }
 
@@ -568,6 +597,17 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 //                        true, fakt, this::openFaktForm, this::open);
         });
 //        btn.setEnabled(false);
+        return btn;
+    }
+
+    private Component buildFaktExportBtn(Fakt fakt) {
+        Button btn = new GridFaktExportBtn(event -> {
+            faktFormDialog.open(
+                    fakt, Operation.VYSTAV,
+                    "[ Vytvořeno: " + fakt.getDateCreate().toString()
+                            + " , Poslední změna: " + fakt.getDatetimeUpdate().toString() + " ]");
+        });
+        btn.setEnabled(false);
         return btn;
     }
 
