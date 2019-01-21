@@ -6,13 +6,14 @@ import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VmFileUtils {
+public class VzmFileUtils {
 
     /**
      * Replace illegal characters in a filename with "_"
@@ -64,10 +65,12 @@ public class VmFileUtils {
 
 
     static List<ProjFolder> rootZakProjFolders;
+    static List<ProjFolder> rootKontProjFolders = new ArrayList<>();
+
     static {
 
         ProjFolder folderInzenyring = new ProjFolder(null, "INZENYRING");
-        ProjFolder folderOrg = new ProjFolder(null, "INZENYRING");
+        ProjFolder folderOrg = new ProjFolder(null, "ORG");
 
         List<ProjFolder> orgSubFolders = new ArrayList<>();
         orgSubFolders.add(new ProjFolder(folderOrg, "1_SEZNAMY"));
@@ -117,5 +120,66 @@ public class VmFileUtils {
         public void setChildFolders(List<ProjFolder> childFolders) {
             this.childFolders = childFolders;
         }
+    }
+
+
+    public static boolean createKontProjDirs(String projRoot, String kontFolder) {
+
+        Path kontDirProjRootPath = getKontDocRootPath(projRoot, kontFolder);
+        if (!kontDirProjRootPath.toFile().exists()) {
+            try {
+                Files.createDirectories(kontDirProjRootPath);
+                return true;
+            } catch (IOException ioExceptionObj) {
+                System.out.println("Problem Occured While Creating The Directory Structure = " + ioExceptionObj.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public static boolean kontProjRootExists(String projRoot, String kontFolder) {
+        return kontProjRootExists(getKontProjRootPath(projRoot, kontFolder));
+    }
+
+    public static boolean kontProjRootExists(Path kontDocRootPath) {
+        return (kontDocRootPath.toFile().exists());
+    }
+
+    public static Path getKontProjRootPath(String projRoot, String kontFolder) {
+        return Paths.get(
+                null == projRoot ? "###-NOT-SET-KONT-PROJ-ROOT-###" : projRoot
+                , null == kontFolder ? "###-NOT-SET-KONT-PROJ-FOLDER-###" : kontFolder
+        );
+    }
+
+
+
+    public static boolean createKontDocDirs(String docRoot, String kontFolder) {
+
+        Path kontDirDocRootPath = getKontDocRootPath(docRoot, kontFolder);
+        if (!kontDirDocRootPath.toFile().exists()) {
+            try {
+                Files.createDirectories(kontDirDocRootPath);
+                return true;
+            } catch (IOException ioExceptionObj) {
+                System.out.println("Problem Occured While Creating The Directory Structure = " + ioExceptionObj.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public static boolean kontDocRootExists(String docRoot, String kontFolder) {
+        return kontDocRootExists(getKontDocRootPath(docRoot, kontFolder));
+    }
+
+    public static boolean kontDocRootExists(Path kontDocRootPath) {
+        return (kontDocRootPath.toFile().exists());
+    }
+
+    public static Path getKontDocRootPath(String docRoot, String kontFolder) {
+        return Paths.get(
+                null == docRoot ? "###-NOT-SET-KONT-DOC-ROOT-###" : docRoot
+                , null == kontFolder ? "###-NOT-SET-KONT-DOC-FOLDER-###" : kontFolder
+        );
     }
 }

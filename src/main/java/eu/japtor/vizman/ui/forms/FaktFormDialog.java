@@ -5,15 +5,10 @@ import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.converter.LocalDateToDateConverter;
-import com.vaadin.flow.data.converter.StringToDateConverter;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.FaktService;
-import eu.japtor.vizman.backend.service.KontService;
-import eu.japtor.vizman.backend.service.ZakService;
-import eu.japtor.vizman.backend.utils.FormatUtils;
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.AbstractEditorDialog;
-import eu.japtor.vizman.ui.components.ConfirmationDialog;
 import eu.japtor.vizman.ui.components.Operation;
 
 import java.util.function.BiConsumer;
@@ -92,7 +87,7 @@ public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
 //        plneniField.setPreventInvalidInput(true);
         plneniField.setSuffixComponent(new Span("[%]"));
         getBinder().forField(plneniField)
-                .withConverter(FormatUtils.bigDecimalMoneyConverter)
+                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
 
 //                .withConverter(String::trim, String::trim)
 //                .withValidator(new StringLengthValidator(
@@ -128,7 +123,7 @@ public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
         castkaField.setReadOnly(true);
 //        castkaField.setSuffixComponent(new Span(faktMena.name()));
         getBinder().forField(castkaField)
-                .withConverter(FormatUtils.bigDecimalMoneyConverter)
+                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
                 .bind(Fakt::getCastka, null);
         return castkaField;
     }
@@ -138,7 +133,7 @@ public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
         zakladField.setReadOnly(true);
 //        castkaField.setSuffixComponent(new Span(faktMena.name()));
         getBinder().forField(zakladField)
-                .withConverter(FormatUtils.bigDecimalMoneyConverter)
+                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
                 .bind(Fakt::getZaklad, null);
         return zakladField;
     }

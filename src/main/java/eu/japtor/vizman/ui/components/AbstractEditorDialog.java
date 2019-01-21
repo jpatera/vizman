@@ -1,7 +1,6 @@
 package eu.japtor.vizman.ui.components;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -11,12 +10,13 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
-import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.*;
-import eu.japtor.vizman.backend.utils.FormatUtils;
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -312,14 +312,14 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         openInternal(item, operation, titleItemNameText, null, titleEndText);
     }
 
-    public void open(T item, final Operation operation, String titleItemNameText, Component titleMiddleComponent, String titleEndText) {
-        openInternal(item, operation, titleItemNameText, titleMiddleComponent, titleEndText);
-    }
+//    public void open(T item, final Operation operation, String titleItemNameText, Component titleMiddleComponent, String titleEndText) {
+//        openInternal(item, operation, titleItemNameText, titleMiddleComponent, titleEndText);
+//    }
 
     /**
      * Opens the given item for editing in the dialog.
      */
-    private void openInternal(T item, final Operation operation
+    protected void openInternal(T item, final Operation operation
             , String titleItemNameText, Component titleMiddleComponent, String titleEndText)
     {
         setDefaultItemNames();  // Set general default names
@@ -337,8 +337,11 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
             if (currentOperation == Operation.ADD) {
                 titleEndText = "";
             } else {
-                titleEndText = "[ Vytvořeno: " + ((HasModifDates) currentItem).getDateCreate().format(FormatUtils.basicDateFormatter)
-                        + ", Poslední změna: " + ((HasModifDates) currentItem).getDatetimeUpdate().format(FormatUtils.titleModifDateFormatter) + " ]";
+                LocalDate dateCreate = ((HasModifDates) currentItem).getDateCreate();
+                String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
+                LocalDateTime dateTimeUpdate = ((HasModifDates) currentItem).getDatetimeUpdate();
+                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleModifDateFormatter);
+                titleEndText = "[ Vytvořeno: " + dateCreateStr + ", Poslední změna: " + dateUpdateStr + " ]";
             }
         }
 

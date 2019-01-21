@@ -31,7 +31,7 @@ public class ZakRepoCustomImpl implements ZakRepoCustom {
 //        query.setParameter("deptName", dept);
 
         List<Zak> zaks = em.createNativeQuery(
-                "SELECT id  FROM zak z WHERE z.id_kont = :idKont AND z.czak = :czak"
+                "SELECT id  FROM vizman.zak z WHERE z.id_kont = :idKont AND z.czak = :czak"
                 )
                 .setParameter("idKont", idKont)
                 .setParameter("czak", czak)

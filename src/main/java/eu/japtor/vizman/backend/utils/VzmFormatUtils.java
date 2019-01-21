@@ -7,7 +7,7 @@ import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-public class FormatUtils {
+public class VzmFormatUtils {
 
 //    final static NumberFormat moneyFormat = new MoneyFormat(Locale.getDefault());
     public final static NumberFormat moneyFormat = new MoneyFormat();
@@ -73,7 +73,7 @@ public class FormatUtils {
 //                    ;
 //            }
 //    //                comp.getElement().appendChild(ElementFactory.createSpan(numFormat.format(kontZak.getHonorar())));
-//            comp.setText(FormatUtils.moneyFormat.format(zak.getHonorar()));
+//            comp.setText(VzmFormatUtils.moneyFormat.format(zak.getHonorar()));
 //    //            }
 //            return comp;
 //    });

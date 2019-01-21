@@ -116,7 +116,7 @@ VALUES(1, 1, 'app.locale', 'cs_CZ', 110, 'Národní tøídìní a formáty', 'Národní t
 
 
 INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
-VALUES(3, 1, 'app.document.root.local', 'L:\VizMan', 130, 'Koøenový adresáø pro dokumeny (stanice)', 'Koøenový adresáø pro dokumeny z pohledu pracovních stanic', false)
+VALUES(2, 1, 'app.document.root.local', 'L:\VizMan', 130, 'Koøenový adresáø pro dokumeny (stanice)', 'Koøenový adresáø pro dokumeny z pohledu pracovních stanic', false)
 ;
 
 INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
@@ -125,20 +125,20 @@ VALUES(3, 1, 'app.document.root.server', '\\pc-server7\VizMan', 130, 'Koøenový a
 
 
 INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
-VALUES(2, 1, 'app.project.root.local', 'S:\PROJEKT', 120, 'Koøenový adresáø pro projekty (stanice)', 'Koøenový adresáø pro projekty z pohledu pracovních stanic', false)
+VALUES(4, 1, 'app.project.root.local', 'S:\PROJEKT', 120, 'Koøenový adresáø pro projekty (stanice)', 'Koøenový adresáø pro projekty z pohledu pracovních stanic', false)
 ;
 
 INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
-VALUES(2, 1, 'app.project.root.server', '\\pc-server7\PROJEKT', 120, 'Koøenový adresáø pro projekty (server)', 'Koøenový adresáø pro projekty z pohledu serveru', false)
+VALUES(5, 1, 'app.project.root.server', '\\pc-server7\PROJEKT', 120, 'Koøenový adresáø pro projekty (server)', 'Koøenový adresáø pro projekty z pohledu serveru', false)
 ;
 
 
 INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
-VALUES(4, 1, 'app.koef.pojist', '0.35', 140, 'Koeficient pojištìní', 'Používá se pøi výpoètech vyhodnocovacích tabulek', false)
+VALUES(6, 1, 'app.koef.pojist', '0.35', 140, 'Koeficient pojištìní', 'Používá se pøi výpoètech vyhodnocovacích tabulek', false)
 ;
 
 INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
-VALUES(5, 1, 'app.koef.rezie', '0.8', 150, 'Koeficient režie', 'Používá se pøi výpoètech vyhodnocovacích tabulek', false)
+VALUES(7, 1, 'app.koef.rezie', '0.8', 150, 'Koeficient režie', 'Používá se pøi výpoètech vyhodnocovacích tabulek', false)
 ;
 
 
@@ -179,16 +179,16 @@ COMMIT;
 -- ---------------------------------------------
 
 
--- INSERT INTO VIZMANDB.VIZMAN."ROLE" (ID, VERSION, DESCRIPTION, NAME)
--- VALUES(1, 1, 'Administrátor - všechna existující oprávnìní', 'ROLE_ADMIN');
+INSERT INTO VIZMANDB.VIZMAN."ROLE" (ID, VERSION, DESCRIPTION, NAME)
+VALUES(1, 1, 'Administrátor - všechna existující oprávnìní', 'ROLE_ADMIN');
 
--- INSERT INTO VIZMANDB.VIZMAN."ROLE" (ID, VERSION, DESCRIPTION, NAME)
--- VALUES(2, 1, 'Uživatel - bìžná oprávnìní', 'ROLE_USER');
+INSERT INTO VIZMANDB.VIZMAN."ROLE" (ID, VERSION, DESCRIPTION, NAME)
+VALUES(2, 1, 'Uživatel - bìžná oprávnìní', 'ROLE_USER');
 
--- INSERT INTO VIZMANDB.VIZMAN."ROLE" (ID, VERSION, DESCRIPTION, NAME)
--- VALUES(3, 1, 'Manager - jako ROLE_USER plus fakturace a honoráøe', 'ROLE_MANAGER');
+INSERT INTO VIZMANDB.VIZMAN."ROLE" (ID, VERSION, DESCRIPTION, NAME)
+VALUES(3, 1, 'Manager - jako ROLE_USER plus fakturace a honoráøe', 'ROLE_MANAGER');
 
-
+COMMIT;
 
 
 
@@ -235,7 +235,7 @@ CREATE TABLE VIZMAN.KONT (
 	UUID UUID NOT NULL
 				COMMENT 'Inicialni duvod je potreba unikatniho identifikatoru pro potreby tree grid, nezavisleho na DB ID ',
 	CKONT VARCHAR(16),
-	TYP VARCHAR(5),
+	TYP VARCHAR(5) NOT NULL,
 	ARCH BOOLEAN,
 	INVESTOR VARCHAR(127),
 	OBJEDNATEL VARCHAR(127),
@@ -273,12 +273,17 @@ CREATE TABLE VIZMAN.ZAK (
 	VERSION INTEGER NOT NULL,
 	UUID UUID NOT NULL
 				COMMENT 'Inicialni duvod je potreba unikatniho identifikatoru pro potreby tree grid, nezavisleho na DB ID ',
-	TYP VARCHAR(5),
+	TYP VARCHAR(5) NOT NULL,
 	CKONT_ORIG VARCHAR(16)
 				COMMENT 'Cislo kontraktu - jen pro uvodni import za Zavinu, jinak null',
 	CZAK INTEGER,
+	ROKZAK SMALLINT,
 	ARCH BOOLEAN,
-	HONORAR DECIMAL(19,2),
+	SKUPINA VARCHAR(3),
+	TEXT VARCHAR(127),
+	FOLDER VARCHAR(127),
+	HONORAR DECIMAL(19,2) NOT NULL DEFAULT 0,
+	ID_KONT BIGINT,
 	R1 DECIMAL(19,2),
 	R2 DECIMAL(19,2),
 	R3 DECIMAL(19,2),
@@ -286,15 +291,10 @@ CREATE TABLE VIZMAN.ZAK (
 	ROZPRAC DECIMAL(19,2),
 	R_ZAL INTEGER,
 	RM DECIMAL(19,2),
-	ROKMESZAD VARCHAR(8),
-	ROKZAK SMALLINT,
-	SKUPINA VARCHAR(3),
-	TEXT VARCHAR(127),
-	FOLDER VARCHAR(127),
 	TMP VARCHAR(8),	-- Mozna uplne vypustit?
 --	TYP_DOKLADU VARCHAR(5),
 --	X BOOLEAN,
-	ID_KONT BIGINT,
+	ROKMESZAD VARCHAR(8),
 	DATE_CREATE DATE,
 	DATETIME_UPDATE DATETIME AS NOW() NOT NULL,
 	CONSTRAINT PK_ZAK PRIMARY KEY (ID),
@@ -325,7 +325,7 @@ CREATE TABLE VIZMAN.KONTDOC (
 	NOTE VARCHAR(255),
 	DATE_CREATE DATE,
  	DATETIME_UPDATE DATETIME AS NOW() NOT NULL,	
-	ID_KONT BIGINT,
+	ID_KONT BIGINT NOT NULL,
 	CONSTRAINT PK_KONTDOC PRIMARY KEY (ID),
 	CONSTRAINT FK_KONDOC_KONT FOREIGN KEY (ID_KONT) REFERENCES VIZMAN.KONT(ID) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
@@ -345,7 +345,7 @@ CREATE TABLE VIZMAN.ZAKDOC (
 	NOTE VARCHAR(255),
 	DATE_CREATE DATE,
  	DATETIME_UPDATE DATETIME AS NOW() NOT NULL,	
-	ID_ZAK BIGINT,
+	ID_ZAK BIGINT NOT NULL,
 	CONSTRAINT PK_ZAKDOC PRIMARY KEY (ID),
 	CONSTRAINT FK_ZAKDOC_ZAK FOREIGN KEY (ID_ZAK) REFERENCES VIZMAN.ZAK(ID) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
@@ -361,10 +361,10 @@ DROP TABLE VIZMAN.FAKT IF EXISTS;
 CREATE TABLE VIZMAN.FAKT (
 	ID BIGINT NOT NULL,
 	VERSION INTEGER NOT NULL,
-	TYP VARCHAR(5),
+	TYP VARCHAR(5) NOT NULL DEFAULT 'FAKT',
 	CFAKT INTEGER NOT NULL
 			COMMENT 'Cislo fakturace unikatni pouze pro nadrazenou zakazku)',	
-	PLNENI DECIMAL(4,1)
+	PLNENI DECIMAL(4,1) NOT NULL DEFAULT 100
 			COMMENT 'Fakturovane castecne plneni vyjadrene v procentech z pole ZAKLAD (nelze po vytvoreni zaznamu menit)',	
 	DATE_DUZP DATE
 			COMMENT 'Datum zdanitelneho plneni',	
@@ -379,7 +379,7 @@ CREATE TABLE VIZMAN.FAKT (
 			COMMENT 'Datum a cas posledniho uspesneho exportu',	
 	DATE_CREATE DATE NOT NULL,
 	DATETIME_UPDATE DATETIME AS NOW() NOT NULL,
-	ID_ZAK BIGINT,
+	ID_ZAK BIGINT NOT NULL,
 	CONSTRAINT PK_FAKT PRIMARY KEY (ID),
 	CONSTRAINT FK_FAKT_ZAK FOREIGN KEY (ID_ZAK) REFERENCES VIZMAN.ZAK(ID) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
@@ -517,24 +517,23 @@ COMMIT;
 -- '58016.1-1'
 INSERT INTO VIZMAN.ZAK
 	(ID, VERSION, UUID, CKONT_ORIG, CZAK, TYP, ARCH, HONORAR, R1, R2, R3, R4, R_ZAL, RM, DATE_CREATE, DATETIME_UPDATE, ROKMESZAD, ROKZAK, ROZPRAC, SKUPINA, TEXT, TMP, ID_KONT)
-VALUES(21148, 1, RANDOM_UUID(), NULL, 2, 'ZAK', false, 200000.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Ausführungsplanung Fussgängerbrücke II', NULL, 11146)
+VALUES(21306, 1, RANDOM_UUID(), NULL, 2, 'ZAK', false, 200000.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Ausführungsplanung Fussgängerbrücke II', NULL, 11305)
 ;
 
 INSERT INTO VIZMAN.ZAK
 	(ID, VERSION, UUID, CKONT_ORIG, CZAK, TYP, ARCH, HONORAR, R1, R2, R3, R4, R_ZAL, RM, DATE_CREATE, DATETIME_UPDATE, ROKMESZAD, ROKZAK, ROZPRAC, SKUPINA, TEXT, TMP, ID_KONT)
-VALUES(21149, 1, RANDOM_UUID(), NULL, 3, 'AKV', false, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Ausführungsplanung Fussgängerbrücke II', NULL, 11146)
+VALUES(21307, 1, RANDOM_UUID(), NULL, 3, 'AKV', false, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Ausführungsplanung Fussgängerbrücke II', NULL, 11305)
 ;
 
 INSERT INTO VIZMAN.ZAK
 	(ID, VERSION, UUID, CKONT_ORIG, CZAK, TYP, ARCH, HONORAR, R1, R2, R3, R4, R_ZAL, RM, DATE_CREATE, DATETIME_UPDATE, ROKMESZAD, ROKZAK, ROZPRAC, SKUPINA, TEXT, TMP, ID_KONT)
-VALUES(21150, 1, RANDOM_UUID(), NULL, 4, 'ZAK', false, 15000.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Ausführungsplanung Fussgängerbrücke III', NULL, 11146)
+VALUES(21308, 1, RANDOM_UUID(), NULL, 4, 'SUB', false, -30000.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Rýsování', NULL, 11305)
 ;
 
 INSERT INTO VIZMAN.ZAK
 	(ID, VERSION, UUID, CKONT_ORIG, CZAK, TYP, ARCH, HONORAR, R1, R2, R3, R4, R_ZAL, RM, DATE_CREATE, DATETIME_UPDATE, ROKMESZAD, ROKZAK, ROZPRAC, SKUPINA, TEXT, TMP, ID_KONT)
-VALUES(21151, 1, RANDOM_UUID(), NULL, 101, 'SUB', false, -30000.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Rýsování', NULL, 11146)
+VALUES(21309, 1, RANDOM_UUID(), NULL, 5, 'ZAK', false, 15000.00, 0.00, 0.00, 0.00, 0.00, 0, 0.00, '2016-06-01', '2016-06-24', '2016-06', 2016, 0.00, '1', 'Ausführungsplanung Fussgängerbrücke III', NULL, 11305)
 ;
-
 
 
 --update tlegacy lca set 
@@ -553,12 +552,12 @@ COMMIT;
 
 INSERT INTO VIZMAN.FAKT
 	(ID, VERSION, TYP, CFAKT, PLNENI, ZAKLAD, CASTKA, TEXT, DATE_DUZP, DATE_CREATE, DATETIME_UPDATE, ID_ZAK)
-VALUES(500001, 1, 'FAKT', 1, 31.0, 13333.00, 4133.23, 'Plneni I.', '2019-01-20', '2018-12-29', '2018-12-29', 21148)
+VALUES(500001, 1, 'FAKT', 1, 31.0, 200000.00, 62000.00, 'Plneni I.', '2019-01-20', '2018-12-29', '2018-12-29', 21306)
 ;
 
 INSERT INTO VIZMAN.FAKT
 	(ID, VERSION, TYP, CFAKT, PLNENI, ZAKLAD, CASTKA, TEXT, DATE_DUZP, DATE_CREATE, DATETIME_UPDATE, ID_ZAK)
-VALUES(500002, 1, 'FAKT', 2, 79.0, 13333.00, 10533.07, 'Plneni II.', '2019-01-21', '2018-12-28', '2018-12-29', 21148)
+VALUES(500002, 1, 'FAKT', 2, 69.0, 200000.00, 138000.00, 'Plneni II.', '2019-01-21', '2018-12-28', '2018-12-29', 21306)
 ;
 
 COMMIT;

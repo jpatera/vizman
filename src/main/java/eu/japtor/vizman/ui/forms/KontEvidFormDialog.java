@@ -2,20 +2,18 @@ package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Emphasis;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import eu.japtor.vizman.backend.bean.EvidKont;
 import eu.japtor.vizman.backend.service.KontService;
-import eu.japtor.vizman.backend.utils.VmFileUtils;
-import eu.japtor.vizman.ui.components.AbstractEditorDialog;
+import eu.japtor.vizman.backend.utils.VzmFileUtils;
 import eu.japtor.vizman.ui.components.AbstractSimpleEditorDialog;
 import eu.japtor.vizman.ui.components.Operation;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -30,20 +28,25 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
     private String folderOrig;
 
     private KontService kontService;
+    private String kontDocRoot;
+    private String kontProjRoot;
 
 
     public KontEvidFormDialog(BiConsumer<EvidKont, Operation> itemSaver,
-                              KontService kontService)
+                              KontService kontService, String kontDocRoot, String kontProjRoot)
     {
         super(itemSaver);
         this.setWidth("750px");
-
         this.kontService = kontService;
+        this.kontDocRoot = kontDocRoot;
+        this.kontProjRoot = kontProjRoot;
 
-        getFormLayout().add(initCkontField());
-        getFormLayout().add(initTextField());
-        getFormLayout().add(initFolderField());
-        getFormLayout().add(initInfoField());
+        getFormLayout().add(
+                initCkontField()
+                , initTextField()
+                , initFolderField()
+                , initInfoField()
+        );
 
         setupEventListeners();
     }
@@ -114,7 +117,7 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
         ckontField = new TextField("Číslo kontraktu");
         ckontField.addValueChangeListener(event -> {
             folderField.setValue(
-                VmFileUtils.NormalizeDirnamesAndJoin(event.getValue(), textField.getValue())
+                VzmFileUtils.NormalizeDirnamesAndJoin(event.getValue(), textField.getValue())
             );
         });
         ckontField.setValueChangeMode(ValueChangeMode.EAGER);
@@ -150,7 +153,7 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
 
         textField.addValueChangeListener(event -> {
             folderField.setValue(
-                VmFileUtils.NormalizeDirnamesAndJoin(ckontField.getValue(), event.getValue())
+                VzmFileUtils.NormalizeDirnamesAndJoin(ckontField.getValue(), event.getValue())
             );
         });
         textField.setValueChangeMode(ValueChangeMode.EAGER);
@@ -171,9 +174,12 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
         folderField = new TextField("Složka kontraktu");
         folderField.getElement().setAttribute("colspan", "2");
         getBinder().forField(folderField)
-//                .withValidator(
-//                        docdir -> kontService.getByDocdir(docdir) == null,
-//                        "Adresář stejného jména již existuje, zadej jiné číslo kontraktu nebo text")
+                .withValidator(
+                        folder -> (Operation.ADD == getOperation()) && !VzmFileUtils.kontDocRootExists(kontDocRoot, folder)
+                        , "Dokumentový adresář stejného jména již existuje, změň evidenci")
+                .withValidator(
+                        folder -> (Operation.ADD == getOperation()) && !VzmFileUtils.kontProjRootExists(kontProjRoot, folder)
+                        , "Projektový adresář stejného jména již existuje, změň evidenci")
                 .bind(EvidKont::getFolder, EvidKont::setFolder);
         folderField.setReadOnly(true);
         return folderField;
@@ -181,9 +187,9 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
 
     private Component initInfoField() {
         Div infoBox = new Div();
-        Emphasis infoText = new Emphasis("Odpovídající projektové a dokumentové adresáře budou vytvořeny/přejmenovány až při uložení celého kontraktu.");
+//        Emphasis infoText = new Emphasis("Odpovídající projektové a dokumentové adresáře budou vytvořeny/přejmenovány až při uložení celého kontraktu.");
         infoBox.getElement().setAttribute("colspan", "2");
-        infoBox.add(infoText);
+//        infoBox.add(infoText);
         return infoBox;
     }
 }

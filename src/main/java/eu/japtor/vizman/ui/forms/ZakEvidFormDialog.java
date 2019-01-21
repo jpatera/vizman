@@ -2,20 +2,17 @@ package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Emphasis;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import eu.japtor.vizman.backend.bean.EvidZak;
 import eu.japtor.vizman.backend.service.ZakService;
-import eu.japtor.vizman.backend.utils.VmFileUtils;
-import eu.japtor.vizman.ui.components.AbstractEditorDialog;
+import eu.japtor.vizman.backend.utils.VzmFileUtils;
 import eu.japtor.vizman.ui.components.AbstractSimpleEditorDialog;
 import eu.japtor.vizman.ui.components.Operation;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -33,7 +30,8 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
     private Long kontId;
 
 
-    public ZakEvidFormDialog (BiConsumer<EvidZak, Operation> itemSaver, ZakService zakService) {
+    public ZakEvidFormDialog (BiConsumer<EvidZak, Operation> itemSaver,
+                              ZakService zakService) {
 
         super(itemSaver);
         this.setWidth("750px");
@@ -64,7 +62,7 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
         czakField = new TextField("Číslo zakázky");
         czakField.addValueChangeListener(event -> {
             folderField.setValue(
-                VmFileUtils.NormalizeDirnamesAndJoin(event.getValue(), textField.getValue())
+                VzmFileUtils.NormalizeDirnamesAndJoin(event.getValue(), textField.getValue())
             );
         });
         czakField.setValueChangeMode(ValueChangeMode.EAGER);
@@ -105,7 +103,7 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
         textField.getElement().setAttribute("colspan", "2");
         textField.addValueChangeListener(event -> {
             folderField.setValue(
-                VmFileUtils.NormalizeDirnamesAndJoin(czakField.getValue(), event.getValue())
+                VzmFileUtils.NormalizeDirnamesAndJoin(czakField.getValue(), event.getValue())
             );
         });
         textField.setValueChangeMode(ValueChangeMode.EAGER);
@@ -130,9 +128,9 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
 
     private Component initInfoField() {
         Div infoBox = new Div();
-        Emphasis infoText = new Emphasis("Odpovídající projektové a dokumentové adresáře budou vytvořeny/přejmenovány až při uložení celé zakázky.");
+//        Emphasis infoText = new Emphasis("Odpovídající projektové a dokumentové adresáře budou vytvořeny/přejmenovány až při uložení celé zakázky.");
         infoBox.getElement().setAttribute("colspan", "2");
-        infoBox.add(infoText);
+//        infoBox.add(infoText);
         return infoBox;
     }
 }

@@ -31,9 +31,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
-import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.SortDirection;
-import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -49,10 +47,12 @@ import com.vaadin.flow.router.Route;
 import elemental.json.JsonObject;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.FaktService;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.ZakService;
-import eu.japtor.vizman.backend.utils.FormatUtils;
+import eu.japtor.vizman.backend.utils.VzmFileUtils;
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.KontFormDialog;
@@ -63,13 +63,13 @@ import javax.annotation.PostConstruct;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Stream;
 
 import static eu.japtor.vizman.app.security.SecurityUtils.isMoneyAccessGranted;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
-import static java.lang.Integer.min;
 
 //import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 //import com.vaadin.flow.data.provider.ListDataProvider;
@@ -130,6 +130,9 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
     @Autowired
     public FaktService faktService;
 
+    @Autowired
+    private CfgPropsCache cfgPropsCache;
+
 
 //    class KzText extends HtmlComponent implements KeyNotifier {
     static class KzText extends Paragraph implements KeyNotifier {
@@ -144,11 +147,12 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
     public void init() {
 
         kontFormDialog = new KontFormDialog(
-                this::saveKont, this::deleteKont, kontService, zakService, faktService);
+                this::saveKont, this::deleteKont
+                , kontService, zakService, faktService, cfgPropsCache);
 
         zakForm = new ZakFormDialog(
-//                this::saveZak, this::deleteZak, zakService);
-                this::saveZak, this::deleteZak, zakService, faktService);
+                this::saveZak, this::deleteZak
+                , zakService, faktService, cfgPropsCache);
 
         initKzTextRenderer();
 
@@ -239,7 +243,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 //            comp.getStyle().set("color", "darkmagenta");
 //            return new Emphasis(kontZak.getHonorar().toString());
             comp.getElement().appendChild(ElementFactory.createEmphasis(
-                    FormatUtils.moneyFormat.format(kz.getHonorar())));
+                    VzmFormatUtils.moneyFormat.format(kz.getHonorar())));
             comp.getStyle()
 //                    .set("color", "red")
 //                    .set("text-indent", "1em");
@@ -251,7 +255,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
                         .set("text-indent", "1em");
             }
             comp.getElement().appendChild(ElementFactory.createSpan(
-                    FormatUtils.moneyFormat.format(kz.getHonorar())));
+                    VzmFormatUtils.moneyFormat.format(kz.getHonorar())));
         }
         return comp;
     });
@@ -355,7 +359,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 //                            .set("text-indent", "1em")
             ;
         }
-        comp.setText(FormatUtils.moneyFormat.format(money));
+        comp.setText(VzmFormatUtils.moneyFormat.format(money));
         return comp;
     });
 
@@ -729,7 +733,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
 
                 kontOrig = (Kont)kz;
                 zakOrig = null;
-                kontFormDialog.open(
+                kontFormDialog.openDialog(
                     (Kont)kz, Operation.EDIT
                     , null, kontFaktFlags, null);
 //                    "[ Vytvořeno: " + ((Kont) kz).getDateCreate().toString()
@@ -741,10 +745,10 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
                 Div zakFaktFlags = new Div();
                 zakFaktFlags.add(new Span("5"), new Ribbon(), new Span("1"), new Ribbon(), new Span("10"));
 
-                kontOrig = null;
+                kontOrig = ((Zak)kz).getKont();
                 zakOrig = (Zak)kz;
-                zakForm.open(
-                    (Zak) kz, Operation.EDIT
+                zakForm.openDialog(
+                    (Zak) kz, kontOrig, Operation.EDIT
                     , null, zakFaktFlags, null);
 //                    "[ Vytvořeno: " + ((Zak) kz).getDateCreate().toString()
 //                            + " , Poslední změna: " + ((Zak) kz).getDatetimeUpdate().toString() + " ]")
@@ -859,10 +863,27 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
         // Save kont
 
 
-        File file = new File("location of file");
-        file.setReadOnly();
+
+        if (Operation.EDIT == operation) {
+//            VzmFileUtils.renameKontProjDirs(cfgPropsCache.getValue("app.project.root.server"), kont.getFolder());
+        } else if (Operation.ADD == operation){
+            if (!VzmFileUtils.createKontProjDirs(getProjRootServer(), kont.getFolder())) {
+                new OkDialog().open("Adresáře kontraktu"
+                        , "Projektové adresáře se nepodařilo vytvořit", "");
+            };
+            if (!VzmFileUtils.createKontDocDirs(getDocRootServer(), kont.getFolder())) {
+                new OkDialog().open("Adresáře kontraktu"
+                        , "Dokumentové adresáře se nepodařilo vytvořit", "");
+            };
+//            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
+//            kontProjRootDir.setReadOnly();
+        } else {
+        }
 
         Kont newKont = kontService.saveKont(kont);
+        new OkDialog().open("Kontrakt " + newKont.getCkont() + " uložen"
+                , "", "");
+
         if (Operation.EDIT == operation) {
             kzTreeGrid.getDataProvider().refreshItem(newKont);
         } else {
@@ -877,9 +898,16 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver 
               }
         }
         kzTreeGrid.select(newKont);
-        Notification.show(
-//                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
-                "Kontrakt uložen", 4000, Notification.Position.BOTTOM_END);
+//        Notification.show(
+//                "Kontrakt uložen", 4000, Notification.Position.BOTTOM_END);
+    }
+
+    private String getProjRootServer() {
+        return cfgPropsCache.getValue("app.project.root.server");
+    }
+
+    private String getDocRootServer() {
+        return cfgPropsCache.getValue("app.document.root.server");
     }
 
     private void deleteKont(final Kont kont) {

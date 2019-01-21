@@ -12,11 +12,10 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.*;
-import eu.japtor.vizman.backend.utils.FormatUtils;
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 
 import java.io.Serializable;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends Dialog {
 
@@ -234,8 +233,8 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 
 
         if ((null == titleEndText) && (currentItem instanceof HasModifDates)) {
-                titleEndText = "[ Vytvořeno: " + ((HasModifDates) currentItem).getDateCreate().format(FormatUtils.basicDateFormatter)
-                        + ", Poslední změna: " + ((HasModifDates) currentItem).getDatetimeUpdate().format(FormatUtils.titleModifDateFormatter) + " ]";
+                titleEndText = "[ Vytvořeno: " + ((HasModifDates) currentItem).getDateCreate().format(VzmFormatUtils.basicDateFormatter)
+                        + ", Poslední změna: " + ((HasModifDates) currentItem).getDatetimeUpdate().format(VzmFormatUtils.titleModifDateFormatter) + " ]";
         }
 
 //        titleLayout.setText(buildDialogTitle(currentOperation));

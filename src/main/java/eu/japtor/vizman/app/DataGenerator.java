@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SpringComponent
+// @SpringComponent
 public class DataGenerator implements HasLogger {
 
     static private final String ROLE_ADMIN_NAME = "ROLE_ADMIN";

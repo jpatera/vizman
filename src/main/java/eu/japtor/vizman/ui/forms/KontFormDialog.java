@@ -21,10 +21,11 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.ValueProvider;
 import eu.japtor.vizman.backend.bean.EvidKont;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.FaktService;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.ZakService;
-import eu.japtor.vizman.backend.utils.FormatUtils;
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.*;
 
 import java.math.BigDecimal;
@@ -84,7 +85,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private KontService kontService;
     private ZakService zakService;
     private FaktService faktService;
-
+    private CfgPropsCache cfgPropsCache;
 
 ////    private ListDataProvider<Role> allRolesDataProvider;
 //    private Collection<Role> personRoles;
@@ -95,7 +96,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                           Consumer<Kont> itemDeleter,
                           KontService kontService,
                           ZakService zakService,
-                          FaktService faktService)
+                          FaktService faktService,
+                          CfgPropsCache cfgPropsCache)
     {
         super(true, true, itemSaver, itemDeleter);
         setWidth("1300px");
@@ -103,6 +105,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
         this.kontService = kontService;
         this.zakService = zakService;
+        this.cfgPropsCache = cfgPropsCache;
+
         this.addOpenedChangeListener(event -> {
             if (Operation.ADD == currentOperation) {
                 kontEvidButton.click();
@@ -136,7 +140,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //            }
 //        };
 
-        honorProvider = (zak) -> FormatUtils.moneyFormat.format(zak.getHonorar());
+        honorProvider = (zak) -> VzmFormatUtils.moneyFormat.format(zak.getHonorar());
 
 //        moneyCellRenderer = new ComponentRenderer<>(kontZak -> {
         moneyCellRenderer = new ComponentRenderer<>(zak -> {
@@ -146,7 +150,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                             .set("color", "red")
                     ;
                 }
-                comp.setText(FormatUtils.moneyFormat.format(zak.getHonorar()));
+                comp.setText(VzmFormatUtils.moneyFormat.format(zak.getHonorar()));
             return comp;
         });
 
@@ -173,8 +177,12 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 //        };
 
 
-        kontEvidFormDialog = new KontEvidFormDialog(this::saveKontEvid, kontService);
-        zakFormDialog = new ZakFormDialog(this::saveZak, this::deleteZak, zakService, faktService);
+        kontEvidFormDialog = new KontEvidFormDialog(
+                this::saveKontEvid, kontService
+                , getDocRootServer(), getProjRootServer()
+        );
+        zakFormDialog = new ZakFormDialog(
+                this::saveZak, this::deleteZak, zakService, faktService, cfgPropsCache);
         confirmDocUnregisterDialog = new ConfirmationDialog<>();
 
         getFormLayout().add(
@@ -197,6 +205,13 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
                 initZakGridBar()
                 , initZakGrid()
         );
+    }
+
+
+    public void openDialog(Kont kont, Operation operation
+            , String titleItemNameText, Component zakFaktFlags, String titleEndText) {
+
+        openInternal(kont, operation, titleItemNameText, zakFaktFlags, titleEndText);
     }
 
 
@@ -247,10 +262,22 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         formFieldValuesChanged();
 //        setChangeDependantControlsEnabled(false);
 
-        Notification.show(
-//                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
-                "Nové číslo a text kontraktu uloženy", 3000, Notification.Position.BOTTOM_END);
-//        updateGridContent();
+        if (Operation.ADD == operation) {
+            new OkDialog().open("Evidence kontraktu"
+                    , "Číslo a text nového kontraktu uloženy"
+                    , "Adresáře budou vytvořeny až po uložení kontraktu"
+            );
+        } else {
+            new OkDialog().open("Evidence kontraktu"
+                    , "Změněné číslo a text kontraktu uloženy"
+                    , "Adresáře budou přejmenovány až po uložení kontraktu"
+            );
+        }
+
+//        Notification.show(
+////                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
+//                "Nové číslo a text kontraktu uloženy", 3000, Notification.Position.BOTTOM_END);
+////        updateGridContent();
     }
 
     private void setChangeDependantControlsEnabled(boolean enable) {
@@ -261,12 +288,28 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     }
 
     private void saveZak(Zak zak, Operation operation) {
-        Zak newInstance = zakService.saveZak(zak);
-        zakGrid.getDataProvider().refreshItem(newInstance);
-        Notification.show(
-//                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
-                "Změny zakázky uloženy", 3000, Notification.Position.BOTTOM_END);
-//        updateGridContent();
+        Zak newZak = zakService.saveZak(zak);
+        new OkDialog().open("Zakázka " + newZak.getKont().getCkont() + "/" + newZak.getCzak() + " uložena"
+                , "", "");
+
+        if (Operation.EDIT == operation) {
+            zakGrid.getDataProvider().refreshItem(newZak);
+        } else {
+//            if (null == archRadioValue || )
+            zakGrid.getDataCommunicator().getKeyMapper().removeAll();
+            zakGrid.getDataProvider().refreshAll();
+
+//            if (archFilterRadio.getValue() == RADIO_KONT_ACTIVE) {
+//                archFilterRadio.setValue(RADIO_KONT_ARCH);
+//            } else {
+//                reloadTreeProvider(archFilterRadio.getValue());
+//            }
+        }
+
+        zakGrid.select(newZak);
+
+//        Notification.show(
+//                "Změny zakázky uloženy", 3000, Notification.Position.BOTTOM_END);
     }
 
     private void deleteZak(Zak zak) {
@@ -423,7 +466,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         honorarField.setReadOnly(true);
         honorarField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
         getBinder().forField(honorarField)
-                .withConverter(FormatUtils.bigDecimalMoneyConverter)
+                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
                 .bind(Kont::getHonorar, null);
         return honorarField;
     }
@@ -443,8 +486,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
     private Component initKontDocFolderField() {
         kontDocFolderField = new KzFolderField(
                 null
-                , "D:\\vizman-doc-root"
-                , "D:\\vizman-proj-root"
+                , getDocRootServer()
+                , getProjRootServer()
         );
         kontDocFolderField.setWidth("100%");
         kontDocFolderField.getStyle().set("padding-top", "0em");
@@ -455,6 +498,13 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
         return kontDocFolderField;
     }
 
+    private String getProjRootServer() {
+        return cfgPropsCache.getValue("app.project.root.server");
+    }
+
+    private String getDocRootServer() {
+        return cfgPropsCache.getValue("app.document.root.server");
+    }
 
     private Component initRegisterDocButton() {
         registerDocButton = new NewItemButton("Dokument", event -> {});
@@ -521,8 +571,9 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
     private Component initNewZakButton() {
         newZakButton = new NewItemButton(ItemNames.getNomP(ItemType.ZAK), event ->
-                zakFormDialog.open(new Zak(ItemType.ZAK)
-                    , Operation.ADD, ItemNames.getNomS(ItemType.ZAK))
+                zakFormDialog.openDialog(new Zak(ItemType.ZAK, kontOrig.getNewCzak(), kontOrig), kontOrig
+                , Operation.ADD, null, new FlexLayout(), null)
+//                , Operation.ADD, ItemNames.getNomS(ItemType.ZAK), new FlexLayout(), "")
         );
 //                        new Zak(ItemType.ZAK), AbstractEditorDialog.Operation.ADD);
         return newZakButton;
@@ -530,15 +581,17 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> {
 
     private Component initNewAkvButton() {
         newAkvButton = new NewItemButton(ItemNames.getNomS(ItemType.AKV), event ->
-                zakFormDialog.open(new Zak(ItemType.AKV)
-                    , Operation.ADD, ItemNames.getNomS(ItemType.AKV)));
+                zakFormDialog.openDialog(new Zak(ItemType.AKV, kontOrig.getNewCzak(), kontOrig), kontOrig
+                , Operation.ADD, null, new FlexLayout(), null)
+        );
         return newAkvButton;
     }
 
     private Component initNewSubButton() {
         newSubButton = new NewItemButton(ItemNames.getNomS(ItemType.SUB), event ->
-                zakFormDialog.open(new Zak(ItemType.SUB)
-                    , Operation.ADD, ItemNames.getNomS(ItemType.SUB)));
+                zakFormDialog.openDialog(new Zak(ItemType.SUB, kontOrig.getNewCzak(), kontOrig), kontOrig
+                , Operation.ADD, null, new FlexLayout(), null)
+        );
         return newSubButton;
     }
 

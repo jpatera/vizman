@@ -25,5 +25,9 @@ public interface ZakRepo extends JpaRepository<Zak, Long>, ZakRepoCustom {
     // See: https://vaadin.com/forum/thread/16031323
     // findAll(Example.of(userProbe, userMatcher));
 
-    int countByTextLikeIgnoreCase(String text);
+    Long countByTextLikeIgnoreCase(String text);
+
+//    Long countByKontIdAndCzak(Long idKont, Integer czak);
+    Long countByKont(Long idKont);
+    Long countByCzak(Integer czak);
 }

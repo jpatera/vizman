@@ -88,12 +88,11 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     private Kont kont;
 
     @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER)
-    private List<Fakt> fakts;
+    private List<Fakt> fakts = new ArrayList<>();
 
     @OneToMany(mappedBy = "zak")
     @LazyCollection(LazyCollectionOption.FALSE)
-    private List<ZakDoc> zakDocs;
-
+    private List<ZakDoc> zakDocs = new ArrayList<>();
 
 
 
@@ -222,7 +221,7 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
 
     @Override
     public Mena getMena() {
-        return getKont().getMena();
+        return null == getKont() ? null : getKont().getMena();
     }
 
 
@@ -314,9 +313,9 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         return kont;
     }
 
-//    public void setKont(Kont kont) {
-//        this.kont = kont;
-//    }
+    public void setKont(Kont kont) {
+        this.kont = kont;
+    }
 
     public List<ZakDoc> getZakDocs() {
         return zakDocs;
@@ -373,13 +372,16 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
 
 
     public Zak() {
-        this(ItemType.ZAK);
+        this(ItemType.ZAK, 9999, null);
     }
 
-    public Zak(ItemType typ) {
+    public Zak(ItemType typ, Integer czak, Kont parentKont) {
         super();
         this.typ = typ;
+        this.czak = czak;
         this.uuid = UUID.randomUUID();
+        this.honorar = BigDecimal.valueOf(0);
+        this.kont = parentKont;
 
         UUID uuid = UUID.randomUUID();
         String randomUUIDString = uuid.toString();

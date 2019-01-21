@@ -56,7 +56,10 @@ public class ZakServiceImpl implements ZakService {
 
     @Override
     public boolean zakIdExistsInKont(Long idKont, Integer czak) {
-        return 0 > zakRepo.getCountByIdKontAndCzak(idKont, czak);
+        int cnt = zakRepo.getCountByIdKontAndCzak(idKont, czak);
+//        Long cnt2 = zakRepo.countByKontIdAndCzak(idKont, czak);
+        Long cnt2 = zakRepo.countByCzak(czak);
+        return cnt > 0;
     }
 
     @Override

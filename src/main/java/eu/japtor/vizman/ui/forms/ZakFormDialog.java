@@ -16,15 +16,17 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import eu.japtor.vizman.backend.bean.EvidZak;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.FaktService;
 import eu.japtor.vizman.backend.service.ZakService;
-import eu.japtor.vizman.backend.utils.FormatUtils;
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.*;
 
 import java.math.BigDecimal;
@@ -48,9 +50,8 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
     private TextField honorarField;
     private TextField menaField;
 
-    private Integer czakOrig;
-    private String textOrig;
-    private String folderOrig;
+    private Zak zakOrig;
+    private Kont parentKont;
 
     //    private Span datZadComp = new Span("Datum zadání");
 //    private Checkbox archiveCheckbox; // = new DatePicker("Nástup");
@@ -76,6 +77,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 //    @Autowired
     private ZakService zakService;
     private FaktService faktService;
+    private CfgPropsCache cfgPropsCache;
 
 
     @Override
@@ -86,12 +88,15 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
     public ZakFormDialog(BiConsumer<Zak, Operation> itemSaver,
                          Consumer<Zak> itemDeleter,
                          ZakService zakService,
-                         FaktService faktService)
+                         FaktService faktService,
+                         CfgPropsCache cfgPropsCache)
     {
         super(true, true, itemSaver, itemDeleter);
 
         this.zakService = zakService;
         this.faktService = faktService;
+        this.cfgPropsCache = cfgPropsCache;
+
         this.addOpenedChangeListener(event -> {
             if (Operation.ADD == currentOperation) {
                 zakEvidButton.click();
@@ -112,7 +117,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 //            }
 //        };
 //
-        castkaProvider = (fakt) -> FormatUtils.moneyFormat.format(fakt.getCastka());
+        castkaProvider = (fakt) -> VzmFormatUtils.moneyFormat.format(fakt.getCastka());
 
         moneyCellRenderer = new ComponentRenderer<>(fakt -> {
             Div comp = new Div();
@@ -121,7 +126,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
                         .set("color", "red")
                 ;
             }
-            comp.setText(FormatUtils.moneyFormat.format(fakt.getCastka()));
+            comp.setText(VzmFormatUtils.moneyFormat.format(fakt.getCastka()));
             return comp;
         });
 
@@ -153,26 +158,52 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         );
     }
 
-    /**
-     * Called by abstract parent dialog from its open(...) method.
-     */
-    protected void openSpecific() {
+
+//    public void openDialog(Zak item, final Operation operation
+//                    , String titleItemNameText, Component zakFaktFlags, String titleEndText) {
+//        this.parentKont = parentKont;
+//        openDialog(item, parentKont, operation, titleItemNameText, zakFaktFlags, titleEndText);
+//    }
+
+    public void openDialog(Zak zak, Kont parentKont, Operation operation
+                    , String titleItemNameText, Component zakFaktFlags, String titleEndText) {
 
         // Mandatory, should be first
-        setItemNames(getCurrentItem().getTyp());
-
-        czakOrig = getCurrentItem().getCzak();
-        textOrig = getCurrentItem().getText();
-        folderOrig = getCurrentItem().getFolder();
+        setItemNames(zak.getTyp());
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
 //        datZadComp.setLocale(new Locale("cs", "CZ"));
 //        vystupField.setLocale(new Locale("cs", "CZ"));
 
-        faktGrid.setItems(getCurrentItem().getFakts());
-        docGrid.setItems(getCurrentItem().getZakDocs());
-        zakDocFolderField.setParentFolder(getCurrentItem().getKont().getFolder());
+        this.zakOrig = zak;
+        this.faktGrid.setItems(zak.getFakts());
+        this.docGrid.setItems(zak.getZakDocs());
+
+        this.parentKont = parentKont;
+        zakDocFolderField.setParentFolder(parentKont.getFolder());
+
+        openInternal(zak, operation, titleItemNameText, zakFaktFlags, titleEndText);
+    }
+
+
+    /**
+     * Called by abstract parent dialog from its open(...) method.
+     */
+    protected void openSpecific() {
+
+//        // Mandatory, should be first
+////        setItemNames(getCurrentItem().getTyp());
+//
+//        this.zakOrig = getCurrentItem();
+//
+//        // Set locale here, because when it is set in constructor, it is effective only in first open,
+//        // and next openings show date in US format
+////        datZadComp.setLocale(new Locale("cs", "CZ"));
+////        vystupField.setLocale(new Locale("cs", "CZ"));
+//
+//        faktGrid.setItems(getCurrentItem().getFakts());
+//        docGrid.setItems(getCurrentItem().getZakDocs());
     }
 
     private void saveZakEvid(EvidZak evidZak, Operation operation) {
@@ -182,10 +213,22 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         getBinder().readBean(getCurrentItem());
         formFieldValuesChanged();
 
-        Notification.show(
-//                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
-                "Nové číslo a text zakázky uloženy", 3000, Notification.Position.BOTTOM_END);
-//        updateGridContent();
+        if (Operation.ADD == operation) {
+            new OkDialog().open("Evidence zakázky"
+                    , "Číslo a text nové zakázky akceptovány"
+                    , "Adresáře budou vytvořeny až po uložení zakázky"
+            );
+        } else {
+            new OkDialog().open("Evidence kontraktu"
+                    , "Změněné číslo a text zakázky akceptovány"
+                    , "Adresáře budou přejmenovány až po uložení zakázky"
+            );
+        }
+
+//        Notification.show(
+////                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
+//                "Nové číslo a text zakázky uloženy", 3000, Notification.Position.BOTTOM_END);
+////        updateGridContent();
     }
 
     private void saveFakt(Fakt fakt, Operation operation) {
@@ -335,7 +378,10 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
 //        honorarField.setReadOnly(true);
         honorarField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
         getBinder().forField(honorarField)
-                .withConverter(FormatUtils.bigDecimalMoneyConverter)
+                .withValidator(new StringLengthValidator(
+                        "Honorář nesmí být prázdný",
+                        1, null))
+                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
                 .bind(Zak::getHonorar, Zak::setHonorar);
         honorarField.setValueChangeMode(ValueChangeMode.EAGER);
         return honorarField;
@@ -356,8 +402,8 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
     private Component initZakDocFolderField() {
         zakDocFolderField = new KzFolderField(
                 null
-                , "D:\\vizman-doc-root"
-                , "D:\\vizman-proj-root"
+                , getProjRootServer()
+                , getDocRootServer()
         );
         zakDocFolderField.setWidth("100%");
         zakDocFolderField.getStyle().set("padding-top", "0em");
@@ -368,6 +414,13 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEn
         return zakDocFolderField;
     }
 
+    private String getProjRootServer() {
+        return cfgPropsCache.getValue("app.project.root.server");
+    }
+
+    private String getDocRootServer() {
+        return cfgPropsCache.getValue("app.document.root.server");
+    }
 
     private Component initRegisterDocButton() {
         registerDocButton = new NewItemButton("Dokument", event -> {});
