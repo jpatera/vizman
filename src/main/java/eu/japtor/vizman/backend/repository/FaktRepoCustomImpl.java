@@ -11,7 +11,7 @@ import javax.persistence.Query;
 import java.util.List;
 
 @Repository
-@Transactional(readOnly = true)
+//@Transactional(readOnly = true)
 public class FaktRepoCustomImpl implements FaktRepoCustom {
 
     @PersistenceContext

@@ -12,7 +12,7 @@ public class GridItemOpenBtn extends Button {
         this.setText("");
 //        this.setIcon(new Icon("lumo", "edit"));
         this.setIcon(new Icon(VaadinIcon.EDIT));
-        this.getElement().setAttribute("theme", "tertiary");
+        this.getElement().setAttribute("theme", "tertiary small");
         this.addClickListener(itemAction);
     }
 }

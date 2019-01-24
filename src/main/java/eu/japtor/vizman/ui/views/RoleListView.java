@@ -281,7 +281,7 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
         roleGrid.getDataProvider().refreshItem(newInstance);
         Notification.show(
 //                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
-                "Změny role uloženy", 3000, Notification.Position.BOTTOM_END);
+                "Změny role uloženy", 2000, Notification.Position.BOTTOM_END);
         updateGridContent();
     }
 
@@ -291,7 +291,7 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
         roleGrid.getDataCommunicator().getKeyMapper().removeAll();
         roleGrid.getDataProvider().refreshAll();
 
-        Notification.show(String.format("Role '%s' zrušena.", roleName), 3000, Notification.Position.BOTTOM_END);
+        Notification.show(String.format("Role '%s' zrušena.", roleName), 2000, Notification.Position.BOTTOM_END);
         updateGridContent();
     }
 

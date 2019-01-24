@@ -29,6 +29,9 @@ public enum Perm implements GrantedAuthority {
     PERSON_BASIC_READ("Lze prohlížet seznam uživatelů, přístup pouze k základním údajům"),
     PERSON_EXT_READ("Lze prohlížet seznam uživatelů, přístup ke všem údajům"),
 
+    KLIENT_READ("Lze prohlížet seznam klientů, přístup ke všem údajům"),
+    KLIENT_MODIFY("Lze vyvářet/editovat/rušit klienty, přístup ke všem údajům"),
+
     ROLE_READ("Lze prohlížet seznam rolí"),
     ROLE_MODIFY("Lze vytvářet/editovat/rušit role"),
 

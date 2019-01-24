@@ -306,7 +306,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         personGrid.getDataProvider().refreshItem(newInstance);
         Notification.show(
 //                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
-                "Změny uživatele uloženy", 3000, Notification.Position.BOTTOM_END);
+                "Změny uživatele uloženy", 2000, Notification.Position.BOTTOM_END);
         updateGridContent();
     }
 
@@ -315,7 +315,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         personGrid.getDataCommunicator().getKeyMapper().removeAll();
         personGrid.getDataProvider().refreshAll();
 
-        Notification.show("Uživatel zrušen.", 3000, Notification.Position.BOTTOM_END);
+        Notification.show("Uživatel zrušen.", 2000, Notification.Position.BOTTOM_END);
         updateGridContent();
     }
 

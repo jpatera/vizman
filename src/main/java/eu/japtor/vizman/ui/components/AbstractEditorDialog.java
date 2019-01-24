@@ -1,11 +1,13 @@
 package eu.japtor.vizman.ui.components;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.Binder;
@@ -13,6 +15,8 @@ import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import org.claspina.confirmdialog.ButtonOption;
+import org.claspina.confirmdialog.ConfirmDialog;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -22,10 +26,19 @@ import java.util.function.Consumer;
 
 public abstract class AbstractEditorDialog <T extends Serializable>  extends Dialog {
 
-    private final HorizontalLayout titleLayout = new HorizontalLayout();
-    private final H3 titleMain = new H3();
-    private Div titleMiddle = new Div();
-    private final H6 titleEnd = new H6();
+    private HorizontalLayout dialogHeader;
+    private String dialogWidth;
+    private String dialogHeight;
+    private String dialogMinWidth;
+    private String dialogMinHeight;
+
+    private H3 mainTitle;
+    private Div headerMiddleComponent = new Div();
+    private final H5 headerEndComponent = new H5();
+    private HtmlComponent headerDevider;
+
+    private Button mainResizeBtn;
+
     private Button saveButton;
     private Button cancelButton;
     private Button deleteButton;
@@ -35,18 +48,22 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     private Registration registrationForSave;
 
     private FormLayout formLayout;
+    private Div dialogCanvas;
+    private FlexLayout headerLeftComponent;
     private VerticalLayout upperGridContainer;
-    private VerticalLayout lowerGridContainer;
-    HorizontalLayout upperPane = new HorizontalLayout();
-    VerticalLayout upperLeftPane;
-    HorizontalLayout buttonBar = new HorizontalLayout();
-    VerticalLayout dialogPane;
-    HorizontalLayout leftBarPart;
+    private VerticalLayout lowerPane;
+    private HorizontalLayout upperPane = new HorizontalLayout();
+    private VerticalLayout upperLeftPane;
+    private HorizontalLayout buttonBar = new HorizontalLayout();
+    private Div dialogTitlePane;
+    private VerticalLayout dialogContent;
+    private HorizontalLayout leftBarPart;
 
     private Binder<T> binder = new Binder<>();
     private T currentItem;
 
-    private final ConfirmationDialog<T> confirmationDialog = new ConfirmationDialog<>();
+//    private final ConfirmationDialog<T> confirmationDialog = new ConfirmationDialog<>();
+    private final ConfirmDialog confirmDialog = ConfirmDialog.createQuestion();
 
     private GrammarGender itemGender;
     private String itemTypeNomS;
@@ -64,7 +81,7 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
             BiConsumer<T, Operation> itemSaver,
             Consumer<T> itemDeleter
     ){
-        this(false, false, itemSaver, itemDeleter);
+        this("1000px", "800px", false, false, itemSaver, itemDeleter);
     }
 
     /**
@@ -80,8 +97,10 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
      *            Callback to delete the edited item
      */
     protected AbstractEditorDialog(
-            boolean useUpperGrid,
-            boolean useLowerGrid,
+            String dialogWidth,
+            String dialogHeight,
+            boolean useUpperRightPane,
+            boolean useLowerPane,
             BiConsumer<T, Operation> itemSaver,
             Consumer<T> itemDeleter
     ){
@@ -96,9 +115,69 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 //        this.itemNameMap = itemNameMap;
 //        this.itemGender = itemGender;
 
+        this.dialogWidth = dialogWidth;
+        this.dialogHeight = dialogHeight;
+        setWidth(this.dialogWidth);
+        setHeight(this.dialogHeight);
+
         this.itemSaver = itemSaver;
         this.itemDeleter = itemDeleter;
 
+        // Because underlying dialog container is not accessible (only width and height can be set),
+        // we need following additional flexible dialogContainer t make child components grow/shrink
+        // as required:
+
+        dialogContent = new VerticalLayout();
+        dialogContent.getStyle().set("flex", "auto");
+        dialogContent.setAlignItems(FlexComponent.Alignment.STRETCH);
+//        dialogContent.setAlignItems(FlexComponent.Alignment.END);
+
+//        dialogContent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+//        dialogContent.getStyle().set("display", "flex");
+
+        dialogContent.add(initHeaderDevider());
+        dialogContent.add(initUpperContentPane(useUpperRightPane));
+//        dialogContent.add(new Paragraph());
+        if (useLowerPane) {
+//            HorizontalLayout lowerPane = new HorizontalLayout();
+//            lowerPane.add(lowerPane);
+//            dialogContent.add(lowerPane);
+            dialogContent.add(initLowerPane());
+        }
+//        dialogContent.add(buttonBar);
+//        this.add(dialogTitlePane, dialogContent);
+
+//        Component dialogTitle = initDialogTitle();
+
+        dialogCanvas = new Div();
+        dialogCanvas.setSizeFull();
+        dialogCanvas.getStyle().set("display", "flex");
+        dialogCanvas.getStyle().set("flex-direction", "column");
+        dialogCanvas.add(
+//                initDialogTitlePane()
+                initDialogHeader()
+                , dialogContent
+        );
+
+        this.add(dialogCanvas);
+
+        dialogMinHeight = headerLeftComponent.getHeight();
+        dialogMinWidth = headerLeftComponent.getHeight();
+
+        this.setCloseOnEsc(true);
+        this.setCloseOnOutsideClick(false);
+
+        setupEventListeners();
+    }
+
+
+    private HtmlComponent initHeaderDevider() {
+        headerDevider = new Hr();
+        headerDevider.setHeight("2px");
+        return headerDevider;
+    }
+
+    private Component initUpperContentPane(boolean useUpperRightPane) {
         upperLeftPane = new VerticalLayout();
         upperLeftPane.setAlignItems(FlexComponent.Alignment.STRETCH);
         upperLeftPane.setSpacing(false);
@@ -108,33 +187,22 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         upperLeftPane.add(initDialogButtonBar());
 
         upperPane.add( upperLeftPane);
-        if (useUpperGrid) {
+        if (useUpperRightPane) {
             upperPane.add(new Ribbon());
             upperPane.add(initUpperGridContainer());
         }
-
-        dialogPane = new VerticalLayout();
-        dialogPane.setAlignItems(FlexComponent.Alignment.STRETCH);
-        dialogPane.add(initDialogTitle(), new Hr());
-        dialogPane.add(upperPane);
-        dialogPane.add(new Paragraph());
-        if (useLowerGrid) {
-//            HorizontalLayout lowerPane = new HorizontalLayout();
-//            lowerPane.add(lowerGridContainer);
-//            dialogPane.add(lowerPane);
-            dialogPane.add(initLowerGridContainer());
-        }
-//        dialogPane.add(buttonBar);
-        this.add(dialogPane);
-
-        this.setCloseOnEsc(true);
-        this.setCloseOnOutsideClick(false);
-
-        setupEventListeners();
+        return upperPane;
     }
 
-    public Component getLowerGridContainer() {
-        return lowerGridContainer;
+    private Component initFormLayout() {
+        formLayout = new FormLayout();
+        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
+                new FormLayout.ResponsiveStep("25em", 2));
+//        Div div = new Div(formLayout);
+//        div.addClassName("has-padding");
+        formLayout.addClassName("has-padding");
+//        add(div);
+        return formLayout;
     }
 
     public void setupEventListeners() {
@@ -181,56 +249,107 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 //                : currentOperation.getTitleNounForFeminine();
 //    }
 
-    public HorizontalLayout getLeftBarPart() {
+    public HorizontalLayout getDialogLeftBarPart() {
         return leftBarPart;
     }
 
-    private Component initDialogTitle() {
-        titleMain.getStyle().set("marginTop", "0.2em");
-        titleLayout.setSpacing(false);
-        titleLayout.setPadding(false);
-//        titleLayout.getStyle()
+    private Component initDialogHeader() {
+//        Button btnCompressExpand = new ResizeBtn(isExpanded -> {
+//            dialogContent.setVisible(!isExpanded);
+//            setHeight(isExpanded ? "0" : dialogHeight);
+////            upperPane.setVisible(isExpanded);
+//        });
+//        btnCompressExpand.getStyle()
+//                .set("margin-right", "8px")
+//                .set("padding", "0")
+//                .set("max-width", "20px")
+//        ;
+
+        dialogHeader = new HorizontalLayout();
+        dialogHeader.getStyle().set("margin-left", "-2em");
+        dialogHeader.setSpacing(false);
+        dialogHeader.setPadding(false);
+//        dialogHeader.getStyle()
 ////                    .set("background-color", color)
 ////                    .set("theme", "icon small")
 //            .set("margin", "0");
-        titleLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        titleLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
-        titleLayout.add(titleMain, titleMiddle, titleEnd);
-        return titleLayout;
+        dialogHeader.setAlignItems(FlexComponent.Alignment.BASELINE);
+        dialogHeader.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        dialogHeader.add(
+                initHeaderLeftComponent()
+                , headerMiddleComponent
+                , headerEndComponent
+        );
+        return dialogHeader;
     }
 
-    private Component initFormLayout() {
-        formLayout = new FormLayout();
-        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("25em", 2));
-//        Div div = new Div(formLayout);
-//        div.addClassName("has-padding");
-        formLayout.addClassName("has-padding");
-//        add(div);
-        return formLayout;
+    private Component initHeaderLeftComponent() {
+        headerLeftComponent = new FlexLayout(
+                initDialogResizeBtn()
+                , initDialogTitle()
+        );
+        headerLeftComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
+        return headerLeftComponent;
     }
+
+    private Button initDialogResizeBtn() {
+        mainResizeBtn = new ResizeBtn(getDialogResizeAction(), false);
+        return mainResizeBtn;
+    }
+
+    public Consumer<Boolean> getDialogResizeAction() {
+        return isExpanded -> {
+            dialogContent.setVisible(!isExpanded);
+            headerEndComponent.setVisible(!isExpanded);
+            headerMiddleComponent.setVisible(!isExpanded);
+            this.setHeight(isExpanded ? dialogMinHeight : dialogHeight);
+            this.setWidth(isExpanded ? dialogMinWidth : dialogWidth);
+        };
+    }
+
+
+    private Component initDialogTitle() {
+        mainTitle = new H3();
+        mainTitle.getStyle()
+                .set("marginTop", "0.2em")
+                .set("margin-right", "1em");
+//        mainTitle.getElement().setProperty("flexGrow", (double)1);
+        return mainTitle;
+    }
+
 
     private Component initUpperGridContainer() {
         upperGridContainer = new VerticalLayout();
         upperGridContainer.setClassName("view-container");
         upperGridContainer.setSpacing(false);
         upperGridContainer.setPadding(false);
+        upperGridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
+//        upperGridContainer.setAlignSelf(FlexComponent.Alignment.STETCH);
 //        upperGridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
+//        container.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         return upperGridContainer;
     }
 
-    private Component initLowerGridContainer() {
-        lowerGridContainer = new VerticalLayout();
-        lowerGridContainer.setClassName("view-container");
-        lowerGridContainer.setSpacing(false);
-        lowerGridContainer.setPadding(false);
+    private Component initLowerPane() {
+        lowerPane = new VerticalLayout();
+        lowerPane.setClassName("view-container");
+        lowerPane.setSpacing(false);
+        lowerPane.setPadding(false);
+        lowerPane.setAlignItems(FlexComponent.Alignment.STRETCH);
 
 //        gridContainer.getStyle().set("padding-right", "0em");
 //        gridContainer.getStyle().set("padding-left", "0em");
 //        gridContainer.getStyle().set("padding-top", "2.5em");
 //        gridContainer.getStyle().set("padding-bottom", "2.5em");
-//        lowerGridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
-        return lowerGridContainer;
+//        lowerPane.setAlignItems(FlexComponent.Alignment.STRETCH);
+        return lowerPane;
+    }
+
+
+    public Consumer<Boolean> getLowerPaneResizeAction() {
+        return isExpanded -> {
+            upperPane.setVisible(isExpanded);
+        };
     }
 
     private Component initDialogButtonBar() {
@@ -280,12 +399,12 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         return formLayout;
     }
 
-    protected final VerticalLayout getUpperGridCont() {
+    protected final VerticalLayout getUpperGridContainer() {
         return upperGridContainer;
     }
 
-    protected final VerticalLayout getLowerGridCont() {
-        return lowerGridContainer;
+    protected final VerticalLayout getLowerPane() {
+        return lowerPane;
     }
 
     /**
@@ -307,17 +426,17 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     }
 
 
-    public void open(T item, final Operation operation) {
-        openInternal(item, operation, null, null, null);
-    }
+//    public void open(T item, final Operation operation) {
+//        openInternal(item, operation, null, null, null);
+//    }
 
     public void open(T item, final Operation operation, String titleItemNameText) {
         openInternal(item, operation, titleItemNameText, null, null);
     }
 
-    public void open(T item, final Operation operation, String titleItemNameText, String titleEndText) {
-        openInternal(item, operation, titleItemNameText, null, titleEndText);
-    }
+//    public void open(T item, final Operation operation, String titleItemNameText, String titleEndText) {
+//        openInternal(item, operation, titleItemNameText, null, titleEndText);
+//    }
 
 //    public void open(T item, final Operation operation, String titleItemNameText, Component titleMiddleComponent, String titleEndText) {
 //        openInternal(item, operation, titleItemNameText, titleMiddleComponent, titleEndText);
@@ -330,6 +449,9 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
             , String titleItemNameText, Component titleMiddleComponent, String titleEndText)
     {
         setDefaultItemNames();  // Set general default names
+        if (item instanceof HasItemType)
+        headerDevider.getStyle().set("background-color", VzmFormatUtils.getItemTypeColorBrighter(((HasItemType)item).getTyp()));
+
         currentOperation = operation;
         currentItem = item;
 
@@ -340,27 +462,18 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 //            titleItemNameText = ItemNames.getNomS(((HasItemType) currentItem).getTyp());
         }
 
-        if ((null == titleEndText) && (currentItem instanceof HasModifDates)) {
-            if (currentOperation == Operation.ADD) {
-                titleEndText = "";
-            } else {
-                LocalDate dateCreate = ((HasModifDates) currentItem).getDateCreate();
-                String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
-                LocalDateTime dateTimeUpdate = ((HasModifDates) currentItem).getDatetimeUpdate();
-                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleModifDateFormatter);
-                titleEndText = "[ Vytvořeno: " + dateCreateStr + ", Poslední změna: " + dateUpdateStr + " ]";
-            }
-        }
+////        dialogHeader.setText(buildDialogTitle(currentOperation));
+        mainTitle.setText(currentOperation.getDialogTitle(getItemName(currentOperation), itemGender));
 
-//        titleLayout.setText(buildDialogTitle(currentOperation));
-        titleMain.setText(currentOperation.getDialogTitle(getItemName(currentOperation), itemGender));
-        titleMiddle.removeAll();
+        headerMiddleComponent.removeAll();
         if (null != titleMiddleComponent) {
-            titleMiddle.add(titleMiddleComponent);
+            headerMiddleComponent.add(titleMiddleComponent);
         }
-        titleEnd.setText(titleEndText);
 
-        if (currentOperation != Operation.ADD) {
+        headerEndComponent.setText(getHeaderEndComponentValue(titleEndText));
+
+        if (currentOperation == Operation.ADD) {
+            binder.removeBean();
             binder.readBean(currentItem);
         } else {
             binder.removeBean();
@@ -372,7 +485,7 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         }
         registrationForSave = saveButton.addClickListener(e -> saveClicked(currentOperation));
         saveButton.setText("Uložit " + itemTypeAccuS.toLowerCase());
-        saveButton.setEnabled(false);
+//        saveButton.setEnabled(false);
 
         deleteButton.setText("Zrušit " + itemTypeAccuS.toLowerCase());
         deleteButton.setEnabled(currentOperation.isDeleteEnabled());
@@ -400,8 +513,26 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
             case ADD : return itemTypeNomS;
             case EDIT : return itemTypeGenS;
             case DELETE : return itemTypeAccuS;
+            case FAKTUROVAT: return itemTypeAccuS;
+            case EXPORT : return itemTypeAccuS;
             default : return itemTypeNomS;
         }
+    }
+
+    private String getHeaderEndComponentValue(final String titleEndText) {
+        String value = "";
+        if ((null == titleEndText) && (currentItem instanceof HasModifDates)) {
+            if (currentOperation == Operation.ADD) {
+                value = "";
+            } else {
+                LocalDate dateCreate = ((HasModifDates) currentItem).getDateCreate();
+                String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
+                LocalDateTime dateTimeUpdate = ((HasModifDates) currentItem).getDatetimeUpdate();
+                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleModifDateFormatter);
+                value = "[ Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr + " ]";
+            }
+        }
+        return value;
     }
 
 //    private String buildDialogTitle(final Operation operation) {
@@ -426,9 +557,14 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     }
 
     private void deleteClicked() {
-        if (confirmationDialog.getElement().getParent() == null) {
-            getUI().ifPresent(ui -> ui.add(confirmationDialog));
-        }
+//        if (confirmationDialog.getElement().getParent() == null) {
+//            getUI().ifPresent(ui -> ui.add(confirmationDialog));
+//        }
+
+// TODO: to be or not to be?
+//        if (confirmDialog.getElement().getParent() == null) {
+//            getUI().ifPresent(ui -> ui.add(confirmDialog));
+//        }
         confirmDelete();
     }
 
@@ -449,9 +585,21 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
      */
     protected final void openConfirmDeleteDialog(String title, String message,
                                                  String additionalMessage) {
-        close();
-        confirmationDialog.open(title, message, additionalMessage, "Zrušit",
-                true, getCurrentItem(), this::deleteItemConfirmed, this::open);
+//        close();
+//        confirmationDialog.open(title, message, additionalMessage, "Zrušit",
+//                true, getCurrentItem(), this::deleteItemConfirmed, this::open);
+
+
+        ConfirmDialog
+                .createQuestion()
+                .withCaption(title)
+                .withMessage("Opravdu zrušit?")
+                .withOkButton(() -> {
+                        deleteItemConfirmed(getCurrentItem());
+                    }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
+                )
+                .withCancelButton(ButtonOption.caption("ZPĚT"))
+                .open();
     }
 
     /**
@@ -462,11 +610,20 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
      */
     protected void doDelete(T item) {
         itemDeleter.accept(item);
-        close();
+        this.close();
     }
 
     private void deleteItemConfirmed(T item) {
         doDelete(item);
     }
+
+    public Button getSaveButton() {
+        return saveButton;
+    }
+
+    public Button getDeleteButton() {
+        return deleteButton;
+    }
+
 
 }

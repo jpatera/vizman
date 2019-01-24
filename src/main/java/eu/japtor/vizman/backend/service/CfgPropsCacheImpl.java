@@ -40,6 +40,7 @@ public class CfgPropsCacheImpl implements CfgPropsCache {
     @Override
     public void loadPropsFromDb() {
         propList = cfgPropRepo.findAll();
+        propsByName.clear();
         for (CfgProp cfgProp : propList) {
             propsByName.put(cfgProp.getName(), cfgProp);
         }
@@ -49,5 +50,26 @@ public class CfgPropsCacheImpl implements CfgPropsCache {
     public String getValue(final String propName) {
         return propsByName.get(propName).getValue();
     }
+
+    @Override
+    public String getProjRootServer() {
+        return getValue("app.project.root.server");
+    }
+
+    @Override
+    public String getDocRootServer() {
+        return getValue("app.document.root.server");
+    }
+
+    @Override
+    public String getProjRootLocal() {
+        return getValue("app.project.root.local");
+    }
+
+    @Override
+    public String getDocRootLocal() {
+        return getValue("app.document.root.local");
+    }
+
 
 }

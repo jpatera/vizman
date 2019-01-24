@@ -10,12 +10,15 @@ public interface KzTreeAware<T extends KzTreeAware> {
     Integer getCzak();
     ItemType getTyp();
     Boolean getArch();
-    String getObjednatel();
+//    String getObjednatel();
+    Klient getKlient();
+    String getKlientName();
     String getText();
     BigDecimal getHonorar();
     Mena getMena();
-    Short getRokzak();
+    Integer getRok();
     String getSkupina();
     List<T> getNodes();
-    Integer getOverTerms();
+    long getBeforeTerms();
+    long getAfterTerms();
 }

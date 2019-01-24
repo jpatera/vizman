@@ -63,6 +63,11 @@ public class VizmanConst {
 	public static final String TAG_ZAK = "zak-list-view";
 	public static final String ROUTE_ZAK = "zak";
 
+	public static final String TITLE_KLIENT = "Klienti";
+	public static final String PAGE_TITLE_KLIENT = PAGE_TITLE_BASE + " - " + TITLE_KLIENT;
+	public static final String TAG_KLIENT = "klient-list-view";
+	public static final String ROUTE_KLIENT = "klient";
+
 	public static final String TITLE_PRUH = "Proužky";
 	public static final String ROUTE_PRUH = "pruh";
 

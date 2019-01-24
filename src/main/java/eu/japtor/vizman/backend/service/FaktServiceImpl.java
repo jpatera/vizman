@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.service;
 
+import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Fakt;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.repository.FaktRepo;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class FaktServiceImpl implements FaktService {
+public class FaktServiceImpl implements FaktService, HasLogger {
 
     private FaktRepo faktRepo;
 
@@ -28,8 +29,13 @@ public class FaktServiceImpl implements FaktService {
 
     @Override
     public boolean deleteFakt(Fakt fakt) {
-        new OkDialog().open("Rušení fakturací není implementováno", "", "");
-        return false;
+        try {
+            faktRepo.delete(fakt);
+        } catch (Exception e) {
+            getLogger().error("Error while deleting subdodavka", e);
+            return false;
+        }
+        return true;
     }
 
     @Override

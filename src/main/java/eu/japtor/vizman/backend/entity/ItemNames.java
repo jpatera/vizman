@@ -72,14 +72,34 @@ public class ItemNames {
         itemGenderMap.put(ItemType.REZ, GrammarGender.FEMININE);
 
         Map<GrammarShapes, String>itemFaktNameMap = new HashMap<>();
-        itemFaktNameMap.put(GrammarShapes.NOM_S, "Fakturace");
-        itemFaktNameMap.put(GrammarShapes.NOM_P, "Fakturace");
-        itemFaktNameMap.put(GrammarShapes.GEN_S, "Fakturace");
-        itemFaktNameMap.put(GrammarShapes.GEN_P, "Fakturací");
-        itemFaktNameMap.put(GrammarShapes.ACCU_S, "Fakturaci");
-        itemFaktNameMap.put(GrammarShapes.ACCU_P, "Fakturace");
+        itemFaktNameMap.put(GrammarShapes.NOM_S, "Fakturační záznam");
+        itemFaktNameMap.put(GrammarShapes.NOM_P, "Fakturační záznamy");
+        itemFaktNameMap.put(GrammarShapes.GEN_S, "Fakturačního záznamu");
+        itemFaktNameMap.put(GrammarShapes.GEN_P, "Fakturačních záznamů");
+        itemFaktNameMap.put(GrammarShapes.ACCU_S, "Fakturační záznam");
+        itemFaktNameMap.put(GrammarShapes.ACCU_P, "Fakturační záznamy");
         itemNameMaps.put(ItemType.FAKT, itemFaktNameMap);
-        itemGenderMap.put(ItemType.FAKT, GrammarGender.FEMININE);
+        itemGenderMap.put(ItemType.FAKT, GrammarGender.MASCULINE);
+
+        Map<GrammarShapes, String>itemKlientNameMap = new HashMap<>();
+        itemKlientNameMap.put(GrammarShapes.NOM_S, "Klient");
+        itemKlientNameMap.put(GrammarShapes.NOM_P, "Klienti");
+        itemKlientNameMap.put(GrammarShapes.GEN_S, "Klienta");
+        itemKlientNameMap.put(GrammarShapes.GEN_P, "Klientů");
+        itemKlientNameMap.put(GrammarShapes.ACCU_S, "Klienta");
+        itemKlientNameMap.put(GrammarShapes.ACCU_P, "Klienty");
+        itemNameMaps.put(ItemType.KLI, itemKlientNameMap);
+        itemGenderMap.put(ItemType.KLI, GrammarGender.MASCULINE);
+
+//        Map<GrammarShapes, String>itemFaktNameMap = new HashMap<>();
+//        itemFaktNameMap.put(GrammarShapes.NOM_S, "Fakturace");
+//        itemFaktNameMap.put(GrammarShapes.NOM_P, "Fakturace");
+//        itemFaktNameMap.put(GrammarShapes.GEN_S, "Fakturace");
+//        itemFaktNameMap.put(GrammarShapes.GEN_P, "Fakturací");
+//        itemFaktNameMap.put(GrammarShapes.ACCU_S, "Fakturaci");
+//        itemFaktNameMap.put(GrammarShapes.ACCU_P, "Fakturace");
+//        itemNameMaps.put(ItemType.FAKT, itemFaktNameMap);
+//        itemGenderMap.put(ItemType.FAKT, GrammarGender.FEMININE);
     }
 
     @Function

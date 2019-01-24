@@ -2,10 +2,10 @@ package eu.japtor.vizman.backend.service;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
-import eu.japtor.vizman.app.HasLogger;
-import eu.japtor.vizman.backend.entity.Kont;
-import eu.japtor.vizman.backend.repository.KontRepo;
-import eu.japtor.vizman.ui.components.OkDialog;
+import eu.japtor.vizman.backend.entity.Klient;
+import eu.japtor.vizman.backend.entity.Role;
+import eu.japtor.vizman.backend.repository.KlientRepo;
+import eu.japtor.vizman.backend.repository.RoleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
@@ -14,18 +14,18 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
-public class KontServiceImpl extends AbstractSortableService implements KontService, HasLogger {
+public class KlientServiceImpl  extends AbstractSortableService implements KlientService {
 
-    private final KontRepo kontRepo;
     private static final List<QuerySortOrder> DEFAULT_SORT_ORDER =
-            Collections.singletonList(new QuerySortOrder("czak", SortDirection.ASCENDING));
+            Collections.singletonList(new QuerySortOrder("name", SortDirection.ASCENDING));
 
     @Autowired
-    public KontServiceImpl(KontRepo kontRepo) {
-        super();
-        this.kontRepo = kontRepo;
-    }
+    KlientRepo klientRepo;
 
+//    @Autowired
+//    public KlientServiceImpl() {
+//        super();
+//    }
 
     @Override
     public List<QuerySortOrder> getDefaultSortOrders() {
@@ -33,77 +33,30 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
-    public Kont getById(Long id) {
-        return kontRepo.getOne(id);
+    public Klient fetchKlientByName(String name) {
+        return null;
     }
 
     @Override
-    public Kont getByCkont(String ckont) {
-        return kontRepo.findTopByCkontIgnoreCase(ckont);
-    }
-
-    @Override
-    public Kont getByText(String text) {
-        return kontRepo.findTopByTextIgnoreCase(text);
-    }
-
-    @Override
-    public Kont getByFolder(String folder) {
-        return kontRepo.findTopByFolderIgnoreCase(folder);
-    }
-
-    @Override
-    public Kont getByObjednatel(String objednatel) {
-        return kontRepo.findTopByObjednatelIgnoreCase(objednatel);
-    }
-
-    @Override
-    public List<Kont> fetchAll() {
-        return kontRepo.findAllByOrderByCkontDesc();
-    }
-
-    @Override
-    public List<Kont> fetchHavingSomeZaksActive() {
-//        return kontRepo.findByArchTrueOrderByCkontDesc();
-        return kontRepo.findHavingSomeZaksActive();
-    }
-
-    @Override
-    public List<Kont> fetchHavingAllZaksArchived() {
-        return kontRepo.findHavingAllZaksArchived();
-
-
-//        return kontRepo.findByArchFalseOrderByCkontDesc();
-//
-//        QProduct qProduct = QProduct.product;
-//        BooleanExpression predicate = qProduct.type.eq("pizza")
-//                .and((qProduct.actualPrice.subtract(qProduct.planPrice)).gt(20L));
-//
-//        List<Kont> konts = kontRepo.findAll(predicate, pageable);
-//        List<Kont> konts = productRepository.findAll(predicate, pageable);
-//        return ...;
+    public List<Klient> fetchAll() {
+        return klientRepo.findAllByOrderByName();
     }
 
     @Override
     public long countAll() {
-        return kontRepo.count();
+        return klientRepo.count();
     }
 
     @Override
-    public Kont saveKont(Kont kont) {
-        return kontRepo.save(kont);
+    public Klient saveKlient(Klient klient) {
+        return klientRepo.saveAndFlush(klient);
     }
 
     @Override
-    public boolean deleteKont(Kont kont) {
-        try {
-            kontRepo.delete(kont);
-        } catch (Exception e) {
-            getLogger().error("Error while deleting kontrakt", e);
-            return false;
-        }
-        return true;
+    public void deleteKlient(Klient klient) {
+        klientRepo.deleteById(klient.getId());
     }
+
 
     /**
      * Fetches the users whose name matches the given filter text.
@@ -116,9 +69,9 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
      * @return          the list of matching perosns
      */
     @Override
-    public List<Kont> fetchBySearchFilter(String searchString, List<QuerySortOrder> sortOrders) {
+    public List<Klient> fetchBySearchFilter(String searchString, List<QuerySortOrder> sortOrders) {
         if (searchString == null) {
-            return kontRepo.findAll(mapSortOrdersToSpring(sortOrders));
+            return klientRepo.findAll(mapSortOrdersToSpring(sortOrders));
         } else {
             String likeFilter = "%" + searchString.toLowerCase() + "%";
 
@@ -129,7 +82,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
                     .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
                     .withIgnoreNullValues();
 
-            return kontRepo.findByObjednatelLikeIgnoreCase(likeFilter, mapSortOrdersToSpring(sortOrders));
+            return klientRepo.findByNameLikeIgnoreCase(likeFilter, mapSortOrdersToSpring(sortOrders));
 
             // Make a copy of each matching item to keep entities and DTOs separated
             //        return personRepo.findAllByUsername(filter).stream()
@@ -151,7 +104,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
             // Make a copy of each matching item to keep entities and DTOs separated
             //        return personRepo.findAllByUsername(filter).stream()
-            return kontRepo.countByObjednatelLikeIgnoreCase(likeFilter);
+            return klientRepo.countByNameLikeIgnoreCase(likeFilter);
 
 //            return fetchAll().stream()
 //                    //                .filter(c -> c.getUsername().toLowerCase().contains(normalizedFilter))
@@ -161,5 +114,4 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 //                    .collect(Collectors.toList());
         }
     }
-
 }

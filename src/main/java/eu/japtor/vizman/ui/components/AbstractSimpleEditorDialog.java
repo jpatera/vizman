@@ -203,7 +203,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
     /**
      * Opens the given item for editing in the dialog.
      */
-    private void openInternal(
+    protected void openInternal(
             T item
             , Operation operation
             , String titleMainText
@@ -226,7 +226,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 //            } else {
             titleMainTextInternal =
                     operation.getTitleOperName(GrammarGender.FEMININE)
-                    + ItemNames.getNomS(ItemType.UNKNOWN);
+                    + " " + ItemNames.getGenS(ItemType.UNKNOWN);
         } else {
             titleMainTextInternal = titleMainText;
         }

@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
@@ -9,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "FAKT")
-public class Fakt extends AbstractGenIdEntity implements HasModifDates {
+public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemType {
 
     @Enumerated(EnumType.STRING)
     @Basic
@@ -56,12 +57,13 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates {
 
     }
 
-    public Fakt(final Zak zakParent, final ItemType itemType) {
-        this.zak = zakParent;
+    public Fakt(final ItemType itemType, final Integer cfakt, final Zak zakParent) {
         this.typ = itemType;
-        this.plneni = BigDecimal.valueOf(0);
-        this.castka = BigDecimal.valueOf(0);
-        this.zaklad = BigDecimal.valueOf(0);
+        this.cfakt = cfakt;
+        this.zak = zakParent;
+//        this.plneni = BigDecimal.valueOf(0);
+//        this.castka = BigDecimal.valueOf(0);
+//        this.zaklad = BigDecimal.valueOf(0);
     }
 
     public ItemType getTyp() {
@@ -132,6 +134,10 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates {
         this.dateVystav = dateVystav;
     }
 
+    public String getDateVystavStr() {
+        return null == dateVystav ? null : dateVystav.toString();
+    }
+
 
     public LocalDateTime getDateTimeExport() {
         return dateTimeExport;
@@ -144,7 +150,6 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates {
     public String getDateTimeExportStr() {
         return null == dateTimeExport ? null : dateTimeExport.toString();
     }
-
 
     public LocalDate getDateCreate() {
         return dateCreate;
@@ -175,5 +180,52 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates {
 
     public void setZak(Zak zak) {
         this.zak = zak;
+    }
+
+    @Transient
+    public Integer getCzak() {
+        return null == zak ? null : zak.getCzak();
+    }
+
+    @Transient
+    public String getZakEvid() {
+        return getCkont() + " / " + getCzak()
+                + (null == getZak().getText() ? "" : " , " + getZak().getText());
+    }
+
+    @Transient
+    public BigDecimal getZakHonorar() {
+        return null == zak ? BigDecimal.ZERO : zak.getHonorar();
+    }
+
+    @Transient
+    public String getCkont() {
+        return null == zak ? "" : zak.getCkont();
+    }
+
+    @Transient
+    public boolean isFaktBefore() {
+        return ((null == getDateVystav())
+                && (null != getDateDuzp())
+                && (getDateDuzp().isAfter(LocalDate.now())));
+    }
+
+    @Transient
+    public boolean isFaktAfter() {
+        return ((null == getDateVystav())
+                && (null != getDateDuzp())
+                && (getDateDuzp().isBefore(LocalDate.now().plusDays(1))));
+    }
+
+    @Transient
+    public boolean isFakturovano() {
+        return null != getCastka() && getCastka().compareTo(BigDecimal.ZERO) > 0;
+    }
+
+    @Transient
+    public boolean canFakturovat() {
+        return (null != getDateDuzp()
+                && (null != getPlneni() && getPlneni().compareTo(BigDecimal.ZERO) > 0)
+                && StringUtils.isNotBlank(getText()));
     }
 }

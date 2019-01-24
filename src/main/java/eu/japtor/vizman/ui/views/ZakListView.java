@@ -109,13 +109,17 @@ public class ZakListView extends VerticalLayout implements BeforeEnterObserver {
         add(container);
     }
 
-    private void openDir(String path) {
-        try {
-            Runtime.getRuntime().exec("explorer.exe /select," + path);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void openDir(String path) {
+//        try {
+////            Runtime.getRuntime().exec("explorer.exe /select," + path);
+//            ProcessBuilder pb = new ProcessBuilder("explorer.exe", "/select," + path);
+//            pb.redirectError();
+//            pb.start();
+////            Process proc = pb.start();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     private void updateViewContent() {
         List<Zak> zaks = zakRepo.findAll();

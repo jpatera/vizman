@@ -6,4 +6,11 @@ public interface CfgPropsCache {
 
     void loadPropsFromDb();
     String getValue(final String propName);
+
+    String getDocRootServer();
+    String getProjRootServer();
+    String getDocRootLocal();
+    String getProjRootLocal();
+
+
 }

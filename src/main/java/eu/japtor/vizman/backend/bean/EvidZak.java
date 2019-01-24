@@ -7,12 +7,14 @@ public class EvidZak implements java.io.Serializable {
     Integer czak;
     String text;
     String folder;
+    String kontFolder;
 
-    public EvidZak(Long kontId, Integer czak, String text, String folder) {
+    public EvidZak(Long kontId, Integer czak, String text, String folder, String kontFolder) {
         this.kontId = kontId;
         this.czak = czak;
         this.text = text;
         this.folder = folder;
+        this.kontFolder = kontFolder;
     }
 
     public Long getKontId() {
@@ -46,4 +48,13 @@ public class EvidZak implements java.io.Serializable {
     public void setFolder(String folder) {
         this.folder = folder;
     }
+
+    public String getKontFolder() {
+        return kontFolder;
+    }
+
+    public void setKontFolder(String kontFolder) {
+        this.kontFolder = kontFolder;
+    }
+
 }

@@ -2,6 +2,7 @@ package eu.japtor.vizman.backend.utils;
 
 import eu.japtor.vizman.backend.service.CfgPropsCache;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -52,7 +53,10 @@ public class VzmFileUtils {
     }
 
     public static String NormalizeDirnamesAndJoin(final String dirname1, final String dirname2) {
-        return normalizeDirname(dirname1) + "__" + normalizeDirname(dirname2);
+        String dn1 = normalizeDirname(dirname1);
+        String dn2 = normalizeDirname(dirname2);
+        String devider = StringUtils.isBlank(dn2) && StringUtils.isBlank(dn2) ? "" : "__";
+        return dn1 + devider + dn2;
     }
 
 //    public static Path getKontDocPath(final String docRoot, final String kontFolder) {
@@ -62,28 +66,34 @@ public class VzmFileUtils {
 //        return path;
 //    }
 
+//    private String getDocRootServer() {
+//        return cfgPropsCache.getValue("app.document.root.server");
+//    }
 
+//    private String getProjRootServer() {
+//        return cfgPropsCache.getValue("app.project.root.server");
+//    }
 
     static List<ProjFolder> rootZakProjFolders;
     static List<ProjFolder> rootKontProjFolders = new ArrayList<>();
 
-    static {
-
-        ProjFolder folderInzenyring = new ProjFolder(null, "INZENYRING");
-        ProjFolder folderOrg = new ProjFolder(null, "ORG");
-
-        List<ProjFolder> orgSubFolders = new ArrayList<>();
-        orgSubFolders.add(new ProjFolder(folderOrg, "1_SEZNAMY"));
-        orgSubFolders.add(new ProjFolder(folderOrg, "2_TEXTY_PROJEKTU"));
-        orgSubFolders.add(new ProjFolder(folderOrg, "3_PRIPOMINKY"));
-        orgSubFolders.add(new ProjFolder(folderOrg, "4_ZAZNAMY"));
-
-        folderOrg.setChildFolders(orgSubFolders);
-
-        List<ProjFolder> rootProjFolders = new ArrayList<ProjFolder>();
-        rootProjFolders.add(folderInzenyring);
-        rootProjFolders.add(folderOrg);
-    }
+//    static {
+//
+//        ProjFolder folderInzenyring = new ProjFolder(null, "INZENYRING");
+//        ProjFolder folderOrg = new ProjFolder(null, "ORG");
+//
+//        List<ProjFolder> orgSubFolders = new ArrayList<>();
+//        orgSubFolders.add(new ProjFolder(folderOrg, "1_SEZNAMY"));
+//        orgSubFolders.add(new ProjFolder(folderOrg, "2_TEXTY_PROJEKTU"));
+//        orgSubFolders.add(new ProjFolder(folderOrg, "3_PRIPOMINKY"));
+//        orgSubFolders.add(new ProjFolder(folderOrg, "4_ZAZNAMY"));
+//
+//        folderOrg.setChildFolders(orgSubFolders);
+//
+//        List<ProjFolder> rootProjFolders = new ArrayList<ProjFolder>();
+//        rootProjFolders.add(folderInzenyring);
+//        rootProjFolders.add(folderOrg);
+//    }
 
 
     static class ProjFolder {
@@ -135,14 +145,18 @@ public class VzmFileUtils {
 
     public static Path getKontProjRootPath(String projRoot, String kontFolder) {
         return Paths.get(
-                null == projRoot ? "###-NOT-SET-KONT-PROJ-ROOT-###" : projRoot
+                null == projRoot ? "###-NOT-SET-PROJ-ROOT-###" : projRoot
                 , null == kontFolder ? "###-NOT-SET-KONT-PROJ-FOLDER-###" : kontFolder
         );
     }
 
-    public static boolean createKontProjDirs(String projRoot, String kontFolder) {
+    public static boolean createKontProjDirs(String projRoot, String kontFolderNew) {
 
-        Path kontDirProjRootPath = getKontDocRootPath(projRoot, kontFolder);
+        if (StringUtils.isBlank(kontFolderNew)) {
+            return false;
+        }
+
+        Path kontDirProjRootPath = getKontDocRootPath(projRoot, kontFolderNew);
         if (!kontDirProjRootPath.toFile().exists()) {
             try {
                 Files.createDirectories(kontDirProjRootPath);
@@ -167,14 +181,18 @@ public class VzmFileUtils {
 
     public static Path getKontDocRootPath(String docRoot, String kontFolder) {
         return Paths.get(
-                null == docRoot ? "###-NOT-SET-KONT-DOC-ROOT-###" : docRoot
+                null == docRoot ? "###-NOT-SET-DOC-ROOT-###" : docRoot
                 , null == kontFolder ? "###-NOT-SET-KONT-DOC-FOLDER-###" : kontFolder
         );
     }
 
-    public static boolean createKontDocDirs(String docRoot, String kontFolder) {
+    public static boolean createKontDocDirs(String docRoot, String kontFolderNew) {
 
-        Path kontDocRootPath = getKontDocRootPath(docRoot, kontFolder);
+        if (StringUtils.isBlank(kontFolderNew)) {
+            return false;
+        }
+
+        Path kontDocRootPath = getKontDocRootPath(docRoot, kontFolderNew);
         if (!kontDocRootPath.toFile().exists()) {
             try {
                 Files.createDirectories(kontDocRootPath);
@@ -201,25 +219,69 @@ public class VzmFileUtils {
 
     public static Path getZakProjRootPath(String projRoot, String kontFolder, String zakFolder) {
         return Paths.get(
-                null == projRoot ? "###-NOT-SET-KONT-PROJ-ROOT-###" : projRoot
+                null == projRoot ? "###-NOT-SET-PROJ-ROOT-###" : projRoot
                 , null == kontFolder ? "###-NOT-SET-KONT-PROJ-FOLDER-###" : kontFolder
                 , null == zakFolder ? "###-NOT-SET-ZAK-PROJ-FOLDER-###" : zakFolder
         );
     }
 
-    public static boolean createZakProjDirs(String projRoot, String kontFolder, String zakFolder) {
+    public static boolean createZakProjDirs(String projRoot, String kontFolder, String zakFolderNew) {
 
-        Path zakProjRootPath = getZakProjRootPath(projRoot, kontFolder, zakFolder);
+        if (StringUtils.isBlank(kontFolder) || StringUtils.isBlank(zakFolderNew)) {
+            return false;
+        }
+
+        Path zakProjRootPath = getZakProjRootPath(projRoot, kontFolder, zakFolderNew);
         if (!zakProjRootPath.toFile().exists()) {
             try {
                 Files.createDirectories(zakProjRootPath);
                 Path inzenyringPath = Paths.get(zakProjRootPath.toString(), "INZENYRING");
                 Files.createDirectories(inzenyringPath);
+
                 Path orgPath = Paths.get(zakProjRootPath.toString(), "ORG");
                 Files.createDirectories(orgPath);
+                Path orgSeznamyPath = Paths.get(orgPath.toString(), "1_SEZNAMY");
+                Files.createDirectories(orgSeznamyPath);
+                Path orgTextyPath = Paths.get(orgPath.toString(), "2_TEXTY_PROJEKTU");
+                Files.createDirectories(orgTextyPath);
+                Path pripominkyPath = Paths.get(orgPath.toString(), "3_PRIPOMINKY");
+                Files.createDirectories(pripominkyPath);
+                Path zaznamyPath = Paths.get(orgPath.toString(), "3_ZAZNAMY");
+                Files.createDirectories(zaznamyPath);
+
                 return true;
             } catch (IOException ioExceptionObj) {
-                System.out.println("Problem Occured While Creating The Directory Structure = " + ioExceptionObj.getMessage());
+                System.out.println("Problem occured while creating the directory structure = " + ioExceptionObj.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public static boolean renameKontDocRoot(String docRoot, String kontFolderNew, String kontFolderOrig) {
+        Path origKontDocRootPath = getKontDocRootPath(docRoot, kontFolderOrig);
+        Path newKontDocRootPath = getKontDocRootPath(docRoot, kontFolderNew);
+        File origKontDocRootDir = origKontDocRootPath.toFile();
+        if (origKontDocRootDir.exists() && origKontDocRootDir.isDirectory()) {
+            try {
+                Files.move(origKontDocRootPath, newKontDocRootPath);
+                return true;
+            } catch (IOException ioExceptionObj) {
+                System.out.println("Problem occurred while renaming kontrakt document root dir = " + ioExceptionObj.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public static boolean renameKontProjRoot(String projRoot, String kontFolderNew, String kontFolderOrig) {
+        Path origKontProjRootPath = getKontProjRootPath(projRoot, kontFolderOrig);
+        Path newKontProjRootPath = getKontDocRootPath(projRoot, kontFolderNew);
+        File origKontProjRootDir = origKontProjRootPath.toFile();
+        if (origKontProjRootDir.exists() && origKontProjRootDir.isDirectory()) {
+            try {
+                Files.move(origKontProjRootPath, newKontProjRootPath);
+                return true;
+            } catch (IOException ioExceptionObj) {
+                System.out.println("Problem occurred while renaming kontrakt project root dir = " + ioExceptionObj.getMessage());
             }
         }
         return false;
@@ -244,9 +306,13 @@ public class VzmFileUtils {
         );
     }
 
-    public static boolean createZakDocDirs(String docRoot, String kontFolder, String zakFolder) {
+    public static boolean createZakDocDirs(String docRoot, String kontFolder, String zakFolderNew) {
 
-        Path zakDocRootPath = getZakDocRootPath(docRoot, kontFolder, zakFolder);
+        if (StringUtils.isBlank(kontFolder) || StringUtils.isBlank(zakFolderNew)) {
+            return false;
+        }
+
+        Path zakDocRootPath = getZakDocRootPath(docRoot, kontFolder, zakFolderNew);
         if (!zakDocRootPath.toFile().exists()) {
             try {
                 Files.createDirectories(zakDocRootPath);
@@ -256,12 +322,40 @@ public class VzmFileUtils {
                 Files.createDirectories(fakturyPath);
                 return true;
             } catch (IOException ioExceptionObj) {
-                System.out.println("Problem Occured While Creating The Directory Structure = " + ioExceptionObj.getMessage());
+                System.out.println("Problem occured while creating zakazka directory structure = " + ioExceptionObj.getMessage());
             }
         }
         return false;
     }
 
+    public static boolean renameZakDocRoot(String docRoot, String kontFolder, String zakFolderNew, String zakFolderOrig) {
+        Path origZakDocRootPath = getZakDocRootPath(docRoot, kontFolder, zakFolderOrig);
+        Path newZakDocRootPath = getZakDocRootPath(docRoot, kontFolder, zakFolderNew);
+        File origZakDocRootDir = origZakDocRootPath.toFile();
+        if (origZakDocRootDir.exists() && origZakDocRootDir.isDirectory()) {
+            try {
+                Files.move(origZakDocRootPath, newZakDocRootPath);
+                return true;
+            } catch (IOException ioExceptionObj) {
+                System.out.println("Problem occured while renaming zakazka document root dir = " + ioExceptionObj.getMessage());
+            }
+        }
+        return false;
+    }
 
+    public static boolean renameZakProjRoot(String projRoot, String kontFolder, String zakFolderNew, String zakFolderOrig) {
+        Path origZakProjRootPath = getZakProjRootPath(projRoot, kontFolder, zakFolderOrig);
+        Path newZakProjRootPath = getZakProjRootPath(projRoot, kontFolder, zakFolderNew);
+        File origZakProjRootDir = origZakProjRootPath.toFile();
+        if (origZakProjRootDir.exists() && origZakProjRootDir.isDirectory()) {
+            try {
+                Files.move(origZakProjRootPath, newZakProjRootPath);
+                return true;
+            } catch (IOException ioExceptionObj) {
+                System.out.println("Problem occured while renaming zakazka project root dir = " + ioExceptionObj.getMessage());
+            }
+        }
+        return false;
+    }
 
 }

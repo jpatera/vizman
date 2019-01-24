@@ -1,7 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -42,8 +41,8 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     private String skupina;
 
     @Basic
-    @Column(name = "ROKZAK")
-    private Short rokzak;
+    @Column(name = "ROK")
+    private Integer rok;
 
     @Basic
     @Column(name = "ROKMESZAD")
@@ -88,14 +87,12 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     private Kont kont;
 
     @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER)
+    @OrderBy("cfakt DESC")
     private List<Fakt> fakts = new ArrayList<>();
 
     @OneToMany(mappedBy = "zak")
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<ZakDoc> zakDocs = new ArrayList<>();
-
-
-
 
     @Basic
     @Column(name = "R_ZAL")
@@ -162,12 +159,13 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
 //        this.typDokladu = typDokladu;
 //    }
 
-    public Short getRokzak() {
-        return rokzak;
+    @Override
+    public Integer getRok() {
+        return rok;
     }
 
-    public void setRokzak(Short rokzak) {
-        this.rokzak = rokzak;
+    public void setRok(Integer rokzak) {
+        this.rok = rokzak;
     }
 
     public String getRokmeszad() {
@@ -324,9 +322,9 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     public List<Fakt> getFakts() {
         return fakts;
     }
-//    public void setFakts(List<Fakt> fakts) {
-//        this.fakts = fakts;
-//    }
+    public void setFakts(List<Fakt> fakts) {
+        this.fakts = fakts;
+    }
 
 
     @Transient
@@ -336,25 +334,47 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
 
     @Transient
     public String getCkont() {
-        return getKont().getCkont();
+        return null == kont ? "" : kont.getCkont();
     }
 
     @Transient
-    private Predicate<Fakt> overTermsPredicate = fakt ->
-            ((null != fakt.getDateVystav()) &&  (fakt.getDateDuzp().isAfter(LocalDate.now())));
+    public String getKontFolder() {
+        return null == kont ? null : kont.getFolder();
+    }
 
     @Transient
-    public Integer getOverTerms() {
-        long over = getFakts().stream()
-                .filter(overTermsPredicate).count();
-        return new Integer((int)over);
+    public String getKlientName() {
+        return null == kont ? "" : kont.getKlientName();
+    }
+
+    @Transient
+    private Predicate<Fakt> afterTermsPredicate = fakt ->
+            ((null == fakt.getDateVystav()) && (null != fakt.getDateDuzp()) && (  fakt.getDateDuzp().plusDays(1).isBefore(LocalDate.now())));
+
+
+    @Transient
+    private Predicate<Fakt> beforeTermsPredicate = fakt ->
+            ((null == fakt.getDateVystav()) && (null != fakt.getDateDuzp()) && (fakt.getDateDuzp().isAfter(LocalDate.now())));
+
+    @Transient
+    @Override
+    public long getBeforeTerms() {
+        return getFakts().stream()
+                .filter(beforeTermsPredicate).count();
+    }
+
+    @Transient
+    @Override
+    public long getAfterTerms() {
+        return getFakts().stream()
+                .filter(afterTermsPredicate).count();
     }
 
     @Transient
     public Integer getLastCfakt() {
         return getFakts().stream()
                 .mapToInt(fakt -> fakt.getCfakt())
-                .max().orElse(1);
+                .max().orElse(0);
     }
 
     @Transient
@@ -369,8 +389,6 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-
-
     public Zak() {
         this(ItemType.ZAK, 9999, null);
     }
@@ -379,6 +397,7 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         super();
         this.typ = typ;
         this.czak = czak;
+        this.rok = LocalDate.now().getYear();
         this.uuid = UUID.randomUUID();
         this.honorar = BigDecimal.valueOf(0);
         this.kont = parentKont;
@@ -405,9 +424,14 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
 //        // Do nothing
 //    }
 
+//    @Override
+//    public String getObjednatel() {
+//        return "";
+//    }
+
     @Override
-    public String getObjednatel() {
-        return "";
+    public Klient getKlient() {
+        return null;
     }
 
     @Transient
@@ -415,7 +439,7 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         int over = 0;
         List<Fakt> fakts = getFakts();
         for (Fakt fakt : fakts) {
-            if (fakt.getDateDuzp().isAfter(LocalDate.now())) {
+            if (null != fakt.getDateDuzp() && fakt.getDateDuzp().isAfter(LocalDate.now())) {
                 over++;
             }
         }

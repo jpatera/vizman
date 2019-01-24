@@ -22,9 +22,11 @@ import eu.japtor.vizman.ui.components.NavigationBar;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import eu.japtor.vizman.ui.exceptions.AccessDeniedException;
+import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
+import java.util.Locale;
 
 
 //@Theme(Lumo.class)    // Lumo is default
@@ -51,7 +53,7 @@ public class MainView extends VerticalLayout implements RouterLayout, BeforeEnte
     public MainView() {
 
         System.out.println("###  MainView constructor");
-
+        ConfirmDialog.setDialogSessionLanguage(Locale.getDefault());
 //        addClassName("main-layout");
 
         this.setWidth("100%");

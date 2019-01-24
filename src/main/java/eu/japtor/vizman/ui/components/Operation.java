@@ -11,7 +11,9 @@ public enum Operation {
     ADD("Nový", "Nová", "Nové", "Přidat", "zadat", false),
     EDIT("Editace", "Editace", "Editace", "Změnit", "editovat", true),
     DELETE("Zrušení", "Zrušení", "Zrušení", "Odebrat", "zrušit", true),
-    VYSTAV("Vystavení", "Vystavení", "Vystavení", "Vystavit", "vystavit", false);
+    FAKTUROVAT("Vystavení", "Vystavení", "Vystavení", "Vystavit", "vystavit", true),
+    STORNO("Storno", "Storno", "Storno", "Stornovat", "stornovat", true),
+    EXPORT("Export", "Export", "Export", "Exportovat", "exportovat", false);
 
     private final String titleOperNameForMasculine;
     private final String titleOperNameForFeminine;

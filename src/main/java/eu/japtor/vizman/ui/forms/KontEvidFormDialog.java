@@ -6,6 +6,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import eu.japtor.vizman.backend.bean.EvidKont;
+import eu.japtor.vizman.backend.bean.EvidZak;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.utils.VzmFileUtils;
 import eu.japtor.vizman.ui.components.AbstractSimpleEditorDialog;
@@ -28,18 +29,15 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
     private String folderOrig;
 
     private KontService kontService;
-    private String kontDocRoot;
-    private String kontProjRoot;
+    private String docRoot;
+    private String projRoot;
 
 
-    public KontEvidFormDialog(BiConsumer<EvidKont, Operation> itemSaver,
-                              KontService kontService, String kontDocRoot, String kontProjRoot)
+    public KontEvidFormDialog(BiConsumer<EvidKont, Operation> itemSaver, KontService kontService)
     {
         super(itemSaver);
         this.setWidth("750px");
         this.kontService = kontService;
-        this.kontDocRoot = kontDocRoot;
-        this.kontProjRoot = kontProjRoot;
 
         getFormLayout().add(
                 initCkontField()
@@ -47,6 +45,7 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
                 , initFolderField()
                 , initInfoField()
         );
+        bindCkontField();
 
         setupEventListeners();
     }
@@ -103,18 +102,88 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
 //    public void onValueChange(boolean isDirty) {
 //        setSaveDisabled(!isDirty);
 //    }
+
+
+    public void openDialog(EvidKont evidKont, Operation operation,
+                           String dialogTitle,
+                           String docRoot, String projRoot)
+    {
+        this.docRoot = docRoot;
+        this.projRoot = projRoot;
+
+        ckontOrig = evidKont.getCkont();
+        textOrig = evidKont.getText();
+        folderOrig = evidKont.getFolder();
+
+        this.openInternal(
+                evidKont
+                , operation
+                , dialogTitle
+                , null
+                , null
+//            , titleMainText
+//            , Component titleMiddleComponent
+//            , String titleEndText
+        );
+    }
+
     /**
      * Called by abstract parent dialog from its open(...) method.
      */
     @Override
     protected void openSpecific() {
-        ckontOrig = getCurrentItem().getCkont();
-        textOrig = getCurrentItem().getText();
-        folderOrig = getCurrentItem().getFolder();
+
+    }
+
+    protected void bindCkontField() {
+
+//        if (Operation.ADD == getOperation()) {
+//            getBinder().forField(ckontField)
+////                .withValidator(
+////                        ckont -> !StringUtils.isEmpty(ckont)
+////                        , "Číslo kontraktu nesmí být prázdné"
+////                )
+//                .withValidator(new StringLengthValidator(
+//                        "Číslo kontraktu musí mít mezi 3-16 znaky",
+//                        3, 16)
+//                )
+//                .withValidator(ckont ->
+////                        ((Operation.ADD == getOperation()) &&
+//                                (kontService.getByCkont(ckont) == null)
+////                        )
+//                        , "Toto číslo kontraktu již existuje, zvol jiné"
+//                )
+//                .bind(EvidKont::getCkont, EvidKont::setCkont);
+//        } else {
+            getBinder().forField(ckontField)
+//                .withValidator(
+//                        ckont -> !StringUtils.isEmpty(ckont)
+//                        , "Číslo kontraktu nesmí být prázdné"
+//                )
+//                .withValidator(new StringLengthValidator(
+//                        "Číslo kontraktu musí mít 3-16 znaků",
+//                        3, 16)
+//                )
+                .withValidator(ckont -> {return ckont.matches("^[0-9]{5}\\.[0-9]-[1-2]$"); }
+                        , "Neplatný formát. Je očekáváno [XXXXX.X-1|2].")
+                .withValidator(ckont ->
+                        ((Operation.EDIT == getOperation())
+                                && (ckont.equals(ckontOrig) || (kontService.getByCkont(ckont) == null))
+                        )
+                        ||
+                        ((Operation.ADD == getOperation())
+                                && (kontService.getByCkont(ckont) == null)
+                        )
+                        , "Toto číslo kontraktu již existuje, zvol jiné"
+                )
+                .bind(EvidKont::getCkont, EvidKont::setCkont);
+//        }
     }
 
     private Component initCkontField() {
         ckontField = new TextField("Číslo kontraktu");
+        ckontField.setRequiredIndicatorVisible(true);
+        ckontField.setPlaceholder("XXXXX.X-[1|2]");
         ckontField.addValueChangeListener(event -> {
             folderField.setValue(
                 VzmFileUtils.NormalizeDirnamesAndJoin(event.getValue(), textField.getValue())
@@ -122,33 +191,43 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
         });
         ckontField.setValueChangeMode(ValueChangeMode.EAGER);
 
-        getBinder().forField(ckontField)
-                .withValidator(
-                        ckont -> !StringUtils.isEmpty(ckont)
-                        , "Číslo kontraktu nesmí být prázdné"
-                )
-                .withValidator(new StringLengthValidator(
-                        "Číslo kontraktu musí mít mezi 3-16 znaky",
-                        3, 16)
-                )
-                .withValidator(ckont ->
-                    ((Operation.ADD == getOperation())
-                        && (kontService.getByCkont(ckont) == null)
-                    )
-                    ||
-                    ((Operation.EDIT == getOperation())
-                        && ((ckont.equals(ckontOrig))
-                                || (kontService.getByCkont(ckont) == null)
-                            )
-                    )
-                    , "Toto číslo kontraktu již existuje, zvol jiné"
-                )
-                .bind(EvidKont::getCkont, EvidKont::setCkont);
+//        getBinder().forField(ckontField)
+//                .withValidator(ckont -> {return ckont.matches("^[0-9]{5}\\.[0-9]-[1-2]$"); }
+//                        , "Je očekáván formát XXXXX.X-[1|2].")
+//                .bind(Kont::getCkont, Kont::setCkont);
+
+//        if (Operation.ADD == getOperation()) {
+//            // TODO: mozna zbytecne? inicializuje se v openSpecific
+//            getBinder().forField(ckontField)
+//                    .withValidator(
+//                            ckont -> !StringUtils.isEmpty(ckont)
+//                            , "Číslo kontraktu nesmí být prázdné"
+//                    )
+//                    .withValidator(new StringLengthValidator(
+//                            "Číslo kontraktu musí mít mezi 3-16 znaky",
+//                            3, 16)
+//                    )
+////                    .withValidator(ckont ->
+////                                    ((Operation.ADD == getOperation())
+////                                            && (kontService.getByCkont(ckont) == null)
+////                                    )
+////                                            ||
+////                                            ((Operation.EDIT == getOperation())
+////                                                    && ((ckont.equals(ckontOrig))
+////                                                    || (kontService.getByCkont(ckont) == null)
+////                                            )
+////                                            )
+////                            , "Toto číslo kontraktu již existuje, zvol jiné"
+////                    )
+//                    .bind(EvidKont::getCkont, EvidKont::setCkont);
+//        }
+
         return ckontField;
     }
 
     private Component initTextField() {
         textField = new TextField("Text kontraktu");
+        textField.setRequiredIndicatorVisible(true);
         textField.getElement().setAttribute("colspan", "2");
 
         textField.addValueChangeListener(event -> {
@@ -159,6 +238,11 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
         textField.setValueChangeMode(ValueChangeMode.EAGER);
 
         getBinder().forField(textField)
+                .withValidator(new StringLengthValidator(
+                        "Text kontraktu musí mít mezi 3-127 znaky",
+                        3, 127)
+                )
+
 //                .withValidator(new StringLengthValidator(
 //                        "Text kontraktu musí mít alespoň jeden znak",
 //                        1, null))
@@ -175,11 +259,49 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
         folderField.getElement().setAttribute("colspan", "2");
         getBinder().forField(folderField)
                 .withValidator(
-                        folder -> (Operation.ADD == getOperation()) && !VzmFileUtils.kontDocRootExists(kontDocRoot, folder)
-                        , "Dokumentový adresář stejného jména již existuje, změň evidenci")
+                    folder ->
+                        ((Operation.ADD == getOperation()) &&
+                                !VzmFileUtils.kontDocRootExists(docRoot, folder))
+                        ||
+                        ((Operation.EDIT == getOperation()) &&
+                                ((folder.equals(folderOrig)) || !VzmFileUtils.kontDocRootExists(docRoot, folder))
+                        )
+                    , "Dokumentový adresář kontraktu stejného jména již existuje, změň evidenci"
+                )
                 .withValidator(
-                        folder -> (Operation.ADD == getOperation()) && !VzmFileUtils.kontProjRootExists(kontProjRoot, folder)
-                        , "Projektový adresář stejného jména již existuje, změň evidenci")
+                    folder ->
+                        ((Operation.ADD == getOperation()) &&
+                                !VzmFileUtils.kontProjRootExists(projRoot, folder))
+                        ||
+                        ((Operation.EDIT == getOperation()) &&
+                                ((folder.equals(folderOrig)) ||
+                                        !VzmFileUtils.kontProjRootExists(projRoot, folder)
+                                )
+                        )
+                    , "Projektový adresář kontraktu stejného jména již existuje, změň evidenci"
+                )
+//                .withValidator(
+//                        folder ->
+//                                ((Operation.EDIT == getOperation()) &&
+//                                    ((folder.equals(folderOrig)) ||
+//                                     !VzmFileUtils.kontDocRootExists(docRoot, folder)
+//                                    )
+//                                )
+//                        , "Dokumentový adresář kontrakltu stejného jména již existuje, změň evidenci")
+//                .withValidator(
+//                        folder ->
+//                                ((Operation.EDIT == getOperation()) &&
+//                                    ((folder.equals(folderOrig)) ||
+//                                     !VzmFileUtils.kontProjRootExists(projRoot, folder)
+//                                    )
+//                                )
+//                        , "Projektový adresář kontraktu stejného jména již existuje, změň evidenci")
+
+//                        folder -> (Operation.EDIT == getOperation()) && !VzmFileUtils.kontDocRootExists(docRoot, folder)
+//                        , "Dokumentový adresář stejného jména již existuje, změň evidenci")
+//                .withValidator(
+//                        folder -> (Operation.EDIT == getOperation()) && !VzmFileUtils.kontProjRootExists(projRoot, folder)
+//                        , "Projektový adresář stejného jména již existuje, změň evidenci")
                 .bind(EvidKont::getFolder, EvidKont::setFolder);
         folderField.setReadOnly(true);
         return folderField;
@@ -187,7 +309,7 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
 
     private Component initInfoField() {
         Div infoBox = new Div();
-//        Emphasis infoText = new Emphasis("Odpovídající projektové a dokumentové adresáře budou vytvořeny/přejmenovány až při uložení celého kontraktu.");
+//        Emphasis infoText = new Emphasis("Odpovídající projektové a dokumentové adresáře...");
         infoBox.getElement().setAttribute("colspan", "2");
 //        infoBox.add(infoText);
         return infoBox;
