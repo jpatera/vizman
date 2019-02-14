@@ -4,6 +4,8 @@ import javax.persistence.*;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "DOCH")
@@ -14,15 +16,15 @@ public class Doch extends AbstractGenIdEntity {
     private String userLogin;
     private LocalDate dDate;
 
-    private Timestamp zDatCasOd;
-    private Timestamp dCasOd;
+    private LocalDateTime zDatcasod;
+    private LocalDateTime dCasOd;
     private Integer rOd;
 
-    private Timestamp zDatCasDo;
-    private Timestamp dCasDo;
+    private LocalDateTime zDatcasdo;
+    private LocalDateTime dCasDo;
     private Integer rDo;
 
-    private Time dHodin;
+    private LocalTime dHodin;
 
     private Integer cinId;
     private Integer cinPol;
@@ -30,7 +32,7 @@ public class Doch extends AbstractGenIdEntity {
     private String cinT1;
     private String cinT2;
     private String cinnost;
-    private Boolean calcPrac;
+    private Boolean calcprac;
     private String poznamka;
     private String tmp;
 
@@ -67,21 +69,21 @@ public class Doch extends AbstractGenIdEntity {
 
     @Basic
     @Column(name = "Z_DATCASOD")
-    public Timestamp getzDatCasOd() {
-        return zDatCasOd;
+    public LocalDateTime getzZDatcasod() {
+        return zDatcasod;
     }
 
-    public void setzDatCasOd(Timestamp zDatCasOd) {
-        this.zDatCasOd = zDatCasOd;
+    public void setzZDatcasod(LocalDateTime zDatCasOd) {
+        this.zDatcasod = zDatCasOd;
     }
 
     @Basic
     @Column(name = "D_CAS_OD")
-    public Timestamp getdCasOd() {
+    public LocalDateTime getDCasOd() {
         return dCasOd;
     }
 
-    public void setdCasOd(Timestamp dCasOd) {
+    public void setDCasOd(LocalDateTime dCasOd) {
         this.dCasOd = dCasOd;
     }
 
@@ -97,21 +99,21 @@ public class Doch extends AbstractGenIdEntity {
 
     @Basic
     @Column(name = "Z_DATCASDO")
-    public Timestamp getzDatCasDo() {
-        return zDatCasDo;
+    public LocalDateTime getZDatcasdo() {
+        return zDatcasdo;
     }
 
-    public void setzDatCasDo(Timestamp zDatCasDo) {
-        this.zDatCasDo = zDatCasDo;
+    public void setZDatcasdo(LocalDateTime zDatcasdo) {
+        this.zDatcasdo = zDatcasdo;
     }
 
     @Basic
     @Column(name = "D_CAS_DO")
-    public Timestamp getdCasDo() {
+    public LocalDateTime getDCasDo() {
         return dCasDo;
     }
 
-    public void setdCasDo(Timestamp dCasDo) {
+    public void setDCasDo(LocalDateTime dCasDo) {
         this.dCasDo = dCasDo;
     }
 
@@ -127,16 +129,16 @@ public class Doch extends AbstractGenIdEntity {
 
     @Basic
     @Column(name = "D_HODIN")
-    public Time getdHodin() {
+    public LocalTime getDHodin() {
         return dHodin;
     }
 
-    public void setdHodin(Time dHodin) {
+    public void setDHodin(LocalTime dHodin) {
         this.dHodin = dHodin;
     }
 
     @Basic
-    @Column(name = "CIN_ID")
+    @Column(name = "cin_id")
     public Integer getCinId() {
         return cinId;
     }
@@ -166,7 +168,7 @@ public class Doch extends AbstractGenIdEntity {
     }
 
     @Basic
-    @Column(name = "CIN_T1")
+    @Column(name = "CINT1")
     public String getCinT1() {
         return cinT1;
     }
@@ -176,7 +178,7 @@ public class Doch extends AbstractGenIdEntity {
     }
 
     @Basic
-    @Column(name = "CIN_T2")
+    @Column(name = "CINT2")
     public String getCinT2() {
         return cinT2;
     }
@@ -197,12 +199,12 @@ public class Doch extends AbstractGenIdEntity {
 
     @Basic
     @Column(name = "CALCPRAC")
-    public Boolean getCalcPrac() {
-        return calcPrac;
+    public Boolean getCalcprac() {
+        return calcprac;
     }
 
-    public void setCalcPrac(Boolean calcPrac) {
-        this.calcPrac = calcPrac;
+    public void setCalcprac(Boolean calcprac) {
+        this.calcprac = calcprac;
     }
 
     @Basic

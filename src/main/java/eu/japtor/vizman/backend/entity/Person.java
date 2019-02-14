@@ -21,31 +21,29 @@ public class Person extends AbstractGenIdEntity {
 //    public static final String ACCUSATIVE_SINGULAR = "Uživatele";
 //    public static final String ACCUSATIVE_PLURAL = "Uživatele";
 
-    //    @Column(name="STATUS")
+    @Column(name="STATUS")
     @Enumerated(EnumType.STRING)
-    private PersonStatus status = PersonStatus.NEW;
+    private PersonState state = PersonState.NEW;
 
-    //    @Column(name="USERNAME")
+    @Column(name="USERNAME")
     private String username = "";
 
-    //    @Column(name="PASSWORD")
+    @Column(name="PASSWORD")
     private String password = "";
 
-    //    @Column(name="JMENO")
+    @Column(name="JMENO")
     private String jmeno = "";
 
-    //    @Column(name="PRIJMENI")
+    @Column(name="PRIJMENI")
     private String prijmeni = "";
 
-    //    @Column(name="NASTUP")
-//    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="NASTUP")
     private LocalDate nastup;
 
-    //    @Column(name="VYSTUP")
-//    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="VYSTUP")
     private LocalDate vystup;
 
-    //    @Column(name="SAZBA")
+    @Column(name="SAZBA")
     private BigDecimal sazba = BigDecimal.ZERO;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -58,19 +56,18 @@ public class Person extends AbstractGenIdEntity {
     private Set<Role> roles;
 
 
+// -----------------------------------------------------
 
     public Person() {
         roles = new HashSet<>();
     }
 
-
-    public PersonStatus getStatus() {
-        return status;
+    public PersonState getState() {
+        return state;
     }
-    public void setStatus(PersonStatus status) {
-        this.status = status;
+    public void setState(PersonState state) {
+        this.state = state;
     }
-
 
     public String getUsername() {
         return username;

@@ -97,23 +97,18 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public Klient getKlient() {
         return klient;
     }
-
     public void setKlient(Klient klient) {
         this.klient = klient;
     }
 
+    @Transient
     public String getKlientName() {
         return null == klient ? "" : (null == klient.getName() ? "" : klient.getName());
     }
 
-
-//    @Transient
-//    private Boolean arch;
-
     public ItemType getTyp() {
         return typ;
     }
-
     public void setTyp(ItemType typ) {
         this.typ = typ;
     }
@@ -121,16 +116,13 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public String getCkont() {
         return ckont;
     }
-
     public void setCkont(String czak) {
         this.ckont = czak;
     }
 
-    @Override
     public Integer getRok() {
         return rok;
     }
-
     public void setRok(Integer rok) {
         this.rok =  rok;
     }
@@ -138,7 +130,6 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public String getText() {
         return text;
     }
-
     public void setText(String text) {
         this.text = text;
     }
@@ -146,7 +137,6 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public String getFolder() {
         return folder;
     }
-
     public void setFolder(String docdir) {
         this.folder = docdir;
     }
@@ -154,7 +144,6 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public String getInvestor() {
         return investor;
     }
-
     public void setInvestor(String investor) {
         this.investor = investor;
     }
@@ -162,7 +151,6 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public String getObjednatel() {
         return objednatel;
     }
-
     public void setObjednatel(String objednatel) {
         this.objednatel = objednatel;
     }
@@ -170,7 +158,6 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public Mena getMena() {
         return mena;
     }
-
     public void setMena(Mena mena) {
         this.mena = mena;
     }
@@ -179,7 +166,6 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public LocalDate getDateCreate() {
         return dateCreate;
     }
-
     public void setDateCreate(LocalDate dateCreate) {
         this.dateCreate = dateCreate;
     }
@@ -187,7 +173,6 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public LocalDateTime getDatetimeUpdate() {
         return datetimeUpdate;
     }
-
     public void setDatetimeUpdate(LocalDateTime datetimeUpdate) {
         this.datetimeUpdate = datetimeUpdate;
     }
@@ -196,7 +181,6 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public List<KontDoc> getKontDocs() {
         return kontDocs;
     }
-
     public void setKontDocs(List<KontDoc> kontDocs) {
         this.kontDocs = kontDocs;
     }
@@ -204,14 +188,12 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public List<Zak> getZaks() {
         return zaks;
     }
-
     public void setZaks(List<Zak> zaks) {
         this.zaks = zaks;
     }
 
-
-
 // ========================================
+
 
     public Kont() {
         super();
@@ -230,7 +212,7 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     }
 
 
-//    @Transient
+    @Transient
     @Override
     public Boolean getArch() {
         return getZaks().stream()

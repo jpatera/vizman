@@ -1,6 +1,7 @@
 package eu.japtor.vizman.backend.repository;
 
 import eu.japtor.vizman.backend.entity.Person;
+import eu.japtor.vizman.backend.entity.PersonState;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,8 @@ public interface PersonRepo extends JpaRepository<Person, Long>, PersonRepoCusto
         Person findTopByUsernameIgnoreCase(String username);
 
         List<Person> findAllByOrderByUsername();
+
+        List<Person> findByStateOrderByUsername(PersonState state);
 
 //        Page<Product> findByNameLikeIgnoreCase(String name, Pageable page);
 

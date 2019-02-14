@@ -23,7 +23,7 @@ public class Cin extends AbstractGenIdEntity {
         this.poradi = poradi;
     }
 
-    @Column(name = "CIN_T1")
+    @Column(name = "CINT1")
     public String getCinT1() {
         return cinT1;
     }
@@ -32,7 +32,7 @@ public class Cin extends AbstractGenIdEntity {
         this.cinT1 = cinT1;
     }
 
-    @Column(name = "CIN_T2")
+    @Column(name = "CINT2")
     public String getCinT2() {
         return cinT2;
     }

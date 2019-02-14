@@ -497,7 +497,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
 
 
 //    private void addStatusField() {
-//        statusField.setDataProvider(DataProvider.ofItems(PersonStatus.values()));
+//        statusField.setDataProvider(DataProvider.ofItems(PersonState.values()));
 //        getFormLayout().add(statusField);
 //        getBinder().forField(statusField)
 ////                .withConverter(

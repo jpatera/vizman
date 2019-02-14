@@ -19,6 +19,7 @@ import java.awt.*;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Locale;
@@ -34,6 +35,7 @@ public class VzmFormatUtils {
     public static final StringToBigDecimalConverter bigDecimalMoneyConverter;
     public static final StringToBigDecimalConverter bigDecimalPercentConverter;
 //    public static final StringToBigDecimalConverter integerYearConverter;
+    public final static DateTimeFormatter shortTimeFormatter = DateTimeFormatter.ofPattern("H:mm");
     public final static DateTimeFormatter basicDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public final static DateTimeFormatter basicDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 //    public final static DateTimeFormatter titleModifDateFormatter = DateTimeFormatter.ofPattern("EEEE yyyy-MM-dd HH:mm");
@@ -144,6 +146,36 @@ public class VzmFormatUtils {
             return null == year ? "" : yearFormat.format(year);
         }
     }
+
+    public static class LocalDateTimeToHhMmStringConverter implements Converter<String, LocalDateTime>, HasLogger {
+
+        private static final String DEFAULT_ERR_MSG = "Chybný formát času (je očekáváno 'HH:mm')";
+        private String errorMessage;
+
+        public LocalDateTimeToHhMmStringConverter() {
+            this(DEFAULT_ERR_MSG);
+        }
+
+        public LocalDateTimeToHhMmStringConverter(String errorMessage) {
+            this.errorMessage = errorMessage;
+        }
+
+        @Override
+        public Result<LocalDateTime> convertToModel(String str, ValueContext valueContext) {
+            try {
+                return Result.ok(LocalDateTime.parse(str, shortTimeFormatter));
+            } catch (NumberFormatException e) {
+                getLogger().error(e.getMessage(), e);
+                return Result.error(errorMessage);
+            }
+        }
+
+        @Override
+        public String convertToPresentation(LocalDateTime dateTime, ValueContext valueContext) {
+            return null == dateTime ? "" : shortTimeFormatter.format(dateTime);
+        }
+    }
+
 
     public static NumberFormat getPercentFormat(Locale locale) {
         if(null == locale) {

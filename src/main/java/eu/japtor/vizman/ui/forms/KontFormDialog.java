@@ -489,7 +489,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
 //    }
 
 //    private void addStatusField() {
-//        statusField.setDataProvider(DataProvider.ofItems(PersonStatus.values()));
+//        statusField.setDataProvider(DataProvider.ofItems(PersonState.values()));
 //        getFormLayout().add(statusField);
 //        getBinder().forField(statusField)
 ////                .withConverter(

@@ -5,24 +5,26 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
-import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
+import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.Doch;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.repository.CinRepo;
-import eu.japtor.vizman.backend.repository.PersonRepo;
+import eu.japtor.vizman.backend.service.DochService;
+import eu.japtor.vizman.backend.service.PersonService;
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,7 +32,8 @@ import javax.annotation.PostConstruct;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_DOCH;
 
@@ -41,10 +44,13 @@ import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_DOCH;
 @SpringComponent
 @UIScope
 //@Push
-public class DochView extends VerticalLayout {
+// public class DochView extends VerticalLayout implements HasLogger, BeforeEnterListener {
+public class DochView extends VerticalLayout implements HasLogger {
 
-    private ComboBox personSelectBox = new ComboBox();
-    private DatePicker datePicker = new DatePicker();
+    private List<Person> dochPersonList;
+    private ComboBox<Person> dochPersonCombo;
+    private DatePicker dochDatePicker;
+
     private Button dochMonthReportBtn = new Button();
     private Button dochYearReportBtn = new Button();
 
@@ -55,12 +61,12 @@ public class DochView extends VerticalLayout {
     private Span clockDisplay = new Span();
     private Span dochUpperDateInfo = new Span();
     private Span dochLowerDateInfo = new Span();
-    private RadioButtonGroup<String> odchodRadio = new RadioButtonGroup();
 
-    private Button prichodBtn = new Button("Příchod");
-    private Button prichodAltBtn = new Button("Příchod jiný čas");
-    private Button odchodBtn = new Button("Odchod");
-    private Button odchodAltBtn = new Button("Odchod jiný čas");
+    private Button prichodBtn;
+    private Button prichodAltBtn;
+    private RadioButtonGroup<String> odchodRadio;
+    private Button odchodButton;
+    private Button odchodAltButton;
 
     Button dovolBtn = new Button("Dovolená (8h)");
     Button dovolHalfBtn = new Button("Dovolená (4h)");
@@ -73,11 +79,13 @@ public class DochView extends VerticalLayout {
     Button volnoZrusBtn = new Button("Zrušit neplac. volno");
 
     HorizontalLayout dochRecUpperHeader = new HorizontalLayout();
-    Grid<Doch> dochRecUpperGrid = new Grid();
+    Grid<Doch> upperDochGrid;
+    List<Doch> upperDochList;
     HorizontalLayout dochRecUpperFooter = new HorizontalLayout();
 
     HorizontalLayout dochRecLowerHeader = new HorizontalLayout();
-    Grid<Doch> dochRecLowerGrid = new Grid();
+    Grid<Doch> lowerDochGrid;
+    List<Doch> lowerDochList;
     HorizontalLayout dochRecLowerFooter = new HorizontalLayout();
 
 
@@ -94,12 +102,15 @@ public class DochView extends VerticalLayout {
 //    public DochRepo kontRepo;
 
     @Autowired
-    public PersonRepo personRepo;
+    public PersonService personService;
 
     @Autowired
     public CinRepo cinRepo;
 
-//    @Autowired
+    @Autowired
+    public DochService dochService;
+
+    //    @Autowired
 //    public DochForm(Person dochPerson) {
     public DochView() {
 //        super();
@@ -110,34 +121,35 @@ public class DochView extends VerticalLayout {
     @PostConstruct
     public void init() {
         this.setAlignSelf(Alignment.CENTER);
-        initUpperDochGrid();
-        initLowerDochGrid();
-        initData();
+        loadStableData();
+        initDochData();
     }
 
-//    public void updateDochClockTime(LocalTime time) {
+    private void loadStableData() {
+        dochPersonList = personService.fetchAllActive();
+        dochPersonCombo.setItems(dochPersonList);
+    }
+
+    //    public void updateDochClockTime(LocalTime time) {
     public void updateDochClockTime() {
         clockDisplay.setText(LocalTime.now().format(dochTimeFormatter));
     }
 
-    private void initData() {
-        personSelectBox.setDataProvider(new ListDataProvider(
-                personRepo.findAllByOrderByUsername().stream()
-                    .map(p -> p.getUsername() + " (" + p.getJmeno() + " " + p.getPrijmeni() + ")")
-                    .collect(Collectors.toList())));
+
+    private String getPersonLabel(Person person) {
+        return person.getUsername() + " (" + person.getJmeno() + " " + person.getPrijmeni() + ")";
+    }
+
+
+    private void initWhenOpened() {
+        dochPerson = personService.getById(13L);
+        dochDate = LocalDate.of(2019, 01, 17);
+        loadUpperDochGridData(dochPerson, dochDate);
     }
 
     private void buildForm() {
         this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         this.setWidth("1200px");
-
-//        personSelectBox = new ComboBox();
-//        personSelectBox.setLabel("Uživatel");
-        personSelectBox.setLabel(null);
-        personSelectBox.setWidth("100%");
-
-        datePicker.setLabel(null);
-        datePicker.setWidth("100%");
 
         dochMonthReportBtn.setText("Měsíční přehled");
 //        dochMonthReportBtn.setWidth("100%");
@@ -147,7 +159,12 @@ public class DochView extends VerticalLayout {
 //        dochYearReportBtn.setWidth("100%");
 
 //        HorizontalLayout dochHeader = new HorizontalLayout();
-        dochHeader.add(new H4("Uživatel(ka): "), personSelectBox, datePicker, dochMonthReportBtn, dochYearReportBtn);
+        dochHeader.add(new H4("Uživatel(ka): ")
+                , initPersonCombo()
+                , initDochDatePicker()
+                , dochMonthReportBtn
+                , dochYearReportBtn)
+        ;
 
         VerticalLayout clockContainer = new VerticalLayout();
         clockContainer.setSizeFull();
@@ -169,53 +186,18 @@ public class DochView extends VerticalLayout {
         clockContainer.add(clockDisplay);
 
 
-//        prichodBtn = new Button("Příchod");
-        prichodBtn.setText("Příchod");
-        prichodBtn.getElement().setAttribute("theme", "primary");
-//        prichodBtn.getElement().getStyle().set("max-width", "8em");
-        prichodBtn.addClickListener(event ->  {
-            LocalDateTime now =  LocalDateTime.now(minuteClock);
-        });
-
-
-        //        prichodBtn.getElement().getStyle().set("max-width", "8em");
-//        prichodAltBtn = new Button("Přích. jiný čas");
-        prichodAltBtn.setText("Přích. jiný čas");
-        prichodAltBtn.getElement().setAttribute("theme", "secondary");
-//        prichodAltBtn.getElement().getStyle().set("max-width", "8em");
-
-//        odchodBtn = new Button("Odchod");
-        odchodBtn.setText("Odchod");
-        odchodBtn.addClickListener(event -> odchodBtnClicked(event));
-        odchodBtn.setEnabled(false);
-
-//        odchodAltBtn = new Button("Odchod jiný čas");
-        odchodAltBtn.setText("Odchod jiný čas");
-        odchodAltBtn.addClickListener(event -> odchodBtnClicked(event));
-        odchodAltBtn.getElement().setAttribute("theme", "secondary");
-        odchodAltBtn.setEnabled(false);
-//        odchodAltBtn.getElement().getStyle().set("max-width", "8em");
-
-
-//        odchodRadio = new RadioButtonGroup();
-        odchodRadio.addValueChangeListener(event -> odchodRadionChanged(event));
-        odchodRadio.setItems("Odchod na oběd", "Odchod pracovně", "Odchod k lékaři", "Ukončení/přerušení práce");
-//        odchodRadio.getElement().getStyle().set("display", "flex");
-        odchodRadio.getElement().setAttribute("theme", "vertical");
-//                getStyle().set("flex-direction", "column");
-
 //        dochControl = new FormLayout();
 //        dochControl.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 //        dochControl.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
 //                new FormLayout.ResponsiveStep("15em", 2));
         dochControl.setWidth("30em");
         dochControl.add(clockContainer);
-        dochControl.add(prichodBtn);
-        dochControl.add(prichodAltBtn);
+        dochControl.add(initPrichodButton());
+        dochControl.add(initPrichodAltButton());
         dochControl.add(buildVertSpace());
-        dochControl.add(odchodRadio);
-        dochControl.add(odchodBtn);
-        dochControl.add(odchodAltBtn);
+        dochControl.add(initOdchodRadio());
+        dochControl.add(initOdchodButton());
+        dochControl.add(initOdchodAltButton());
 
 
         nepritControl.setWidth("30em");
@@ -238,20 +220,91 @@ public class DochView extends VerticalLayout {
         dochRecUpperHeader.add(dochUpperDateInfo);
         dochRecLowerHeader.add(dochLowerDateInfo);
 
-        VerticalLayout dochRecords = new VerticalLayout();
-        dochRecords.add(dochRecUpperHeader);
-        dochRecords.add(dochRecUpperGrid);
-        dochRecords.add(dochRecUpperFooter);
-        dochRecords.add(dochRecLowerHeader);
-        dochRecords.add(dochRecLowerGrid);
-        dochRecords.add(dochRecLowerFooter);
+        VerticalLayout dochRecPane = new VerticalLayout();
+        dochRecPane.add(dochRecUpperHeader);
+        dochRecPane.add(initUpperDochGrid());
+        dochRecPane.add(dochRecUpperFooter);
+        dochRecPane.add(dochRecLowerHeader);
+        dochRecPane.add(initLowerDochGrid());
+        dochRecPane.add(dochRecLowerFooter);
 
-        HorizontalLayout dochDesk = new HorizontalLayout();
-        dochDesk.add(dochControl);
-        dochDesk.add(dochRecords);
-        dochDesk.add(nepritControl);
+        HorizontalLayout dochPanel = new HorizontalLayout();
+        dochPanel.add(dochControl);
+        dochPanel.add(dochRecPane);
+        dochPanel.add(nepritControl);
 
-        add(new H3("DOCHÁZKA"), dochHeader, dochDesk);
+        this.add(new H3("DOCHÁZKA"), dochHeader, dochPanel);
+    }
+
+
+    private Component initPersonCombo() {
+        dochPersonCombo = new ComboBox();
+        dochPersonCombo.setLabel(null);
+        dochPersonCombo.setWidth("100%");
+        dochPersonCombo.setItems(new ArrayList<>());
+        dochPersonCombo.setItemLabelGenerator(this::getPersonLabel);
+        dochPersonCombo.addValueChangeListener(event -> {
+            dochPerson = event.getValue();
+            loadUpperDochGridData(dochPerson, dochDate);
+        });
+        dochPersonCombo.addBlurListener(event -> {
+//            loadUpperDochGridData(dochPerson.getId(), dochDate);
+            upperDochGrid.getDataProvider().refreshAll();
+        });
+        return dochPersonCombo;
+    }
+
+    private Component initDochDatePicker() {
+        dochDatePicker = new DatePicker();
+        dochDatePicker.setLabel(null);
+        dochDatePicker.setWidth("100%");
+        dochDatePicker.addValueChangeListener(event -> {
+            dochDate = event.getValue();
+            loadUpperDochGridData(dochPerson, dochDate);
+        });
+        return dochDatePicker;
+    }
+
+
+    private Component initPrichodButton() {
+        prichodBtn = new Button("Příchod");
+        prichodBtn.getElement().setAttribute("theme", "primary");
+        prichodBtn.addClickListener(event -> {
+            LocalDateTime now = LocalDateTime.now(minuteClock);
+        });
+        return prichodBtn;
+    }
+
+    private Button initPrichodAltButton() {
+        prichodAltBtn = new Button("Příchod jiný čas");
+        prichodAltBtn.getElement().setAttribute("theme", "secondary");
+        return prichodAltBtn;
+    }
+
+    private RadioButtonGroup initOdchodRadio() {
+        odchodRadio = new RadioButtonGroup();
+        odchodRadio.addValueChangeListener(event -> odchodRadionChanged(event));
+        odchodRadio.setItems("Odchod na oběd", "Odchod pracovně", "Odchod k lékaři", "Ukončení/přerušení práce");
+//        odchodRadio.getElement().getStyle().set("display", "flex");
+        odchodRadio.getElement().setAttribute("theme", "vertical");
+        //                getStyle().set("flex-direction", "column");
+        return odchodRadio;
+    }
+
+    private Button initOdchodButton() {
+        odchodButton = new Button("Odchod");
+        odchodButton.setText("Odchod");
+        odchodButton.addClickListener(event -> odchodButtonClicked(event));
+        odchodButton.setEnabled(false);
+        return odchodButton;
+    }
+
+    private Button initOdchodAltButton() {
+        odchodAltButton = new Button("Odchod jiný čas");
+        odchodAltButton.addClickListener(event -> odchodAltButtonClicked(event));
+        odchodAltButton.getElement().setAttribute("theme", "secondary");
+        odchodAltButton.setEnabled(false);
+        return odchodAltButton;
     }
 
     private Component buildVertSpace() {
@@ -261,62 +314,174 @@ public class DochView extends VerticalLayout {
     }
 
 
-    private void initDochData(Person dochPerson, LocalDate dochDate) {
+    private ValueProvider<Doch, String> casOdValProv =
+            doch -> null == doch.getDCasOd() ? null : doch.getDCasOd().format(VzmFormatUtils.shortTimeFormatter);
 
+    private ValueProvider<Doch, String> casDoValProv =
+            doch -> null == doch.getDCasDo() ? null : doch.getDCasDo().format(VzmFormatUtils.shortTimeFormatter);
+
+    private ValueProvider<Doch, String> casDochHodin =
+            doch -> null == doch.getDHodin() ? null : doch.getDHodin().format(VzmFormatUtils.shortTimeFormatter);
+
+    private Component initUpperDochGrid() {
+        upperDochGrid = new Grid<>();
+        upperDochGrid.setHeight("20em");
+//        upperDochGrid.setHeight("0");
+        upperDochGrid.setColumnReorderingAllowed(false);
+        upperDochGrid.setClassName("vizman-simple-grid");
+        upperDochGrid.setSelectionMode(Grid.SelectionMode.NONE);
+
+        Binder<Doch> upperBinder = new Binder<>(Doch.class);
+
+        upperDochGrid.addColumn(Doch::getCinSt)
+                .setHeader("St.")
+                .setWidth("2em")
+                .setFlexGrow(0)
+                .setResizable(true)
+        ;
+
+////        upperDochGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
+////        upperDochGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
+//        TextField casOdField = new TextField();
+//        upperBinder.forField(casOdField)
+////                .withValidator(name -> name.startsWith("Person"),
+////                        "Name should start with Person")
+//                .withConverter(new VzmFormatUtils.LocalDateTimeToHhMmStringConverter())
+////                .withStatusLabel(validationStatus).bind("AAAAAA");
+////                .withStatusLabel(validationStatus).bind("name");
+//                .bind(Doch::getDCasOd, Doch::setDCasOd);
+////        Grid.Column<Doch> casOdColumn = upperDochGrid.addColumn(new ComponentRenderer<>(doch -> getCasOdComponent(doch)))
+
+//        Grid.Column<Doch> casOdColumn = upperDochGrid.addColumn(casOdValProv)
+        upperDochGrid.addColumn(casOdValProv)
+                .setHeader("Od")
+                .setWidth("5em")
+                .setFlexGrow(0)
+                .setTextAlign(ColumnTextAlign.END)
+                .setResizable(true)
+        ;
+//        casOdColumn.setEditorComponent(casOdField);
+
+//        upperDochGrid.addComponentColumn(new ComponentRenderer<>(doch -> getCasDoComponent(doch)))
+//        upperDochGrid.addComponentColumn(doch -> getCasDoComponent(doch))
+        upperDochGrid.addColumn(casDoValProv)
+                .setHeader("Do")
+                .setWidth("5em")
+                .setFlexGrow(0)
+                .setTextAlign(ColumnTextAlign.END)
+                .setResizable(true)
+        ;
+//        upperDochGrid.addComponentColumn(new ComponentRenderer<>(doch -> getdHodinComponent(doch)))
+//        upperDochGrid.addComponentColumn(doch -> getdHodinComponent(doch))
+        upperDochGrid.addColumn(casDochHodin)
+                .setHeader("Hod.")
+                .setWidth("5em")
+                .setFlexGrow(0)
+                .setTextAlign(ColumnTextAlign.END)
+                .setResizable(true)
+        ;
+        upperDochGrid.addColumn(Doch::getCinnost)
+                .setHeader("Činnost")
+                .setWidth("4em")
+                .setFlexGrow(1)
+                .setResizable(true);
+
+        return upperDochGrid;
     }
 
-    private void initUpperDochGrid() {
-        dochRecUpperGrid.setSelectionMode(Grid.SelectionMode.NONE);
-//        dochRecUpperGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#").setWidth("1em");
-        dochRecUpperGrid.addColumn(Doch::getCinSt).setHeader("St.").setWidth("2em").setResizable(true);
-//        dochRecUpperGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
-//        dochRecUpperGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
-        dochRecUpperGrid.addColumn(Doch::getdCasOd).setHeader("Od").setWidth("3em").setResizable(true);
-        dochRecUpperGrid.addColumn(Doch::getdCasDo).setHeader("Do").setWidth("3em").setResizable(true);
-        dochRecUpperGrid.addColumn(Doch::getdHodin).setHeader("Hod.").setWidth("3em").setResizable(true);
-        dochRecUpperGrid.addColumn(Doch::getCinnost).setHeader("Činnost").setWidth("4em").setResizable(true);
+    private Component initLowerDochGrid() {
+        lowerDochGrid = new Grid<>();
+        lowerDochGrid.setHeight("20em");
+//        lowerDochGrid.setHeight("0");
+        lowerDochGrid.setColumnReorderingAllowed(false);
+        lowerDochGrid.setClassName("vizman-simple-grid");
+        lowerDochGrid.setSelectionMode(Grid.SelectionMode.NONE);
+        lowerDochGrid.addColumn(Doch::getCinSt)
+                .setHeader("St.")
+                .setWidth("2em")
+                .setResizable(true);
+//        upperDochGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
+//        upperDochGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
+        lowerDochGrid.addColumn(Doch::getDCasOd)
+                .setHeader("Od")
+                .setWidth("3em")
+//                .setTextAlign(ColumnTextAlign.END)
+                .setResizable(true);
+        lowerDochGrid.addColumn(Doch::getDCasDo)
+                .setHeader("Do")
+                .setWidth("3em")
+//                .setTextAlign(ColumnTextAlign.END)
+                .setResizable(true);
+        lowerDochGrid.addColumn(Doch::getDHodin)
+                .setHeader("Hod.")
+                .setWidth("3em")
+//                .setTextAlign(ColumnTextAlign.END)
+                .setResizable(true);
+        lowerDochGrid.addColumn(Doch::getCinnost)
+                .setHeader("Činnost")
+                .setWidth("4em")
+                .setResizable(true);
+
+        return lowerDochGrid;
     }
 
-    private void initLowerDochGrid() {
-        dochRecLowerGrid.setSelectionMode(Grid.SelectionMode.NONE);
-//        dochRecUpperGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#").setWidth("1em");
-        dochRecLowerGrid.addColumn(Doch::getCinSt).setHeader("St.").setWidth("2em").setResizable(true);
-//        dochRecUpperGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
-//        dochRecUpperGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
-        dochRecLowerGrid.addColumn(Doch::getdCasOd).setHeader("Od").setWidth("3em").setResizable(true);
-        dochRecLowerGrid.addColumn(Doch::getdCasDo).setHeader("Do").setWidth("3em").setResizable(true);
-        dochRecLowerGrid.addColumn(Doch::getdHodin).setHeader("Hod.").setWidth("3em").setResizable(true);
-        dochRecLowerGrid.addColumn(Doch::getCinnost).setHeader("Činnost").setWidth("4em").setResizable(true);
+    public static HtmlComponent getCasOdComponent(Doch doch) {
+        return new Paragraph(null == doch.getDCasOd() ? "" : doch.getDCasOd().format( VzmFormatUtils.shortTimeFormatter));
     }
+
+    public static HtmlComponent getCasDoComponent(Doch doch) {
+        return new Paragraph(null == doch.getDCasDo() ? "" : doch.getDCasDo().format( VzmFormatUtils.shortTimeFormatter));
+    }
+
+    public static HtmlComponent getdHodinComponent(Doch doch) {
+        return new Paragraph(null == doch.getDHodin() ? "" : doch.getDHodin().format( VzmFormatUtils.shortTimeFormatter));
+    }
+
+    private void loadUpperDochGridData(Person dochPerson, LocalDate dochDate) {
+//        upperDochGrid.getDataProvider().refreshAll();
+        if (null == dochPerson || null == dochPerson.getId() || null == dochDate) {
+            upperDochList = new ArrayList();
+        } else {
+            upperDochList = dochService.fetchDochsByPersonIdAndDate(dochPerson.getId(), dochDate);
+        }
+        upperDochGrid.setItems(upperDochList);
+        upperDochGrid.getDataProvider().refreshAll();
+    }
+
 
     private void odchodRadionChanged(HasValue.ValueChangeEvent event) {
         System.out.println("--------------- odchod radio changed");
         System.out.println(event.toString());
         if (null == event.getValue()) {
-            odchodAltBtn.setEnabled(false);
-            odchodBtn.setEnabled(false);
+            odchodAltButton.setEnabled(false);
+            odchodButton.setEnabled(false);
         } else {
-            odchodAltBtn.setEnabled(true);
-            odchodBtn.setEnabled(true);
+            odchodAltButton.setEnabled(true);
+            odchodButton.setEnabled(true);
         }
     }
 
-    private void odchodBtnClicked(ClickEvent event) {
-        odchodRadio.setValue(null);
+    private void odchodButtonClicked(ClickEvent event) {
+        initOddchodRadio();
+    }
+
+    private void odchodAltButtonClicked(ClickEvent event) {
+        initOddchodRadio();
+    }
+
+    private void initOddchodRadio() {
+//        odchodRadio.setValue(null);
         odchodRadio.clear();    // Probably a bug -> workaround...
         odchodRadio.getElement().getChildren()
                 .filter(element -> element.hasProperty("checked"))
                 .forEach(checked -> checked.removeProperty("checked"));
     }
 
-    private void initLastDochGrid() {
-
-    }
-
-
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+
+        getLogger().info("## ON ATTACH DochView ##");
 
         dochDate = LocalDate.now();
         dochUpperDateInfo.setText(dochDate.format(dochDateHeaderFormatter));
@@ -331,8 +496,28 @@ public class DochView extends VerticalLayout {
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         // Cleanup
+        getLogger().info("## ON DETACH DochView ##");
+
         timeThread.interrupt();
         timeThread = null;
+    }
+
+    public void initDochData() {
+        getLogger().info("## Initializing doch data");
+        if (null == upperDochList) {
+            loadStableData();
+        }
+        if (null == dochPerson) {
+            dochPerson = dochPersonList.stream()
+                    .filter(person -> person.getUsername().toLowerCase().equals("vancik"))
+                    .findFirst().orElse(null);
+            dochPersonCombo.setValue(dochPerson);
+        }
+        if (null == dochDate) {
+            dochDate = LocalDate.of(2019, 1, 15);
+            dochDatePicker.setValue(dochDate);
+        }
+        loadUpperDochGridData(dochPerson, dochDate);
     }
 
 
@@ -369,6 +554,4 @@ public class DochView extends VerticalLayout {
             }
         }
     }
-
-
 }

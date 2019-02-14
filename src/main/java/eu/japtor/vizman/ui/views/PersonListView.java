@@ -23,7 +23,6 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.Query;
@@ -201,7 +200,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
         grid.setId("person-grid");  // .. same ID as is used in shared-styles grid's dom module
 
-        grid.addColumn(Person::getStatus).setHeader("Status").setWidth("3em").setResizable(true)
+        grid.addColumn(Person::getState).setHeader("Status").setWidth("3em").setResizable(true)
             .setFrozen(true);
 
         grid.addColumn(Person::getUsername).setHeader("Username").setWidth("8em").setResizable(true)

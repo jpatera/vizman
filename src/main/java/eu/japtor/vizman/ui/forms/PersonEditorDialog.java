@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class PersonEditorDialog extends AbstractEditorDialog<Person> {
 
-//    private ComboBox<PersonStatus> statusField; // = new ComboBox("Status");
+//    private ComboBox<PersonState> statusField; // = new ComboBox("Status");
     private TextField usernameField; // = new TextField("Username");
     private PasswordField passwordField; // = new TextField("Password");
     private TextField jmenoField; // = new TextField("Jméno");
@@ -144,7 +144,7 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
 //    }
 
 //    private void addStatusField() {
-//        statusField.setDataProvider(DataProvider.ofItems(PersonStatus.values()));
+//        statusField.setDataProvider(DataProvider.ofItems(PersonState.values()));
 //        getFormLayout().add(statusField);
 //        getBinder().forField(statusField)
 ////                .withConverter(

@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface DochService {
 
-    Doch fetchDochsByPersonAndDate(Long personId, LocalDate dDate);
+    List<Doch> fetchDochsByPersonIdAndDate(Long personId, LocalDate dDate);
 
-    long countDochsByPersonAndDate(Long personId, LocalDate dDate);
+    long countDochsByPersonIdAndDate(Long personId, LocalDate dDate);
 }

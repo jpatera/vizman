@@ -28,7 +28,7 @@ import java.util.function.Consumer;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class KlientFormDialog extends AbstractEditorDialog<Klient> {
 
-//    private ComboBox<PersonStatus> statusField; // = new ComboBox("Status");
+//    private ComboBox<PersonState> statusField; // = new ComboBox("Status");
     private TextField nameField; // = new TextField("Username");
     private PasswordField passwordField; // = new TextField("Password");
     private TextField noteField; // = new TextField("Jméno");

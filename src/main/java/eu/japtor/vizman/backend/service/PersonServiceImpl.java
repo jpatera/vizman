@@ -3,6 +3,7 @@ package eu.japtor.vizman.backend.service;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.backend.entity.Person;
+import eu.japtor.vizman.backend.entity.PersonState;
 import eu.japtor.vizman.backend.repository.PersonRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.ExampleMatcher;
@@ -42,6 +43,11 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
     @Override
     public List<Person> fetchAll() {
         return personRepo.findAllByOrderByUsername();
+    }
+
+    @Override
+    public List<Person> fetchAllActive() {
+        return personRepo.findByStateOrderByUsername(PersonState.ACTIVE);
     }
 
     @Override

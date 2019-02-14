@@ -1,6 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
-public enum PersonStatus {
+public enum PersonState {
     NEW, ACTIVE, DISABLED, HIDDEN;
 
     public String getDisplayName() {
