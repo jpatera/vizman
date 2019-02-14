@@ -8,6 +8,7 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
@@ -26,6 +27,7 @@ import eu.japtor.vizman.backend.service.DochService;
 import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
+import eu.japtor.vizman.ui.components.Ribbon;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -58,8 +60,12 @@ public class DochView extends VerticalLayout implements HasLogger {
 
     FormLayout dochControl = new FormLayout();
     FormLayout nepritControl = new FormLayout();
+
+    VerticalLayout clockContainer;
     private Span clockDisplay = new Span();
-    private Span dochUpperDateInfo = new Span();
+
+    //    private Span upperDochDateInfo = new Span();
+    private Paragraph upperDochDateInfo;
     private Span dochLowerDateInfo = new Span();
 
     private Button prichodBtn;
@@ -78,7 +84,7 @@ public class DochView extends VerticalLayout implements HasLogger {
     Button volnoBtn = new Button("Neplacené volno (8h)");
     Button volnoZrusBtn = new Button("Zrušit neplac. volno");
 
-    HorizontalLayout dochRecUpperHeader = new HorizontalLayout();
+    HorizontalLayout upperDochHeader;
     Grid<Doch> upperDochGrid;
     List<Doch> upperDochList;
     HorizontalLayout dochRecUpperFooter = new HorizontalLayout();
@@ -120,36 +126,55 @@ public class DochView extends VerticalLayout implements HasLogger {
 
     @PostConstruct
     public void init() {
-        this.setAlignSelf(Alignment.CENTER);
-        loadStableData();
         initDochData();
     }
 
-    private void loadStableData() {
+    public void initDochData() {
+        getLogger().info("## Initializing doch data");
+
+        initPersonList();
+//        initDochCallendar();
+
+        if (null == dochPerson) {
+            dochPerson = dochPersonList.stream()
+                    .filter(person -> person.getUsername().toLowerCase().equals("vancik"))
+                    .findFirst().orElse(null);
+            dochPersonCombo.setValue(dochPerson);
+        }
+
+        if (null == dochDate) {
+            dochDate = LocalDate.of(2019, 1, 15);
+            dochDatePicker.setValue(dochDate);
+        }
+        loadUpperDochGridData(dochPerson, dochDate);
+    }
+
+    private void initPersonList() {
         dochPersonList = personService.fetchAllActive();
         dochPersonCombo.setItems(dochPersonList);
     }
+
 
     //    public void updateDochClockTime(LocalTime time) {
     public void updateDochClockTime() {
         clockDisplay.setText(LocalTime.now().format(dochTimeFormatter));
     }
 
-
     private String getPersonLabel(Person person) {
         return person.getUsername() + " (" + person.getJmeno() + " " + person.getPrijmeni() + ")";
     }
 
 
-    private void initWhenOpened() {
-        dochPerson = personService.getById(13L);
-        dochDate = LocalDate.of(2019, 01, 17);
-        loadUpperDochGridData(dochPerson, dochDate);
-    }
+//    private void initWhenOpened() {
+//        dochPerson = personService.getById(13L);
+//        dochDate = LocalDate.of(2019, 01, 17);
+//        loadUpperDochGridData(dochPerson, dochDate);
+//    }
 
     private void buildForm() {
         this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         this.setWidth("1200px");
+        this.setAlignSelf(Alignment.CENTER);
 
         dochMonthReportBtn.setText("Měsíční přehled");
 //        dochMonthReportBtn.setWidth("100%");
@@ -159,31 +184,13 @@ public class DochView extends VerticalLayout implements HasLogger {
 //        dochYearReportBtn.setWidth("100%");
 
 //        HorizontalLayout dochHeader = new HorizontalLayout();
-        dochHeader.add(new H4("Uživatel(ka): ")
-                , initPersonCombo()
-                , initDochDatePicker()
+        dochHeader.add(
+//                new H4("Uživatel(ka): ")
+                initPersonCombo()
+//                , initDochDatePicker()
                 , dochMonthReportBtn
                 , dochYearReportBtn)
         ;
-
-        VerticalLayout clockContainer = new VerticalLayout();
-        clockContainer.setSizeFull();
-        clockContainer.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        clockContainer.setFlexGrow(1);
-        clockContainer.getElement().setAttribute("colspan", "2")
-//                .set("width", "stretch")
-//                .set("align", "center")
-        ;
-//        clockDisplay.getStyle().set("colspan", "2");
-//        clockDisplay.setAlignSelf();
-        clockDisplay.getStyle()
-//                .set("font-size", "var(--lumo-font-size-l)")
-                .set("font-size", "3em")
-                .set("font-weight", "600")
-//                .set("padding-right", "0.75em")
-        ;
-        updateDochClockTime();
-        clockContainer.add(clockDisplay);
 
 
 //        dochControl = new FormLayout();
@@ -191,7 +198,8 @@ public class DochView extends VerticalLayout implements HasLogger {
 //        dochControl.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
 //                new FormLayout.ResponsiveStep("15em", 2));
         dochControl.setWidth("30em");
-        dochControl.add(clockContainer);
+        dochControl.add(initDochDatePicker());
+        dochControl.add(initClockComponent());
         dochControl.add(initPrichodButton());
         dochControl.add(initPrichodAltButton());
         dochControl.add(buildVertSpace());
@@ -214,14 +222,12 @@ public class DochView extends VerticalLayout implements HasLogger {
         nepritControl.add(volnoBtn);
         nepritControl.add(volnoZrusBtn);
 
-        dochUpperDateInfo.setText("Vybraný den docházky...");
         dochLowerDateInfo.setText("Předchozí den docházky...");
 
-        dochRecUpperHeader.add(dochUpperDateInfo);
         dochRecLowerHeader.add(dochLowerDateInfo);
 
         VerticalLayout dochRecPane = new VerticalLayout();
-        dochRecPane.add(dochRecUpperHeader);
+        dochRecPane.add(initUpperDochHeader());
         dochRecPane.add(initUpperDochGrid());
         dochRecPane.add(dochRecUpperFooter);
         dochRecPane.add(dochRecLowerHeader);
@@ -236,6 +242,36 @@ public class DochView extends VerticalLayout implements HasLogger {
         this.add(new H3("DOCHÁZKA"), dochHeader, dochPanel);
     }
 
+
+    private Component initClockComponent() {
+        clockContainer = new VerticalLayout();
+        clockContainer.setSizeFull();
+        clockContainer.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+        clockContainer.setFlexGrow(1);
+        clockContainer.getElement().
+            setAttribute("colspan","2")
+//                .set("width", "stretch")
+//                .set("align", "center")
+    ;
+//        clockDisplay.getStyle().set("colspan", "2");
+//        clockDisplay.setAlignSelf();
+        clockDisplay.getStyle()
+//                .set("font-size", "var(--lumo-font-size-l)")
+                .set("colspan", "2")
+                .set("font-size","3em")
+                .set("font-weight","600")
+//                .set("padding-right", "0.75em")
+        ;
+
+        clockContainer.add(clockDisplay);
+        return clockContainer;
+    }
+
+    private Component initUpperDochDateInfo() {
+        upperDochDateInfo = new Paragraph();
+        upperDochDateInfo.setText("Vybraný den docházky...");
+        return upperDochDateInfo;
+    }
 
     private Component initPersonCombo() {
         dochPersonCombo = new ComboBox();
@@ -322,6 +358,38 @@ public class DochView extends VerticalLayout implements HasLogger {
 
     private ValueProvider<Doch, String> casDochHodin =
             doch -> null == doch.getDHodin() ? null : doch.getDHodin().format(VzmFormatUtils.shortTimeFormatter);
+
+
+    private Component initUpperDochHeader() {
+        upperDochHeader = new HorizontalLayout();
+        upperDochHeader.setWidth("100%");
+        upperDochHeader.setSpacing(false);
+        upperDochHeader.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        HorizontalLayout buttonBox = new HorizontalLayout();
+        buttonBox.add(
+                initLoadTodayButton()
+                , new Button("Last")
+                , new Button("Prev")
+                , new Button("Next")
+        );
+
+        upperDochHeader.add(
+                initUpperDochDateInfo()
+                , new Ribbon()
+                , buttonBox
+        );
+        return upperDochHeader;
+    }
+
+    private Component initLoadTodayButton() {
+        Button loadTodayButton = new Button("Dnes");
+        loadTodayButton.addClickListener(event -> {
+            dochDate = LocalDate.now();
+            loadUpperDochGridData(dochPerson, dochDate);
+        });
+        return loadTodayButton;
+    }
+
 
     private Component initUpperDochGrid() {
         upperDochGrid = new Grid<>();
@@ -446,6 +514,7 @@ public class DochView extends VerticalLayout implements HasLogger {
         }
         upperDochGrid.setItems(upperDochList);
         upperDochGrid.getDataProvider().refreshAll();
+        upperDochDateInfo.setText(null == dochDate ? "" : dochDate.format(dochDateHeaderFormatter));
     }
 
 
@@ -483,9 +552,6 @@ public class DochView extends VerticalLayout implements HasLogger {
 
         getLogger().info("## ON ATTACH DochView ##");
 
-        dochDate = LocalDate.now();
-        dochUpperDateInfo.setText(dochDate.format(dochDateHeaderFormatter));
-
         dochDatePrev = LocalDate.now().minusDays(1);
         dochLowerDateInfo.setText(dochDatePrev.format(dochDateHeaderFormatter));
 
@@ -500,24 +566,6 @@ public class DochView extends VerticalLayout implements HasLogger {
 
         timeThread.interrupt();
         timeThread = null;
-    }
-
-    public void initDochData() {
-        getLogger().info("## Initializing doch data");
-        if (null == upperDochList) {
-            loadStableData();
-        }
-        if (null == dochPerson) {
-            dochPerson = dochPersonList.stream()
-                    .filter(person -> person.getUsername().toLowerCase().equals("vancik"))
-                    .findFirst().orElse(null);
-            dochPersonCombo.setValue(dochPerson);
-        }
-        if (null == dochDate) {
-            dochDate = LocalDate.of(2019, 1, 15);
-            dochDatePicker.setValue(dochDate);
-        }
-        loadUpperDochGridData(dochPerson, dochDate);
     }
 
 
