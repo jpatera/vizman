@@ -1,8 +1,7 @@
 package eu.japtor.vizman.backend.entity;
 
 import javax.persistence.*;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -14,23 +13,26 @@ public class Doch extends AbstractGenIdEntity {
 
     private Long personId;
     private String userLogin;
-    private LocalDate dDate;
+    private LocalDate dochDate;
 
-    private LocalDateTime zDatcasod;
-    private LocalDateTime dCasOd;
-    private Integer rOd;
+    private LocalDateTime fromModifDatetime;
+    private LocalDateTime fromTime;
+    private Boolean fromManual;
 
-    private LocalDateTime zDatcasdo;
-    private LocalDateTime dCasDo;
-    private Integer rDo;
+    private LocalDateTime toModifDatetime;
+    private LocalDateTime toTime;
+    private Boolean toManual;
 
-    private LocalTime dHodin;
+    @Transient
+    private Duration dochDuration;
+
+    private String dochState;
 
     private Integer cinId;
     private Integer cinPol;
-    private String cinSt;
-    private String cinT1;
-    private String cinT2;
+//    private String cinSt;
+    private String cinAkceTyp;
+    private String cinCinKod;
     private String cinnost;
     private Boolean calcprac;
     private String poznamka;
@@ -58,84 +60,106 @@ public class Doch extends AbstractGenIdEntity {
     }
 
     @Basic
-    @Column(name = "D_DATE")
-    public LocalDate getdDate() {
-        return dDate;
+    @Column(name = "DOCH_DATE")
+    public LocalDate getdDochDate() {
+        return dochDate;
     }
 
-    public void setdDate(LocalDate dDate) {
-        this.dDate = dDate;
+    public void setdDochDate(LocalDate dochDate) {
+        this.dochDate = dochDate;
     }
 
     @Basic
-    @Column(name = "Z_DATCASOD")
+    @Column(name = "FROM_MODIF_DATETIME")
     public LocalDateTime getzZDatcasod() {
-        return zDatcasod;
+        return fromModifDatetime;
     }
 
     public void setzZDatcasod(LocalDateTime zDatCasOd) {
-        this.zDatcasod = zDatCasOd;
+        this.fromModifDatetime = zDatCasOd;
     }
 
     @Basic
-    @Column(name = "D_CAS_OD")
+    @Column(name = "FROM_TIME")
     public LocalDateTime getDCasOd() {
-        return dCasOd;
+        return fromTime;
     }
 
     public void setDCasOd(LocalDateTime dCasOd) {
-        this.dCasOd = dCasOd;
+        this.fromTime = dCasOd;
     }
 
     @Basic
-    @Column(name = "R_OD")
-    public Integer getrOd() {
-        return rOd;
+    @Column(name = "FROM_MANUAL")
+    public Boolean getFromManual() {
+        return fromManual;
     }
 
-    public void setrOd(Integer rOd) {
-        this.rOd = rOd;
-    }
-
-    @Basic
-    @Column(name = "Z_DATCASDO")
-    public LocalDateTime getZDatcasdo() {
-        return zDatcasdo;
-    }
-
-    public void setZDatcasdo(LocalDateTime zDatcasdo) {
-        this.zDatcasdo = zDatcasdo;
+    public void setFromManual(Boolean fromManual) {
+        this.fromManual = fromManual;
     }
 
     @Basic
-    @Column(name = "D_CAS_DO")
-    public LocalDateTime getDCasDo() {
-        return dCasDo;
+    @Column(name = "TO_MODIF_DATETIME")
+    public LocalDateTime getToModifDatetime() {
+        return toModifDatetime;
     }
 
-    public void setDCasDo(LocalDateTime dCasDo) {
-        this.dCasDo = dCasDo;
-    }
-
-    @Basic
-    @Column(name = "R_DO")
-    public Integer getrDo() {
-        return rDo;
-    }
-
-    public void setrDo(Integer rDo) {
-        this.rDo = rDo;
+    public void setToModifDatetime(LocalDateTime toModifDatetime) {
+        this.toModifDatetime = toModifDatetime;
     }
 
     @Basic
-    @Column(name = "D_HODIN")
-    public LocalTime getDHodin() {
-        return dHodin;
+    @Column(name = "TO_TIME")
+    public LocalDateTime getToTime() {
+        return toTime;
     }
 
-    public void setDHodin(LocalTime dHodin) {
-        this.dHodin = dHodin;
+    public void setToTime(LocalDateTime toTime) {
+        this.toTime = toTime;
     }
+
+    @Basic
+    @Column(name = "TO_MANUAL")
+    public Boolean getToManual() {
+        return toManual;
+    }
+
+    public void setToManual(Boolean toManual) {
+        this.toManual = toManual;
+    }
+
+//    @Basic
+//    @Column(name = "DOCH_DURATION")
+//    public LocalTime getDochDuration() {
+//        return dochDuration;
+//    }
+//
+//    public void setDochDuration(Duration dochDuration) {
+//        this.dochDuration = dochDuration;
+//    }
+
+    @Transient
+    public Duration getDochDuration() {
+        return this.dochDuration;
+    }
+    @Transient
+    public void setDochDuration(Duration _dochDuration) {
+        this.dbDochDuration = _dochDuration == null ? null : LocalTime.MIDNIGHT.plus(_dochDuration);
+    }
+
+
+    @Basic
+    @Column(name = "DOCH_DURATION")
+    LocalTime dbDochDuration;
+
+    @PostLoad
+    public void init() {
+        this.dochDuration = this.dbDochDuration == null ? null : Duration.between(LocalTime.MIDNIGHT, dbDochDuration);
+//        this.dochDuration = this.dbDochDuration == null ? null : LocalTime.MIDNIGHT.plus(this.dbDochDuration);
+//        this.myDuration = this.myDurationString == null ? null : Duration.parse(this.myDurationString);
+    };
+
 
     @Basic
     @Column(name = "cin_id")
@@ -157,34 +181,44 @@ public class Doch extends AbstractGenIdEntity {
         this.cinPol = cinPol;
     }
 
-    @Basic
-    @Column(name = "CIN_ST")
-    public String getCinSt() {
-        return cinSt;
-    }
-
-    public void setCinSt(String cinSt) {
-        this.cinSt = cinSt;
-    }
-
-    @Basic
-    @Column(name = "CINT1")
-    public String getCinT1() {
-        return cinT1;
-    }
-
-    public void setCinT1(String cinT1) {
-        this.cinT1 = cinT1;
-    }
+//    @Basic
+//    @Column(name = "CIN_ST")
+//    public String getCinSt() {
+//        return cinSt;
+//    }
+//
+//    public void setCinSt(String cinSt) {
+//        this.cinSt = cinSt;
+//    }
 
     @Basic
-    @Column(name = "CINT2")
-    public String getCinT2() {
-        return cinT2;
+    @Column(name = "DOCH_STATE")
+    public String getDochState() {
+        return dochState;
     }
 
-    public void setCinT2(String cinT2) {
-        this.cinT2 = cinT2;
+    public void setDochState(String dochState) {
+        this.dochState = dochState;
+    }
+
+    @Basic
+    @Column(name = "CIN_AKCE_TYP")
+    public String getCinAkceTyp() {
+        return cinAkceTyp;
+    }
+
+    public void setCinAkceTyp(String cinAkceTyp) {
+        this.cinAkceTyp = cinAkceTyp;
+    }
+
+    @Basic
+    @Column(name = "CIN_CIN_KOD")
+    public String getCinCinKod() {
+        return cinCinKod;
+    }
+
+    public void setCinCinKod(String cinCinKod) {
+        this.cinCinKod = cinCinKod;
     }
 
     @Basic

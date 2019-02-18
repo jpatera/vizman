@@ -8,11 +8,11 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -28,6 +28,7 @@ import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.Ribbon;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -49,6 +50,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_DOCH;
 // public class DochView extends VerticalLayout implements HasLogger, BeforeEnterListener {
 public class DochView extends VerticalLayout implements HasLogger {
 
+    private static final String DOCH_DURATION_KEY = "doch-duration-key";
     private List<Person> dochPersonList;
     private ComboBox<Person> dochPersonCombo;
     private DatePicker dochDatePicker;
@@ -68,6 +70,12 @@ public class DochView extends VerticalLayout implements HasLogger {
     private Paragraph upperDochDateInfo;
     private Span dochLowerDateInfo = new Span();
 
+    private Button loadTodayButton;
+    private Button loadPrevDateButton;
+    private Button loadNextDateButton;
+    private Button loadLastDateButton;
+
+
     private Button prichodBtn;
     private Button prichodAltBtn;
     private RadioButtonGroup<String> odchodRadio;
@@ -86,7 +94,7 @@ public class DochView extends VerticalLayout implements HasLogger {
 
     HorizontalLayout upperDochHeader;
     Grid<Doch> upperDochGrid;
-    List<Doch> upperDochList;
+    List<Doch> upperDochList = new ArrayList<>();
     HorizontalLayout dochRecUpperFooter = new HorizontalLayout();
 
     HorizontalLayout dochRecLowerHeader = new HorizontalLayout();
@@ -116,6 +124,8 @@ public class DochView extends VerticalLayout implements HasLogger {
     @Autowired
     public DochService dochService;
 
+
+
     //    @Autowired
 //    public DochForm(Person dochPerson) {
     public DochView() {
@@ -128,6 +138,7 @@ public class DochView extends VerticalLayout implements HasLogger {
     public void init() {
         initDochData();
     }
+
 
     public void initDochData() {
         getLogger().info("## Initializing doch data");
@@ -258,8 +269,11 @@ public class DochView extends VerticalLayout implements HasLogger {
         clockDisplay.getStyle()
 //                .set("font-size", "var(--lumo-font-size-l)")
                 .set("colspan", "2")
-                .set("font-size","3em")
+                .set("font-size","2.5em")
                 .set("font-weight","600")
+//                .set("font-family", "monospace")
+//                .set("font-family", "ariel")
+                .set("font-variant-numeric", "tabular-nums");
 //                .set("padding-right", "0.75em")
         ;
 
@@ -354,10 +368,10 @@ public class DochView extends VerticalLayout implements HasLogger {
             doch -> null == doch.getDCasOd() ? null : doch.getDCasOd().format(VzmFormatUtils.shortTimeFormatter);
 
     private ValueProvider<Doch, String> casDoValProv =
-            doch -> null == doch.getDCasDo() ? null : doch.getDCasDo().format(VzmFormatUtils.shortTimeFormatter);
+            doch -> null == doch.getToTime() ? null : doch.getToTime().format(VzmFormatUtils.shortTimeFormatter);
 
     private ValueProvider<Doch, String> casDochHodin =
-            doch -> null == doch.getDHodin() ? null : doch.getDHodin().format(VzmFormatUtils.shortTimeFormatter);
+            doch -> null == doch.getDochDuration() ? null : formatDuration(doch.getDochDuration());
 
 
     private Component initUpperDochHeader() {
@@ -368,9 +382,9 @@ public class DochView extends VerticalLayout implements HasLogger {
         HorizontalLayout buttonBox = new HorizontalLayout();
         buttonBox.add(
                 initLoadTodayButton()
-                , new Button("Last")
-                , new Button("Prev")
-                , new Button("Next")
+                , initLoadLastDateButton()
+                , initLoadPrevDateButton()
+                , initLoadNextDateButton()
         );
 
         upperDochHeader.add(
@@ -381,13 +395,82 @@ public class DochView extends VerticalLayout implements HasLogger {
         return upperDochHeader;
     }
 
+    private void setDochNavigButtonsEnabled(boolean enabled) {
+        loadTodayButton.setEnabled(enabled);
+        loadPrevDateButton.setEnabled(enabled);
+        loadNextDateButton.setEnabled(enabled);
+        loadLastDateButton.setEnabled(enabled);
+    }
+
     private Component initLoadTodayButton() {
-        Button loadTodayButton = new Button("Dnes");
+        loadTodayButton = new Button("Dnes");
         loadTodayButton.addClickListener(event -> {
-            dochDate = LocalDate.now();
-            loadUpperDochGridData(dochPerson, dochDate);
+            if (null != dochPerson && null != dochDate) {
+                dochDate = LocalDate.now();
+                loadUpperDochGridData(dochPerson, dochDate);
+                loadPrevDateButton.setEnabled(true);
+            } else {
+                setDochNavigButtonsEnabled(false);
+            }
         });
         return loadTodayButton;
+    }
+
+    private Component initLoadPrevDateButton() {
+        loadPrevDateButton = new Button("Předchozí");
+        loadPrevDateButton.addClickListener(event -> {
+            if (null != dochPerson && null != dochDate) {
+                LocalDate prevDochDate = dochService.findPrevDochDate(dochPerson.getId(), dochDate);
+                if (prevDochDate == null) {
+                    loadPrevDateButton.setEnabled(false);
+                } else {
+                    dochDate = prevDochDate;
+                    loadUpperDochGridData(dochPerson, dochDate);
+                    setDochNavigButtonsEnabled(true);
+                }
+            } else {
+                setDochNavigButtonsEnabled(false);
+            }
+        });
+        return loadPrevDateButton;
+    }
+
+    private Component initLoadNextDateButton() {
+        loadNextDateButton = new Button("Následující");
+        loadNextDateButton.addClickListener(event -> {
+            if (null != dochPerson && null != dochDate) {
+                LocalDate nextDochDate = dochService.findNextDochDate(dochPerson.getId(), dochDate);
+                if (nextDochDate == null) {
+                    loadNextDateButton.setEnabled(false);
+                } else {
+                    dochDate = nextDochDate;
+                    loadUpperDochGridData(dochPerson, dochDate);
+                    setDochNavigButtonsEnabled(true);
+                }
+            } else {
+                setDochNavigButtonsEnabled(false);
+            }
+        });
+        return loadNextDateButton;
+    }
+
+    private Component initLoadLastDateButton() {
+        loadLastDateButton = new Button("Poslední");
+        loadLastDateButton.addClickListener(event -> {
+            if (null != dochPerson && null != dochDate) {
+                LocalDate lastDochDate = dochService.findLastDochDate(dochPerson.getId());
+                if (lastDochDate == null) {
+                    loadLastDateButton.setEnabled(false);
+                } else {
+                    dochDate = lastDochDate;
+                    loadUpperDochGridData(dochPerson, dochDate);
+                    setDochNavigButtonsEnabled(true);
+                }
+            } else {
+                setDochNavigButtonsEnabled(false);
+            }
+        });
+        return loadLastDateButton;
     }
 
 
@@ -398,10 +481,24 @@ public class DochView extends VerticalLayout implements HasLogger {
         upperDochGrid.setColumnReorderingAllowed(false);
         upperDochGrid.setClassName("vizman-simple-grid");
         upperDochGrid.setSelectionMode(Grid.SelectionMode.NONE);
+//        upperDochGrid.getDataProvider().addDataProviderListener(doch -> {
+//            upperDochGrid.getColumnByKey("dochDuration").setFooter(formatDuration(getDurationSum()));
+//        }
+
+        upperDochGrid.setItemDetailsRenderer(new ComponentRenderer<>(doch -> {
+            return StringUtils.isBlank(doch.getPoznamka()) ? null : new Paragraph(doch.getPoznamka());
+//            VerticalLayout layout = new VerticalLayout();
+//            layout.add(new Label("Address: " + person.getAddress().getStreet()
+//                    + " " + person.getAddress().getNumber()));
+//            layout.add(new Label("Year of birth: " + person.getYearOfBirth()));
+//            return layout;
+        }));
+        upperDochGrid.setDetailsVisibleOnClick(false);
+//        upperDochGrid.setDetailsVisible(doch.)
 
         Binder<Doch> upperBinder = new Binder<>(Doch.class);
 
-        upperDochGrid.addColumn(Doch::getCinSt)
+        upperDochGrid.addColumn(Doch::getDochState)
                 .setHeader("St.")
                 .setWidth("2em")
                 .setFlexGrow(0)
@@ -439,13 +536,18 @@ public class DochView extends VerticalLayout implements HasLogger {
                 .setTextAlign(ColumnTextAlign.END)
                 .setResizable(true)
         ;
-//        upperDochGrid.addComponentColumn(new ComponentRenderer<>(doch -> getdHodinComponent(doch)))
-//        upperDochGrid.addComponentColumn(doch -> getdHodinComponent(doch))
+//        upperDochGrid.addComponentColumn(new ComponentRenderer<>(doch -> getHodinComponent(doch)))
+//        upperDochGrid.addComponentColumn(doch -> getHodinComponent(doch))
+
+
         upperDochGrid.addColumn(casDochHodin)
                 .setHeader("Hod.")
+//                .setFooter("S: " + formatDuration(getDurationSum()))
+                .setFooter("S: ")
                 .setWidth("5em")
                 .setFlexGrow(0)
                 .setTextAlign(ColumnTextAlign.END)
+                .setKey(DOCH_DURATION_KEY)
                 .setResizable(true)
         ;
         upperDochGrid.addColumn(Doch::getCinnost)
@@ -457,6 +559,14 @@ public class DochView extends VerticalLayout implements HasLogger {
         return upperDochGrid;
     }
 
+    private Duration getDurationSum() {
+        return upperDochList.stream()
+                .map(Doch::getDochDuration)
+                .reduce(
+                        Duration.ZERO,
+                        (a, b) -> a.plus(b));
+    }
+
     private Component initLowerDochGrid() {
         lowerDochGrid = new Grid<>();
         lowerDochGrid.setHeight("20em");
@@ -464,7 +574,7 @@ public class DochView extends VerticalLayout implements HasLogger {
         lowerDochGrid.setColumnReorderingAllowed(false);
         lowerDochGrid.setClassName("vizman-simple-grid");
         lowerDochGrid.setSelectionMode(Grid.SelectionMode.NONE);
-        lowerDochGrid.addColumn(Doch::getCinSt)
+        lowerDochGrid.addColumn(Doch::getDochState)
                 .setHeader("St.")
                 .setWidth("2em")
                 .setResizable(true);
@@ -475,12 +585,12 @@ public class DochView extends VerticalLayout implements HasLogger {
                 .setWidth("3em")
 //                .setTextAlign(ColumnTextAlign.END)
                 .setResizable(true);
-        lowerDochGrid.addColumn(Doch::getDCasDo)
+        lowerDochGrid.addColumn(Doch::getToTime)
                 .setHeader("Do")
                 .setWidth("3em")
 //                .setTextAlign(ColumnTextAlign.END)
                 .setResizable(true);
-        lowerDochGrid.addColumn(Doch::getDHodin)
+        lowerDochGrid.addColumn(Doch::getDochDuration)
                 .setHeader("Hod.")
                 .setWidth("3em")
 //                .setTextAlign(ColumnTextAlign.END)
@@ -498,11 +608,24 @@ public class DochView extends VerticalLayout implements HasLogger {
     }
 
     public static HtmlComponent getCasDoComponent(Doch doch) {
-        return new Paragraph(null == doch.getDCasDo() ? "" : doch.getDCasDo().format( VzmFormatUtils.shortTimeFormatter));
+        return new Paragraph(null == doch.getToTime() ? "" : doch.getToTime().format( VzmFormatUtils.shortTimeFormatter));
     }
 
-    public static HtmlComponent getdHodinComponent(Doch doch) {
-        return new Paragraph(null == doch.getDHodin() ? "" : doch.getDHodin().format( VzmFormatUtils.shortTimeFormatter));
+    public static HtmlComponent getHodinComponent(Doch doch) {
+//        return new Paragraph(null == doch.getDochDuration() ? "" : doch.getDochDuration().format( VzmFormatUtils.shortTimeFormatter));
+        return new Paragraph(null == doch.getDochDuration() ? "" : formatDuration(doch.getDochDuration()));
+    }
+
+    public static String formatDuration(Duration duration) {
+        long seconds = duration.getSeconds();
+        long absSeconds = Math.abs(seconds);
+        String positive = String.format(
+//                "%d:%02d:%02d",
+                "%d:%02d",
+                absSeconds / 3600,
+                (absSeconds % 3600) / 60);
+//                absSeconds % 60);
+        return seconds < 0 ? "-" + positive : positive;
     }
 
     private void loadUpperDochGridData(Person dochPerson, LocalDate dochDate) {
@@ -510,11 +633,13 @@ public class DochView extends VerticalLayout implements HasLogger {
         if (null == dochPerson || null == dochPerson.getId() || null == dochDate) {
             upperDochList = new ArrayList();
         } else {
-            upperDochList = dochService.fetchDochsByPersonIdAndDate(dochPerson.getId(), dochDate);
+            upperDochList = dochService.fetchDochForPersonAndDate(dochPerson.getId(), dochDate);
         }
         upperDochGrid.setItems(upperDochList);
         upperDochGrid.getDataProvider().refreshAll();
         upperDochDateInfo.setText(null == dochDate ? "" : dochDate.format(dochDateHeaderFormatter));
+        upperDochGrid.getColumnByKey(DOCH_DURATION_KEY)
+                .setFooter("S: " + formatDuration(getDurationSum()));
     }
 
 

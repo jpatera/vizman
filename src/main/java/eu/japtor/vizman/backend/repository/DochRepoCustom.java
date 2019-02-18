@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface DochRepoCustom {
 
-    public List<Doch> getPreviousDochRecords(final Long personId, final LocalDate beforeDDate);
+    public List<Doch> getPrevDochRecords(final Long personId, final LocalDate beforeDochDate);
 
 }

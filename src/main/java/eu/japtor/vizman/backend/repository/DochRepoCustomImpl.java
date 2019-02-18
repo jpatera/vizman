@@ -18,7 +18,7 @@ public class DochRepoCustomImpl implements DochRepoCustom {
     EntityManager em;
 
     @Override
-    public List<Doch> getPreviousDochRecords(final Long personId, final LocalDate beforeDDate) {
+    public List<Doch> getPrevDochRecords(final Long personId, final LocalDate beforeDochDate) {
         // TODO: this is only a fake, fix it
         Query query = em.createQuery("SELECT d FROM Doch d where d.personId=2");
 //        Query query = em.createQuery("SELECT d FROM Doch d");
