@@ -33,6 +33,7 @@ import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.Ribbon;
 import org.apache.commons.lang3.StringUtils;
+import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -41,6 +42,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_DOCH;
@@ -358,7 +360,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         prichodBtn = new Button("Příchod");
         prichodBtn.getElement().setAttribute("theme", "primary");
         prichodBtn.addClickListener(event -> {
-            LocalDateTime now = LocalDateTime.now(minuteClock);
+            LocalDateTime dochStamp = LocalDateTime.now(minuteClock);
+            addPrichod(dochStamp);
         });
         return prichodBtn;
     }
@@ -701,6 +704,94 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         upperDochGrid.getDataProvider().refreshAll();
     }
 
+    private void addFirstPrichod(final LocalDateTime dochStamp) {
+
+        if (upperDochList.size() == 0) {
+            Doch dochPrich = new Doch(cinCache.getByCinKod("P"), dochStamp);
+            upperDochList.add(dochService.addFirstPrichod(dochPrich));
+        }
+
+        if (checkDochClosed() || checkContainsNemoc() || checkContainsNahradniVolno()) {
+            return;
+        }
+
+        if (null == getLastZkDoch() )
+//        Doch doch = new Doch(getCin());
+    }
+
+    private boolean checkDochClosed() {
+        if (upperDochList.stream().anyMatch(Doch::isClosed)) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Záznam docházky")
+                    .withMessage("Denní docházka je uzavřena - nelze upravovat")
+                    .withOkButton()
+                    .open();
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private boolean checkContainsNemoc() {
+        if (upperDochList.stream().anyMatch(Doch::isNemoc)) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Záznam docházky")
+                    .withMessage("Denní docházka obsahuje nemoc - nelze upravovat")
+                    .withOkButton()
+                    .open();
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private boolean checkContainsNahradniVolno() {
+        if (upperDochList.stream().anyMatch(Doch::isNahradniVolno)) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Záznam docházky")
+                    .withMessage("Denní docházka obsahuje náhradní volno - nelze upravovat")
+                    .withOkButton()
+                    .open();
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private boolean checkIsLastPrichod() {
+        if (upperDochList.stream().anyMatch(Doch::isNahradniVolno)) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Záznam docházky")
+                    .withMessage("Denní docházka obsahuje náhradní volno - nelze upravovat")
+                    .withOkButton()
+                    .open();
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private Doch getLastDoch() {
+        return upperDochList.get(upperDochList.size() - 1);
+    }
+
+    private Doch getLastZkDoch() {
+        // use ListIterator to iterate List in reverse order
+        ListIterator<Doch> dochRevIter = upperDochList.listIterator(upperDochList.size());
+
+        // hasPrevious() returns true if the list has previous element
+        while (dochRevIter.hasPrevious()) {
+            Doch doch = dochRevIter.previous();
+            if (doch.isZk()) {
+                return doch;
+            }
+        }
+        return null;
+    }
 
     private void odchodRadionChanged(HasValue.ValueChangeEvent event) {
         System.out.println("--------------- odchod radio changed");

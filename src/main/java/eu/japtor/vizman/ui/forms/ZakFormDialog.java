@@ -301,7 +301,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
                         ConfirmDialog
                                 .createWarning()
                                 .withCaption("Adresáře zakázky")
-                                .withMessage("Složka kontraktu není zadána, nelze vytvořit adresáře zakázky")
+                                .withMessage("Složka kontraktu není definována, nelze vytvořit adresáře zakázky")
                                 .open();
                     } else if(StringUtils.isBlank(zak.getFolder())) {
                         ConfirmDialog

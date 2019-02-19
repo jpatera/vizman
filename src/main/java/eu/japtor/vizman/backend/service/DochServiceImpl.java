@@ -56,5 +56,9 @@ public class DochServiceImpl implements DochService {
         return dochRepo.findLastDochDate(personId);
     }
 
+    @Override
+    public Doch addFirstPrichod(Doch doch) {
+        return dochRepo.save(doch);
+    }
 
 }

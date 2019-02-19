@@ -7,9 +7,9 @@ import javax.persistence.*;
 public class Cin extends AbstractGenIdEntity {
 
     private Integer poradi;
-    private String cinT1;
-    private String cinT2;
+    private String akceTyp;
     private String akce;
+    private String cinKod;
     private String cinnost;
     private Boolean calcprac;
     private String tmp;
@@ -23,22 +23,13 @@ public class Cin extends AbstractGenIdEntity {
         this.poradi = poradi;
     }
 
-    @Column(name = "CINT1")
-    public String getCinT1() {
-        return cinT1;
+    @Column(name = "AKCE_TYP")
+    public String getAkceTyp() {
+        return akceTyp;
     }
 
-    public void setCinT1(String cinT1) {
-        this.cinT1 = cinT1;
-    }
-
-    @Column(name = "CINT2")
-    public String getCinT2() {
-        return cinT2;
-    }
-
-    public void setCinT2(String cinT2) {
-        this.cinT2 = cinT2;
+    public void setAkceTyp(String akceTyp) {
+        this.akceTyp = akceTyp;
     }
 
     @Column(name = "AKCE")
@@ -49,6 +40,17 @@ public class Cin extends AbstractGenIdEntity {
     public void setAkce(String akce) {
         this.akce = akce;
     }
+
+
+    @Column(name = "CIN_KOD")
+    public String getCinKod() {
+        return cinKod;
+    }
+
+    public void setCinKod(String cinKod) {
+        this.cinKod = cinKod;
+    }
+
 
     @Column(name = "CINNOST")
     public String getCinnost() {

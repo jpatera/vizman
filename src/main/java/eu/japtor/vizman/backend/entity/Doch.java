@@ -38,6 +38,14 @@ public class Doch extends AbstractGenIdEntity {
     private String poznamka;
     private String tmp;
 
+
+    public Doch(final Cin cin, final LocalDateTime dochStamp) {
+        this.cinAkceTyp = cin.getAkceTyp();
+        this.cinCinKod = cin.getCinKod();
+        this.cinnost = cin.getCinnost();
+        this.fromTime = dochStamp;
+    }
+
     @Basic
     @Column(name = "PERSON_ID")
     public Long getPersonId() {
@@ -71,12 +79,12 @@ public class Doch extends AbstractGenIdEntity {
 
     @Basic
     @Column(name = "FROM_MODIF_DATETIME")
-    public LocalDateTime getzZDatcasod() {
+    public LocalDateTime getFromModifDatetime() {
         return fromModifDatetime;
     }
 
-    public void setzZDatcasod(LocalDateTime zDatCasOd) {
-        this.fromModifDatetime = zDatCasOd;
+    public void setFromModifDatetime(LocalDateTime fromModifDatetime) {
+        this.fromModifDatetime = fromModifDatetime;
     }
 
     @Basic
@@ -261,6 +269,26 @@ public class Doch extends AbstractGenIdEntity {
         this.tmp = tmp;
     }
 
+
+    @Transient
+    public boolean isClosed() {
+        return dochState.equals("K");
+    }
+
+    @Transient
+    public boolean isNemoc() {
+        return (cinCinKod.equals("ne")) || (cinCinKod.equals("nv"));
+    }
+
+    @Transient
+    public boolean isNahradniVolno() {
+        return cinCinKod.equals("nv");
+    }
+
+    @Transient
+    public boolean isZk() {
+        return cinAkceTyp.equals("ZK");
+    }
 
 //    @Basic
 //    @Column(name = "CZAK")

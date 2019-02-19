@@ -18,4 +18,6 @@ public interface DochService {
 
     LocalDate findLastDochDate(Long personId);
 
+    Doch addFirstPrichod(Doch doch);
+
 }
