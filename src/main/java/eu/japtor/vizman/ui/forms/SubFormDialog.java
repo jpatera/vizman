@@ -123,7 +123,12 @@ public class SubFormDialog extends AbstractEditorDialog<Fakt> {
         cfaktField.setReadOnly(true);
         cfaktField.setWidth("8em");
         getBinder().forField(cfaktField)
-                .withConverter(new StringToIntegerConverter("Neplatný formát čísla"))
+//                .withConverter(new StringToIntegerConverter("Neplatný formát čísla"))
+                .withConverter(
+                        Integer::valueOf,
+                        String::valueOf,
+                        // Text to use instead of the NumberFormatException message
+                        "Neplatný formát čísla")
                 .bind(Fakt::getCfakt, null);
         return cfaktField;
     }

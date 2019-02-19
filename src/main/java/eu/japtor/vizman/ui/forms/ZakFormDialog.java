@@ -736,9 +736,10 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
 //        honorarField.setReadOnly(true);
         honorarField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
         getBinder().forField(honorarField)
-                .withValidator(new StringLengthValidator(
-                        "Honorář nesmí být prázdný",
-                        1, null))
+                .asRequired("Honorář nesmí být prázdný")
+//                .withValidator(new StringLengthValidator(
+//                        "Honorář nesmí být prázdný",
+//                        1, null))
                 .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
                 .withValidator(honorar -> null != honorar && honorar.compareTo(BigDecimal.ZERO) >= 0
                         , "Honorář nesmí být záporný")
