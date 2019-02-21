@@ -74,9 +74,9 @@ public class CinListView extends VerticalLayout {
         grid.setId("cin-grid");  // .. same ID as is used in shared-styles grid's dom module
         grid.addColumn(Cin::getPoradi).setHeader("Pořadí").setWidth("3em").setResizable(true)
                 .setSortProperty("poradi");
-        grid.addColumn(Cin::getCinT1).setHeader("T1").setWidth("3em").setResizable(true);
-        grid.addColumn(Cin::getCinT2).setHeader("T2").setWidth("3em").setResizable(true);
+        grid.addColumn(Cin::getAkceTyp).setHeader("A-typ").setWidth("3em").setResizable(true);
         grid.addColumn(Cin::getAkce).setHeader("Akce").setWidth("4em").setResizable(true);
+        grid.addColumn(Cin::getCinKod).setHeader("C-kod").setWidth("3em").setResizable(true);
         grid.addColumn(Cin::getCinnost).setHeader("Činnost").setWidth("4em").setResizable(true);
         grid.addColumn(Cin::getCalcprac).setHeader("Kalk.prac.").setWidth("4em").setResizable(true);
         return grid;

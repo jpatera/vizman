@@ -4,8 +4,11 @@ import eu.japtor.vizman.backend.entity.Doch;
 import eu.japtor.vizman.backend.repository.DochRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -57,7 +60,25 @@ public class DochServiceImpl implements DochService {
     }
 
     @Override
+    @Transactional
     public Doch addFirstPrichod(Doch doch) {
+        return dochRepo.save(doch);
+    }
+
+    @Override
+    @Transactional
+    public Doch addOdchod(Doch doch) {
+        List<Doch> dochs = dochRepo.findLastZkDochForPersonAndDate(doch.getPersonId(), doch.getdDochDate());
+        if (dochs.size() != 1) {
+            return null;
+        }
+        LocalDateTime modifTime = LocalDateTime.now();
+        Doch lastZkDoch = dochs.get(0);
+        lastZkDoch.setToTime(doch.getFromTime());
+        lastZkDoch.setToModifDatetime(modifTime);
+        if (null != lastZkDoch.getFromTime() && null != lastZkDoch.getToTime()) {
+            lastZkDoch.setDochDuration(Duration.between(lastZkDoch.getFromTime(), lastZkDoch.getToTime()));
+        }
         return dochRepo.save(doch);
     }
 

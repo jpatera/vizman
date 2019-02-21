@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface DochRepo extends JpaRepository<Doch, Long> {
 
-    Doch findTopByPersonIdAndDochDate(Long personId, LocalDate dochDate);
+//    Doch findTopByPersonIdAndDochDate(Long personId, LocalDate dochDate);
 //    List<Doch> findByPersonIdAndDochDateOrderByPersonIdFromTimeDesc(Long personId, LocalDate dochDate);
 //    List<Doch> findByPersonIdAndDochDate(Long personId, LocalDate dochDate);
     List<Doch> findByPersonIdAndDochDateOrderByFromTimeDesc(Long personId, LocalDate dochDate);
@@ -23,6 +23,11 @@ public interface DochRepo extends JpaRepository<Doch, Long> {
     public interface DochDateOnly {
         LocalDate getDochDate();
     }
+
+
+    @Query(value = "SELECT TOP 1 * FROM VIZMAN.DOCH WHERE PERSON_ID = ?1 AND DOCH_DATE = ?2 AND CIN_AKCE_TYP = 'ZK' " +
+            " ORDER BY FROM_TIME DESC", nativeQuery = true)
+    public List<Doch> findLastZkDochForPersonAndDate(Long personId, LocalDate dochDate);
 
 
     @Query(value = "SELECT * FROM VIZMAN.DOCH WHERE PERSON_ID = ?1 AND DOCH_DATE = ?2 " +

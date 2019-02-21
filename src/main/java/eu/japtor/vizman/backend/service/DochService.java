@@ -20,4 +20,6 @@ public interface DochService {
 
     Doch addFirstPrichod(Doch doch);
 
+    Doch addOdchod(Doch doch);
+
 }

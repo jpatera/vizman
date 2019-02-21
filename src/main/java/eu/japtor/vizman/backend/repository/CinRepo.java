@@ -10,4 +10,5 @@ import java.util.List;
 //@Transactional(readOnly = true)
 public interface CinRepo extends JpaRepository<Cin, Long> {
 
+    Cin findByCinKod(String kod);
 }

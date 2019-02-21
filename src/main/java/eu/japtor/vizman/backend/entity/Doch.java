@@ -28,7 +28,7 @@ public class Doch extends AbstractGenIdEntity {
 
     private String dochState;
 
-    private Integer cinId;
+    private Long cinId;
     private Integer cinPol;
 //    private String cinSt;
     private String cinAkceTyp;
@@ -39,11 +39,25 @@ public class Doch extends AbstractGenIdEntity {
     private String tmp;
 
 
-    public Doch(final Cin cin, final LocalDateTime dochStamp) {
+    public Doch() {}
+
+    public Doch(final Cin cin, final Person person, final LocalDate dochDate, final LocalDateTime dochStamp) {
+
+        LocalDateTime modifTime = LocalDateTime.now();
+
+        this.personId = person.getId();
+        this.dochDate = dochDate;
+        this.cinId = cin.getId();
+//        this.cinPol = ...
         this.cinAkceTyp = cin.getAkceTyp();
         this.cinCinKod = cin.getCinKod();
         this.cinnost = cin.getCinnost();
+        this.calcprac = cin.getCalcprac();
         this.fromTime = dochStamp;
+        this.fromModifDatetime = modifTime;
+        this.userLogin = person.getUsername();
+
+        this.fromManual = false;
     }
 
     @Basic
@@ -89,12 +103,12 @@ public class Doch extends AbstractGenIdEntity {
 
     @Basic
     @Column(name = "FROM_TIME")
-    public LocalDateTime getDCasOd() {
+    public LocalDateTime getFromTime() {
         return fromTime;
     }
 
-    public void setDCasOd(LocalDateTime dCasOd) {
-        this.fromTime = dCasOd;
+    public void setFromTime(LocalDateTime fromTime) {
+        this.fromTime = fromTime;
     }
 
     @Basic
@@ -171,11 +185,11 @@ public class Doch extends AbstractGenIdEntity {
 
     @Basic
     @Column(name = "cin_id")
-    public Integer getCinId() {
+    public Long getCinId() {
         return cinId;
     }
 
-    public void setCinId(Integer cinId) {
+    public void setCinId(Long cinId) {
         this.cinId = cinId;
     }
 
@@ -272,7 +286,7 @@ public class Doch extends AbstractGenIdEntity {
 
     @Transient
     public boolean isClosed() {
-        return dochState.equals("K");
+        return ("K").equals(dochState);
     }
 
     @Transient

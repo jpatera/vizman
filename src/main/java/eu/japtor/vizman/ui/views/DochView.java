@@ -360,8 +360,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         prichodBtn = new Button("Příchod");
         prichodBtn.getElement().setAttribute("theme", "primary");
         prichodBtn.addClickListener(event -> {
-            LocalDateTime dochStamp = LocalDateTime.now(minuteClock);
-            addPrichod(dochStamp);
+                LocalDateTime dochStamp = LocalDateTime.now(minuteClock);
+                stampPrichod(dochStamp);
         });
         return prichodBtn;
     }
@@ -385,7 +385,11 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private Button initOdchodButton() {
         odchodButton = new Button("Odchod");
         odchodButton.setText("Odchod");
-        odchodButton.addClickListener(event -> odchodButtonClicked(event));
+        odchodButton.addClickListener(event -> {
+            odchodButtonClicked(event);
+            LocalDateTime dochStamp = LocalDateTime.now(minuteClock);
+            stampOdchod(dochStamp);
+        });
         odchodButton.setEnabled(false);
         return odchodButton;
     }
@@ -405,13 +409,13 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
 
-    private ValueProvider<Doch, String> casOdValProv =
-            doch -> null == doch.getDCasOd() ? null : doch.getDCasOd().format(VzmFormatUtils.shortTimeFormatter);
+    private ValueProvider<Doch, String> fromTimeValProv =
+            doch -> null == doch.getFromTime() ? null : doch.getFromTime().format(VzmFormatUtils.shortTimeFormatter);
 
-    private ValueProvider<Doch, String> casDoValProv =
+    private ValueProvider<Doch, String> toTimeValProv =
             doch -> null == doch.getToTime() ? null : doch.getToTime().format(VzmFormatUtils.shortTimeFormatter);
 
-    private ValueProvider<Doch, String> casDochHodin =
+    private ValueProvider<Doch, String> durationValProv =
             doch -> null == doch.getDochDuration() ? null : formatDuration(doch.getDochDuration());
 
 
@@ -445,7 +449,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Component initLoadTodayButton() {
 //        loadTodayButton = new Button("Dnes");
-        loadTodayButton = new Button(VaadinIcon.LIFEBUOY.create());
+        loadTodayButton = new Button(VaadinIcon.BULLSEYE.create());
         loadTodayButton.addClickListener(event -> {
             if (null != dochPerson) {
                 dochDate = LocalDate.now();
@@ -574,8 +578,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //                .bind(Doch::getDCasOd, Doch::setDCasOd);
 ////        Grid.Column<Doch> casOdColumn = upperDochGrid.addColumn(new ComponentRenderer<>(doch -> getCasOdComponent(doch)))
 
-//        Grid.Column<Doch> casOdColumn = upperDochGrid.addColumn(casOdValProv)
-        upperDochGrid.addColumn(casOdValProv)
+//        Grid.Column<Doch> casOdColumn = upperDochGrid.addColumn(fromTimeValProv)
+        upperDochGrid.addColumn(fromTimeValProv)
                 .setHeader("Od")
                 .setWidth("5em")
                 .setFlexGrow(0)
@@ -586,7 +590,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
 //        upperDochGrid.addComponentColumn(new ComponentRenderer<>(doch -> getCasDoComponent(doch)))
 //        upperDochGrid.addComponentColumn(doch -> getCasDoComponent(doch))
-        upperDochGrid.addColumn(casDoValProv)
+        upperDochGrid.addColumn(toTimeValProv)
                 .setHeader("Do")
                 .setWidth("5em")
                 .setFlexGrow(0)
@@ -597,7 +601,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        upperDochGrid.addComponentColumn(doch -> getHodinComponent(doch))
 
 
-        upperDochGrid.addColumn(casDochHodin)
+        upperDochGrid.addColumn(durationValProv)
                 .setHeader("Hod.")
 //                .setFooter("S: " + formatDuration(getDurationSum()))
                 .setFooter("S: ")
@@ -637,7 +641,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setResizable(true);
 //        upperDochGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
 //        upperDochGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
-        lowerDochGrid.addColumn(Doch::getDCasOd)
+        lowerDochGrid.addColumn(Doch::getFromTime)
                 .setHeader("Od")
                 .setWidth("3em")
 //                .setTextAlign(ColumnTextAlign.END)
@@ -661,7 +665,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     public static HtmlComponent getCasOdComponent(Doch doch) {
-        return new Paragraph(null == doch.getDCasOd() ? "" : doch.getDCasOd().format( VzmFormatUtils.shortTimeFormatter));
+        return new Paragraph(null == doch.getFromTime() ? "" : doch.getFromTime().format( VzmFormatUtils.shortTimeFormatter));
     }
 
     public static HtmlComponent getCasDoComponent(Doch doch) {
@@ -704,23 +708,48 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         upperDochGrid.getDataProvider().refreshAll();
     }
 
-    private void addFirstPrichod(final LocalDateTime dochStamp) {
-
-        if (upperDochList.size() == 0) {
-            Doch dochPrich = new Doch(cinCache.getByCinKod("P"), dochStamp);
-            upperDochList.add(dochService.addFirstPrichod(dochPrich));
-        }
-
-        if (checkDochClosed() || checkContainsNemoc() || checkContainsNahradniVolno()) {
+    private void stampPrichod(final LocalDateTime dochStamp) {
+        if (!canStampPrichod()) {
             return;
         }
-
-        if (null == getLastZkDoch() )
-//        Doch doch = new Doch(getCin());
+        Doch dochPrich = new Doch(cinRepo.findByCinKod("P"), dochPerson, dochDate, dochStamp);
+        upperDochList.add(dochService.addFirstPrichod(dochPrich));
+        upperDochGrid.getDataProvider().refreshAll();
     }
 
-    private boolean checkDochClosed() {
-        if (upperDochList.stream().anyMatch(Doch::isClosed)) {
+    private void stampOdchod(final LocalDateTime dochStamp) {
+        if (!canStampOdchod()) {
+            return;
+        }
+        Doch dochOdch = new Doch(cinRepo.findByCinKod("KP"), dochPerson, dochDate, dochStamp);
+        upperDochList.add(dochService.addOdchod(dochOdch));
+        upperDochGrid.getDataProvider().refreshAll();
+    }
+
+//    private boolean canRecordFirstPrichod() {
+//        return checkDochDateIsToday()
+//                && checkDayDochIsEmpty()
+//        ;
+//    }
+
+    private boolean canStampPrichod() {
+        return checkDochDateIsToday()
+                && checkDayDochIsOpened()
+                && checkPersonIsInOffice()
+        ;
+    }
+
+    private boolean canStampOdchod() {
+        return checkDochDateIsToday()
+                && checkDayDochIsOpened()
+                && checkPersonIsInOffice()
+        ;
+    }
+
+    private boolean checkDayDochIsOpened() {
+        if (upperDochList.stream().noneMatch(Doch::isClosed)) {
+            return true;
+        } else {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Záznam docházky")
@@ -728,13 +757,90 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     .withOkButton()
                     .open();
             return false;
-        } else {
-            return true;
         }
     }
 
-    private boolean checkContainsNemoc() {
+    private boolean checkDochDateIsToday() {
+        if (null != dochDate && dochDate.equals(LocalDate.now())) {
+            return true;
+        } else {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Datum docházky")
+                    .withMessage("Aktuální docházka není dnešní")
+                    .withOkButton()
+                    .open();
+            return false;
+        }
+    }
+
+    private boolean checkPersonIsOutOfOffice() {
+        boolean hasNoRecs = dochHasNoRecords();
+        boolean personIsOut = personIsOutOfOffice();
+
+        if (hasNoRecs || personIsOut) {
+            return true;
+        }
+        ConfirmDialog
+                .createInfo()
+                .withCaption("Přítomnost na pracovišti")
+                .withMessage("Osoba je evidována na pracovišti, nelze zaznamenat další příchod")
+                .withOkButton()
+                .open();
+        return false;
+    }
+
+    private boolean checkPersonIsInOffice() {
+        boolean personIsIn = personIsInOffice();
+
+        if (personIsIn) {
+            return true;
+        }
+        ConfirmDialog
+                .createInfo()
+                .withCaption("Nepřítomnost na pracovišti")
+                .withMessage("Osoba není evidována na pracovišti, nelze zaznamenat odchod")
+                .withOkButton()
+                .open();
+        return false;
+    }
+
+    private boolean dochHasNoRecords() {
+        return upperDochList.size() == 0;
+    }
+
+    private boolean personIsOutOfOffice() {
+        Doch lastZkDochRec = getLastZkDochRec();
+        return ((null != lastZkDochRec)
+                && (!"P".equals(lastZkDochRec.getCinCinKod()))
+                && (null == getLastZkDochRec().getToTime()));
+    }
+
+    private boolean personIsInOffice() {
+        Doch lastZkDochRec = getLastZkDochRec();
+        return ((null != lastZkDochRec)
+                && ("P".equals(lastZkDochRec.getCinCinKod()))
+                && (null == getLastZkDochRec().getToTime()));
+    }
+
+    private Doch getLastZkDochRec() {
+        // use ListIterator to iterate List in reverse order
+        ListIterator<Doch> dochReversedIter = upperDochList.listIterator(upperDochList.size());
+
+        // hasPrevious() returns true if the list has previous element
+        while (dochReversedIter.hasPrevious()) {
+            Doch doch = dochReversedIter.previous();
+            if (doch.isZk()) {
+                return doch;
+            }
+        }
+        return null;
+    }
+
+    private boolean checkDayDochContainsNemoc() {
         if (upperDochList.stream().anyMatch(Doch::isNemoc)) {
+            return true;
+        } else {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Záznam docházky")
@@ -742,13 +848,13 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     .withOkButton()
                     .open();
             return false;
-        } else {
-            return true;
         }
     }
 
-    private boolean checkContainsNahradniVolno() {
+    private boolean checkDayDocContainsNahradniVolno() {
         if (upperDochList.stream().anyMatch(Doch::isNahradniVolno)) {
+            return true;
+        } else {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Záznam docházky")
@@ -756,22 +862,21 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     .withOkButton()
                     .open();
             return false;
-        } else {
-            return true;
         }
     }
 
-    private boolean checkIsLastPrichod() {
-        if (upperDochList.stream().anyMatch(Doch::isNahradniVolno)) {
+    private boolean checkLastDayDochRecIsPrichod() {
+        Doch lastZkDoch = getLastZkDochRec();
+        if ((null != lastZkDoch) && (null == lastZkDoch.getToTime())) {
+            return true;
+        } else {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Záznam docházky")
-                    .withMessage("Denní docházka obsahuje náhradní volno - nelze upravovat")
+                    .withMessage("Poslední záznam v docházce není příchod")
                     .withOkButton()
                     .open();
             return false;
-        } else {
-            return true;
         }
     }
 
@@ -779,19 +884,6 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return upperDochList.get(upperDochList.size() - 1);
     }
 
-    private Doch getLastZkDoch() {
-        // use ListIterator to iterate List in reverse order
-        ListIterator<Doch> dochRevIter = upperDochList.listIterator(upperDochList.size());
-
-        // hasPrevious() returns true if the list has previous element
-        while (dochRevIter.hasPrevious()) {
-            Doch doch = dochRevIter.previous();
-            if (doch.isZk()) {
-                return doch;
-            }
-        }
-        return null;
-    }
 
     private void odchodRadionChanged(HasValue.ValueChangeEvent event) {
         System.out.println("--------------- odchod radio changed");
