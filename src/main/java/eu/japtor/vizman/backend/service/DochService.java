@@ -18,8 +18,12 @@ public interface DochService {
 
     LocalDate findLastDochDate(Long personId);
 
-    Doch addFirstPrichod(Doch doch);
+//    Doch addFirstPrichod(Doch doch);
 
-    Doch addOdchod(Doch doch);
+//    Doch addPrichod(Doch doch);
+
+    Doch addZkDochRec(Doch doch);
+
+    void removeLastZkDochRec(Doch doch);
 
 }

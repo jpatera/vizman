@@ -26,12 +26,16 @@ public interface DochRepo extends JpaRepository<Doch, Long> {
 
 
     @Query(value = "SELECT TOP 1 * FROM VIZMAN.DOCH WHERE PERSON_ID = ?1 AND DOCH_DATE = ?2 AND CIN_AKCE_TYP = 'ZK' " +
-            " ORDER BY FROM_TIME DESC", nativeQuery = true)
-    public List<Doch> findLastZkDochForPersonAndDate(Long personId, LocalDate dochDate);
+            " ORDER BY CDOCH DESC", nativeQuery = true)
+    public Doch findLastZkDochForPersonAndDate(Long personId, LocalDate dochDate);
+//    public List<Doch> findLastZkDochForPersonAndDate(Long personId, LocalDate dochDate);
 
+    @Query(value = "SELECT TOP 1 CDOCH FROM VIZMAN.DOCH WHERE PERSON_ID = ?1 AND DOCH_DATE = ?2 " +
+            " ORDER BY CDOCH DESC", nativeQuery = true)
+    public Integer findLastCdochForPersonAndDate(Long personId, LocalDate dochDate);
 
     @Query(value = "SELECT * FROM VIZMAN.DOCH WHERE PERSON_ID = ?1 AND DOCH_DATE = ?2 " +
-            " ORDER BY (CASE WHEN FROM_TIME IS NULL THEN 1 ELSE 0 END) DESC, FROM_TIME DESC", nativeQuery = true)
+            " ORDER BY CDOCH DESC", nativeQuery = true)
     public List<Doch> findDochForPersonAndDate(Long personId, LocalDate dochDate);
 
 

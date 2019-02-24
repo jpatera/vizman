@@ -6,6 +6,12 @@ import javax.persistence.*;
 @Table(name = "CIN")
 public class Cin extends AbstractGenIdEntity {
 
+    final static String ATYP_ZACATEK_KONEC_CIN = "ZK";
+    final static String ATYP_KONEC_CIN = "K";
+    final static String ATYP_KONEC_DNE = "X";
+    final static String ATYP_FIX_CAS = "F";
+    final static String ATYP_AUTO = "A";
+
     private Integer poradi;
     private String akceTyp;
     private String akce;
@@ -77,5 +83,24 @@ public class Cin extends AbstractGenIdEntity {
 
     public void setTmp(String tmp) {
         this.tmp = tmp;
+    }
+
+
+    public enum CinKod {
+        P,      // Prichod,         Na pracovisti
+        MO,     // Odchod na obed   Mimo pracoviste - obed
+        PM,     // Odchod pracovne  Pracovne mimo
+        L,      // Odchod k lekari  U lekare
+
+        KP,     // Ukonceni/preruseni prace
+        XD,     // Konec dne
+
+        N,      // Nahrada                  Nahrada (nepouziva se)
+        ne,     // Nemoc, OCR (cely den)    Nemoc, OCR
+        dc,     // Dovolena (cely den)      Dovolena
+        dp,     // Dovolena (1/2 dne)       Dovolena
+        nv,     // Neplacene volno          Neplac. volno
+        OA,     // Obed automaticky         Obed autom.
+        OO;     // Obed opravgeny           Obed oprav (asi se nepouziva)
     }
 }

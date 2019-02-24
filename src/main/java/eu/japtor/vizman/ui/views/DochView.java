@@ -9,6 +9,7 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -23,6 +24,7 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
+import eu.japtor.vizman.backend.entity.Cin;
 import eu.japtor.vizman.backend.entity.Doch;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Person;
@@ -82,11 +84,13 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private Button loadPrevDateButton;
     private Button loadNextDateButton;
     private Button loadLastDateButton;
+    private Button removeLastDochRecButton;
+    private Button removeAllDochRecButton;
 
 
     private Button prichodBtn;
     private Button prichodAltBtn;
-    private RadioButtonGroup<String> odchodRadio;
+    private RadioButtonGroup<Cin> odchodRadio;
     private Button odchodButton;
     private Button odchodAltButton;
 
@@ -118,6 +122,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     Clock minuteClock = Clock.tickMinutes(ZoneId.systemDefault());
     private TimeThread timeThread;
     DateTimeFormatter dochTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+    DateTimeFormatter upperDochDateHeaderFormatter = DateTimeFormatter.ofPattern("EEEE,");
     DateTimeFormatter dochDateHeaderFormatter = DateTimeFormatter.ofPattern("EEEE, dd.MM.yyyy");
 
 //    @Autowired
@@ -183,6 +188,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     public void initDochData() {
         getLogger().info("## Initializing doch data");
 
+        odchodRadio.setItems(cinRepo.findByAkceTypOrderByPoradi("ZK"));
+
         initPersonList();
 //        initDochCallendar();
 
@@ -194,7 +201,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         }
 
         if (null == dochDate) {
-            dochDate = LocalDate.of(2019, 1, 15);
+//            dochDate = LocalDate.of(2019, 1, 15);
+            dochDate = LocalDate.now();
             dochDatePicker.setValue(dochDate);
         }
         updateUpperDochGridPane(dochPerson, dochDate);
@@ -236,8 +244,9 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
 //        HorizontalLayout dochHeader = new HorizontalLayout();
         dochHeader.add(
+                new H3("DOCHÁZKA")
 //                new H4("Uživatel(ka): ")
-                initPersonCombo()
+                , initPersonCombo()
 //                , initDochDatePicker()
                 , dochMonthReportBtn
                 , dochYearReportBtn)
@@ -249,7 +258,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        dochControl.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
 //                new FormLayout.ResponsiveStep("15em", 2));
         dochControl.setWidth("30em");
-        dochControl.add(initDochDatePicker());
+//        dochControl.add(initDochDatePicker());
         dochControl.add(initClockComponent());
         dochControl.add(initPrichodButton());
         dochControl.add(initPrichodAltButton());
@@ -290,7 +299,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         dochPanel.add(dochRecPane);
         dochPanel.add(nepritControl);
 
-        this.add(new H3("DOCHÁZKA"), dochHeader, dochPanel);
+        this.add(dochHeader, dochPanel);
     }
 
 
@@ -323,7 +332,11 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Component initUpperDochDateInfo() {
         upperDochDateInfo = new Paragraph();
-        upperDochDateInfo.setText("Vybraný den docházky...");
+        upperDochDateInfo.getStyle()
+                .set("font-weight", "bold")
+                .set("margin-right", "0.8em")
+        ;
+        upperDochDateInfo.setText("Den docházky...");
         return upperDochDateInfo;
     }
 
@@ -348,6 +361,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         dochDatePicker = new DatePicker();
         dochDatePicker.setLabel(null);
         dochDatePicker.setWidth("100%");
+        dochDatePicker.getStyle().set("margin-right", "2em");
         dochDatePicker.addValueChangeListener(event -> {
             dochDate = event.getValue();
             updateUpperDochGridPane(dochPerson, dochDate);
@@ -372,10 +386,11 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return prichodAltBtn;
     }
 
-    private RadioButtonGroup initOdchodRadio() {
-        odchodRadio = new RadioButtonGroup();
+    private RadioButtonGroup<Cin> initOdchodRadio() {
+        odchodRadio = new RadioButtonGroup<>();
+//        odchodRadio.setItems("Odchod na oběd", "Odchod pracovně", "Odchod k lékaři", "Ukončení/přerušení práce");
+        odchodRadio.setRenderer(new ComponentRenderer<>(cin -> new Paragraph(cin.getAkce())));
         odchodRadio.addValueChangeListener(event -> odchodRadionChanged(event));
-        odchodRadio.setItems("Odchod na oběd", "Odchod pracovně", "Odchod k lékaři", "Ukončení/přerušení práce");
 //        odchodRadio.getElement().getStyle().set("display", "flex");
         odchodRadio.getElement().setAttribute("theme", "vertical");
         //                getStyle().set("flex-direction", "column");
@@ -386,9 +401,10 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         odchodButton = new Button("Odchod");
         odchodButton.setText("Odchod");
         odchodButton.addClickListener(event -> {
+            String odchodWhere = odchodRadio.getValue().getCinKod();
             odchodButtonClicked(event);
             LocalDateTime dochStamp = LocalDateTime.now(minuteClock);
-            stampOdchod(dochStamp);
+            stampOdchod(dochStamp, odchodWhere);
         });
         odchodButton.setEnabled(false);
         return odchodButton;
@@ -430,17 +446,19 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 , initLoadPrevDateButton()
                 , initLoadNextDateButton()
                 , initLoadLastDateButton()
+                , initRemoveLastDochRecButton()
         );
 
         upperDochHeader.add(
                 initUpperDochDateInfo()
-                , new Ribbon()
+                , initDochDatePicker()
+//                , new Ribbon("2em")
                 , buttonBox
         );
         return upperDochHeader;
     }
 
-    private void setDochNavigButtonsEnabled(boolean enabled) {
+    private void setDochNaviButtonsEnabled(boolean enabled) {
         loadTodayButton.setEnabled(enabled);
         loadPrevDateButton.setEnabled(enabled);
         loadNextDateButton.setEnabled(enabled);
@@ -449,7 +467,9 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Component initLoadTodayButton() {
 //        loadTodayButton = new Button("Dnes");
-        loadTodayButton = new Button(VaadinIcon.BULLSEYE.create());
+        Icon icon = VaadinIcon.BULLSEYE.create();
+        icon.setColor("green");
+        loadTodayButton = new Button(icon);
         loadTodayButton.addClickListener(event -> {
             if (null != dochPerson) {
                 dochDate = LocalDate.now();
@@ -458,9 +478,9 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //                fireEvent(new GeneratedVaadinDatePicker.ChangeEvent(dochDatePicker, false));
 //                loadUpperDochGridData(dochPerson, dochDate);
 //                loadPrevDateButton.setEnabled(true);
-                setDochNavigButtonsEnabled(true);
+                setDochNaviButtonsEnabled(true);
             } else {
-                setDochNavigButtonsEnabled(false);
+                setDochNaviButtonsEnabled(false);
             }
         });
         return loadTodayButton;
@@ -480,10 +500,10 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //                    dochDatePicker.setValue(dochDate);
 //                    fireEvent(new GeneratedVaadinDatePicker.ChangeEvent(dochDatePicker, false));
 //                    loadUpperDochGridData(dochPerson, dochDate);
-                    setDochNavigButtonsEnabled(true);
+                    setDochNaviButtonsEnabled(true);
                 }
             } else {
-                setDochNavigButtonsEnabled(false);
+                setDochNaviButtonsEnabled(false);
             }
         });
         return loadPrevDateButton;
@@ -503,10 +523,10 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //                    dochDatePicker.setValue(dochDate);
 //                    fireEvent(new GeneratedVaadinDatePicker.ChangeEvent(dochDatePicker, false));
 //                    loadUpperDochGridData(dochPerson, dochDate);
-                    setDochNavigButtonsEnabled(true);
+                    setDochNaviButtonsEnabled(true);
                 }
             } else {
-                setDochNavigButtonsEnabled(false);
+                setDochNaviButtonsEnabled(false);
             }
         });
         return loadNextDateButton;
@@ -526,13 +546,45 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //                    dochDatePicker.setValue(dochDate);
 //                    fireEvent(new GeneratedVaadinDatePicker.ChangeEvent(dochDatePicker, false));
 //                    loadUpperDochGridData(dochPerson, dochDate);
-                    setDochNavigButtonsEnabled(true);
+                    setDochNaviButtonsEnabled(true);
                 }
             } else {
-                setDochNavigButtonsEnabled(false);
+                setDochNaviButtonsEnabled(false);
             }
         });
         return loadLastDateButton;
+    }
+
+    private Component initRemoveLastDochRecButton() {
+//        loadLastDateButton = new Button("Poslední");
+        Icon icon = VaadinIcon.REPLY.create();
+        icon.setColor("crimson");
+        removeLastDochRecButton = new Button(icon);
+        removeLastDochRecButton.addClickListener(event -> {
+            if (canRemoveDochRec()) {
+                    Doch lastZkDochRec = getLastZkDochRec();
+                    if (lastZkDochRec == null) {
+                        ConfirmDialog.createInfo()
+                                .withCaption("Zrušení záznamu docházky")
+                                .withMessage("Nenalezen žádný záznam ke zrušení")
+                                .withOkButton()
+                                .open()
+                        ;
+                    } else {
+                        dochService.removeLastZkDochRec(lastZkDochRec);
+                        updateUpperDochGridPane(dochPerson, dochDate);
+//                    dochDatePicker.setValue(dochDate);
+//                    fireEvent(new GeneratedVaadinDatePicker.ChangeEvent(dochDatePicker, false));
+//                    loadUpperDochGridData(dochPerson, dochDate);
+//                        setDochNaviButtonsEnabled(true);
+//                        removeLastDochRecButton.setEnabled(false);
+//                    }
+//                } else {
+//                    setDochNaviButtonsEnabled(false);
+                    }
+            }
+        });
+        return removeLastDochRecButton;
     }
 
     private Component initUpperDochGrid() {
@@ -601,6 +653,12 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        upperDochGrid.addComponentColumn(doch -> getHodinComponent(doch))
 
 
+        upperDochGrid.addColumn(Doch::getCinnost)
+                .setHeader("Činnost")
+                .setWidth("4em")
+                .setFlexGrow(1)
+                .setResizable(true);
+
         upperDochGrid.addColumn(durationValProv)
                 .setHeader("Hod.")
 //                .setFooter("S: " + formatDuration(getDurationSum()))
@@ -611,11 +669,6 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setKey(DOCH_DURATION_KEY)
                 .setResizable(true)
         ;
-        upperDochGrid.addColumn(Doch::getCinnost)
-                .setHeader("Činnost")
-                .setWidth("4em")
-                .setFlexGrow(1)
-                .setResizable(true);
 
         return upperDochGrid;
     }
@@ -625,7 +678,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .map(Doch::getDochDuration)
                 .reduce(
                         Duration.ZERO,
-                        (a, b) -> a.plus(b));
+                        (a, b) -> (null == b) ? a : a.plus(b));
     }
 
     private Component initLowerDochGrid() {
@@ -693,7 +746,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         dochDatePicker.setValue(dochDate);
         fireEvent(new GeneratedVaadinDatePicker.ChangeEvent(dochDatePicker, false));
         loadUpperDochGridData(dochPerson, dochDate);
-        upperDochDateInfo.setText(null == dochDate ? "" : dochDate.format(dochDateHeaderFormatter));
+        upperDochDateInfo.setText(null == dochDate ? "" : dochDate.format(upperDochDateHeaderFormatter));
     }
 
     private void loadUpperDochGridData(Person dochPerson, LocalDate dochDate) {
@@ -712,17 +765,19 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         if (!canStampPrichod()) {
             return;
         }
-        Doch dochPrich = new Doch(cinRepo.findByCinKod("P"), dochPerson, dochDate, dochStamp);
-        upperDochList.add(dochService.addFirstPrichod(dochPrich));
+        Doch newDochPrich = new Doch(cinRepo.findByCinKod("P"), dochPerson, dochDate, dochStamp);
+        upperDochList.add(0, dochService.addZkDochRec(newDochPrich));
+        updateUpperDochGridPane(dochPerson, dochDate);
         upperDochGrid.getDataProvider().refreshAll();
     }
 
-    private void stampOdchod(final LocalDateTime dochStamp) {
+    private void stampOdchod(final LocalDateTime dochStamp, String odchodWhere) {
         if (!canStampOdchod()) {
             return;
         }
-        Doch dochOdch = new Doch(cinRepo.findByCinKod("KP"), dochPerson, dochDate, dochStamp);
-        upperDochList.add(dochService.addOdchod(dochOdch));
+        Doch newDochOdch = new Doch(cinRepo.findByCinKod(odchodWhere), dochPerson, dochDate, dochStamp);
+        upperDochList.add(0, dochService.addZkDochRec(newDochOdch));
+        updateUpperDochGridPane(dochPerson, dochDate);
         upperDochGrid.getDataProvider().refreshAll();
     }
 
@@ -735,7 +790,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private boolean canStampPrichod() {
         return checkDochDateIsToday()
                 && checkDayDochIsOpened()
-                && checkPersonIsInOffice()
+                && checkPersonIsOutOfOffice()
         ;
     }
 
@@ -743,6 +798,13 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return checkDochDateIsToday()
                 && checkDayDochIsOpened()
                 && checkPersonIsInOffice()
+        ;
+    }
+
+    private boolean canRemoveDochRec() {
+        return checkDayDochIsOpened()
+                && checkDochPersonIsSelected()
+                && checkDochDateIsSelected()
         ;
     }
 
@@ -754,6 +816,34 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     .createInfo()
                     .withCaption("Záznam docházky")
                     .withMessage("Denní docházka je uzavřena - nelze upravovat")
+                    .withOkButton()
+                    .open();
+            return false;
+        }
+    }
+
+    private boolean checkDochDateIsSelected() {
+        if (null != dochDate) {
+            return true;
+        } else {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Datum docházky")
+                    .withMessage("Není vybráno datum docházky")
+                    .withOkButton()
+                    .open();
+            return false;
+        }
+    }
+
+    private boolean checkDochPersonIsSelected() {
+        if (null != dochPerson) {
+            return true;
+        } else {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Osoba docházky")
+                    .withMessage("Není vybrána osoba docházky")
                     .withOkButton()
                     .open();
             return false;
@@ -791,9 +881,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private boolean checkPersonIsInOffice() {
-        boolean personIsIn = personIsInOffice();
-
-        if (personIsIn) {
+        if (personIsInOffice()) {
             return true;
         }
         ConfirmDialog
@@ -825,11 +913,13 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Doch getLastZkDochRec() {
         // use ListIterator to iterate List in reverse order
-        ListIterator<Doch> dochReversedIter = upperDochList.listIterator(upperDochList.size());
+//        ListIterator<Doch> dochReversedTimeIter = upperDochList.listIterator(upperDochList.size());
+        ListIterator<Doch> dochReversedTimeIter = upperDochList.listIterator();
 
         // hasPrevious() returns true if the list has previous element
-        while (dochReversedIter.hasPrevious()) {
-            Doch doch = dochReversedIter.previous();
+//        while (dochReversedIter.hasPrevious()) {
+        while (dochReversedTimeIter.hasNext()) {
+            Doch doch = dochReversedTimeIter.next();
             if (doch.isZk()) {
                 return doch;
             }

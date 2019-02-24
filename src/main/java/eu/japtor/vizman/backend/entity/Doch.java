@@ -12,15 +12,15 @@ import java.time.LocalTime;
 public class Doch extends AbstractGenIdEntity {
 
     private Long personId;
-    private String userLogin;
+    private String username;
     private LocalDate dochDate;
 
     private LocalDateTime fromModifDatetime;
-    private LocalDateTime fromTime;
+    private LocalTime fromTime;
     private Boolean fromManual;
 
     private LocalDateTime toModifDatetime;
-    private LocalDateTime toTime;
+    private LocalTime toTime;
     private Boolean toManual;
 
     @Transient
@@ -29,7 +29,7 @@ public class Doch extends AbstractGenIdEntity {
     private String dochState;
 
     private Long cinId;
-    private Integer cinPol;
+    private Integer cdoch;
 //    private String cinSt;
     private String cinAkceTyp;
     private String cinCinKod;
@@ -48,14 +48,14 @@ public class Doch extends AbstractGenIdEntity {
         this.personId = person.getId();
         this.dochDate = dochDate;
         this.cinId = cin.getId();
-//        this.cinPol = ...
+//        this.cdoch = ...
         this.cinAkceTyp = cin.getAkceTyp();
         this.cinCinKod = cin.getCinKod();
         this.cinnost = cin.getCinnost();
         this.calcprac = cin.getCalcprac();
-        this.fromTime = dochStamp;
+        this.fromTime = dochStamp.toLocalTime();
         this.fromModifDatetime = modifTime;
-        this.userLogin = person.getUsername();
+        this.username = person.getUsername();
 
         this.fromManual = false;
     }
@@ -72,13 +72,13 @@ public class Doch extends AbstractGenIdEntity {
 
 
     @Basic
-    @Column(name = "USER_LOGIN")
-    public String getUserLogin() {
-        return userLogin;
+    @Column(name = "USERNAME")
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserLogin(String userLogin) {
-        this.userLogin = userLogin;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     @Basic
@@ -103,11 +103,11 @@ public class Doch extends AbstractGenIdEntity {
 
     @Basic
     @Column(name = "FROM_TIME")
-    public LocalDateTime getFromTime() {
+    public LocalTime getFromTime() {
         return fromTime;
     }
 
-    public void setFromTime(LocalDateTime fromTime) {
+    public void setFromTime(LocalTime fromTime) {
         this.fromTime = fromTime;
     }
 
@@ -133,11 +133,11 @@ public class Doch extends AbstractGenIdEntity {
 
     @Basic
     @Column(name = "TO_TIME")
-    public LocalDateTime getToTime() {
+    public LocalTime getToTime() {
         return toTime;
     }
 
-    public void setToTime(LocalDateTime toTime) {
+    public void setToTime(LocalTime toTime) {
         this.toTime = toTime;
     }
 
@@ -194,13 +194,13 @@ public class Doch extends AbstractGenIdEntity {
     }
 
     @Basic
-    @Column(name = "CIN_POL")
-    public Integer getCinPol() {
-        return cinPol;
+    @Column(name = "CDOCH")
+    public Integer getCdoch() {
+        return cdoch;
     }
 
-    public void setCinPol(Integer cinPol) {
-        this.cinPol = cinPol;
+    public void setCdoch(Integer cdoch) {
+        this.cdoch = cdoch;
     }
 
 //    @Basic

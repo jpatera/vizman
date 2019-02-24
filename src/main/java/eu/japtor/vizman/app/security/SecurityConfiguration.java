@@ -162,9 +162,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .formLogin()
                     .loginPage("/login").permitAll()
 //                    .defaultSuccessUrl("/home", true)
-                    .defaultSuccessUrl("/doch", false)
+                    .defaultSuccessUrl("/home", false)
                     .loginProcessingUrl("/login")
-                    .successForwardUrl("/kztree")
+                    .successForwardUrl("/doch")
                     .failureUrl("/login?error")
                     .and()
 

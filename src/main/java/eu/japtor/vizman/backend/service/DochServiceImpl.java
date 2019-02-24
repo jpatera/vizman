@@ -59,27 +59,108 @@ public class DochServiceImpl implements DochService {
         return dochRepo.findLastDochDate(personId);
     }
 
-    @Override
-    @Transactional
-    public Doch addFirstPrichod(Doch doch) {
-        return dochRepo.save(doch);
-    }
+//    @Override
+//    @Transactional
+//    public Doch addFirstPrichod(Doch doch) {
+//        return dochRepo.save(doch);
+//    }
+
+//    @Override
+//    @Transactional
+//    public Doch addPrichod(Doch doch) {
+////        List<Doch> dochs = dochRepo.findLastZkDochForPersonAndDate(doch.getPersonId(), doch.getdDochDate());
+////        Doch lastZkDoch = dochRepo.findLastZkDochForPersonAndDate(doch.getPersonId(), doch.getdDochDate());
+//        LocalDateTime modifTime = LocalDateTime.now();
+//
+////        if (dochs.size() != 1) {
+////        Doch lastZkDoch = dochs.get(0);
+////        if (null == lastZkDoch) {
+////            lastZkDoch.setToTime(doch.getFromTime());
+////            lastZkDoch.setToModifDatetime(modifTime);
+////            if (null != lastZkDoch.getFromTime() && null != lastZkDoch.getToTime()) {
+////                lastZkDoch.setDochDuration(Duration.between(lastZkDoch.getFromTime(), lastZkDoch.getToTime()));
+////            }
+////        }
+//        finalizePrevZkDoch(doch, modifTime);
+//
+//        Integer lastCdoch = Math.max(1, dochRepo.findLastCdochForPersonAndDate(doch.getPersonId(), doch.getdDochDate()));
+//        doch.setCdoch(null == lastCdoch ? 1 : lastCdoch++);
+//        doch.setFromModifDatetime(modifTime);
+//        return dochRepo.save(doch);
+//    }
 
     @Override
     @Transactional
-    public Doch addOdchod(Doch doch) {
-        List<Doch> dochs = dochRepo.findLastZkDochForPersonAndDate(doch.getPersonId(), doch.getdDochDate());
-        if (dochs.size() != 1) {
-            return null;
-        }
+    public Doch addZkDochRec(Doch doch) {
+//        List<Doch> dochs = dochRepo.findLastZkDochForPersonAndDate(doch.getPersonId(), doch.getdDochDate());
+//        Doch lastZkDoch = dochRepo.findLastZkDochForPersonAndDate(doch.getPersonId(), doch.getdDochDate());
+//        if (dochs.size() != 1) {
         LocalDateTime modifTime = LocalDateTime.now();
-        Doch lastZkDoch = dochs.get(0);
-        lastZkDoch.setToTime(doch.getFromTime());
-        lastZkDoch.setToModifDatetime(modifTime);
-        if (null != lastZkDoch.getFromTime() && null != lastZkDoch.getToTime()) {
-            lastZkDoch.setDochDuration(Duration.between(lastZkDoch.getFromTime(), lastZkDoch.getToTime()));
-        }
+
+//        Doch lastZkDoch = dochs.get(0);
+//        if (null == lastZkDoch) {
+//            // Previous ZK doch exist, let us close this record:
+//            lastZkDoch.setToTime(doch.getFromTime());
+//            lastZkDoch.setToModifDatetime(modifTime);
+//            if (null != lastZkDoch.getFromTime() && null != lastZkDoch.getToTime()) {
+//                lastZkDoch.setDochDuration(Duration.between(lastZkDoch.getFromTime(), lastZkDoch.getToTime()));
+//            }
+//        }
+
+        finalizePrevZkDoch(doch, modifTime);
+
+        Integer lastCdoch = dochRepo.findLastCdochForPersonAndDate(doch.getPersonId(), doch.getdDochDate());
+        Integer nextCdoch = null == lastCdoch ? 1 : Math.max(1, lastCdoch + 1);
+        doch.setCdoch(nextCdoch);
+        doch.setFromModifDatetime(modifTime);
         return dochRepo.save(doch);
+    }
+
+    private void finalizePrevZkDoch(Doch doch, final LocalDateTime modifTime) {
+        Doch prevZkDoch = dochRepo.findLastZkDochForPersonAndDate(doch.getPersonId(), doch.getdDochDate());
+        if (null != prevZkDoch) {
+            prevZkDoch.setToTime(doch.getFromTime());
+            prevZkDoch.setToModifDatetime(modifTime);
+            if (null != prevZkDoch.getFromTime() && null != doch.getFromTime()) {
+                prevZkDoch.setDochDuration(Duration.between(prevZkDoch.getFromTime(), doch.getFromTime()));
+            }
+        }
+    }
+
+
+    @Override
+    @Transactional
+    public void removeLastZkDochRec(Doch doch) {
+//        List<Doch> dochs = dochRepo.findLastZkDochForPersonAndDate(doch.getPersonId(), doch.getdDochDate());
+//        Doch lastZkDoch = dochRepo.findLastZkDochForPersonAndDate(doch.getPersonId(), doch.getdDochDate());
+//        if (dochs.size() != 1) {
+        LocalDateTime modifTime = LocalDateTime.now();
+
+//        Doch lastZkDoch = dochs.get(0);
+//        if (null == lastZkDoch) {
+//            // Previous ZK doch exist, let us close this record:
+//            lastZkDoch.setToTime(doch.getFromTime());
+//            lastZkDoch.setToModifDatetime(modifTime);
+//            if (null != lastZkDoch.getFromTime() && null != lastZkDoch.getToTime()) {
+//                lastZkDoch.setDochDuration(Duration.between(lastZkDoch.getFromTime(), lastZkDoch.getToTime()));
+//            }
+//        }
+
+
+        dochRepo.deleteById(doch.getId());
+
+        Doch prevZkDoch = dochRepo.findLastZkDochForPersonAndDate(doch.getPersonId(), doch.getdDochDate());
+        if (null != prevZkDoch) {
+            prevZkDoch.setToTime(null);
+            prevZkDoch.setDochDuration(null);
+            prevZkDoch.setToModifDatetime(null);
+            prevZkDoch.setToManual(false);
+        }
+
+        dochRepo.save(prevZkDoch);
+
+//        reactivatePrevZkDoch(doch, modifTime);
+
     }
 
 }

@@ -43,7 +43,7 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
 //        Page<Product> findByNameLikeIgnoreCase(String name, Pageable page);
 
-    List<Kont> findByObjednatelLikeIgnoreCase(String username, Sort sort);
+    List<Kont> findByObjednatelLikeIgnoreCase(String objednatel, Sort sort);
     // TODO: more versatile might be using Example matchers
     // See: https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example
     // See: https://vaadin.com/forum/thread/16031323
