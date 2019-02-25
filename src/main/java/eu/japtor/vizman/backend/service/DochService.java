@@ -22,8 +22,12 @@ public interface DochService {
 
 //    Doch addPrichod(Doch doch);
 
-    Doch addZkDochRec(Doch doch);
+    Doch closePrevZkDochAndOpenNew(Doch newDoch);
 
-    void removeLastZkDochRec(Doch doch);
+    Doch closeLastZkDoch(final Long personId, final LocalDate dochDate);
+
+    void removeLastZkDochAndReopenPrev(Doch doch);
+
+    boolean removeAllDochRecsForPersonAndDate(Long personId, LocalDate dochDate);
 
 }

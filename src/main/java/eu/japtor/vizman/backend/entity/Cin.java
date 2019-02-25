@@ -6,21 +6,35 @@ import javax.persistence.*;
 @Table(name = "CIN")
 public class Cin extends AbstractGenIdEntity {
 
-    final static String ATYP_ZACATEK_KONEC_CIN = "ZK";
-    final static String ATYP_KONEC_CIN = "K";
-    final static String ATYP_KONEC_DNE = "X";
-    final static String ATYP_FIX_CAS = "F";
-    final static String ATYP_AUTO = "A";
-
-    private Integer poradi;
-    private String akceTyp;
-    private String akce;
-    private String cinKod;
-    private String cinnost;
-    private Boolean calcprac;
-    private String tmp;
+    public static final String ATYP_ZACATEK_KONEC_CIN = "ZK";
+    public static final String ATYP_KONEC_CIN = "K";
+    public static final String ATYP_KONEC_DNE = "X";
+    public static final String ATYP_FIX_CAS = "F";
+    public static final String ATYP_AUTO = "A";
 
     @Column(name = "PORADI")
+    private Integer poradi;
+
+    @Column(name = "AKCE_TYP")
+    private String akceTyp;
+
+    @Column(name = "AKCE")
+    private String akce;
+
+    @Column(name = "CIN_KOD")
+    @Enumerated(EnumType.STRING)
+    @Basic
+    private CinKod cinKod;
+
+    @Column(name = "CINNOST")
+    private String cinnost;
+
+    @Column(name = "CALCPRAC")
+    private Boolean calcprac;
+
+    @Column(name = "TMP")
+    private String tmp;
+
     public Integer getPoradi() {
         return poradi;
     }
@@ -29,7 +43,6 @@ public class Cin extends AbstractGenIdEntity {
         this.poradi = poradi;
     }
 
-    @Column(name = "AKCE_TYP")
     public String getAkceTyp() {
         return akceTyp;
     }
@@ -38,7 +51,6 @@ public class Cin extends AbstractGenIdEntity {
         this.akceTyp = akceTyp;
     }
 
-    @Column(name = "AKCE")
     public String getAkce() {
         return akce;
     }
@@ -48,17 +60,15 @@ public class Cin extends AbstractGenIdEntity {
     }
 
 
-    @Column(name = "CIN_KOD")
-    public String getCinKod() {
+    public CinKod getCinKod() {
         return cinKod;
     }
 
-    public void setCinKod(String cinKod) {
+    public void setCinKod(CinKod cinKod) {
         this.cinKod = cinKod;
     }
 
 
-    @Column(name = "CINNOST")
     public String getCinnost() {
         return cinnost;
     }
@@ -67,7 +77,6 @@ public class Cin extends AbstractGenIdEntity {
         this.cinnost = cinnost;
     }
 
-    @Column(name = "CALCPRAC")
     public Boolean getCalcprac() {
         return calcprac;
     }
@@ -76,7 +85,6 @@ public class Cin extends AbstractGenIdEntity {
         this.calcprac = calcprac;
     }
 
-    @Column(name = "TMP")
     public String getTmp() {
         return tmp;
     }

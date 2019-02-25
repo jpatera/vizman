@@ -11,32 +11,89 @@ import java.time.LocalTime;
 //@SequenceGenerator(initialValue = 100001, name = "id_gen", sequenceName = "doch_seq")
 public class Doch extends AbstractGenIdEntity {
 
+    @Basic
+    @Column(name = "PERSON_ID")
     private Long personId;
+
+    @Basic
+    @Column(name = "USERNAME")
     private String username;
+
+    @Basic
+    @Column(name = "DOCH_DATE")
     private LocalDate dochDate;
 
-    private LocalDateTime fromModifDatetime;
-    private LocalTime fromTime;
-    private Boolean fromManual;
-
-    private LocalDateTime toModifDatetime;
-    private LocalTime toTime;
-    private Boolean toManual;
-
-    @Transient
-    private Duration dochDuration;
-
+    @Basic
+    @Column(name = "DOCH_STATE")
     private String dochState;
 
+    @Basic
+    @Column(name = "FROM_TIME")
+    private LocalTime fromTime;
+
+    @Basic
+    @Column(name = "FROM_MODIF_DATETIME")
+    private LocalDateTime fromModifDatetime;
+
+    @Basic
+    @Column(name = "FROM_MANUAL")
+    private Boolean fromManual;
+
+    @Basic
+    @Column(name = "TO_TIME")
+    private LocalTime toTime;
+
+    @Basic
+    @Column(name = "TO_MODIF_DATETIME")
+    private LocalDateTime toModifDatetime;
+
+    @Basic
+    @Column(name = "DOCH_DURATION")
+    LocalTime dochDuration;
+
+    @Basic
+    @Column(name = "DOCH_DUR")
+    Duration dochDur;
+
+    @Basic
+    @Column(name = "TO_MANUAL")
+    private Boolean toManual;
+
+    @Basic
+    @Column(name = "cin_id")
     private Long cinId;
+
+    @Basic
+    @Column(name = "CDOCH")
     private Integer cdoch;
-//    private String cinSt;
+
+    @Basic
+    @Column(name = "CIN_AKCE_TYP")
     private String cinAkceTyp;
-    private String cinCinKod;
+
+    @Basic
+    @Column(name = "CIN_CIN_KOD")
+    @Enumerated(EnumType.STRING)
+    private Cin.CinKod cinCinKod;
+
+    @Basic
+    @Column(name = "CINNOST")
     private String cinnost;
+
+    @Basic
+    @Column(name = "CALCPRAC")
     private Boolean calcprac;
+
+    @Basic
+    @Column(name = "POZNAMKA")
     private String poznamka;
+
+    @Basic
+    @Column(name = "TMP")
     private String tmp;
+
+    @Transient
+    private Duration dochDurationUI;
 
 
     public Doch() {}
@@ -60,8 +117,6 @@ public class Doch extends AbstractGenIdEntity {
         this.fromManual = false;
     }
 
-    @Basic
-    @Column(name = "PERSON_ID")
     public Long getPersonId() {
         return personId;
     }
@@ -71,8 +126,6 @@ public class Doch extends AbstractGenIdEntity {
     }
 
 
-    @Basic
-    @Column(name = "USERNAME")
     public String getUsername() {
         return username;
     }
@@ -81,8 +134,6 @@ public class Doch extends AbstractGenIdEntity {
         this.username = username;
     }
 
-    @Basic
-    @Column(name = "DOCH_DATE")
     public LocalDate getdDochDate() {
         return dochDate;
     }
@@ -91,8 +142,6 @@ public class Doch extends AbstractGenIdEntity {
         this.dochDate = dochDate;
     }
 
-    @Basic
-    @Column(name = "FROM_MODIF_DATETIME")
     public LocalDateTime getFromModifDatetime() {
         return fromModifDatetime;
     }
@@ -101,8 +150,6 @@ public class Doch extends AbstractGenIdEntity {
         this.fromModifDatetime = fromModifDatetime;
     }
 
-    @Basic
-    @Column(name = "FROM_TIME")
     public LocalTime getFromTime() {
         return fromTime;
     }
@@ -111,8 +158,6 @@ public class Doch extends AbstractGenIdEntity {
         this.fromTime = fromTime;
     }
 
-    @Basic
-    @Column(name = "FROM_MANUAL")
     public Boolean getFromManual() {
         return fromManual;
     }
@@ -121,8 +166,6 @@ public class Doch extends AbstractGenIdEntity {
         this.fromManual = fromManual;
     }
 
-    @Basic
-    @Column(name = "TO_MODIF_DATETIME")
     public LocalDateTime getToModifDatetime() {
         return toModifDatetime;
     }
@@ -131,8 +174,6 @@ public class Doch extends AbstractGenIdEntity {
         this.toModifDatetime = toModifDatetime;
     }
 
-    @Basic
-    @Column(name = "TO_TIME")
     public LocalTime getToTime() {
         return toTime;
     }
@@ -141,8 +182,6 @@ public class Doch extends AbstractGenIdEntity {
         this.toTime = toTime;
     }
 
-    @Basic
-    @Column(name = "TO_MANUAL")
     public Boolean getToManual() {
         return toManual;
     }
@@ -151,40 +190,55 @@ public class Doch extends AbstractGenIdEntity {
         this.toManual = toManual;
     }
 
+    public Duration getDochDur() {
+        return dochDur;
+    }
+
+    public void setDochDur(Duration dochDur) {
+        this.dochDur = dochDur;
+    }
+
 //    @Basic
 //    @Column(name = "DOCH_DURATION")
 //    public LocalTime getDochDuration() {
 //        return dochDuration;
 //    }
 //
-//    public void setDochDuration(Duration dochDuration) {
+//    public void setDochDurationFromUI(Duration dochDuration) {
 //        this.dochDuration = dochDuration;
 //    }
 
     @Transient
-    public Duration getDochDuration() {
-        return this.dochDuration;
+    public Duration getDochDurationUI() {
+        return this.dochDurationUI;
     }
+
     @Transient
-    public void setDochDuration(Duration _dochDuration) {
-        this.dbDochDuration = _dochDuration == null ? null : LocalTime.MIDNIGHT.plus(_dochDuration);
+    public Duration getSignedDochDur() {
+        if (null == dochDur) {
+            return Duration.ZERO;
+        } else if (Cin.CinKod.OA == cinCinKod) {
+            return Duration.ZERO.minus(dochDur);
+        } else {
+            return dochDur;
+        }
+    }
+
+    @Transient
+    public void setDochDurationFromUI(Duration dochDurationUI) {
+        this.dochDuration = dochDurationUI == null ? null : LocalTime.MIDNIGHT.plus(dochDurationUI);
     }
 
 
-    @Basic
-    @Column(name = "DOCH_DURATION")
-    LocalTime dbDochDuration;
 
     @PostLoad
     public void init() {
-        this.dochDuration = this.dbDochDuration == null ? null : Duration.between(LocalTime.MIDNIGHT, dbDochDuration);
+        this.dochDurationUI = this.dochDuration == null ? null : Duration.between(LocalTime.MIDNIGHT, dochDuration);
 //        this.dochDuration = this.dbDochDuration == null ? null : LocalTime.MIDNIGHT.plus(this.dbDochDuration);
 //        this.myDuration = this.myDurationString == null ? null : Duration.parse(this.myDurationString);
     };
 
 
-    @Basic
-    @Column(name = "cin_id")
     public Long getCinId() {
         return cinId;
     }
@@ -193,8 +247,6 @@ public class Doch extends AbstractGenIdEntity {
         this.cinId = cinId;
     }
 
-    @Basic
-    @Column(name = "CDOCH")
     public Integer getCdoch() {
         return cdoch;
     }
@@ -213,8 +265,6 @@ public class Doch extends AbstractGenIdEntity {
 //        this.cinSt = cinSt;
 //    }
 
-    @Basic
-    @Column(name = "DOCH_STATE")
     public String getDochState() {
         return dochState;
     }
@@ -223,8 +273,6 @@ public class Doch extends AbstractGenIdEntity {
         this.dochState = dochState;
     }
 
-    @Basic
-    @Column(name = "CIN_AKCE_TYP")
     public String getCinAkceTyp() {
         return cinAkceTyp;
     }
@@ -233,18 +281,14 @@ public class Doch extends AbstractGenIdEntity {
         this.cinAkceTyp = cinAkceTyp;
     }
 
-    @Basic
-    @Column(name = "CIN_CIN_KOD")
-    public String getCinCinKod() {
+    public Cin.CinKod getCinCinKod() {
         return cinCinKod;
     }
 
-    public void setCinCinKod(String cinCinKod) {
+    public void setCinCinKod(Cin.CinKod cinCinKod) {
         this.cinCinKod = cinCinKod;
     }
 
-    @Basic
-    @Column(name = "CINNOST")
     public String getCinnost() {
         return cinnost;
     }
@@ -253,8 +297,6 @@ public class Doch extends AbstractGenIdEntity {
         this.cinnost = cinnost;
     }
 
-    @Basic
-    @Column(name = "CALCPRAC")
     public Boolean getCalcprac() {
         return calcprac;
     }
@@ -263,8 +305,6 @@ public class Doch extends AbstractGenIdEntity {
         this.calcprac = calcprac;
     }
 
-    @Basic
-    @Column(name = "POZNAMKA")
     public String getPoznamka() {
         return poznamka;
     }
@@ -273,8 +313,6 @@ public class Doch extends AbstractGenIdEntity {
         this.poznamka = poznamka;
     }
 
-    @Basic
-    @Column(name = "TMP")
     public String getTmp() {
         return tmp;
     }
@@ -286,22 +324,22 @@ public class Doch extends AbstractGenIdEntity {
 
     @Transient
     public boolean isClosed() {
-        return ("K").equals(dochState);
+        return (Cin.ATYP_KONEC_CIN).equals(dochState);
     }
 
     @Transient
     public boolean isNemoc() {
-        return (cinCinKod.equals("ne")) || (cinCinKod.equals("nv"));
+        return (cinCinKod.equals(Cin.CinKod.ne)) || (cinCinKod.equals(Cin.CinKod.nv));
     }
 
     @Transient
     public boolean isNahradniVolno() {
-        return cinCinKod.equals("nv");
+        return cinCinKod.equals(Cin.CinKod.nv);
     }
 
     @Transient
     public boolean isZk() {
-        return cinAkceTyp.equals("ZK");
+        return cinAkceTyp.equals(Cin.ATYP_ZACATEK_KONEC_CIN);
     }
 
 //    @Basic
