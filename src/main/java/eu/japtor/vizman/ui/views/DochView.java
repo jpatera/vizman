@@ -24,15 +24,14 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
-import eu.japtor.vizman.backend.entity.Cin;
-import eu.japtor.vizman.backend.entity.Doch;
-import eu.japtor.vizman.backend.entity.Perm;
-import eu.japtor.vizman.backend.entity.Person;
+import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.CinRepo;
 import eu.japtor.vizman.backend.service.DochService;
 import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
+import eu.japtor.vizman.ui.components.Operation;
+import eu.japtor.vizman.ui.forms.DochFormDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
@@ -61,6 +60,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private static final String DOCH_DURATION_KEY = "doch-duration-key";
     private static final String DOCH_CINNOST_KEY = "doch-cinnost-key";
+
+    private DochFormDialog dochFormDialog;
     private List<Person> dochPersonList;
     private ComboBox<Person> dochPersonCombo;
     private DatePicker dochDatePicker;
@@ -217,6 +218,73 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     @PostConstruct
     public void init() {
         initDochData();
+        dochFormDialog = new DochFormDialog(
+                this::stampDochManual);
+    }
+
+    private void stampDochManual(DochManual manualDoch, Operation operation) {
+
+    }
+
+    private void stampDochManual(Doch doch, Operation operation) {
+        LocalDateTime modifStamp = LocalDateTime.now();
+        LocalTime dochStamp = null;
+        Cin newDochCin;
+        Doch newRec = null;
+
+        if (Operation.STAMP_PRICH_MAN == operation) {
+            dochStamp = doch.getFromTime();
+            newDochCin = cinRepo.findByCinKod(Cin.CinKod.P);
+            newRec = new Doch(
+                    dochDate
+                    , dochPerson
+                    , newDochCin
+                    , dochStamp
+                    , modifStamp
+                    , true
+            );
+
+//            Doch lastRec = getLastZkDochRec();
+//            lastRec.setToTime(dochTimeStamp);
+//            lastRec.setToModifDatetime(modifStamp);
+//
+//            dochService.closeLastRecAndOpenNewRec(lastRec, newRec);
+//            updateUpperDochGridPane(dochPerson, dochDate);
+//            upperDochGrid.getDataProvider().refreshAll();
+
+        } else if (Operation.STAMP_ODCH_MAN == operation) {
+            dochStamp = doch.getToTime();
+            newDochCin = cinRepo.findByCinKod(Cin.CinKod.valueOf(doch.getTmp()));
+            newRec = new Doch(
+                    dochDate
+                    , dochPerson
+                    , newDochCin
+                    , dochStamp
+                    , modifStamp
+                    , true
+            );
+
+//            Doch lastRec = getLastZkDochRec();
+//            lastRec.setToTime(dochTimeStamp);
+//            lastRec.setToModifDatetime(modifStamp);
+//
+//            dochService.closeLastRecAndOpenNewRec(lastRec, newRec);;
+//            updateUpperDochGridPane(dochPerson, dochDate);
+//            upperDochGrid.getDataProvider().refreshAll();
+
+        } else if (Operation.STAMP_ODCH_DEF_MAN == operation) {
+            dochStamp = doch.getToTime();
+            newRec = null;
+        }
+
+        Doch lastRec = getLastZkDochRec();
+        lastRec.setToTime(dochStamp);
+        lastRec.setToModifDatetime(modifStamp);
+
+        dochService.closeLastRecAndOpenNewRec(lastRec, newRec);
+        updateUpperDochGridPane(dochPerson, dochDate);
+        upperDochGrid.getDataProvider().refreshAll();
+
     }
 
     @Override
@@ -301,6 +369,13 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         this.setWidth("1200px");
         this.setAlignSelf(Alignment.CENTER);
+        this.getStyle().set("margin-top", "2em");
+        this.getStyle().set("margin-bottom", "2em");
+        this.getStyle().set("background-color", "#fffcf5");
+        this.getStyle().set("background-color", "#e1dcd6");
+        this.getStyle().set("background-color", "#fcfffe");
+        this.getStyle().set("background-color", "LightYellow");
+        this.getStyle().set("background-color", "#fefefd");
 
         dochMonthReportBtn.setText("Měsíční přehled");
 //        dochMonthReportBtn.setWidth("100%");
@@ -471,7 +546,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         prichodBtn.getElement().setAttribute("theme", "primary");
         prichodBtn.addClickListener(event -> {
                 LocalDateTime dochStamp = LocalDateTime.now(minuteClock);
-                stampPrichodAndNew(dochStamp);
+                stampPrichodAndNewInsideRec(dochStamp);
         });
         return prichodBtn;
     }
@@ -479,6 +554,10 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private Button initPrichodAltButton() {
         prichodAltBtn = new Button("Příchod jiný čas");
         prichodAltBtn.getElement().setAttribute("theme", "secondary");
+        prichodBtn.addClickListener(event -> {
+            LocalDateTime dochStamp = LocalDateTime.now(minuteClock);
+            stampPrichodAltAndNewInsideRec(dochStamp);
+        });
         return prichodAltBtn;
     }
 
@@ -507,11 +586,11 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         odchodButton.addClickListener(event -> {
             Cin.CinKod odchodWhereKod = odchodRadio.getValue().getCinKod();
             odchodButtonClicked(event);
-            LocalDateTime dochStamp = LocalDateTime.now(minuteClock);
+            LocalDateTime currentDateTime = LocalDateTime.now(minuteClock);
             if (Cin.CinKod.KP == odchodWhereKod || Cin.CinKod.XD == odchodWhereKod) {
-                stampAndCloseOdchod();
+                stampOdchod();
             } else {
-                stampOdchodAndOpenNew(dochStamp, odchodWhereKod);
+                stampOdchodAndNewOutsideRec(currentDateTime, odchodWhereKod);
             }
         });
         odchodButton.setEnabled(false);
@@ -522,6 +601,16 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         odchodAltButton = new Button("Odchod jiný čas");
         odchodAltButton.addClickListener(event -> odchodAltButtonClicked(event));
         odchodAltButton.getElement().setAttribute("theme", "secondary");
+        odchodAltButton.addClickListener(event -> {
+            Cin.CinKod odchodWhereKod = odchodRadio.getValue().getCinKod();
+            odchodAltButtonClicked(event);
+            LocalDateTime dochStamp = LocalDateTime.now(minuteClock);
+            if (Cin.CinKod.KP == odchodWhereKod || Cin.CinKod.XD == odchodWhereKod) {
+                stampOdchod();
+            } else {
+                stampOdchodAltAndNewOutsideRec(dochStamp, odchodWhereKod);
+            }
+        });
         odchodAltButton.setEnabled(false);
         return odchodAltButton;
     }
@@ -796,6 +885,21 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setResizable(true)
         ;
 
+        upperDochGrid.addColumn(new ComponentRenderer<>(doch -> {
+                    // Note: following icons MUST NOT be created outside this renderer (the KontFormDialog cannot be reopened)
+                    Icon icoManualFlag = new Icon(VaadinIcon.DOT_CIRCLE);
+                    icoManualFlag.setSize("0.8em");
+                    icoManualFlag.getStyle().set("theme", "small icon secondary");
+                    icoManualFlag.setColor("crimson");
+                    return (null != doch.getFromManual() && doch.getFromManual()) ? icoManualFlag : new Span("");
+                }))
+//                .setHeader("Man.")
+                .setWidth("2em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setFlexGrow(0)
+                .setResizable(false)
+        ;
+
 ////        upperDochGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
 ////        upperDochGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
 //        TextField casOdField = new TextField();
@@ -810,16 +914,31 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
 //        Grid.Column<Doch> casOdColumn = upperDochGrid.addColumn(fromTimeValProv)
         upperDochGrid.addColumn(fromTimeValProv)
-                .setHeader("Od")
-                .setWidth("5em")
+//                .setHeader("Od")
+                .setWidth("4em")
                 .setFlexGrow(0)
                 .setTextAlign(ColumnTextAlign.END)
                 .setResizable(true)
+//                .getElement().setProperty("padding-left", "0.1em")
         ;
 //        casOdColumn.setEditorComponent(casOdField);
 
-//        upperDochGrid.addComponentColumn(new ComponentRenderer<>(doch -> getCasDoComponent(doch)))
-//        upperDochGrid.addComponentColumn(doch -> getCasDoComponent(doch))
+
+        upperDochGrid.addColumn(new ComponentRenderer<>(doch -> {
+                    // Note: following icons MUST NOT be created outside this renderer (the KontFormDialog cannot be reopened)
+                    Icon icon = new Icon(VaadinIcon.DOT_CIRCLE);
+                    icon.setSize("0.8em");
+                    icon.getStyle().set("theme", "small icon secondary");
+                    icon.setColor("crimson");
+                    return (null != doch.getToManual() && doch.getToManual()) ? icon : new Span("");
+                }))
+//                .setHeader("Man.")
+                .setWidth("2em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setFlexGrow(0)
+                .setResizable(false)
+        ;
+
         upperDochGrid.addColumn(toTimeValProv)
                 .setHeader("Do")
                 .setWidth("5em")
@@ -967,34 +1086,134 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         upperDochGrid.getDataProvider().refreshAll();
     }
 
-    private void stampPrichodAndNew(final LocalDateTime dochStamp) {
+    private void stampPrichodAndNewInsideRec(final LocalDateTime currentDateTime) {
         if (!canStampPrichod()) {
             return;
         }
-        Doch newDochPrich = new Doch(cinRepo.findByCinKod(Cin.CinKod.P), dochPerson, dochDate, dochStamp);
-        upperDochList.add(0, dochService.closePrevZkDochAndOpenNew(newDochPrich));
+//        Doch newInsideRec = new Doch(cinRepo.findByCinKod(Cin.CinKod.P), dochPerson, dochDate, dochStamp);
+
+        Doch newInsideRec = new Doch(
+                dochDate
+                , dochPerson
+                , cinRepo.findByCinKod(Cin.CinKod.P)
+                , currentDateTime.toLocalTime()
+                , currentDateTime
+                , false
+        );
+
+//        upperDochList.add(0, dochService.closePrevZkDochAndOpenNew(newDochPrich));
+        stampDochManual(newInsideRec, Operation.STAMP_PRICH);
+//        dochService.closePrevZkDochAndOpenNew(newDochPrich);
+//        updateUpperDochGridPane(dochPerson, dochDate);
+//        upperDochGrid.getDataProvider().refreshAll();
+    }
+
+    private void stampPrichodAltAndNewInsideRec(final LocalDateTime stampDateTime) {
+        if (!canStampPrichod()) {
+            return;
+        }
+
+        Cin newCin = cinRepo.findByCinKod(Cin.CinKod.P);
+        DochManual dochManual = new DochManual(
+                dochDate
+                , newCin.getCinKod()
+                , newCin.getCinnost()
+                , stampDateTime.toLocalTime()
+                , null
+        );
+        dochFormDialog.openDialog(
+                dochManual
+                , Operation.STAMP_PRICH
+                , "Příchod jiný čas"
+                , true
+                , false
+        );
+//        upperDochList.add(0, dochService.closePrevZkDochAndOpenNew(newDochPrich));
+//        updateUpperDochGridPane(dochPerson, dochDate);
+//        upperDochGrid.getDataProvider().refreshAll();
+    }
+
+    private void stampOdchodAndNewOutsideRec(final LocalDateTime currentDateTime, Cin.CinKod odchodWhereKod) {
+        if (!canStampOdchod()) {
+            return;
+        }
+        Cin newCin = cinRepo.findByCinKod(odchodWhereKod);
+        Doch newOutsideRec = new Doch(
+                dochDate
+                , dochPerson
+                , newCin
+                , currentDateTime.toLocalTime()
+                , currentDateTime
+                , false
+        );
+        stampDochManual(newOutsideRec, Operation.STAMP_ODCH);
+
+//        upperDochList.add(0, newSavedDoch);
+//        updateUpperDochGridPane(dochPerson, dochDate);
+//        upperDochGrid.getDataProvider().refreshAll();
+    }
+
+    private void stampOdchodAltAndNewOutsideRec(final LocalDateTime currentDateTime, Cin.CinKod odchodWhereKod) {
+        if (!canStampOdchod()) {
+            return;
+        }
+
+//        Cin newCin = cinRepo.findByCinKod(odchodWhereKod);
+        Doch lastZkDochRec = getLastZkDochRec();
+        DochManual dochOdchManual = new DochManual(
+                dochDate
+                , odchodWhereKod
+                , lastZkDochRec.getCinnost()
+                , lastZkDochRec.getFromTime()
+                , currentDateTime.toLocalTime()
+        );
+        dochFormDialog.openDialog(
+                dochOdchManual
+                , Operation.STAMP_ODCH
+                , "Odchod jiný čas"
+                , false
+                , true
+        );
+
+
+//        Doch newDochOdch = new Doch(cinRepo.findByCinKod(odchodWhereKod), dochPerson, dochDate, dochStamp);
+//        Doch newSavedDoch = dochService.closePrevZkDochAndOpenNew(newDochOdch);
+//
+////        upperDochList.add(0, newSavedDoch);
+//        updateUpperDochGridPane(dochPerson, dochDate);
+//        upperDochGrid.getDataProvider().refreshAll();
+    }
+
+    private void stampOdchodAlt(final LocalDateTime currentDateTime) {
+        if (!canStampOdchod()) {
+            return;
+        }
+        Doch lastZkDochRec = getLastZkDochRec();
+        DochManual dochOdchManual = new DochManual(
+                dochDate
+                , lastZkDochRec.getCinCinKod()
+                , lastZkDochRec.getCinnost()
+                , lastZkDochRec.getFromTime()
+                , currentDateTime.toLocalTime()
+        );
+        dochFormDialog.openDialog(
+                dochOdchManual
+                , Operation.STAMP_ODCH_DEF_MAN
+                , "Odchod jiný čas"
+                , false
+                , true
+        );
+    }
+
+    private void stampOdchod() {
+        if (!canStampOdchod()) {
+            return;
+        }
+        dochService.closeLastRec(getLastZkDochRec());
         updateUpperDochGridPane(dochPerson, dochDate);
         upperDochGrid.getDataProvider().refreshAll();
     }
 
-    private void stampOdchodAndOpenNew(final LocalDateTime dochStamp, Cin.CinKod odchodWhereKod) {
-        if (!canStampOdchod()) {
-            return;
-        }
-        Doch newDochOdch = new Doch(cinRepo.findByCinKod(odchodWhereKod), dochPerson, dochDate, dochStamp);
-        upperDochList.add(0, dochService.closePrevZkDochAndOpenNew(newDochOdch));
-        updateUpperDochGridPane(dochPerson, dochDate);
-        upperDochGrid.getDataProvider().refreshAll();
-    }
-
-    private void stampAndCloseOdchod() {
-        if (!canStampOdchod()) {
-            return;
-        }
-        dochService.closeLastZkDoch(dochPerson.getId(), dochDate);
-        updateUpperDochGridPane(dochPerson, dochDate);
-        upperDochGrid.getDataProvider().refreshAll();
-    }
 
 //    private boolean canRecordFirstPrichod() {
 //        return checkDochDateIsToday()
@@ -1002,22 +1221,22 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        ;
 //    }
 
-    private boolean canStampPrichod() {
-        return checkDayDochIsOpened("nelze upravovat.")
+    private boolean canStampOdchod() {
+        return checkDayDochIsOpened("nelze editovat.")
                 && checkDochDateIsToday("je třeba použít 'Příchod jiný čas'.")
                 && checkPersonIsOutOfOffice("nelze zaznamenat další příchod.")
         ;
     }
 
-    private boolean canStampOdchod() {
-        return checkDayDochIsOpened("nelze přidávat záznamy.")
+    private boolean canStampPrichod() {
+        return checkDayDochIsOpened("nelze editovat.")
                 && checkDochDateIsToday("je třeba použít 'Odchod jiný čas'.")
                 && checkPersonIsInOffice("nelze zaznamenat odchod.")
         ;
     }
 
     private boolean canRemoveDochRec() {
-        return checkDayDochIsOpened("nelze rušit záznamy")
+        return checkDayDochIsOpened("nelze editovat.")
                 && checkDochPersonIsSelected("nelze rušit záznamy")
                 && checkDochDateIsSelected("nelze rušit záznamy")
                 && checkDochHasRecords("není co rušit")
@@ -1026,7 +1245,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private boolean canRemoveAllDochRecs() {
-        return checkDayDochIsOpened("nelze rušit záznamy")
+        return checkDayDochIsOpened("nelze editovat.")
                 && checkDochPersonIsSelected("nelze rušit záznamy")
                 && checkDochDateIsSelected("nelze rušit záznamy")
                 && checkDochHasRecords("není co rušit")

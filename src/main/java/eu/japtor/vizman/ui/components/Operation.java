@@ -13,7 +13,14 @@ public enum Operation {
     DELETE("Zrušení", "Zrušení", "Zrušení", "Odebrat", "zrušit", true),
     FAKTUROVAT("Vystavení", "Vystavení", "Vystavení", "Vystavit", "vystavit", true),
     STORNO("Storno", "Storno", "Storno", "Stornovat", "stornovat", true),
-    EXPORT("Export", "Export", "Export", "Exportovat", "exportovat", false);
+    EXPORT("Export", "Export", "Export", "Exportovat", "exportovat", false),
+    STAMP_PRICH("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
+    STAMP_PRICH_MAN("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
+    STAMP_ODCH("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
+    STAMP_ODCH_MAN("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
+    STAMP_ODCH_DEF("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
+    STAMP_ODCH_DEF_MAN("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false)
+    ;
 
     private final String titleOperNameForMasculine;
     private final String titleOperNameForFeminine;

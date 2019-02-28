@@ -1,9 +1,12 @@
 package eu.japtor.vizman.backend.service;
 
+import eu.japtor.vizman.backend.entity.Cin;
 import eu.japtor.vizman.backend.entity.Doch;
 import eu.japtor.vizman.backend.entity.Role;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 public interface DochService {
@@ -22,9 +25,15 @@ public interface DochService {
 
 //    Doch addPrichod(Doch doch);
 
-    Doch closePrevZkDochAndOpenNew(Doch newDoch);
+//    Doch closePrevZkDochAndOpenNew(Doch newDoch);
 
-    Doch closeLastZkDoch(final Long personId, final LocalDate dochDate);
+//    Doch stampOdchodDefinitive(Doch dochInsideRec);
+
+//    Doch stampOdchodAndNewOutsideRec(Doch insideDochRec, Cin.CinKod cinKodOut, LocalTime fromTimeOut);
+
+    Doch closeLastRec(Doch lastDochRec);
+
+    Doch closeLastRecAndOpenNewRec(Doch lastDocRec, Doch newDochRec);
 
     void removeLastZkDochAndReopenPrev(Doch doch);
 

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 
@@ -62,47 +63,77 @@ public class DochServiceImpl implements DochService, HasLogger {
     }
 
 
+//    @Override
+//    @Transactional
+//    public Doch closePrevZkDochAndOpenNew(Doch newDoch) {
+//        LocalDateTime modifTime = LocalDateTime.now();
+//        stampOdchodAndNewOutsideRec(newDoch, modifTime);
+//        return openDochRec(newDoch, modifTime);
+//    }
+
+
+
+
+//    @Override
+//    @Transactional
+//    public Doch stampOdchodAndNewOutsideRec(Doch lastInsideRec, Doch newOutsideRec) {
+////        Doch lastZkDoch = dochRepo.findLastZkDochForPersonAndDate(dochOdchod.getPersonId(), dochOdchod.getdDochDate());
+//        LocalDateTime modifdochStamp = LocalDateTime.now();
+//        if (null != lastInsideRec) {
+//            if (null == lastInsideRec.getToTime()) {
+//                lastInsideRec.setToTime(dochStamp.toLocalTime());
+//            }
+//            Doch closedInsideRec = closeDochRec(lastInsideRec, dochStamp);
+//            Doch newOutsideRec = new Doch(
+//                    cinRepo.getByCinKod(outsideCinKod)
+//                    , closedInsideRec.getPersonId()
+//                    , closedInsideRec.getdDochDate()
+//                    , dochStamp
+//            );
+//
+//            return openDochRec(newOutsideRec, dochStamp);
+//        }
+//        return null;
+//    }
+
+
     @Override
     @Transactional
-    public Doch closePrevZkDochAndOpenNew(Doch newDoch) {
+    public Doch closeLastRec(Doch lastDochRec) {
+        if (null != lastDochRec) {
+            closeDochRec(lastDochRec);
+        }
+        return null;
+    }
 
-        LocalDateTime modifTime = LocalDateTime.now();
-        closePrevZkDoch(newDoch, modifTime);
+    @Override
+    @Transactional
+    public Doch closeLastRecAndOpenNewRec(Doch lastDochRec, Doch newDochRec) {
+        if (null != lastDochRec) {
+            closeDochRec(lastDochRec);
+        }
+        if (null != newDochRec) {
+            return openDochRec(newDochRec);
+        }
+        return null;
+    }
 
-        Integer lastCdoch = dochRepo.findLastCdochForPersonAndDate(newDoch.getPersonId(), newDoch.getdDochDate());
+    private Doch closeDochRec(Doch recToClose) {
+        if (null != recToClose) {
+            if (null != recToClose.getFromTime() && null != recToClose.getToTime()) {
+                recToClose.setDochDurationFromUI(Duration.between(recToClose.getFromTime(), recToClose.getToTime()));
+                recToClose.setDochDur(Duration.between(recToClose.getFromTime(), recToClose.getToTime()));
+            }
+            return dochRepo.save(recToClose);
+        }
+        return null;
+    }
+
+    private Doch openDochRec(Doch recToOpen) {
+        Integer lastCdoch = dochRepo.findLastCdochForPersonAndDate(recToOpen.getPersonId(), recToOpen.getdDochDate());
         Integer nextCdoch = null == lastCdoch ? 1 : Math.max(1, lastCdoch + 1);
-        newDoch.setCdoch(nextCdoch);
-        newDoch.setFromModifDatetime(modifTime);
-        return dochRepo.save(newDoch);
-    }
-
-    private void closePrevZkDoch(Doch newDoch, final LocalDateTime modifTime) {
-        Doch prevZkDoch = dochRepo.findLastZkDochForPersonAndDate(newDoch.getPersonId(), newDoch.getdDochDate());
-        if (null != prevZkDoch) {
-            prevZkDoch.setToTime(newDoch.getFromTime());
-            prevZkDoch.setToModifDatetime(modifTime);
-            if (null != prevZkDoch.getFromTime() && null != newDoch.getFromTime()) {
-                prevZkDoch.setDochDurationFromUI(Duration.between(prevZkDoch.getFromTime(), newDoch.getFromTime()));
-                prevZkDoch.setDochDur(Duration.between(prevZkDoch.getFromTime(), newDoch.getFromTime()));
-            }
-        }
-    }
-
-    @Override
-    @Transactional
-    public Doch closeLastZkDoch(final Long personId, final LocalDate dochDate) {
-
-        LocalDateTime modifTime = LocalDateTime.now();
-        Doch lastZkDoch = dochRepo.findLastZkDochForPersonAndDate(personId, dochDate);
-        if (null != lastZkDoch) {
-            lastZkDoch.setToTime(modifTime.toLocalTime());
-            lastZkDoch.setToModifDatetime(modifTime);
-            if (null != lastZkDoch.getFromTime()) {
-                lastZkDoch.setDochDurationFromUI(Duration.between(lastZkDoch.getFromTime(), lastZkDoch.getToTime()));
-                lastZkDoch.setDochDur(Duration.between(lastZkDoch.getFromTime(), lastZkDoch.getToTime()));
-            }
-        }
-        return dochRepo.save(lastZkDoch);
+        recToOpen.setCdoch(nextCdoch);
+        return dochRepo.save(recToOpen);
     }
 
 
