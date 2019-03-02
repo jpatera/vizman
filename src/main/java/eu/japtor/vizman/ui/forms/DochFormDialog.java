@@ -16,7 +16,7 @@ import java.util.function.BiConsumer;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class DochFormDialog extends AbstractSimpleEditorDialog<DochManual> {
 
-    private HtmlComponent dochDateInfo;
+    private Paragraph dochDateComponent;
     private TimePicker fromTimeField;
     private TimePicker toTimeField;
     private TextField cinnostField;
@@ -28,7 +28,7 @@ public class DochFormDialog extends AbstractSimpleEditorDialog<DochManual> {
         this.setWidth("750px");
 
         getFormLayout().add(
-                initDochDateInfo()
+                initDochDateComponent()
                 , initFromTimeField()
                 , initToTimeField()
                 , initCinnostField()
@@ -48,6 +48,7 @@ public class DochFormDialog extends AbstractSimpleEditorDialog<DochManual> {
                            String dialogTitle,
                            boolean timeFromIsEditabele, boolean timeToIsEditable)
     {
+        dochDateComponent.setText(dochManual.getdDochDate().toString());
         this.openInternal(
                 dochManual
                 , operation
@@ -64,11 +65,11 @@ public class DochFormDialog extends AbstractSimpleEditorDialog<DochManual> {
     protected void openSpecific() {
     }
 
-    private Component initDochDateInfo() {
-        dochDateInfo = new Paragraph(getCurrentItem().getdDochDate().toString());
+    private Paragraph initDochDateComponent() {
+        dochDateComponent = new Paragraph("Datum docházky...");
 //        Emphasis infoText = new Emphasis("Odpovídající projektové a dokumentové adresáře...");
-        dochDateInfo.getElement().setAttribute("colspan", "2");
-        return dochDateInfo;
+        dochDateComponent.getElement().setAttribute("colspan", "2");
+        return dochDateComponent;
     }
 
     private Component initFromTimeField() {

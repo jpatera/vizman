@@ -105,6 +105,7 @@ public class Doch extends AbstractGenIdEntity {
             , final LocalTime dochStamp
             , final LocalDateTime modifStamp
             , boolean fromManual
+            , String poznamka
     ) {
         this.personId = person.getId();
         this.dochDate = dochDate;
@@ -117,6 +118,7 @@ public class Doch extends AbstractGenIdEntity {
         this.fromModifDatetime = modifStamp;
         this.username = person.getUsername();
         this.fromManual = fromManual;
+        this.poznamka = poznamka;
     }
 
     public Long getPersonId() {

@@ -99,21 +99,29 @@ public class DochServiceImpl implements DochService, HasLogger {
 
     @Override
     @Transactional
-    public Doch closeLastRec(Doch lastDochRec) {
-        if (null != lastDochRec) {
-            closeDochRec(lastDochRec);
-        }
-        return null;
+    public Doch openFirstRec(Doch firstDochRec) {
+       return openDochRec(firstDochRec);
     }
 
     @Override
     @Transactional
-    public Doch closeLastRecAndOpenNewRec(Doch lastDochRec, Doch newDochRec) {
-        if (null != lastDochRec) {
-            closeDochRec(lastDochRec);
-        }
-        if (null != newDochRec) {
-            return openDochRec(newDochRec);
+    public Doch closeLastRec(Doch lastDochRec) {
+        return closeDochRec(lastDochRec);
+    }
+
+    @Override
+    @Transactional
+    public Doch closeLastRecAndOpenNew(Doch lastDochRec, Doch newDochRec) {
+        closeDochRec(lastDochRec);
+        return openDochRec(newDochRec);
+    }
+
+    private Doch openDochRec(Doch recToOpen) {
+        if (null != recToOpen) {
+            Integer lastCdoch = dochRepo.findLastCdochForPersonAndDate(recToOpen.getPersonId(), recToOpen.getdDochDate());
+            Integer nextCdoch = null == lastCdoch ? 1 : Math.max(1, lastCdoch + 1);
+            recToOpen.setCdoch(nextCdoch);
+            return dochRepo.save(recToOpen);
         }
         return null;
     }
@@ -128,14 +136,6 @@ public class DochServiceImpl implements DochService, HasLogger {
         }
         return null;
     }
-
-    private Doch openDochRec(Doch recToOpen) {
-        Integer lastCdoch = dochRepo.findLastCdochForPersonAndDate(recToOpen.getPersonId(), recToOpen.getdDochDate());
-        Integer nextCdoch = null == lastCdoch ? 1 : Math.max(1, lastCdoch + 1);
-        recToOpen.setCdoch(nextCdoch);
-        return dochRepo.save(recToOpen);
-    }
-
 
     @Override
     @Transactional

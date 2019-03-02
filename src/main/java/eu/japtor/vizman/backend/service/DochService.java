@@ -31,9 +31,11 @@ public interface DochService {
 
 //    Doch stampOdchodAndNewOutsideRec(Doch insideDochRec, Cin.CinKod cinKodOut, LocalTime fromTimeOut);
 
+    Doch openFirstRec(Doch firstDochRec);
+
     Doch closeLastRec(Doch lastDochRec);
 
-    Doch closeLastRecAndOpenNewRec(Doch lastDocRec, Doch newDochRec);
+    Doch closeLastRecAndOpenNew(Doch lastDochRec, Doch newDochRec);
 
     void removeLastZkDochAndReopenPrev(Doch doch);
 

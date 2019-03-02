@@ -23,15 +23,19 @@ public class DochManual implements Serializable {
 
     private String poznamka;
 
+    private Cin.CinKod outsideCinKod;
 
-    public DochManual(final LocalDate dochDate, final Cin.CinKod cinCinKod, final String cinnost
-            , final LocalTime fromTime, final LocalTime toTime) {
+
+
+    public DochManual(final LocalDate dochDate, final Cin cin
+            , final LocalTime fromTime, final LocalTime toTime, final Cin.CinKod outsideCinKod) {
 
         this.dochDate = dochDate;
-        this.cinCinKod = cinCinKod;
-        this.cinnost = cinnost;
+        this.cinCinKod = cin.getCinKod();
+        this.cinnost = cin.getCinnost();
         this.fromTime = fromTime;
         this.toTime = toTime;
+        this.outsideCinKod = outsideCinKod;
     }
 
 
@@ -89,5 +93,13 @@ public class DochManual implements Serializable {
 
     public void setPoznamka(String poznamka) {
         this.poznamka = poznamka;
+    }
+
+    public Cin.CinKod getOutsideCinKod() {
+        return outsideCinKod;
+    }
+
+    public void setOutsideCinKod(Cin.CinKod outsideCinKod) {
+        this.outsideCinKod = outsideCinKod;
     }
 }
