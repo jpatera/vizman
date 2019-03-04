@@ -10,8 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 
@@ -129,7 +127,7 @@ public class DochServiceImpl implements DochService, HasLogger {
     private Doch closeDochRec(Doch recToClose) {
         if (null != recToClose) {
             if (null != recToClose.getFromTime() && null != recToClose.getToTime()) {
-                recToClose.setDochDurationFromUI(Duration.between(recToClose.getFromTime(), recToClose.getToTime()));
+//                recToClose.setDochDurationFromUI(Duration.between(recToClose.getFromTime(), recToClose.getToTime()));
                 recToClose.setDochDur(Duration.between(recToClose.getFromTime(), recToClose.getToTime()));
             }
             return dochRepo.save(recToClose);
@@ -146,7 +144,7 @@ public class DochServiceImpl implements DochService, HasLogger {
         Doch prevZkDoch = dochRepo.findLastZkDochForPersonAndDate(dochRecToRemove.getPersonId(), dochRecToRemove.getdDochDate());
         if (null != prevZkDoch) {
             prevZkDoch.setToTime(null);
-            prevZkDoch.setDochDurationFromUI(null);
+//            prevZkDoch.setDochDurationFromUI(null);
             prevZkDoch.setDochDur(null);
             prevZkDoch.setToModifDatetime(null);
             prevZkDoch.setToManual(false);

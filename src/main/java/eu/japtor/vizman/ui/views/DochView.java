@@ -1055,7 +1055,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     public static HtmlComponent getHodinComponent(Doch doch) {
 //        return new Paragraph(null == doch.getDochDuration() ? "" : doch.getDochDuration().format( VzmFormatUtils.shortTimeFormatter));
-        return new Paragraph(null == doch.getDochDurationUI() ? "" : formatDuration(doch.getDochDurationUI()));
+//        return new Paragraph(null == doch.getDochDurationUI() ? "" : formatDuration(doch.getDochDurationUI()));
+        return new Paragraph(null == doch.getDochDur() ? "" : formatDuration(doch.getDochDur()));
     }
 
     public static String formatDuration(Duration duration) {

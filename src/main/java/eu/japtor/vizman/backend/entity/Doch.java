@@ -47,9 +47,9 @@ public class Doch extends AbstractGenIdEntity {
     @Column(name = "TO_MODIF_DATETIME")
     private LocalDateTime toModifDatetime;
 
-    @Basic
-    @Column(name = "DOCH_DURATION")
-    LocalTime dochDuration;
+//    @Basic
+//    @Column(name = "DOCH_DURATION")
+//    LocalTime dochDuration;
 
     @Basic
     @Column(name = "DOCH_DUR")
@@ -92,8 +92,8 @@ public class Doch extends AbstractGenIdEntity {
     @Column(name = "TMP")
     private String tmp;
 
-    @Transient
-    private Duration dochDurationUI;
+//    @Transient
+//    private Duration dochDurationUI;
 
 
     public Doch() {}
@@ -212,10 +212,10 @@ public class Doch extends AbstractGenIdEntity {
 //        this.dochDuration = dochDuration;
 //    }
 
-    @Transient
-    public Duration getDochDurationUI() {
-        return this.dochDurationUI;
-    }
+//    @Transient
+//    public Duration getDochDurationUI() {
+//        return this.dochDurationUI;
+//    }
 
     @Transient
     public Duration getSignedDochDur() {
@@ -228,16 +228,17 @@ public class Doch extends AbstractGenIdEntity {
         }
     }
 
-    @Transient
-    public void setDochDurationFromUI(Duration dochDurationUI) {
-        this.dochDuration = dochDurationUI == null ? null : LocalTime.MIDNIGHT.plus(dochDurationUI);
-    }
+//    @Transient
+//    public void setDochDurationFromUI(Duration dochDurationUI) {
+//        this.dochDuration = dochDurationUI == null ? null : LocalTime.MIDNIGHT.plus(dochDurationUI);
+//    }
 
 
 
     @PostLoad
     public void init() {
-        this.dochDurationUI = this.dochDuration == null ? null : Duration.between(LocalTime.MIDNIGHT, dochDuration);
+//        this.dochDurationUI = this.dochDuration == null ? null : Duration.between(LocalTime.MIDNIGHT, dochDuration);
+//        this.dochDur = this.dochDuration == null ? null : Duration.between(LocalTime.MIDNIGHT, dochDuration);
 //        this.dochDuration = this.dbDochDuration == null ? null : LocalTime.MIDNIGHT.plus(this.dbDochDuration);
 //        this.myDuration = this.myDurationString == null ? null : Duration.parse(this.myDurationString);
     };
