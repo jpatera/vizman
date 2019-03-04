@@ -102,7 +102,8 @@ public class VzmFormatUtils {
         } else if (ItemType.FAKT == itemType) {
             colorName = "darkblue";
         } else if (ItemType.SUB == itemType) {
-            colorName = "firebrick";
+            colorName = "crimson";
+//            colorName = "firebrick";
         }
         return colorName;
     }

@@ -15,7 +15,11 @@ public class DochManual implements Serializable {
 
     private LocalTime fromTime;
 
+    private LocalTime fromTimeOrig;
+
     private LocalTime toTime;
+
+    private LocalTime toTimeOrig;
 
     private Cin.CinKod cinCinKod;
 
@@ -34,16 +38,18 @@ public class DochManual implements Serializable {
         this.cinCinKod = cin.getCinKod();
         this.cinnost = cin.getCinnost();
         this.fromTime = fromTime;
+        this.fromTimeOrig = fromTime;
         this.toTime = toTime;
+        this.toTimeOrig = toTime;
         this.outsideCinKod = outsideCinKod;
     }
 
 
-    public LocalDate getdDochDate() {
+    public LocalDate getDochDate() {
         return dochDate;
     }
 
-    public void setdDochDate(LocalDate dochDate) {
+    public void setDochDate(LocalDate dochDate) {
         this.dochDate = dochDate;
     }
 
@@ -55,12 +61,28 @@ public class DochManual implements Serializable {
         this.fromTime = fromTime;
     }
 
+    public LocalTime getFromTimeOrig() {
+        return fromTimeOrig;
+    }
+
+    public void setFromTimeOrig(LocalTime fromTimeOrig) {
+        this.fromTimeOrig = fromTimeOrig;
+    }
+
     public LocalTime getToTime() {
         return toTime;
     }
 
     public void setToTime(LocalTime toTime) {
         this.toTime = toTime;
+    }
+
+    public LocalTime getToTimeOrig() {
+        return toTimeOrig;
+    }
+
+    public void setToTimeOrig(LocalTime toTimeOrig) {
+        this.toTimeOrig = toTimeOrig;
     }
 
     public String getDochState() {

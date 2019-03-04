@@ -102,21 +102,21 @@ public class Doch extends AbstractGenIdEntity {
             final LocalDate dochDate
             , final Person person
             , final Cin cin
-            , final LocalTime dochStamp
-            , final LocalDateTime modifStamp
+            , final LocalTime fromTime
+            , final LocalDateTime fromModifStamp
             , boolean fromManual
             , String poznamka
     ) {
         this.personId = person.getId();
+        this.username = person.getUsername();
         this.dochDate = dochDate;
         this.cinId = cin.getId();
         this.cinAkceTyp = cin.getAkceTyp();
         this.cinCinKod = cin.getCinKod();
         this.cinnost = cin.getCinnost();
         this.calcprac = cin.getCalcprac();
-        this.fromTime = dochStamp;
-        this.fromModifDatetime = modifStamp;
-        this.username = person.getUsername();
+        this.fromTime = fromTime;
+        this.fromModifDatetime = fromModifStamp;
         this.fromManual = fromManual;
         this.poznamka = poznamka;
     }

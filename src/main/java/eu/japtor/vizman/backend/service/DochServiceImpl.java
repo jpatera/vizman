@@ -139,9 +139,11 @@ public class DochServiceImpl implements DochService, HasLogger {
 
     @Override
     @Transactional
-    public void removeLastZkDochAndReopenPrev(Doch doch) {
-        dochRepo.deleteById(doch.getId());
-        Doch prevZkDoch = dochRepo.findLastZkDochForPersonAndDate(doch.getPersonId(), doch.getdDochDate());
+    public void removeLastZkDochAndReopenPrev(Doch dochRecToRemove) {
+        if (null == dochRecToRemove.getToTime()) {
+            dochRepo.deleteById(dochRecToRemove.getId());
+        }
+        Doch prevZkDoch = dochRepo.findLastZkDochForPersonAndDate(dochRecToRemove.getPersonId(), dochRecToRemove.getdDochDate());
         if (null != prevZkDoch) {
             prevZkDoch.setToTime(null);
             prevZkDoch.setDochDurationFromUI(null);

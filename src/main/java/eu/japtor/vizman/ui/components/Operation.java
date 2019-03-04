@@ -16,7 +16,7 @@ public enum Operation {
     EXPORT("Export", "Export", "Export", "Exportovat", "exportovat", false),
     STAMP_PRICH("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
     STAMP_PRICH_MAN("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
-    STAMP_PRICH_MAN_FIRST("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
+//    STAMP_PRICH_MAN_FIRST("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
     STAMP_ODCH("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
     STAMP_ODCH_MAN("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
     STAMP_ODCH_MAN_LAST("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false)
