@@ -861,7 +861,7 @@ SET doch.CIN_CIN_KOD = 'dp'
 COMMIT;
 
 
--- Make half day dovolena kod different from unique:
+-- Make half day dovolena kod different from full day:
 UPDATE VIZMAN.DOCH AS doch
 SET doch.CIN_CIN_KOD = 'dc'
 	WHERE DOCH.CIN_CIN_KOD = 'do' AND DOCH.DOCH_STATE IS NULL
@@ -879,6 +879,11 @@ COMMIT;
 
 UPDATE VIZMAN.DOCH AS doch
 SET doch.CIN_AKCE_TYP = 'A'
+	WHERE DOCH.CIN_CIN_KOD = 'OA'
+;
+
+UPDATE VIZMAN.DOCH AS doch
+SET doch.CALCPRAC = true
 	WHERE DOCH.CIN_CIN_KOD = 'OA'
 ;
 

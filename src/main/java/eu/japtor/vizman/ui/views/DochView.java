@@ -264,14 +264,13 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                         , dochManual.getFromTime()
                         , modifStamp
                         , !dochManual.getFromTime().equals(dochManual.getFromTimeOrig())
-                        , null
+                        , dochManual.getPoznamka()
                 );
 
                 recToClose = getLastZkDochRec();
                 recToClose.setToTime(dochManual.getFromTime());
                 recToClose.setToModifDatetime(modifStamp);
                 recToClose.setToManual(!dochManual.getFromTime().equals(dochManual.getFromTimeOrig()));
-                recToClose.setPoznamka(dochManual.getPoznamka());
             }
 
         } else  {
@@ -880,15 +879,16 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        }
 
         upperDochGrid.setItemDetailsRenderer(new ComponentRenderer<>(doch -> {
-            return StringUtils.isBlank(doch.getPoznamka()) ? null : new Paragraph(doch.getPoznamka());
+            Emphasis poznamkaComp = new Emphasis(StringUtils.isBlank(doch.getPoznamka()) ? new Span("") : new Span(doch.getPoznamka()));
+            poznamkaComp.getStyle().set("margin-left", "16em");
+            return poznamkaComp;
 //            VerticalLayout layout = new VerticalLayout();
 //            layout.add(new Label("Address: " + person.getAddress().getStreet()
 //                    + " " + person.getAddress().getNumber()));
 //            layout.add(new Label("Year of birth: " + person.getYearOfBirth()));
 //            return layout;
         }));
-        upperDochGrid.setDetailsVisibleOnClick(false);
-//        upperDochGrid.setDetailsVisible(doch.)
+//        upperDochGrid.setDetailsVisibleOnClick(false);
 
         Binder<Doch> upperBinder = new Binder<>(Doch.class);
 
@@ -897,6 +897,23 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setWidth("2em")
                 .setFlexGrow(0)
                 .setResizable(true)
+        ;
+
+//        upperDochGrid.addColumn(new ComponentRenderer<>(doch -> {
+////                upperDochGrid.setDetailsVisible(doch, StringUtils.isNotBlank(doch.getPoznamka()));
+//                upperDochGrid.setDetailsVisible(doch, true);
+//                return new Span("");
+//            }))
+//            .setFlexGrow(0)
+//            .setVisible(false)
+//        ;
+
+        upperDochGrid.addColumn((ValueProvider<Doch, String>) doch -> {
+                upperDochGrid.setDetailsVisible(doch, StringUtils.isNotBlank(doch.getPoznamka()));
+                return "";
+            })
+            .setFlexGrow(0)
+            .setVisible(false)
         ;
 
         upperDochGrid.addColumn(new ComponentRenderer<>(doch -> {
@@ -1101,6 +1118,9 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
             upperDochList = dochService.fetchDochForPersonAndDate(dochPerson.getId(), dochDate);
         }
         upperDochGrid.setItems(upperDochList);
+//        for (Doch doch : upperDochList) {
+//            upperDochGrid.setDetailsVisible(doch, StringUtils.isNotBlank(doch.getPoznamka()));
+//        }
         upperDochGrid.getColumnByKey(DOCH_DURATION_KEY)
                 .setFooter(getDurationFooter(getDurationSum()));
         upperDochGrid.getColumnByKey(DOCH_CINNOST_KEY)
