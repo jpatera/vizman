@@ -69,6 +69,8 @@ public class VizmanConst {
 	public static final String ROUTE_KLIENT = "klient";
 
 	public static final String TITLE_PRUH = "Proužky";
+	public static final String PAGE_TITLE_PRUH = PAGE_TITLE_BASE + " - " + TITLE_PRUH;
+	public static final String TAG_PRUH = "pruh-list-view";
 	public static final String ROUTE_PRUH = "pruh";
 
 	public static final String ROUTE_DEFAULT = ROUTE_ZAK;

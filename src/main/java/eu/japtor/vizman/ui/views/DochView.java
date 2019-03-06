@@ -213,7 +213,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     public DochView() {
 //        super();
         buildForm();
-//        initDochData(dochPerson, dochDate);
+//        initPruhData(dochPerson, dochDate);
     }
 
     @PostConstruct
@@ -870,12 +870,12 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private Component initUpperDochGrid() {
         upperDochGrid = new Grid<>();
         upperDochGrid.setHeight("20em");
-//        upperDochGrid.setHeight("0");
+//        middlePruhGrid.setHeight("0");
         upperDochGrid.setColumnReorderingAllowed(false);
         upperDochGrid.setClassName("vizman-simple-grid");
         upperDochGrid.setSelectionMode(Grid.SelectionMode.NONE);
-//        upperDochGrid.getDataProvider().addDataProviderListener(doch -> {
-//            upperDochGrid.getColumnByKey("dochDuration").setFooter(formatDuration(getDurationSum()));
+//        middlePruhGrid.getDataProvider().addDataProviderListener(doch -> {
+//            middlePruhGrid.getColumnByKey("dochDuration").setFooter(formatDuration(getDurationSum()));
 //        }
 
         upperDochGrid.setItemDetailsRenderer(new ComponentRenderer<>(doch -> {
@@ -888,7 +888,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //            layout.add(new Label("Year of birth: " + person.getYearOfBirth()));
 //            return layout;
         }));
-//        upperDochGrid.setDetailsVisibleOnClick(false);
+//        middlePruhGrid.setDetailsVisibleOnClick(false);
 
         Binder<Doch> upperBinder = new Binder<>(Doch.class);
 
@@ -899,9 +899,9 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setResizable(true)
         ;
 
-//        upperDochGrid.addColumn(new ComponentRenderer<>(doch -> {
-////                upperDochGrid.setDetailsVisible(doch, StringUtils.isNotBlank(doch.getPoznamka()));
-//                upperDochGrid.setDetailsVisible(doch, true);
+//        middlePruhGrid.addColumn(new ComponentRenderer<>(doch -> {
+////                middlePruhGrid.setDetailsVisible(doch, StringUtils.isNotBlank(doch.getPoznamka()));
+//                middlePruhGrid.setDetailsVisible(doch, true);
 //                return new Span("");
 //            }))
 //            .setFlexGrow(0)
@@ -931,8 +931,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setResizable(false)
         ;
 
-////        upperDochGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
-////        upperDochGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
+////        middlePruhGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
+////        middlePruhGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
 //        TextField casOdField = new TextField();
 //        upperBinder.forField(casOdField)
 ////                .withValidator(name -> name.startsWith("Person"),
@@ -941,9 +941,9 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 ////                .withStatusLabel(validationStatus).bind("AAAAAA");
 ////                .withStatusLabel(validationStatus).bind("name");
 //                .bind(Doch::getDCasOd, Doch::setDCasOd);
-////        Grid.Column<Doch> casOdColumn = upperDochGrid.addColumn(new ComponentRenderer<>(doch -> getCasOdComponent(doch)))
+////        Grid.Column<Doch> casOdColumn = middlePruhGrid.addColumn(new ComponentRenderer<>(doch -> getCasOdComponent(doch)))
 
-//        Grid.Column<Doch> casOdColumn = upperDochGrid.addColumn(fromTimeValProv)
+//        Grid.Column<Doch> casOdColumn = middlePruhGrid.addColumn(fromTimeValProv)
         upperDochGrid.addColumn(fromTimeValProv)
                 .setHeader("Od")
                 .setWidth("5em")
@@ -976,8 +976,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setTextAlign(ColumnTextAlign.END)
                 .setResizable(true)
         ;
-//        upperDochGrid.addComponentColumn(new ComponentRenderer<>(doch -> getHodinComponent(doch)))
-//        upperDochGrid.addComponentColumn(doch -> getHodinComponent(doch))
+//        middlePruhGrid.addComponentColumn(new ComponentRenderer<>(doch -> getHodinComponent(doch)))
+//        middlePruhGrid.addComponentColumn(doch -> getHodinComponent(doch))
 
 
         upperDochGrid.addColumn(Doch::getCinnost)
@@ -1012,7 +1012,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         }
         return durSum;
 
-//        return upperDochList.stream()
+//        return middlePruhZakList.stream()
 //                .map(Doch::getSignedDochDur)
 //                .reduce(
 //                        Duration.ZERO,
@@ -1037,8 +1037,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setHeader("St.")
                 .setWidth("2em")
                 .setResizable(true);
-//        upperDochGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
-//        upperDochGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
+//        middlePruhGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
+//        middlePruhGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
         lowerDochGrid.addColumn(Doch::getFromTime)
                 .setHeader("Od")
                 .setWidth("3em")
@@ -1118,8 +1118,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
             upperDochList = dochService.fetchDochForPersonAndDate(dochPerson.getId(), dochDate);
         }
         upperDochGrid.setItems(upperDochList);
-//        for (Doch doch : upperDochList) {
-//            upperDochGrid.setDetailsVisible(doch, StringUtils.isNotBlank(doch.getPoznamka()));
+//        for (Doch doch : middlePruhZakList) {
+//            middlePruhGrid.setDetailsVisible(doch, StringUtils.isNotBlank(doch.getPoznamka()));
 //        }
         upperDochGrid.getColumnByKey(DOCH_DURATION_KEY)
                 .setFooter(getDurationFooter(getDurationSum()));
@@ -1143,9 +1143,9 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //                , false
 //                , null
 //        );
-//        upperDochList.add(0, dochService.openFirstRec(firstDochPrich));
+//        middlePruhZakList.add(0, dochService.openFirstRec(firstDochPrich));
 //        updateUpperDochGridPane(dochPerson, dochDate);
-//        upperDochGrid.getDataProvider().refreshAll();
+//        middlePruhGrid.getDataProvider().refreshAll();
 //    }
 
 //    private void stampPrichodAndNew(final LocalDateTime dochStamp) {
@@ -1153,9 +1153,9 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //            return;
 //        }
 //        Doch newDochPrich = new Doch(cinRepo.findByCinKod(Cin.CinKod.P), dochPerson, dochDate, dochStamp);
-//        upperDochList.add(0, dochService.closePrevZkDochAndOpenNew(newDochPrich));
+//        middlePruhZakList.add(0, dochService.closePrevZkDochAndOpenNew(newDochPrich));
 //        updateUpperDochGridPane(dochPerson, dochDate);
-//        upperDochGrid.getDataProvider().refreshAll();
+//        middlePruhGrid.getDataProvider().refreshAll();
 //    }
 
     private void stampPrichodAndNewInsideRec(
@@ -1185,11 +1185,11 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         updateUpperDochGridPane(dochPerson, dochDate);
         upperDochGrid.getDataProvider().refreshAll();
 
-//        upperDochList.add(0, dochService.closePrevZkDochAndOpenNew(newDochPrich));
+//        middlePruhZakList.add(0, dochService.closePrevZkDochAndOpenNew(newDochPrich));
 //        stampDochManualFromDialog(newInsideRec, Operation.STAMP_PRICH);
 //        dochService.closePrevZkDochAndOpenNew(newDochPrich);
 //        updateUpperDochGridPane(dochPerson, dochDate);
-//        upperDochGrid.getDataProvider().refreshAll();
+//        middlePruhGrid.getDataProvider().refreshAll();
     }
 
     private void stampPrichodAltAndNewInsideRec(
@@ -1214,9 +1214,9 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 , true
                 , false
         );
-//        upperDochList.add(0, dochService.closePrevZkDochAndOpenNew(newDochPrich));
+//        middlePruhZakList.add(0, dochService.closePrevZkDochAndOpenNew(newDochPrich));
 //        updateUpperDochGridPane(dochPerson, dochDate);
-//        upperDochGrid.getDataProvider().refreshAll();
+//        middlePruhGrid.getDataProvider().refreshAll();
     }
 
 
@@ -1313,9 +1313,9 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        Doch newDochOdch = new Doch(cinRepo.findByCinKod(odchodWhereKod), dochPerson, dochDate, dochStamp);
 //        Doch newSavedDoch = dochService.closePrevZkDochAndOpenNew(newDochOdch);
 //
-////        upperDochList.add(0, newSavedDoch);
+////        middlePruhZakList.add(0, newSavedDoch);
 //        updateUpperDochGridPane(dochPerson, dochDate);
-//        upperDochGrid.getDataProvider().refreshAll();
+//        middlePruhGrid.getDataProvider().refreshAll();
     }
 
 //    private boolean canRecordFirstPrichod() {
@@ -1548,7 +1548,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Doch getLastZkDochRec() {
         // use ListIterator to iterate List in reverse order
-//        ListIterator<Doch> dochReversedTimeIter = upperDochList.listIterator(upperDochList.size());
+//        ListIterator<Doch> dochReversedTimeIter = middlePruhZakList.listIterator(middlePruhZakList.size());
         ListIterator<Doch> dochReversedTimeIter = upperDochList.listIterator();
 
         // hasPrevious() returns true if the list has previous element

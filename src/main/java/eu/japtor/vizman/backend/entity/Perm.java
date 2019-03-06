@@ -13,6 +13,7 @@ public enum Perm implements GrantedAuthority {
     MODIFY_ALL("Lze vytvářet/editovat/rušit všechna dostupná data"),
 
     DOCH_USE("Lze používat docházku"),
+    PRUH_USE("Lze používat proužky"),
 
 //    KONT_VIEW_BASIC_READ("Lze prohlížet seznam kontraktů, přístup pouze k základním údajům"),
 //    KONT_VIEW_BASIC_MANAGE("Lze vytvářet/editovat/rušit kontrakty, přístup pouze k základním údajům"),
