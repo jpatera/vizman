@@ -907,8 +907,10 @@ DROP TABLE VIZMAN.DOCHSUM IF EXISTS;
 
 CREATE TABLE VIZMAN.DOCHSUM (
 	ID BIGINT NOT NULL,
+	VERSION INTEGER NOT NULL,	
 	PERSON_ID BIGINT NOT NULL,
-	DOCH_DATE DATE NOT NULL,
+	DS_DATE DATE NOT NULL,
+	DS_YM INTEGER NOT NULL,
 
 --	DS_ROKMES VARCHAR(7),
 --	DS_YEAR SMALLINT,
@@ -972,7 +974,9 @@ COMMIT;
 
 
 INSERT INTO VIZMAN.DOCHSUM (
-	ID, PERSON_ID, DOCH_DATE, USERNAME,
+	ID, VERSION, PERSON_ID, DS_DATE,
+	DS_YM,
+	USERNAME,
 	DS_FROM_FIRST, DS_TO_LAST,
 	DS_WORK, DS_WORK_RED, DS_WORK_PRUH,
 	DS_OBED_MAN, DS_OBED_AUT, OBED_KRATKY, DS_OBED,
@@ -980,7 +984,9 @@ INSERT INTO VIZMAN.DOCHSUM (
 	DS_NA, DS_NA_DATUM, DS_VIK, RS
 )
 SELECT
-	DOCHSUM_ID, 0, DS_DATUM, USER_LOGIN,
+	DOCHSUM_ID, 0, 0, DS_DATUM,
+	100 * CONVERT(SUBSTRING(CONVERT(DS_DATUM, VARCHAR(10)), 1, 4), INTEGER) + CONVERT(SUBSTRING(CONVERT(DS_DATUM, VARCHAR(10)), 6, 2), INTEGER),
+	USER_LOGIN,
 	DS_ODFIRST, DS_DOLAST,
 	DS_PRACDEC, DS_PRACKRDEC, DS_PRUHDEC,
 	DS_OBEDMODEC, DS_OBEDOADEC, OBEDKRATKY, DS_OBEDDEC,
@@ -1004,24 +1010,45 @@ COMMIT;
 -- Kontrola duplicit:
 SELECT *
 FROM vizman.dochsum
-WHERE person_id || '===' || doch_date IN (
-SELECT person_id || '===' || doch_date
+WHERE person_id || '===' || ds_date IN (
+SELECT person_id || '===' || ds_date
 FROM
 	(SELECT
-    	person_id, doch_date, COUNT(*)
+    	person_id, ds_date, COUNT(*)
 	FROM
     	vizman.dochsum
 	GROUP BY
-    	person_id, doch_date
+    	person_id, ds_date
 	HAVING 
     	COUNT(*) > 1
 	)
 )
 ;
 
+DELETE FROM vizman.dochsum 
+WHERE ID IN
+(SELECT ID
+FROM vizman.dochsum
+WHERE person_id || '===' || ds_date IN (
+SELECT person_id || '===' || ds_date
+FROM
+	(SELECT
+    	person_id, ds_date, COUNT(*)
+	FROM
+    	vizman.dochsum
+	GROUP BY
+    	person_id, ds_date
+	HAVING 
+    	COUNT(*) > 1
+	)
+)
+)
+;
+
+
 COMMIT;
 
-CREATE UNIQUE INDEX IDXQ_DOCHSUM_PERSON_DATE ON VIZMAN.DOCHSUM (PERSON_ID, DOCH_DATE);
+CREATE UNIQUE INDEX IDXQ_DOCHSUM_PERSON_DATE ON VIZMAN.DOCHSUM (PERSON_ID, DS_DATE);
 
 
 -- Kontrola automatickych obedu:
@@ -1057,8 +1084,10 @@ DROP TABLE VIZMAN.DOCHSUM_ZAK IF EXISTS;
 
 CREATE TABLE VIZMAN.DOCHSUM_ZAK (
 	ID BIGINT NOT NULL,
+	VERSION INTEGER NOT NULL,
 	PERSON_ID BIGINT NOT NULL,
-	DOCH_DATE DATE NOT NULL,
+	DS_DATE DATE NOT NULL,
+	DS_YM INTEGER NOT NULL,
 	ZAK_ID BIGINT NOT NULL,
 	CKONT_ORIG VARCHAR(16),
 	USERNAME VARCHAR(32),
@@ -1102,23 +1131,26 @@ WHERE LENGTH(CISLO_ZAKAZKY) > 5 AND PRAC_DEN = 0
 
 
 INSERT INTO VIZMAN.DOCHSUM_ZAK (
-	ID,	PERSON_ID,
-	DOCH_DATE,
-	ZAK_ID,	CKONT_ORIG, 	USERNAME,
+	ID,	VERSION, PERSON_ID,
+	DS_DATE,
+	DS_YM,
+	ZAK_ID,	CKONT_ORIG, USERNAME,
 	DS_WORK, DS_WORK_NORM,
 	DS_MZDA, DS_POJIST,
 	DS_MZDAS, DS_POJISTS,
 	SAZBA
 )
 select
-	VYK_ZAK_ID, 0, 
-	CONVERT(CONCAT(CONVERT(PRAC_ROK, VARCHAR(4)), '-', CONVERT(PRAC_MES, VARCHAR(2)), '-', CONVERT(PRAC_DEN, VARCHAR(2))), DATE), 
+	VYK_ZAK_ID, 0, 0,
+	CONVERT(CONCAT(CONVERT(PRAC_ROK, VARCHAR(4)), '-', CONVERT(PRAC_MES, VARCHAR(2)), '-', CONVERT(PRAC_DEN, VARCHAR(2))), DATE),
+	(100 * PRAC_ROK) + PRAC_MES,
 	0, CISLO_ZAKAZKY, USER_LOGIN,
 	ODPRAC_HOD, NORM_HOD, MZDA, POJISTENI, MZDAS, POJISTS, SAZBA
 FROM ZAVIN.VYKONY_
 WHERE LENGTH(CISLO_ZAKAZKY) > 5
 ;
 
+COMMIT;
 
 UPDATE VIZMAN.DOCHSUM_ZAK AS dz
 SET dz.PERSON_ID = (SELECT top 1 ID FROM VIZMAN.PERSON p1
@@ -1175,28 +1207,48 @@ WHERE (ZAK_ID IS NULL) OR ZAK_ID = 0
 
 SELECT count(*)
 FROM VIZMAN.DOCHSUM_ZAK
-WHERE DOCH_DATE IS NULL
+WHERE DS_DATE IS NULL
 ;
 
-SELECT *
+SELECT ID
 FROM vizman.dochsum_zak
-WHERE person_id || '===' || doch_date || '===' ||  zak_id IN (
-SELECT person_id || '===' || doch_date || '===' || zak_id
+WHERE person_id || '===' || ds_date || '===' ||  zak_id IN (
+SELECT person_id || '===' || ds_date || '===' || zak_id
 FROM
 	(SELECT
-    	person_id, doch_date, zak_id, COUNT(*)
+    	person_id, ds_date, zak_id, COUNT(*)
 	FROM
     	vizman.dochsum_zak
 	GROUP BY
-    	person_id, doch_date,  zak_id
+    	person_id, ds_date,  zak_id
 	HAVING 
     	COUNT(*) > 1
 	)
 )
 ;
 
+DELETE FROM VIZMAN.DOCHSUM_ZAK
+WHERE ID IN 
+(SELECT ID
+FROM vizman.dochsum_zak
+WHERE person_id || '===' || ds_date || '===' ||  zak_id IN (
+SELECT person_id || '===' || ds_date || '===' || zak_id
+FROM
+	(SELECT
+    	person_id, ds_date, zak_id, COUNT(*)
+	FROM
+    	vizman.dochsum_zak
+	GROUP BY
+    	person_id, ds_date,  zak_id
+	HAVING 
+    	COUNT(*) > 1
+	)
+)
+)
+;
 
-CREATE UNIQUE INDEX IDXQ_DOCHSUMZAK_PERSON_DATE_ZAK ON VIZMAN.DOCHSUM_ZAK (PERSON_ID, DOCH_DATE, ZAK_ID);
+
+CREATE UNIQUE INDEX IDXQ_DOCHSUMZAK_PERSON_DATE_ZAK ON VIZMAN.DOCHSUM_ZAK (PERSON_ID, DS_DATE, ZAK_ID);
 	
 COMMIT;
 

@@ -3,7 +3,6 @@ package eu.japtor.vizman.ui.views;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.*;
@@ -11,6 +10,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
@@ -25,9 +25,9 @@ import eu.japtor.vizman.backend.bean.PruhZak;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.CinRepo;
 import eu.japtor.vizman.backend.service.DochsumService;
+import eu.japtor.vizman.backend.service.DochsumZakService;
 import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.ui.MainView;
-import eu.japtor.vizman.ui.components.Operation;
 import eu.japtor.vizman.ui.components.Ribbon;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
@@ -40,8 +40,8 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Locale;
+import java.util.Objects;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_PRUH;
 
@@ -59,12 +59,20 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private static final DateTimeFormatter dochTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static final DateTimeFormatter upperDochDateHeaderFormatter = DateTimeFormatter.ofPattern("EEEE");
     private static final DateTimeFormatter lowerDochDateHeaderFormatter = DateTimeFormatter.ofPattern("dd. MM. yyyy, EEEE");
+    private static final DateTimeFormatter yearMonthFormatter = DateTimeFormatter.ofPattern("yyyy-MM");
 
-    private ConfirmDialog zekSelectDialog;
+    private ConfirmDialog zakSelectDialog;
+
+    private Person pruhPerson;
+    private YearMonth pruhYm;
+//    private LocalDate dochDatePrev;
 
     private List<Person> pruhPersonList;
     private ComboBox<Person> pruhPersonCombo;
-    private DatePicker pruhRokMesSelectList;
+//    private DatePicker pruhYmSelectList;
+    private Select<YearMonth> pruhYmSelector;
+
+
 
     private static final Locale czLocale = new Locale("cs", "CZ");
 
@@ -73,15 +81,15 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     VerticalLayout clockContainer;
     private Span clockDisplay = new Span();
 
-    //    private Span upperDochDateInfo = new Span();
-    private Paragraph upperDochDateInfo;
+    //    private Span middleDochDateInfo = new Span();
+    private Paragraph middleDochDateInfo;
     private Span pruhLowerDateInfo = new Span();
 
     private Button loadTodayButton;
     private Button loadPrevDateButton;
     private Button loadNextDateButton;
     private Button loadLastDateButton;
-    private Button removePruhZakBtn;
+//    private Button removePruhZakBtn;
     private Button removeAllDochRecButton;
 
     private Button prenosPersonDateButton;
@@ -120,10 +128,6 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     HorizontalLayout dochRecLowerFooter = new HorizontalLayout();
 
 
-    private Person pruhPerson;
-    private LocalDate pruhRokMes;
-    private LocalDate dochDatePrev;
-
 //    Clock minuteClock = Clock.tickMinutes(ZoneId.systemDefault());
 //    private TimeThread timeThread;
 
@@ -139,6 +143,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     @Autowired
     public DochsumService dochsumService;
 
+    @Autowired
+    public DochsumZakService dochsumZakService;
+
 
 
     //    @Autowired
@@ -146,13 +153,16 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     public PruhView() {
 //        super();
         buildForm();
-//        initPruhData(pruhPerson, pruhRokMes);
+//        initPruhData(pruhPerson, pruhYm);
     }
 
     @PostConstruct
     public void init() {
+        pruhPerson = personService.getByUsername("vancik");
+        pruhYm = YearMonth.now();
+
         initPruhData();
-        zekSelectDialog = ConfirmDialog.createInfo()
+        zakSelectDialog = ConfirmDialog.createInfo()
                 .withCaption("Přidání zakázky");
     }
 
@@ -165,11 +175,11 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
-//        pruhRokMesSelectList.setLocale(new Locale("cs", "CZ"));
-        pruhRokMesSelectList.setLocale(czLocale);
+//        pruhYmSelectList.setLocale(new Locale("cs", "CZ"));
+//        pruhYmSelector.setLocale(czLocale);
 
-        dochDatePrev = LocalDate.now().minusDays(1);
-        pruhLowerDateInfo.setText(dochDatePrev.format(lowerDochDateHeaderFormatter));
+//        dochDatePrev = LocalDate.now().minusDays(1);
+//        pruhLowerDateInfo.setText(dochDatePrev.format(lowerDochDateHeaderFormatter));
 
     }
 
@@ -199,12 +209,12 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
             pruhPersonCombo.setValue(pruhPerson);
         }
 
-        if (null == pruhRokMes) {
-//            pruhRokMes = LocalDate.of(2019, 1, 15);
-            pruhRokMes = LocalDate.now();
-            pruhRokMesSelectList.setValue(pruhRokMes);
+        if (null == pruhYm) {
+//            pruhYm = LocalDate.of(2019, 1, 15);
+            pruhYm = YearMonth.now();
+            pruhYmSelector.setValue(pruhYm);
         }
-        updateMiddlePruhGridPane(pruhPerson, pruhRokMes);
+        updateMiddlePruhGridPane(pruhPerson, pruhYm);
     }
 
     private void initPruhZakList() {
@@ -244,12 +254,6 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         );
 
 
-        pruhPanel.add(
-                , buildVertSpace()
-                , buildVertSpace()
-        );
-
-
 //        nepritControl.setWidth("30em");
 //        nepritControl.getStyle().set("margin-top", "4.2em");
 
@@ -269,53 +273,78 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        pruhRecPane.add(dochRecLowerFooter);
 
         HorizontalLayout pruhPanel = new HorizontalLayout();
-        pruhPanel.add(new Ribbon());
-        pruhPanel.add(pruhRecPane);
-        pruhPanel.add(new Ribbon());
+
+        pruhPanel.add(
+                new Ribbon()
+                , pruhRecPane
+                , new Ribbon()
+                , buildVertSpace()
+                , buildVertSpace()
+        );
 
         this.add(pruhHeader, pruhPanel);
     }
 
+    private Component initPruhYmSelector() {
+        pruhYmSelector = new Select<>();
+        pruhYmSelector.getStyle().set("margin-right", "1em");
+        pruhYmSelector.setWidth("10em");
+        pruhYmSelector.setItems(YearMonth.now());
+        // The empty selection item is the first item that maps to an null item.
+        // As the item is not selectable, using it also as placeholder
+        pruhYmSelector.setPlaceholder("Vyber...");
+        pruhYmSelector.setEmptySelectionCaption("Vyber...");
+        pruhYmSelector.setEmptySelectionAllowed(true);
+        pruhYmSelector.setItemEnabledProvider(Objects::nonNull);
+        // add a divider after the empty selection item
+        pruhYmSelector.addComponents(null, new Hr());
+        pruhYmSelector.addValueChangeListener(event -> {
+            pruhYm = event.getValue();
+            updateMiddlePruhGridPane(pruhPerson, pruhYm);
+        });
+        return pruhYmSelector;
+    }
+
+//    private Component initPruhRokMesSelector() {
+//        pruhYmSelectList = new DatePicker();
+//        pruhYmSelectList.setLabel(null);
+//        pruhYmSelectList.setWidth("10em");
+////        pruhYmSelectList.getStyle().set("margin-right", "1em");
+//        pruhYmSelectList.addValueChangeListener(event -> {
+//            pruhYm = event.getValue();
+//            updateMiddlePruhGridPane(pruhPerson, pruhYm);
+//        });
+//        return pruhYmSelectList;
+//    }
 
 
     private Component initUpperDochDateInfo() {
-        upperDochDateInfo = new Paragraph();
-        upperDochDateInfo.getStyle()
+        middleDochDateInfo = new Paragraph();
+        middleDochDateInfo.getStyle()
                 .set("font-weight", "bold")
                 .set("margin-right", "0.8em")
         ;
-        upperDochDateInfo.setText("Den docházky...");
-        return upperDochDateInfo;
+        middleDochDateInfo.setText("Den docházky...");
+        return middleDochDateInfo;
     }
 
     private Component initPersonCombo() {
-        pruhPersonCombo = new ComboBox();
+        pruhPersonCombo = new ComboBox<>();
         pruhPersonCombo.setLabel(null);
         pruhPersonCombo.setWidth("20em");
         pruhPersonCombo.setItems(new ArrayList<>());
         pruhPersonCombo.setItemLabelGenerator(this::getPersonLabel);
         pruhPersonCombo.addValueChangeListener(event -> {
             pruhPerson = event.getValue();
-            updateMiddlePruhGridPane(pruhPerson, pruhRokMes);
+            updateMiddlePruhGridPane(pruhPerson, pruhYm);
         });
         pruhPersonCombo.addBlurListener(event -> {
-//            loadUpperDochGridData(pruhPerson.getId(), pruhRokMes);
+//            loadMiddleDochGridData(pruhPerson.getId(), pruhYm);
             middlePruhGrid.getDataProvider().refreshAll();
         });
         return pruhPersonCombo;
     }
 
-    private Component initPruhRokMesSelector() {
-        pruhRokMesSelectList = new DatePicker();
-        pruhRokMesSelectList.setLabel(null);
-        pruhRokMesSelectList.setWidth("10em");
-//        pruhRokMesSelectList.getStyle().set("margin-right", "1em");
-        pruhRokMesSelectList.addValueChangeListener(event -> {
-            pruhRokMes = event.getValue();
-            updateMiddlePruhGridPane(pruhPerson, pruhRokMes);
-        });
-        return pruhRokMesSelectList;
-    }
 
     private Component buildVertSpace() {
         Div vertSpace = new Div();
@@ -337,7 +366,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         );
 
         middlePruhTitleBar.add(
-                initPruhRokMesSelector()
+                initPruhYmSelector()
                 , initUpperDochDateInfo()
                 , buttonBox
         );
@@ -374,27 +403,11 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
 
 
-    private Component initRemovePruhZakBtn() {
-        Icon icon = VaadinIcon.REPLY.create();
-        icon.setColor("crimson");
-        removePruhZakBtn = new Button(icon);
-        removePruhZakBtn.addClickListener(event -> {
-//            if (canRemoveDochRec()) {
-                ConfirmDialog.createQuestion()
-                    .withCaption("Zákázka proužku")
-                    .withMessage("Odstranit zakázku z proužku?")
-                    .withOkButton(() -> {
-                        removeZakFromPruh(pruhZak -> pruhZak.getZakId());
-                        updateMiddlePruhGridPane(pruhPerson, pruhRokMes);
-                    }, ButtonOption.focus(), ButtonOption.caption("ODSTRANIT"))
-                    .withCancelButton(ButtonOption.caption("ZPĚT"))
-                    .open()
-                ;
-//            }
-        });
-        return removePruhZakBtn;
-    }
 
+
+    private void removeZakFromPruh(long zakId) {
+
+    }
 
     private Component initMiddlePruhGrid() {
         middlePruhGrid = new Grid<>();
@@ -418,15 +431,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setResizable(true)
         ;
 
-        middlePruhGrid.addColumn(new ComponentRenderer<>(pruhZak -> {
-            // Note: following icons MUST NOT be created outside this renderer (the KontFormDialog cannot be reopened)
-            Icon icoItemDel = new Icon(VaadinIcon.FILE_REMOVE);
-            icoItemDel.setSize("0.8em");
-            icoItemDel.getStyle().set("theme", "small icon secondary");
-            icoItemDel.setColor("crimson");
-            return icoItemDel;
-        }))
-//                .setHeader("Man.")
+        middlePruhGrid.addColumn(new ComponentRenderer<>(this::buildPruhZakRemoveBtn))
                 .setWidth("2em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setFlexGrow(0)
@@ -450,6 +455,32 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        }
         return middlePruhGrid;
     }
+
+
+    private Component buildPruhZakRemoveBtn(PruhZak pruhZak) {
+        Icon icon = VaadinIcon.FILE_REMOVE.create();
+        icon.setSize("0.8em");
+        icon.getStyle().set("theme", "small icon secondary");
+//        icon.setColor("crimson");
+
+        Button removePruhZakBtn = new Button(icon);
+//            Button pruhZakRemoveBtn = new GridFakturovatBtn(event -> {
+        removePruhZakBtn.addClickListener(event ->
+                ConfirmDialog.createInfo()
+                        .withCaption("Zákázka proužku")
+                        .withMessage("Odstranit zakázku z proužku?")
+                        .withOkButton(() -> {
+                                    removeZakFromPruh(pruhZak.getZakId());
+                                    updateMiddlePruhGridPane(pruhPerson, pruhYm);
+                                }, ButtonOption.focus(), ButtonOption.caption("ODSTRANIT")
+                        )
+                        .withCancelButton(ButtonOption.caption("ZPĚT"))
+                        .open()
+
+        );
+        return removePruhZakBtn;
+    }
+
 
     private BigDecimal getD01Sum() {
         BigDecimal d01Sum = BigDecimal.ZERO;
@@ -490,20 +521,20 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return seconds < 0 ? "-" + positive : positive;
     }
 
-    private void updateMiddlePruhGridPane(final Person pruhPerson, final LocalDate pruhDate) {
-//        pruhRokMesSelectList.setValue(pruhRokMes);
-//        fireEvent(new GeneratedVaadinDatePicker.ChangeEvent(pruhRokMesSelectList, false));
-        loadUpperDochGridData(pruhPerson, pruhDate);
-        upperDochDateInfo.setText(null == pruhDate ? "" : pruhDate.format(upperDochDateHeaderFormatter));
+    private void updateMiddlePruhGridPane(final Person pruhPerson, final YearMonth pruhYm) {
+//        pruhYmSelectList.setValue(pruhYm);
+//        fireEvent(new GeneratedVaadinDatePicker.ChangeEvent(pruhYmSelectList, false));
+        loadMiddleDochGridData(pruhPerson, pruhYm);
+        middleDochDateInfo.setText(null == pruhYm ? "" : pruhYm.format(yearMonthFormatter));
     }
 
     private Component getD01Footer(BigDecimal d01) {
-        Span comp = new Span(null == d01 ? null : getD01Sum().toString());
+        Span comp = new Span(null == d01 ? "" : getD01Sum().toString());
         return comp;
     }
 
     private Component getD02Footer(BigDecimal d02) {
-        Span comp = new Span(null == d02 ? null : getD02Sum().toString());
+        Span comp = new Span(null == d02 ? "" : getD02Sum().toString());
         return comp;
     }
 
@@ -515,116 +546,129 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return comp;
     }
 
-    private void loadUpperDochGridData(Person dochPerson, LocalDate pruhDate) {
-        if (null == dochPerson || null == dochPerson.getId() || null == pruhDate) {
+    private void loadMiddleDochGridData(Person dochPerson, YearMonth pruhYm) {
+        if (null == dochPerson || null == dochPerson.getId() || null == pruhYm) {
             middlePruhZakList = new ArrayList();
         } else {
-            middlePruhZakList = ...
+
+
+//            List<Dochsum> dochsums = dochsumService.fetchDochsumForPersonAndYm(dochPerson.getId(), pruhYm);
+////            List<DochsumZak> dochsumZaks = dochsumZakService.fetchDochsumForPersonAndYm(dochPerson.getId(), pruhDate)
+
+
+            middlePruhZakList = new ArrayList<>();
+            middlePruhZakList.add(new PruhZak("9545.1-1 / 1", "Zakazkovy text"));
         }
         middlePruhGrid.setItems(middlePruhZakList);
 //        for (Doch doch : middlePruhZakList) {
 //            middlePruhGrid.setDetailsVisible(doch, StringUtils.isNotBlank(doch.getPoznamka()));
 //        }
-        middlePruhGrid.getColumnByKey(D01_KEY)
-                .setFooter(getD01Footer(getD01Sum()));
-        middlePruhGrid.getColumnByKey(D02_KEY)
-                .setFooter(getD02Footer(getD02Sum()));
+
+
+//        middlePruhGrid.getColumnByKey(D01_KEY)
+//                .setFooter(getD01Footer(getD01Sum()));
+//        middlePruhGrid.getColumnByKey(D02_KEY)
+//                .setFooter(getD02Footer(getD02Sum()));
 
         middlePruhGrid.getDataProvider().refreshAll();
     }
 
-    private void transposeDochsumToPruhZak() {
-        List<PruhZak> pruhZaks = dochsumService.fetchDochsumForPersonAndDate(pruhPerson.getId(), pruhDate);
+    private void transposeDochsumToPruhSum() {
+        List<Dochsum> pruhSums = dochsumService.fetchDochsumForPersonAndYm(pruhPerson.getId(), pruhYm);
+    }
+
+    private void transposeDochsumZaksToPruhZaks() {
+        List<DochsumZak> pruhZaks = dochsumZakService.fetchDochsumZaksForPersonAndYm(pruhPerson.getId(), pruhYm);
     }
 
 
-    private boolean canStampOdchod() {
-        return checkDayDochIsOpened("nelze editovat.")
-                && checkDochDateIsToday("je třeba použít 'Příchod jiný čas'.")
-//                && checkPersonIsInOffice("nelze zaznamenat odchod.")
-        ;
-    }
-
-    private boolean canStampOdchodAlt() {
-        return checkDayDochIsOpened("nelze editovat.")
+//    private boolean canStampOdchod() {
+//        return checkDayDochIsOpened("nelze editovat.")
 //                && checkDochDateIsToday("je třeba použít 'Příchod jiný čas'.")
-//                && checkPersonIsInOffice("nelze zaznamenat odchod.")
-        ;
-    }
-
-
-    private boolean canRemoveAllDochRecs() {
-        return checkDayDochIsOpened("nelze editovat.")
-                && checkDochPersonIsSelected("nelze rušit záznamy")
-                && checkDochDateIsSelected("nelze rušit záznamy")
-                && checkDochHasRecords("není co rušit")
-        ;
-    }
-
-    private boolean checkDayDochIsOpened(final String additionalMsg) {
-        if (middlePruhZakList.stream().noneMatch(Doch::isClosed)) {
-            return true;
-        }
-        ConfirmDialog
-                .createInfo()
-                .withCaption("Záznam docházky")
-                .withMessage(String.format("Denní docházka je uzavřena%s", adjustAdditionalMsg(additionalMsg)))
-                .withOkButton()
-                .open();
-        return false;
-    }
-
-    private boolean checkDochDateIsSelected(final String additionalMsg) {
-        if (null != pruhRokMes) {
-            return true;
-        }
-        ConfirmDialog
-                .createInfo()
-                .withCaption("Datum docházky")
-                .withMessage(String.format("Není vybráno datum docházky%s", adjustAdditionalMsg(additionalMsg)))
-                .withOkButton()
-                .open();
-        return false;
-    }
-
-    private boolean checkDochPersonIsSelected(final String additionalMsg) {
-        if (null != pruhPerson) {
-            return true;
-        }
-        ConfirmDialog
-                .createInfo()
-                .withCaption("Osoba docházky")
-                .withMessage(String.format("Není vybrána osoba docházky%s", adjustAdditionalMsg(additionalMsg)))
-                .withOkButton()
-                .open();
-        return false;
-    }
-
-    private boolean checkDochHasRecords(final String additionalMsg) {
-        if (dochHasRecords()) {
-            return true;
-        }
-        ConfirmDialog
-                .createInfo()
-                .withCaption("Záznamy docházky")
-                .withMessage(String.format("V docházce není žádný záznam%s", adjustAdditionalMsg(additionalMsg)))
-                .withOkButton()
-                .open();
-        return false;
-    }
-
-    private boolean checkDochDateIsToday(final String additionalMsg) {
-        if (null != pruhRokMes && pruhRokMes.equals(LocalDate.now())) {
-            return true;
-        }
-        ConfirmDialog
-                .createInfo()
-                .withCaption("Datum docházky")
-                .withMessage(String.format("Docházka není dnešní%s", adjustAdditionalMsg(additionalMsg)))
-                .withOkButton()
-                .open();
-        return false;
-    }
+////                && checkPersonIsInOffice("nelze zaznamenat odchod.")
+//        ;
+//    }
+//
+//    private boolean canStampOdchodAlt() {
+//        return checkDayDochIsOpened("nelze editovat.")
+////                && checkDochDateIsToday("je třeba použít 'Příchod jiný čas'.")
+////                && checkPersonIsInOffice("nelze zaznamenat odchod.")
+//        ;
+//    }
+//
+//
+//    private boolean canRemoveAllDochRecs() {
+//        return checkDayDochIsOpened("nelze editovat.")
+//                && checkDochPersonIsSelected("nelze rušit záznamy")
+//                && checkDochDateIsSelected("nelze rušit záznamy")
+//                && checkDochHasRecords("není co rušit")
+//        ;
+//    }
+//
+//    private boolean checkDayDochIsOpened(final String additionalMsg) {
+//        if (middlePruhZakList.stream().noneMatch(Doch::isClosed)) {
+//            return true;
+//        }
+//        ConfirmDialog
+//                .createInfo()
+//                .withCaption("Záznam docházky")
+//                .withMessage(String.format("Denní docházka je uzavřena%s", adjustAdditionalMsg(additionalMsg)))
+//                .withOkButton()
+//                .open();
+//        return false;
+//    }
+//
+//    private boolean checkDochDateIsSelected(final String additionalMsg) {
+//        if (null != pruhYm) {
+//            return true;
+//        }
+//        ConfirmDialog
+//                .createInfo()
+//                .withCaption("Datum docházky")
+//                .withMessage(String.format("Není vybráno datum docházky%s", adjustAdditionalMsg(additionalMsg)))
+//                .withOkButton()
+//                .open();
+//        return false;
+//    }
+//
+//    private boolean checkDochPersonIsSelected(final String additionalMsg) {
+//        if (null != pruhPerson) {
+//            return true;
+//        }
+//        ConfirmDialog
+//                .createInfo()
+//                .withCaption("Osoba docházky")
+//                .withMessage(String.format("Není vybrána osoba docházky%s", adjustAdditionalMsg(additionalMsg)))
+//                .withOkButton()
+//                .open();
+//        return false;
+//    }
+//
+//    private boolean checkDochHasRecords(final String additionalMsg) {
+//        if (dochHasRecords()) {
+//            return true;
+//        }
+//        ConfirmDialog
+//                .createInfo()
+//                .withCaption("Záznamy docházky")
+//                .withMessage(String.format("V docházce není žádný záznam%s", adjustAdditionalMsg(additionalMsg)))
+//                .withOkButton()
+//                .open();
+//        return false;
+//    }
+//
+//    private boolean checkDochDateIsToday(final String additionalMsg) {
+//        if (null != pruhYm && pruhYm.equals(LocalDate.now())) {
+//            return true;
+//        }
+//        ConfirmDialog
+//                .createInfo()
+//                .withCaption("Datum docházky")
+//                .withMessage(String.format("Docházka není dnešní%s", adjustAdditionalMsg(additionalMsg)))
+//                .withOkButton()
+//                .open();
+//        return false;
+//    }
 
 //
 //    private boolean checkZkDochRecToDelExists() {

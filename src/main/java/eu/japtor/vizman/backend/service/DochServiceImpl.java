@@ -43,7 +43,7 @@ public class DochServiceImpl implements DochService, HasLogger {
 //        List<DochRepo.DochDateOnly> dochDateList = dochRepo.findDistinctTop2ByPersonIdAndDochDateOrderByDochDateDesc(personId, dochDate);
 //        LocalDate prevDochDateList = dochRepo.findPrevDochDate(personId, dochDate);
 //        if (dochDateList.size() > 0) {
-//            return dochDateList.get(0).getDochDate();
+//            return dochDateList.get(0).getDsYm();
 //        }
 //        return null;
 

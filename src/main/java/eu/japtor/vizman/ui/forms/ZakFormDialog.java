@@ -774,11 +774,15 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
                 .withValidator(
                         folder ->
 //                                ((Operation.ADD == currentOperation) && StringUtils.isNotBlank(folder))
-                                (StringUtils.isNotBlank(folder))
+                                // TODO: check add to beta 1.3
+                                (StringUtils.isNotBlank(getCurrentItem().getCkont()) && null != getCurrentItem().getCzak())
+                                        || (StringUtils.isNotBlank(folder))
                         , "Složka zakázky není definována, je třeba zadat číslo a text zakázky"
                 )
                 .withValidator(
                     folder ->
+                        // TODO: check add to beta 1.3
+                        (StringUtils.isBlank(folder)) ||
                         ((Operation.ADD == currentOperation) &&
                                 !VzmFileUtils.zakDocRootExists(cfgPropsCache.getDocRootServer(), kontFolder, folder))
                         ||
@@ -790,6 +794,8 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
                 )
                 .withValidator(
                     folder ->
+                        // TODO: check add to beta 1.3
+                        (StringUtils.isBlank(folder)) ||
                         ((Operation.ADD == currentOperation) &&
                                 !VzmFileUtils.zakProjRootExists(cfgPropsCache.getProjRootServer(), kontFolder, folder))
                         ||
@@ -1045,9 +1051,16 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
                     );
                 } else {
                     if (null == fakt.getPlneni() || fakt.getPlneni().compareTo(BigDecimal.ZERO) <= 0) {
-                        new OkDialog().open("Fakturace", "Nelze fakturovat, není zadáno plnění", "");
+                        ConfirmDialog.createInfo()
+                                .withCaption("Fakturace")
+                                .withMessage("Nelze fakturovat, není zadáno plnění")
+                                .open();
                     } else if (null != fakt.getDateTimeExport()) {
-                        new OkDialog().open("Fakturace", "Nelze fakturovat, již bylo exportováno", "");
+                        ConfirmDialog.createInfo()
+                                .withCaption("Fakturace")
+                                .withMessage("Nelze fakturovat, již bylo exportováno")
+                                .open();
+
                     } else {
                         faktFormDialog.openDialog(
                                 fakt, getCurrentItem(), Operation.FAKTUROVAT

@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 
@@ -27,14 +28,15 @@ public class DochsumServiceImpl implements DochsumService, HasLogger {
     }
 
     @Override
-    public List<Dochsum> fetchDochsumForPersonAndDate(Long personId, LocalDate dochDate) {
+    public List<Dochsum> fetchDochsumForPersonAndYm(Long personId, YearMonth dsYm) {
 //        return dochRepo.findByPersonIdAndDochDateOrderByFromTimeDesc(personId, dochDate);
 //        return dochRepo.findDochForPersonAndDate(personId, dochDate);
-        return dochsumRepo.findByPersonIdAndDochDate(personId, dochDate);
+        Integer dsYmInt = 100 * dsYm.getYear() + dsYm.getMonthValue();
+        return dochsumRepo.findByPersonIdAndDsYm(personId, dsYmInt);
     }
 
     @Override
-    public long countDochsumForPersonAndDate(Long personId, LocalDate dochDate) {
-        return dochsumRepo.countByPersonIdAndDochDate(personId, dochDate);
+    public long countDochsumForPersonAndDate(Long personId, YearMonth dsYm) {
+        return dochsumRepo.countByPersonIdAndDsYm(personId, dsYm);
     }
 }
