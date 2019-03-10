@@ -722,7 +722,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Component initLoadPrevDateButton() {
 //        loadPrevDateButton = new Button("Předchozí");
-        loadPrevDateButton = new Button(VaadinIcon.STEP_BACKWARD.create());
+//        loadPrevDateButton = new Button(VaadinIcon.STEP_BACKWARD.create());
+        loadPrevDateButton = new Button(VaadinIcon.TIME_BACKWARD.create());
         loadPrevDateButton.addClickListener(event -> {
             if (null != dochPerson && null != dochDate) {
                 LocalDate prevDochDate = dochService.findPrevDochDate(dochPerson.getId(), dochDate);

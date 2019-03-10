@@ -76,7 +76,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private static final Locale czLocale = new Locale("cs", "CZ");
 
-    private HorizontalLayout pruhHeader = new HorizontalLayout();
+//    private HorizontalLayout pruhHeader = new HorizontalLayout();
 
     VerticalLayout clockContainer;
     private Span clockDisplay = new Span();
@@ -90,7 +90,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private Button loadNextDateButton;
     private Button loadLastDateButton;
 //    private Button removePruhZakBtn;
-    private Button removeAllDochRecButton;
+    private Button cancelEditButton;
 
     private Button prenosPersonDateButton;
     private Button cancelPrenosPersonDateButton;
@@ -198,10 +198,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
 
     public void initPruhData() {
-        getLogger().info("## Initializing pruh data");
-
-        initPruhZakList();
-
+        loadPersonDataFromDb();
         if (null == pruhPerson) {
             pruhPerson = pruhPersonList.stream()
                     .filter(person -> person.getUsername().toLowerCase().equals("vancik"))
@@ -214,10 +211,10 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
             pruhYm = YearMonth.now();
             pruhYmSelector.setValue(pruhYm);
         }
-        updateMiddlePruhGridPane(pruhPerson, pruhYm);
+        updatePruhGridPane(pruhPerson, pruhYm);
     }
 
-    private void initPruhZakList() {
+    private void loadPersonDataFromDb() {
         pruhPersonList = personService.fetchAllActive();
         pruhPersonCombo.setItems(pruhPersonList);
     }
@@ -239,19 +236,6 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         this.getStyle().set("background-color", "#fcfffe");
         this.getStyle().set("background-color", "LightYellow");
         this.getStyle().set("background-color", "#fefefd");
-
-        H3 pruhTitle = new H3("PROUŽEK");
-        pruhTitle.getStyle()
-                .set("margin-top", "10px")
-                .set("margin-left", "20px")
-        ;
-
-        pruhHeader.add(
-                pruhTitle
-//                new H4("Uživatel(ka): ")
-                , initPersonCombo()
-//                , initPruhRokMesSelector()
-        );
 
 
 //        nepritControl.setWidth("30em");
@@ -282,7 +266,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 , buildVertSpace()
         );
 
-        this.add(pruhHeader, pruhPanel);
+        this.add(pruhPanel);
     }
 
     private Component initPruhYmSelector() {
@@ -300,7 +284,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pruhYmSelector.addComponents(null, new Hr());
         pruhYmSelector.addValueChangeListener(event -> {
             pruhYm = event.getValue();
-            updateMiddlePruhGridPane(pruhPerson, pruhYm);
+            updatePruhGridPane(pruhPerson, pruhYm);
         });
         return pruhYmSelector;
     }
@@ -312,7 +296,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 ////        pruhYmSelectList.getStyle().set("margin-right", "1em");
 //        pruhYmSelectList.addValueChangeListener(event -> {
 //            pruhYm = event.getValue();
-//            updateMiddlePruhGridPane(pruhPerson, pruhYm);
+//            updatePruhGridPane(pruhPerson, pruhYm);
 //        });
 //        return pruhYmSelectList;
 //    }
@@ -336,7 +320,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pruhPersonCombo.setItemLabelGenerator(this::getPersonLabel);
         pruhPersonCombo.addValueChangeListener(event -> {
             pruhPerson = event.getValue();
-            updateMiddlePruhGridPane(pruhPerson, pruhYm);
+            updatePruhGridPane(pruhPerson, pruhYm);
         });
         pruhPersonCombo.addBlurListener(event -> {
 //            loadMiddleDochGridData(pruhPerson.getId(), pruhYm);
@@ -360,14 +344,23 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         middlePruhTitleBar.setWidth("100%");
         middlePruhTitleBar.setSpacing(false);
         middlePruhTitleBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
+
+        H3 pruhTitle = new H3("PROUŽEK");
+        pruhTitle.getStyle()
+                .set("margin-top", "10px")
+//                .set("margin-left", "20px")
+        ;
+
         HorizontalLayout buttonBox = new HorizontalLayout();
         buttonBox.add(
-                initPersonCombo()
+                initCancelEditButton()
         );
 
         middlePruhTitleBar.add(
-                initPruhYmSelector()
-                , initUpperDochDateInfo()
+                pruhTitle
+                , initPersonCombo()
+                , initPruhYmSelector()
+//                , initUpperDochDateInfo()
                 , buttonBox
         );
         return middlePruhTitleBar;
@@ -471,7 +464,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                         .withMessage("Odstranit zakázku z proužku?")
                         .withOkButton(() -> {
                                     removeZakFromPruh(pruhZak.getZakId());
-                                    updateMiddlePruhGridPane(pruhPerson, pruhYm);
+                                    updatePruhGridPane(pruhPerson, pruhYm);
                                 }, ButtonOption.focus(), ButtonOption.caption("ODSTRANIT")
                         )
                         .withCancelButton(ButtonOption.caption("ZPĚT"))
@@ -521,11 +514,11 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return seconds < 0 ? "-" + positive : positive;
     }
 
-    private void updateMiddlePruhGridPane(final Person pruhPerson, final YearMonth pruhYm) {
+    private void updatePruhGridPane(final Person pruhPerson, final YearMonth pruhYm) {
 //        pruhYmSelectList.setValue(pruhYm);
 //        fireEvent(new GeneratedVaadinDatePicker.ChangeEvent(pruhYmSelectList, false));
         loadMiddleDochGridData(pruhPerson, pruhYm);
-        middleDochDateInfo.setText(null == pruhYm ? "" : pruhYm.format(yearMonthFormatter));
+//        middleDochDateInfo.setText(null == pruhYm ? "" : pruhYm.format(yearMonthFormatter));
     }
 
     private Component getD01Footer(BigDecimal d01) {
@@ -581,6 +574,26 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         List<DochsumZak> pruhZaks = dochsumZakService.fetchDochsumZaksForPersonAndYm(pruhPerson.getId(), pruhYm);
     }
 
+
+
+    private Component initCancelEditButton() {
+        Icon icon = VaadinIcon.REPLY_ALL.create();
+        icon.setColor("crimson");
+        cancelEditButton = new Button(icon);
+        cancelEditButton.addClickListener(event -> {
+            ConfirmDialog.createQuestion()
+                    .withCaption("Editace proužku")
+                    .withMessage("Zrušit všechny změny proužku od posledního uložení?")
+                    .withOkButton(() -> {
+//                        loadMiddleDochGridData(pruhPerson, pruhYm);
+                        updatePruhGridPane(pruhPerson, pruhYm);
+                    }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT ZMĚNY"))
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .open()
+            ;
+        });
+        return cancelEditButton;
+    }
 
 //    private boolean canStampOdchod() {
 //        return checkDayDochIsOpened("nelze editovat.")
