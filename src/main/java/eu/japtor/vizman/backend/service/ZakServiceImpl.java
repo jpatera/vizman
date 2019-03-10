@@ -68,6 +68,11 @@ public class ZakServiceImpl implements ZakService {
     }
 
     @Override
+    public List<Zak> fetchByIds(final List<Long> ids) {
+        return zakRepo.findAllById(ids);
+    };
+
+    @Override
     public long countAll() {
         return zakRepo.count();
     }

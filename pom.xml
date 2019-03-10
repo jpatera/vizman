@@ -20,7 +20,8 @@
         <!--<vaadin.version>11.0.1</vaadin.version>-->
         <!--<vaadin.version>12.0.2</vaadin.version>-->
         <!--<vaadin.version>12.0.5</vaadin.version>-->
-        <vaadin.version>13.0.0.beta3</vaadin.version>
+        <!--<vaadin.version>13.0.0.beta3</vaadin.version>-->
+        <vaadin.version>13.0.0</vaadin.version>
     </properties>
 
     <parent>

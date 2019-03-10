@@ -24,5 +24,7 @@ public interface ZakService {
 
     List<Zak> fetchAll();
 
+    List<Zak> fetchByIds(List<Long> ids);
+
     long countAll();
 }

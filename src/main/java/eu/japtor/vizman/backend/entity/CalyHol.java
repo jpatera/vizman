@@ -3,7 +3,6 @@ package eu.japtor.vizman.backend.entity;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
