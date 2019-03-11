@@ -5,6 +5,7 @@ import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
@@ -14,8 +15,9 @@ import eu.japtor.vizman.backend.entity.Fakt;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.ui.components.Ribbon;
+import org.apache.commons.lang3.StringUtils;
 
-import java.awt.*;
+import java.awt.Color;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -30,11 +32,14 @@ public class VzmFormatUtils {
     public static final NumberFormat yearFormat = getYearFormat(Locale.getDefault());
     public static final NumberFormat moneyFormat = getMoneyFormat(Locale.getDefault());
     public static final NumberFormat percentFormat = getPercentFormat(Locale.getDefault());
+    public static final NumberFormat decHodFormat = getDecHodFormat(Locale.getDefault());
 //    public final static NumberFormat moneyFormat = new MoneyFormat();
 //    public final static NumberFormat yearFormat = new YearFormat();
     public static final StringToBigDecimalConverter bigDecimalMoneyConverter;
     public static final StringToBigDecimalConverter bigDecimalPercentConverter;
 //    public static final StringToBigDecimalConverter integerYearConverter;
+    public static final DecHodToStringConverter decHodToStringConverter;
+
     public final static DateTimeFormatter shortTimeFormatter = DateTimeFormatter.ofPattern("H:mm");
     public final static DateTimeFormatter basicDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public final static DateTimeFormatter basicDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -62,6 +67,7 @@ public class VzmFormatUtils {
                 return numberFormat;
             }
         };
+        decHodToStringConverter = new DecHodToStringConverter("Špatný formát čísla");
 
 //        integerYearConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
 //            @Override
@@ -148,6 +154,38 @@ public class VzmFormatUtils {
         }
     }
 
+    public static class DecHodToStringConverter implements Converter<String, BigDecimal>, HasLogger {
+
+        private String errorMessage;
+
+        public DecHodToStringConverter(String errorMessage) {
+            this.errorMessage = errorMessage;
+        }
+
+        @Override
+        public Result<BigDecimal> convertToModel(String s, ValueContext valueContext) {
+            try {
+                if (StringUtils.isBlank(s)) {
+                    return Result.ok(null);
+                }
+                BigDecimal decHod = new BigDecimal(s);
+                if (decHod.compareTo(BigDecimal.valueOf(-1000000L)) < 0
+                        || decHod.compareTo(BigDecimal.valueOf(1000000L)) > 0) {
+                    return Result.error(errorMessage + " (číslo musí být v rozmezí -1000000 až +1000000)");
+                }
+                return Result.ok(decHod);
+            } catch (NumberFormatException e) {
+                getLogger().error(e.getMessage(), e);
+                return Result.error(errorMessage);
+            }
+        }
+
+        @Override
+        public String convertToPresentation(BigDecimal decHod, ValueContext valueContext) {
+            return null == decHod ? "" : yearFormat.format(decHod);
+        }
+    }
+
     public static class LocalDateTimeToHhMmStringConverter implements Converter<String, LocalDateTime>, HasLogger {
 
         private static final String DEFAULT_ERR_MSG = "Chybný formát času (je očekáváno 'HH:mm')";
@@ -178,30 +216,43 @@ public class VzmFormatUtils {
     }
 
 
+    public static NumberFormat getDecHodFormat(Locale locale) {
+        if(null == locale) {
+            locale = Locale.getDefault();
+        }
+        NumberFormat format = NumberFormat.getInstance(locale);
+        if (format instanceof DecimalFormat) {
+            format.setGroupingUsed(false);
+            format.setMinimumFractionDigits(0);
+            format.setMaximumFractionDigits(0);
+        }
+        return format;
+    }
+
     public static NumberFormat getPercentFormat(Locale locale) {
         if(null == locale) {
             locale = Locale.getDefault();
         }
-        NumberFormat percentFormat = NumberFormat.getInstance(locale);
-        if (percentFormat instanceof DecimalFormat) {
-            percentFormat.setGroupingUsed(false);
-            percentFormat.setMinimumFractionDigits(1);
-            percentFormat.setMaximumFractionDigits(1);
+        NumberFormat format = NumberFormat.getInstance(locale);
+        if (format instanceof DecimalFormat) {
+            format.setGroupingUsed(false);
+            format.setMinimumFractionDigits(1);
+            format.setMaximumFractionDigits(1);
         }
-        return percentFormat;
+        return format;
     }
 
     public static NumberFormat getYearFormat(Locale locale) {
         if(null == locale) {
             locale = Locale.getDefault();
         }
-        NumberFormat yearFormat = NumberFormat.getInstance(locale);
-        if (yearFormat instanceof DecimalFormat) {
-            yearFormat.setGroupingUsed(false);
-            yearFormat.setMinimumFractionDigits(0);
-            yearFormat.setMaximumFractionDigits(0);
+        NumberFormat format = NumberFormat.getInstance(locale);
+        if (format instanceof DecimalFormat) {
+            format.setGroupingUsed(false);
+            format.setMinimumFractionDigits(0);
+            format.setMaximumFractionDigits(0);
         }
-        return yearFormat;
+        return format;
     }
 
 //    public static class NumberFormat extends DecimalFormat {
@@ -211,13 +262,13 @@ public class VzmFormatUtils {
             if(null == locale) {
                 locale = Locale.getDefault();
             }
-            NumberFormat moneyFormat = NumberFormat.getInstance(locale);
-            if (moneyFormat instanceof DecimalFormat) {
-                moneyFormat.setGroupingUsed(true);
-                moneyFormat.setMinimumFractionDigits(2);
-                moneyFormat.setMaximumFractionDigits(2);
+            NumberFormat format = NumberFormat.getInstance(locale);
+            if (format instanceof DecimalFormat) {
+                format.setGroupingUsed(true);
+                format.setMinimumFractionDigits(2);
+                format.setMaximumFractionDigits(2);
             }
-            return moneyFormat;
+            return format;
 //        }
 
 ////        public MoneyFormat (Locale locale) {
@@ -282,6 +333,20 @@ public class VzmFormatUtils {
 //            return comp;
 //    });
 
+    public static TextField getDecHodField(BigDecimal number) {
+        TextField field = new TextField();
+        String color = "black";
+        if (null != number) {
+            if (number.compareTo(BigDecimal.ZERO) == 0) {
+                color = "darkgreen";
+            } else if (number.compareTo(BigDecimal.ZERO) < 0) {
+                color = "crimson";
+            }
+            field.getStyle().set("color", color);
+        }
+        field.setValue(null == number ? "" : VzmFormatUtils.decHodFormat.format(number));
+        return field;
+    }
 
     public static HtmlComponent getPercentComponent(BigDecimal number) {
         Div comp = new Div();

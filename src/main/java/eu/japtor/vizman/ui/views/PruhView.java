@@ -12,6 +12,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -572,6 +573,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setFlexGrow(0)
                 .setResizable(false)
         ;
+        d02Col.getElement().setProperty("margin", "0");
+        d02Col.getElement().setAttribute("margin", "0");
 
         Grid.Column<PruhZak> tmpCol = pruhZakGrid.addColumn(PruhZak::getTmp)
 //                .setEditorComponent(nameEditor, pruhZak -> pruhZak.getD01())
@@ -594,13 +597,19 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
         TextField editD01 = new TextField();
         binder.forField(editD01)
-            .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
+            .withNullRepresentation("")
+            .withConverter(VzmFormatUtils.decHodToStringConverter)
             .bind(PruhZak::getD01, PruhZak::setD01);
         d01Col.setEditorComponent(editD01);
 
         TextField editD02 = new TextField();
+        editD02.getStyle().set("margin","0");
         binder.forField(editD02)
-            .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
+//            .withConverter(VzmFormatUtils.   ddd bigDecimalMoneyConverter)
+            .withNullRepresentation("")
+//            .withConverter(VzmFormatUtils.decHodToStringConverter)
+            .withConverter(
+                    new StringToBigDecimalConverter("Špatný formát čísla"))
             .bind(PruhZak::getD02, PruhZak::setD02);
         d02Col.setEditorComponent(editD02);
 
