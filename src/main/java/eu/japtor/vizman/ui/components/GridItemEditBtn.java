@@ -15,7 +15,7 @@ public class GridItemEditBtn extends Button {
 
     public GridItemEditBtn(final ComponentEventListener openItemEditDialog, String icoColor) {
         super();
-        this.setText("");
+//        this.setText("");
         Icon ico = new Icon(VaadinIcon.EDIT);
         if (null != icoColor) {
             ico.setColor(icoColor);

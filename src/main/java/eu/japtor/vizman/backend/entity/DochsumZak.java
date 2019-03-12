@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -37,6 +38,16 @@ public class DochsumZak  extends AbstractGenIdEntity {
   private BigDecimal sazba;
   private String tmp;
 
+
+  public DochsumZak() {
+      super();
+  }
+
+  public DochsumZak(Long personId, LocalDate dsDate, Long zakId) {
+    this.personId = personId;
+    this.dsDate = dsDate;
+    this.zakId = zakId;
+  }
 
 
   public Long getPersonId() {

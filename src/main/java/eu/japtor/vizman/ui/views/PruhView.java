@@ -6,8 +6,6 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -32,6 +30,8 @@ import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
+import eu.japtor.vizman.ui.components.Gap;
+import eu.japtor.vizman.ui.components.GridItemRemoveBtn;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
@@ -73,6 +73,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private List<Calym> pruhCalymList;
     private Calym pruhCalym;
+    private int pruhYmDaysCount;
     private ComboBox<Calym> pruhCalymSelector;
 //    private Select<Calym> pruhCalymSelector;
 
@@ -95,6 +96,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private Button loadLastDateButton;
 //    private Button removePruhZakBtn;
     private Button cancelEditButton;
+    private Button saveEditButton;
     private Button zakAddButton;
 
     private Button prenosPersonDateButton;
@@ -364,9 +366,14 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Component initGridZakButtonBar() {
         gridZakButtonBar = new HorizontalLayout();
+        gridZakButtonBar.setJustifyContentMode(JustifyContentMode.CENTER);
+        gridZakButtonBar.setWidthFull();
         gridZakButtonBar.getStyle()
-                .set("margin-top", "2em");
-        gridZakButtonBar.add(initCancelEditButton());
+                .set("margin-top", "0.5em");
+        gridZakButtonBar.add(
+                initSaveEditButton()
+                , new Gap("1em")
+                , initCancelEditButton());
         return gridZakButtonBar;
     }
 
@@ -421,6 +428,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pruhCalymSelector.setItemLabelGenerator(this::getYmLabel);
         pruhCalymSelector.addValueChangeListener(event -> {
             pruhCalym = event.getValue();
+            pruhYmDaysCount = pruhCalym.getCalYm().lengthOfMonth();
             updatePruhGrids(pruhPerson, pruhCalym);
         });
         return pruhCalymSelector;
@@ -437,6 +445,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 ////        pruhYmSelectList.getStyle().set("margin-right", "1em");
 //        pruhYmSelectList.addValueChangeListener(event -> {
 //            pruhCalym = event.getValue();
+//            pruhYmDaysCount = pruhCalym.getCalYm().lengthOfMonth();
 //            updatePruhGrids(pruhPerson, pruhCalym);
 //        });
 //        return pruhYmSelectList;
@@ -548,7 +557,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         ;
 
         pruhZakGrid.addColumn(new ComponentRenderer<>(this::buildPruhZakRemoveBtn))
-                .setWidth("2em")
+//        pruhZakGrid.addColumn(new ComponentRenderer<>(this::buildFaktEditBtn))
+                .setWidth("5em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setFlexGrow(0)
                 .setResizable(false)
@@ -644,26 +654,28 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
 
     private Component buildPruhZakRemoveBtn(PruhZak pruhZak) {
-        Icon icon = VaadinIcon.FILE_REMOVE.create();
-        icon.setSize("0.8em");
-        icon.getStyle().set("theme", "small icon secondary");
-//        icon.setColor("crimson");
+//        Icon icon = VaadinIcon.FILE_REMOVE.create();
+//        icon.setSize("0.8em");
+//        icon.getStyle().set("theme", "small icon secondary");
+////        icon.setColor("crimson");
 
-        Button removePruhZakBtn = new Button(icon);
+//        Button removePruhZakBtn = new Button(icon);
+        Button removePruhZakBtn = new GridItemRemoveBtn(event ->
 //            Button pruhZakRemoveBtn = new GridFakturovatBtn(event -> {
-        removePruhZakBtn.addClickListener(event ->
+//        removePruhZakBtn.addClickListener(event ->
                 ConfirmDialog.createInfo()
                         .withCaption("Zákázka proužku")
                         .withMessage("Odstranit zakázku z proužku?")
                         .withOkButton(() -> {
-                                    removeZakFromPruh(pruhZak.getZakId());
-                                    updatePruhGrids(pruhPerson, pruhCalym);
-                                }, ButtonOption.focus(), ButtonOption.caption("ODSTRANIT")
+                                removeZakFromPruh(pruhZak.getZakId());
+                                updatePruhGrids(pruhPerson, pruhCalym);
+                            }, ButtonOption.focus(), ButtonOption.caption("ODSTRANIT")
                         )
                         .withCancelButton(ButtonOption.caption("ZPĚT"))
                         .open()
 
         );
+        removePruhZakBtn.setText(null);
         return removePruhZakBtn;
     }
 
@@ -754,12 +766,41 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return pruhZaks;
     }
 
+    private List<DochsumZak> transposePruhZaksToDochsumZaks(List<PruhZak> pruhZaks) {
+
+        List<Long> zakIds = new ArrayList<>();
+        for (PruhZak pzak : pruhZaks) {
+            zakIds.add(pzak.getZakId());
+        }
+        List<Zak> zaks = zakService.fetchByIds(zakIds);
+
+        List<DochsumZak> dochsumZaks = new ArrayList();
+        for (PruhZak pzak : pruhZaks) {
+            Long zakId = pzak.getZakId();
+            for (int i=1; i <= pruhYmDaysCount; i++) {
+                BigDecimal cellHod = pzak.getZakHod(i);
+                if (null != cellHod && cellHod.compareTo(BigDecimal.ZERO) != 0) {
+                    LocalDate cellDate = pruhCalym.getCalYm().atDay(i);
+                    DochsumZak dsZak = new DochsumZak(pruhPerson.getId(), cellDate, pzak.getZakId());
+                    dsZak.setDsWork(cellHod);
+                    // TODO mzda
+                    // TODO pojistne
+                    // TODO normo, skutecne...
+                    dochsumZaks.add(dsZak);
+                }
+            }
+        }
+        return dochsumZaks;
+    }
+
+
 
     private Component initCancelEditButton() {
 //        Icon icon = VaadinIcon.REPLY_ALL.create();
 //        icon.setColor("crimson");
 //        cancelEditButton = new Button(icon);
         cancelEditButton = new Button("Vrátit změny");
+        cancelEditButton.getElement().setAttribute("theme", "secondary error");
         cancelEditButton.addClickListener(event -> {
             ConfirmDialog.createQuestion()
                     .withCaption("Editace proužku")
@@ -774,6 +815,29 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         });
         return cancelEditButton;
     }
+
+
+
+    private Component initSaveEditButton() {
+        saveEditButton = new Button("Uložit");
+        saveEditButton.getElement().setAttribute("theme", "primary");
+        saveEditButton.addClickListener(event -> {
+            ConfirmDialog.createQuestion()
+                    .withCaption("Editace proužku")
+                    .withMessage("Uložit proužek?")
+                    .withOkButton(() -> {
+//                        loadPruhZakDataFromDb(pruhPerson, pruhCalym);
+                        List<DochsumZak> dsZaks = transposePruhZaksToDochsumZaks(pruhZakList);
+                        // TODO: dochsumZakService.store(dsZaks, pruhYm, personiD)
+                        updatePruhGrids(pruhPerson, pruhCalym);
+                    }, ButtonOption.focus(), ButtonOption.caption("ULOŽIT"))
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .open()
+            ;
+        });
+        return saveEditButton;
+    }
+
 
     private Component initZakAddButton() {
         zakAddButton = new Button("Přidat zakázku");
