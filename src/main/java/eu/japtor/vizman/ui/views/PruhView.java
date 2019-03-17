@@ -10,7 +10,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
+import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -20,14 +20,14 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
+import eu.japtor.vizman.backend.bean.PruhParag;
+import eu.japtor.vizman.backend.bean.PruhSum;
 import eu.japtor.vizman.backend.bean.PruhZak;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.CalymRepo;
 import eu.japtor.vizman.backend.repository.CinRepo;
-import eu.japtor.vizman.backend.service.DochsumService;
-import eu.japtor.vizman.backend.service.DochsumZakService;
-import eu.japtor.vizman.backend.service.PersonService;
-import eu.japtor.vizman.backend.service.ZakService;
+import eu.japtor.vizman.backend.repository.ParagRepo;
+import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.Gap;
@@ -40,6 +40,7 @@ import org.springframework.data.domain.Sort;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -130,8 +131,12 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     List<PruhZak> pruhZakList = new ArrayList<>();
     Grid<PruhZak> pruhZakSumGrid;
     List<PruhZak> pruhZakSumList = new ArrayList<>();
-    Grid<PruhZak> pruhParagGrid;
-    List<PruhZak> pruhParagList = new ArrayList<>();
+    Grid<PruhParag> pruhParagGrid;
+    List<PruhParag> pruhParagList = new ArrayList<>();
+    Grid<PruhSum> pruhSumGrid;
+    List<PruhSum> pruhSumList = new ArrayList<>();
+    Comparator<PruhZak> pruhZakCkonComparator
+            = (pz1, pz2) -> pz2.getCkontCzak().equals("00001") ? -1 : pz1.getCkontCzak().compareTo(pz2.getCkontCzak());
 
 //    HorizontalLayout pruhRecLowerHeader = new HorizontalLayout();
 //    Grid<Doch> lowerDochGrid;
@@ -161,11 +166,17 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     public DochsumZakService dochsumZakService;
 
     @Autowired
+    public DochsumParagService dochsumParagService;
+
+    @Autowired
     public ZakService zakService;
 
+    @Autowired
+    public ParagRepo paragRepo;
 
 
-    //    @Autowired
+
+//    @Autowired
 //    public DochForm(Person pruhPerson) {
     public PruhView() {
 //        super();
@@ -267,12 +278,16 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         Long personId = null == person ? null : person.getId();
         YearMonth ym = null == calym ? null : calym.getCalYm();
         loadPruhZakDataFromDb(personId, ym);
+        loadPruhSumDataFromDb(personId, ym);
+        loadPruhParagDataFromDb(personId, ym);
 
         pruhZakGrid.getDataProvider().refreshAll();
+        pruhSumGrid.getDataProvider().refreshAll();
+        pruhParagGrid.getDataProvider().refreshAll();
         // TODO: refresh ZakGridFooter...
 
 //        for (PruhZak pruhZak : pruhZakList) {
-//            pruhZakGrid.setDetailsVisible(pruchZak, StringUtils.isNotBlank(pruhZak.getZakText()));
+//            pruhZakGrid.setDetailsVisible(pruchZak, StringUtils.isNotBlank(pruhZak.getParagText()));
 //        }
 
     }
@@ -292,7 +307,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 pruhZakList = new ArrayList<>();
             } else {
                 pruhZakList = transposeDochsumZaksToPruhZaks(dochsumZaks);
-//                pruhZakList.add(new PruhZak("9545.1-1 / 1", "Zakazkovy text"));
+                pruhZakList.sort(pruhZakCkonComparator.reversed());
             }
         }
         pruhZakGrid.setItems(pruhZakList);
@@ -305,6 +320,48 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     }
 
+    private void loadPruhParagDataFromDb(Long personId, YearMonth ym) {
+        if (null == personId || null == ym) {
+            pruhParagList = new ArrayList();
+        } else {
+            List<DochsumParag> dochsumParags = dochsumParagService.fetchDochsumParagsForPersonAndYm(personId, ym);
+            if (null == dochsumParags) {
+                pruhParagList = new ArrayList<>();
+            } else {
+                pruhParagList = transposeDochsumParagsToPruhParags(dochsumParags);
+//                pruhParagList.sort(pruhParagCkonComparator.reversed());
+            }
+        }
+        pruhParagGrid.setItems(pruhParagList);
+
+
+//        pruhZakGrid.getColumnByKey(D01_KEY)
+//                .setFooter(getD01Footer(getD01Sum()));
+//        pruhZakGrid.getColumnByKey(D02_KEY)
+//                .setFooter(getD02Footer(getD02Sum()));
+
+    }
+
+    private void loadPruhSumDataFromDb(Long personId, YearMonth ym) {
+        if (null == personId || null == ym) {
+            pruhSumList = new ArrayList();
+        } else {
+            List<Dochsum> dochsums = dochsumService.fetchDochsumForPersonAndYm(personId, ym);
+            if (null == dochsums) {
+                pruhSumList = new ArrayList<>();
+            } else {
+                pruhSumList = transposeDochsumsToPruhSums(dochsums);
+            }
+        }
+        pruhSumGrid.setItems(pruhSumList);
+
+
+//        pruhZakGrid.getColumnByKey(D01_KEY)
+//                .setFooter(getD01Footer(getD01Sum()));
+//        pruhZakGrid.getColumnByKey(D02_KEY)
+//                .setFooter(getD02Footer(getD02Sum()));
+
+    }
 
 
     private void buildForm() {
@@ -327,11 +384,13 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         VerticalLayout pruhPanel = new VerticalLayout();
         pruhPanel.add(initPruhTitleBar());
         pruhPanel.add(
-                initGridZakTitle()
-                , initPruhZakGrid()
-                , initGridZakButtonBar()
-                , initGridZakSumTitle()
-                , initGridParagTitle()
+                initZakGridTitle()
+                , initZakGrid()
+                , initZakGridButtonBar()
+//                , initZakGridSumTitle()
+                , initSumGrid()
+                , initParagGridTitle()
+                , initParagGrid()
         );
 //        pruhRecPane.add(initMiddlePruhFooterBar());
 
@@ -350,21 +409,21 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         this.add(pruhPanel);
     }
 
-    private Component initGridZakSumTitle() {
+    private Component initZakGridSumTitle() {
         gridZakSumTitle = new Span("Odpracováno z docházky: ");
         gridZakSumTitle.getStyle()
                 .set("margin-top", "2em");
         return gridZakSumTitle;
     }
 
-    private Component initGridZakTitle() {
+    private Component initZakGridTitle() {
         gridZakTitle = new Span("Odpracováno na zakázkách: ");
         gridZakTitle.getStyle()
                 .set("margin-top", "2em");
         return gridZakTitle;
     }
 
-    private Component initGridZakButtonBar() {
+    private Component initZakGridButtonBar() {
         gridZakButtonBar = new HorizontalLayout();
         gridZakButtonBar.setJustifyContentMode(JustifyContentMode.CENTER);
         gridZakButtonBar.setWidthFull();
@@ -377,7 +436,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return gridZakButtonBar;
     }
 
-    private Component initGridParagTitle() {
+    private Component initParagGridTitle() {
         gridZakTitle = new Span("Nepřítomnost: ");
         gridZakTitle.getStyle()
                 .set("margin-top", "2em");
@@ -530,19 +589,22 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
 
-    private void removeZakFromPruh(long zakId) {
+    private void removeZakFromPruh(Long zakId) {
         // TODO: remove zak, update DB, load from DB, update view
     }
 
-    private Component initPruhZakGrid() {
+    private Component initZakGrid() {
         pruhZakGrid = new Grid<>();
         pruhZakGrid.setHeight("20em");
         pruhZakGrid.setColumnReorderingAllowed(false);
         pruhZakGrid.setClassName("vizman-simple-grid");
         pruhZakGrid.setSelectionMode(Grid.SelectionMode.NONE);
 
+        Binder<PruhZak> pzBinder = new Binder<>(PruhZak.class);
+        pruhZakGrid.getEditor().setBinder(pzBinder);
+
 //        pruhZakGrid.setItemDetailsRenderer(new ComponentRenderer<>(dochsum -> {
-//            Emphasis zakTextComp = new Emphasis(StringUtils.isBlank(dochsum.getZakText()) ? new Span("") : new Span(dochsum.getZakText()));
+//            Emphasis zakTextComp = new Emphasis(StringUtils.isBlank(dochsum.getParagText()) ? new Span("") : new Span(dochsum.getParagText()));
 //            zakTextComp.getStyle().set("margin-left", "16em");
 //            return zakTextComp;
 //        }));
@@ -552,7 +614,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pruhZakGrid.addColumn(PruhZak::getCkontCzak)
                 .setHeader("Kontrakt [Zakázka]")
                 .setWidth("10em")
-                .setFlexGrow(0)
+                .setFlexGrow(1)
+                .setFrozen(true)
                 .setResizable(true)
         ;
 
@@ -561,43 +624,78 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setWidth("5em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setFlexGrow(0)
+                .setFrozen(true)
                 .setResizable(false)
         ;
 
 //        TextField edt01 = new TextField();
-        Grid.Column<PruhZak> d01Col = pruhZakGrid.addColumn(PruhZak::getD01)
-//                .setEditorComponent(nameEditor, pruhZak -> pruhZak.getD01())
-//                .setEditorComponent(edt01)
-                .setHeader("1")
-                .setWidth("5em")
-                .setFlexGrow(0)
-                .setResizable(false)
-        ;
+//        addZakDayColumn(1, binder, PruhZak::getD01, PruhZak::setD01);
+        addZakDayColumn(1, pzBinder, pz -> pz.getHod(1), (pz, hod) -> pz.setHod(1, hod));
+//        addZakDayColumn(2, binder, pz -> pz.getD02(), (pruhZak, d02) -> pruhZak.setD02(d02));
+        addZakDayColumn(2, pzBinder, pz -> pz.getHod(2), (pz, d02) -> pz.setD02(d02));
+        addZakDayColumn(3, pzBinder, PruhZak::getD03, PruhZak::setD03);
+        addZakDayColumn(4, pzBinder, PruhZak::getD04, PruhZak::setD04);
+        addZakDayColumn(5, pzBinder, PruhZak::getD05, PruhZak::setD05);
+        addZakDayColumn(6, pzBinder, PruhZak::getD06, PruhZak::setD06);
+        addZakDayColumn(7, pzBinder, PruhZak::getD07, PruhZak::setD07);
+        addZakDayColumn(8, pzBinder, PruhZak::getD08, PruhZak::setD08);
+        addZakDayColumn(9, pzBinder, PruhZak::getD09, PruhZak::setD09);
+        addZakDayColumn(10, pzBinder, PruhZak::getD10, PruhZak::setD10);
+        addZakDayColumn(11, pzBinder, PruhZak::getD11, PruhZak::setD11);
+        addZakDayColumn(12, pzBinder, PruhZak::getD12, PruhZak::setD12);
+        addZakDayColumn(13, pzBinder, PruhZak::getD13, PruhZak::setD13);
+        addZakDayColumn(14, pzBinder, PruhZak::getD14, PruhZak::setD14);
+        addZakDayColumn(15, pzBinder, PruhZak::getD15, PruhZak::setD15);
+        addZakDayColumn(16, pzBinder, PruhZak::getD16, PruhZak::setD16);
+        addZakDayColumn(17, pzBinder, PruhZak::getD17, PruhZak::setD17);
+        addZakDayColumn(18, pzBinder, PruhZak::getD18, PruhZak::setD18);
+        addZakDayColumn(19, pzBinder, PruhZak::getD19, PruhZak::setD19);
+        addZakDayColumn(20, pzBinder, PruhZak::getD20, PruhZak::setD20);
+        addZakDayColumn(21, pzBinder, PruhZak::getD21, PruhZak::setD21);
+        addZakDayColumn(22, pzBinder, PruhZak::getD22, PruhZak::setD22);
+        addZakDayColumn(23, pzBinder, PruhZak::getD23, PruhZak::setD23);
+        addZakDayColumn(24, pzBinder, PruhZak::getD24, PruhZak::setD24);
+        addZakDayColumn(25, pzBinder, PruhZak::getD25, PruhZak::setD25);
+        addZakDayColumn(26, pzBinder, PruhZak::getD26, PruhZak::setD26);
+        addZakDayColumn(27, pzBinder, PruhZak::getD27, PruhZak::setD27);
+        addZakDayColumn(28, pzBinder, PruhZak::getD28, PruhZak::setD28);
+        if (pruhYmDaysCount > 28) {
+            addZakDayColumn(29, pzBinder, PruhZak::getD29, PruhZak::setD29);
+        }
+        if (pruhYmDaysCount > 29) {
+            addZakDayColumn(30, pzBinder, PruhZak::getD30, PruhZak::setD30);
+        }
+        if (pruhYmDaysCount > 30) {
+            addZakDayColumn(31, pzBinder, PruhZak::getD31, PruhZak::setD31);
+        }
+
+//        Grid.Column<PruhZak> d01Col = pruhZakGrid.addColumn(PruhZak::getD01)
+////                .setEditorComponent(nameEditor, pruhZak -> pruhZak.getD01())
+////                .setEditorComponent(edt01)
+//                .setHeader("1")
+//                .setWidth("5em")
+//                .setFlexGrow(0)
+//                .setResizable(false)
+//        ;
+//        TextField editD01 = new TextField();
+//        binder.forField(editD01)
+//                .withNullRepresentation("")
+//                .withConverter(VzmFormatUtils.decHodToStringConverter)
+//                .bind(PruhZak::getD01, PruhZak::setD01);
+//        d01Col.setEditorComponent(editD01);
+
 
 //        TextField edt02 = new TextField();
-        Grid.Column<PruhZak> d02Col = pruhZakGrid.addColumn(PruhZak::getD02)
-//                .setEditorComponent(nameEditor, pruhZak -> pruhZak.getD01())
-//                .setEditorComponent(edt02)
-                .setHeader("2")
-                .setWidth("5em")
-                .setFlexGrow(0)
-                .setResizable(false)
-        ;
-        d02Col.getElement().setProperty("margin", "0");
-        d02Col.getElement().setAttribute("margin", "0");
-
-        Grid.Column<PruhZak> tmpCol = pruhZakGrid.addColumn(PruhZak::getTmp)
-//                .setEditorComponent(nameEditor, pruhZak -> pruhZak.getD01())
-//                .setEditorComponent(edt02)
-                .setHeader("tmp")
-                .setWidth("10em")
-                .setFlexGrow(0)
-                .setResizable(false)
-        ;
+//        Grid.Column<PruhZak> d02Col = pruhZakGrid.addColumn(PruhZak::getD02)
+////                .setEditorComponent(nameEditor, pruhZak -> pruhZak.getD01())
+////                .setEditorComponent(edt02)
+//                .setHeader("2")
+//                .setWidth("5em")
+//                .setFlexGrow(0)
+//                .setResizable(false)
+//        ;
 
 
-        Binder<PruhZak> binder = new Binder<>(PruhZak.class);
-        pruhZakGrid.getEditor().setBinder(binder);
 
         // Close the editor in case of backward between components
 //        fieldD01.getElement()
@@ -605,27 +703,28 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //                        event -> pruhZakGrid.getEditor().closeEditor())
 //                .setFilter("event.key === 'Tab' && event.shiftKey");
 
-        TextField editD01 = new TextField();
-        binder.forField(editD01)
-            .withNullRepresentation("")
-            .withConverter(VzmFormatUtils.decHodToStringConverter)
-            .bind(PruhZak::getD01, PruhZak::setD01);
-        d01Col.setEditorComponent(editD01);
 
-        TextField editD02 = new TextField();
-        editD02.getStyle().set("margin","0");
-        binder.forField(editD02)
-//            .withConverter(VzmFormatUtils.   ddd bigDecimalMoneyConverter)
-            .withNullRepresentation("")
-//            .withConverter(VzmFormatUtils.decHodToStringConverter)
-            .withConverter(
-                    new StringToBigDecimalConverter("Špatný formát čísla"))
-            .bind(PruhZak::getD02, PruhZak::setD02);
-        d02Col.setEditorComponent(editD02);
+//        TextField editD02 = new TextField();
+//        editD02.getStyle().set("margin","0");
+//        binder.forField(editD02)
+////            .withConverter(VzmFormatUtils.   ddd bigDecimalMoneyConverter)
+//            .withNullRepresentation("")
+////            .withConverter(VzmFormatUtils.decHodToStringConverter)
+//            .withConverter(
+//                    new StringToBigDecimalConverter("Špatný formát čísla"))
+//            .bind(PruhZak::getD02, PruhZak::setD02);
+//        d02Col.setEditorComponent(editD02);
 
-        TextField editTmp = new TextField();
-        binder.bind(editTmp, "tmp");
-        tmpCol.setEditorComponent(editTmp);
+
+//        Grid.Column<PruhZak> tmpCol = pruhZakGrid.addColumn(PruhZak::getTmp)
+//                .setHeader("tmp")
+//                .setWidth("10em")
+//                .setFlexGrow(0)
+//                .setResizable(false)
+//        ;
+//        TextField editTmp = new TextField();
+//        binder.bind(editTmp, "tmp");
+//        tmpCol.setEditorComponent(editTmp);
 
         pruhZakGrid.addItemDoubleClickListener(event -> {
             pruhZakGrid.getEditor().editItem(event.getItem());
@@ -641,7 +740,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
 //        for (int i = 1; i <= 31; i++) {
 //            int finalI = i;
-//            pruhZakGrid.addColumn(pruhZak -> pruhZak.getZakHod(finalI))
+//            pruhZakGrid.addColumn(pruhZak -> pruhZak.getHod(finalI))
 //                    .setHeader("2")
 //                    .setWidth("2em")
 //                    .setFlexGrow(0)
@@ -652,6 +751,208 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return pruhZakGrid;
     }
 
+
+
+    private Component initSumGrid() {
+        pruhSumGrid = new Grid<>();
+        pruhSumGrid.setHeight("20em");
+        pruhSumGrid.setColumnReorderingAllowed(false);
+        pruhSumGrid.setClassName("vizman-simple-grid");
+        pruhSumGrid.setSelectionMode(Grid.SelectionMode.NONE);
+
+        Binder<PruhSum> sumBinder = new Binder<>(PruhSum.class);
+        pruhSumGrid.getEditor().setBinder(sumBinder);
+
+        pruhSumGrid.addColumn(PruhSum::getSumText)
+                .setHeader("Důvod")
+                .setWidth("15em")
+                .setFlexGrow(1)
+                .setFrozen(true)
+                .setResizable(true)
+        ;
+
+//        pruhSumGrid.addColumn(new ComponentRenderer<>(pruhSum ->
+//                new Span(pruhSum.getSumText())))
+//                .setWidth("5em")
+//                .setTextAlign(ColumnTextAlign.END)
+//                .setFlexGrow(0)
+//                .setFrozen(true)
+//                .setResizable(false)
+//        ;
+
+//        for (int i=1; i <= pruhYmDaysCount; i++) {
+        for (int i=1; i <= 31; i++) {
+            int ii = i;
+            addSumDayColumn(ii, ps -> ps.getHod(ii));
+        }
+        return pruhSumGrid;
+    }
+
+    private Component initParagGrid() {
+        pruhParagGrid = new Grid<>();
+        pruhParagGrid.setHeight("20em");
+        pruhParagGrid.setColumnReorderingAllowed(false);
+        pruhParagGrid.setClassName("vizman-simple-grid");
+        pruhParagGrid.setSelectionMode(Grid.SelectionMode.NONE);
+
+        Binder<PruhParag> paragBinder = new Binder<>(PruhParag.class);
+        pruhParagGrid.getEditor().setBinder(paragBinder);
+
+        pruhParagGrid.addColumn(PruhParag::getCparag)
+                .setHeader("Důvod")
+                .setWidth("10em")
+                .setFlexGrow(1)
+                .setFrozen(true)
+                .setResizable(true)
+        ;
+
+        pruhParagGrid.addColumn(new ComponentRenderer<>(pruhParag ->
+                new Span(pruhParag.getParagText())))
+                .setWidth("5em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setFlexGrow(0)
+                .setFrozen(true)
+                .setResizable(false)
+        ;
+
+//        for (int i=1; i <= pruhYmDaysCount; i++) {
+        for (int i=1; i <= 31; i++) {
+            int ii = i;
+            addParagDayColumn(ii, pp -> pp.getHod(ii));
+        }
+//        addZakDayColumn(1, pzBinder, pz -> pz.getHod(1), (pz, hod) -> pz.setHod(1, hod));
+
+//        addZakDayColumn(1, binder, PruhParag::getD01, PruhParag::setD01);
+//        addZakDayColumn(2, binder, PruhParag::getD02, PruhParag::setD02);
+//        addZakDayColumn(3, binder, PruhParag::getD03, PruhParag::setD03);
+//        addZakDayColumn(4, binder, PruhParag::getD04, PruhParag::setD04);
+//        addZakDayColumn(5, binder, PruhParag::getD05, PruhParag::setD05);
+//        addZakDayColumn(6, binder, PruhParag::getD06, PruhParag::setD06);
+//        addZakDayColumn(7, binder, PruhParag::getD07, PruhParag::setD07);
+//        addZakDayColumn(8, binder, PruhParag::getD08, PruhParag::setD08);
+//        addZakDayColumn(9, binder, PruhParag::getD09, PruhParag::setD09);
+//        addZakDayColumn(10, binder, PruhParag::getD10, PruhParag::setD10);
+//        addZakDayColumn(11, binder, PruhParag::getD11, PruhParag::setD11);
+//        addZakDayColumn(12, binder, PruhParag::getD12, PruhParag::setD12);
+//        addZakDayColumn(13, binder, PruhParag::getD13, PruhParag::setD13);
+//        addZakDayColumn(14, binder, PruhParag::getD14, PruhParag::setD14);
+//        addZakDayColumn(15, binder, PruhParag::getD15, PruhParag::setD15);
+//        addZakDayColumn(16, binder, PruhParag::getD16, PruhParag::setD16);
+//        addZakDayColumn(17, binder, PruhParag::getD17, PruhParag::setD17);
+//        addZakDayColumn(18, binder, PruhParag::getD18, PruhParag::setD18);
+//        addZakDayColumn(19, binder, PruhParag::getD19, PruhParag::setD19);
+//        addZakDayColumn(20, binder, PruhParag::getD20, PruhParag::setD20);
+//        addZakDayColumn(21, binder, PruhParag::getD21, PruhParag::setD21);
+//        addZakDayColumn(22, binder, PruhParag::getD22, PruhParag::setD22);
+//        addZakDayColumn(23, binder, PruhParag::getD23, PruhParag::setD23);
+//        addZakDayColumn(24, binder, PruhParag::getD24, PruhParag::setD24);
+//        addZakDayColumn(25, binder, PruhParag::getD25, PruhParag::setD25);
+//        addZakDayColumn(26, binder, PruhParag::getD26, PruhParag::setD26);
+//        addZakDayColumn(27, binder, PruhParag::getD27, PruhParag::setD27);
+//        addZakDayColumn(28, binder, PruhParag::getD28, PruhParag::setD28);
+//        if (pruhYmDaysCount > 28) {
+//            addZakDayColumn(29, binder, PruhParag::getD29, PruhParag::setD29);
+//        }
+//        if (pruhYmDaysCount > 29) {
+//            addZakDayColumn(30, binder, PruhParag::getD30, PruhParag::setD30);
+//        }
+//        if (pruhYmDaysCount > 30) {
+//            addZakDayColumn(31, binder, PruhParag::getD31, PruhParag::setD31);
+//        }
+
+//        pruhPragGrid.addItemDoubleClickListener(event -> {
+//            pruhParagGrid.getEditor().editItem(event.getItem());
+////            field.focus();
+//        });
+
+        return pruhParagGrid;
+    }
+
+
+
+//    public Binder.Binding<BEAN, TARGET> bind(ValueProvider<BEAN, TARGET> getter, Setter<BEAN, TARGET> setter) {
+    private Grid.Column<PruhZak> addZakDayColumn(
+            int day
+            , Binder<PruhZak> pzBinder
+            , ValueProvider<PruhZak, BigDecimal> pzHodValProv
+            , Setter<PruhZak, BigDecimal> pzHodSetter)
+    {
+        Grid.Column<PruhZak> col = pruhZakGrid.addColumn( new ComponentRenderer<>(pruhZak ->
+                VzmFormatUtils.getDecHodComponent(pzHodValProv.apply(pruhZak))));
+//                StringToBigDecimalConverter(valProv));
+        col.setHeader(Integer.valueOf(day).toString())
+            .setWidth("5em")
+            .setTextAlign(ColumnTextAlign.END)
+            .setFlexGrow(0)
+            .setResizable(false)
+        ;
+        // TODO: remove margins
+        col.getElement().setProperty("margin", "0");
+        col.getElement().setAttribute("margin", "0");
+
+        TextField edt = new TextField();
+        // TODO: remove margins
+        edt.getStyle().set("margin", "0");
+        pzBinder.forField(edt)
+//            .withConverter(VzmFormatUtils.   ddd bigDecimalMoneyConverter)
+                .withNullRepresentation("")
+//            .withConverter(VzmFormatUtils.decHodToStringConverter)
+                // TODO: add regex for dd.d
+                .withConverter(VzmFormatUtils.decHodToStringConverter)
+//                .withConverter(
+//                        new StringToBigDecimalConverter("Špatný formát čísla, je očekáváno 'CC.C'"))
+                .bind(pzHodValProv, pzHodSetter);
+        col.setEditorComponent(edt);
+        col.setFooter(getDayHodSumComp(BigDecimal.valueOf(12.3)));
+        return col;
+    }
+
+    private Grid.Column<PruhSum> addSumDayColumn(
+            int day, ValueProvider<PruhSum, BigDecimal> ppHodValProv)
+    {
+        Grid.Column<PruhSum> col = pruhSumGrid.addColumn( new ComponentRenderer<>(pruhSum ->
+                VzmFormatUtils.getDecHodComponent(ppHodValProv.apply(pruhSum))));
+//                StringToBigDecimalConverter(valProv));
+        col.setHeader(Integer.valueOf(day).toString())
+                .setWidth("5em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setFlexGrow(0)
+                .setResizable(false)
+        ;
+        // TODO: remove margins
+        col.getElement().setProperty("margin", "0");
+        col.getElement().setAttribute("margin", "0");
+
+        return col;
+    }
+
+    private Grid.Column<PruhParag> addParagDayColumn(
+            int day, ValueProvider<PruhParag, BigDecimal> ppHodValProv)
+    {
+        Grid.Column<PruhParag> col = pruhParagGrid.addColumn( new ComponentRenderer<>(pruhParag ->
+                VzmFormatUtils.getDecHodComponent(ppHodValProv.apply(pruhParag))));
+//                StringToBigDecimalConverter(valProv));
+        col.setHeader(Integer.valueOf(day).toString())
+                .setWidth("5em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setFlexGrow(0)
+                .setResizable(false)
+        ;
+        // TODO: remove margins
+        col.getElement().setProperty("margin", "0");
+        col.getElement().setAttribute("margin", "0");
+
+        return col;
+    }
+
+    private Component getDayHodSumComp(BigDecimal dayHodSum) {
+        DecimalFormat df = new DecimalFormat();
+        df.setMaximumFractionDigits(1);
+        df.setMinimumFractionDigits(1);
+        df.setGroupingUsed(false);
+        Span span = new Span(null == dayHodSum ? null : df.format(dayHodSum));
+        return span;
+    }
 
     private Component buildPruhZakRemoveBtn(PruhZak pruhZak) {
 //        Icon icon = VaadinIcon.FILE_REMOVE.create();
@@ -680,25 +981,25 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
 
-    private BigDecimal getD01Sum() {
-        BigDecimal d01Sum = BigDecimal.ZERO;
+    private BigDecimal getHodSum(Integer day) {
+        BigDecimal hodSum = BigDecimal.ZERO;
         for (PruhZak pruhZak : pruhZakList) {
-            if (null != pruhZak && null != pruhZak.getD01()) {
-                d01Sum = d01Sum.add(pruhZak.getD01());
+            if (null != pruhZak && null != pruhZak.getHod(day)) {
+                hodSum = hodSum.add(pruhZak.getD01());
             }
         }
-        return d01Sum;
+        return hodSum;
     }
 
-    private BigDecimal getD02Sum() {
-        BigDecimal d02Sum = BigDecimal.ZERO;
-        for (PruhZak pruhZak : pruhZakList) {
-            if (null != pruhZak && null != pruhZak.getD02()) {
-                d02Sum = d02Sum.add(pruhZak.getD02());
-            }
-        }
-        return d02Sum;
-    }
+//    private BigDecimal getD02Sum() {
+//        BigDecimal d02Sum = BigDecimal.ZERO;
+//        for (PruhZak pruhZak : pruhZakList) {
+//            if (null != pruhZak && null != pruhZak.getD02()) {
+//                d02Sum = d02Sum.add(pruhZak.getD02());
+//            }
+//        }
+//        return d02Sum;
+//    }
 
 
     public static HtmlComponent getPracComponent(Doch doch) {
@@ -720,15 +1021,15 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
 
-    private Component getD01Footer(BigDecimal d01) {
-        Span comp = new Span(null == d01 ? "" : getD01Sum().toString());
-        return comp;
-    }
-
-    private Component getD02Footer(BigDecimal d02) {
-        Span comp = new Span(null == d02 ? "" : getD02Sum().toString());
-        return comp;
-    }
+//    private Component getD01Footer(BigDecimal d01) {
+//        Span comp = new Span(null == d01 ? "" : getD01Sum().toString());
+//        return comp;
+//    }
+//
+//    private Component getD02Footer(BigDecimal d02) {
+//        Span comp = new Span(null == d02 ? "" : getD02Sum().toString());
+//        return comp;
+//    }
 
 
     private Component getDurationLabelFooter() {
@@ -736,10 +1037,6 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        comp.setWidth("5em");
         comp.getStyle().set("text-align", "end");
         return comp;
-    }
-
-    private void transposeDochsumToPruhSum(Long personId, YearMonth ym) {
-        List<Dochsum> pruhSums = dochsumService.fetchDochsumForPersonAndYm(personId, ym);
     }
 
     private List<PruhZak> transposeDochsumZaksToPruhZaks(List<DochsumZak> dsZaks) {
@@ -758,6 +1055,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 if (dsZak.getZakId().equals(zak.getId())) {
                     int dayOm = dsZak.getDsDate().getDayOfMonth();
                     pzak.setValueToDayField(dayOm, dsZak.getDsWork());
+                    pzak.setHod(dayOm, dsZak.getDsWork());
                 }
             }
             pzak.setTmp("TMP");
@@ -765,6 +1063,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         }
         return pruhZaks;
     }
+
 
     private List<DochsumZak> transposePruhZaksToDochsumZaks(List<PruhZak> pruhZaks) {
 
@@ -778,7 +1077,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         for (PruhZak pzak : pruhZaks) {
             Long zakId = pzak.getZakId();
             for (int i=1; i <= pruhYmDaysCount; i++) {
-                BigDecimal cellHod = pzak.getZakHod(i);
+                BigDecimal cellHod = pzak.getHod(i);
                 if (null != cellHod && cellHod.compareTo(BigDecimal.ZERO) != 0) {
                     LocalDate cellDate = pruhCalym.getCalYm().atDay(i);
                     DochsumZak dsZak = new DochsumZak(pruhPerson.getId(), cellDate, pzak.getZakId());
@@ -793,6 +1092,53 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return dochsumZaks;
     }
 
+
+    private List<PruhSum> transposeDochsumsToPruhSums(List<Dochsum> dsSums) {
+
+//        List<Long> sumIds = dsSums.stream()
+//                .map(dsSum -> dsSum.getumId())
+//                .distinct()
+//                .collect(Collectors.toList())
+//                ;
+
+//        List<PruhSum> sums = paragRepo.findAllById(paragIds);
+        List<PruhSum> pruhSums = new ArrayList();
+//        for (Parag parag : parags) {
+            PruhSum psum = new PruhSum("Odpracováno z docházky");
+            for (Dochsum dsSum : dsSums) {
+//                if (dsSum.getSumId().equals(parag.getId())) {
+                    int dayOm = dsSum.getDsDate().getDayOfMonth();
+                    psum.setHod(dayOm, dsSum.getDsWork());
+//                }
+            }
+            pruhSums.add(psum);
+//        }
+        return pruhSums;
+    }
+
+    private List<PruhParag> transposeDochsumParagsToPruhParags(List<DochsumParag> dsParags) {
+
+        List<Long> paragIds = dsParags.stream()
+                .map(dsParag -> dsParag.getParagId())
+                .distinct()
+                .collect(Collectors.toList())
+                ;
+
+        List<Parag> parags = paragRepo.findAllById(paragIds);
+        List<PruhParag> pruhParags = new ArrayList();
+        for (Parag parag : parags) {
+            PruhParag ppar = new PruhParag(parag.getCparag(), parag.getText());
+            for (DochsumParag dsPar : dsParags) {
+                if (dsPar.getParagId().equals(parag.getId())) {
+                    int dayOm = dsPar.getDsDate().getDayOfMonth();
+//                    ppar.setValueToDayField(dayOm, dsPar.getDsWorkOff());
+                    ppar.setHod(dayOm, dsPar.getDsWorkOff());
+                }
+            }
+            pruhParags.add(ppar);
+        }
+        return pruhParags;
+    }
 
 
     private Component initCancelEditButton() {

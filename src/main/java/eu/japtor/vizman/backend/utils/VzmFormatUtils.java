@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -168,13 +169,20 @@ public class VzmFormatUtils {
                 if (StringUtils.isBlank(s)) {
                     return Result.ok(null);
                 }
-                BigDecimal decHod = new BigDecimal(s);
-                if (decHod.compareTo(BigDecimal.valueOf(-1000000L)) < 0
-                        || decHod.compareTo(BigDecimal.valueOf(1000000L)) > 0) {
+
+//                BigDecimal decHod = new BigDecimal(s);
+
+                DecimalFormat df = (DecimalFormat) NumberFormat.getInstance();
+                df.setParseBigDecimal(true);
+                BigDecimal decHod = null;
+                decHod = (BigDecimal) df.parse(s);
+
+                if (decHod.compareTo(BigDecimal.valueOf(-1000000)) < 0
+                        || decHod.compareTo(BigDecimal.valueOf(1000000)) > 0) {
                     return Result.error(errorMessage + " (číslo musí být v rozmezí -1000000 až +1000000)");
                 }
                 return Result.ok(decHod);
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException | ParseException e) {
                 getLogger().error(e.getMessage(), e);
                 return Result.error(errorMessage);
             }
@@ -182,7 +190,7 @@ public class VzmFormatUtils {
 
         @Override
         public String convertToPresentation(BigDecimal decHod, ValueContext valueContext) {
-            return null == decHod ? "" : yearFormat.format(decHod);
+            return null == decHod ? "" : decHodFormat.format(decHod);
         }
     }
 
@@ -223,8 +231,8 @@ public class VzmFormatUtils {
         NumberFormat format = NumberFormat.getInstance(locale);
         if (format instanceof DecimalFormat) {
             format.setGroupingUsed(false);
-            format.setMinimumFractionDigits(0);
-            format.setMaximumFractionDigits(0);
+            format.setMinimumFractionDigits(1);
+            format.setMaximumFractionDigits(1);
         }
         return format;
     }
@@ -333,8 +341,9 @@ public class VzmFormatUtils {
 //            return comp;
 //    });
 
-    public static TextField getDecHodField(BigDecimal number) {
-        TextField field = new TextField();
+    public static HtmlComponent getDecHodComponent(BigDecimal number) {
+//        TextField field = new TextField();
+        Div comp = new Div();
         String color = "black";
         if (null != number) {
             if (number.compareTo(BigDecimal.ZERO) == 0) {
@@ -342,10 +351,10 @@ public class VzmFormatUtils {
             } else if (number.compareTo(BigDecimal.ZERO) < 0) {
                 color = "crimson";
             }
-            field.getStyle().set("color", color);
+            comp.getStyle().set("color", color);
         }
-        field.setValue(null == number ? "" : VzmFormatUtils.decHodFormat.format(number));
-        return field;
+        comp.setText(null == number ? "" : VzmFormatUtils.decHodFormat.format(number));
+        return comp;
     }
 
     public static HtmlComponent getPercentComponent(BigDecimal number) {

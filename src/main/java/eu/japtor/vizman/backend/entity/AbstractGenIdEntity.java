@@ -16,14 +16,13 @@ public class AbstractGenIdEntity extends AbstractEntity {
 			initialValue = 1000001,
 			allocationSize=10	// Looks like it must not be greater than INCREMENT BY specified for sequence in DB SQL
 	)
+
 	@Id
 	@Column(name = "id", updatable = false, nullable = false)
 	private Long id;
 
 	@Version
 	private Integer version;
-//	private int version;
-
 
 	public Long getId() {
 		return id;

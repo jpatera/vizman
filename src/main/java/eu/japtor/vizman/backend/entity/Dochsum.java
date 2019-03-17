@@ -4,6 +4,7 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 
 @Entity
 @Table(name = "DOCHSUM")
@@ -24,7 +25,7 @@ public class Dochsum extends AbstractGenIdEntity {
   @Convert(
           converter = YearMonthIntegerAttributeConverter.class
   )
-  private Integer dsYm;
+  private YearMonth dsYm;
 
   @Column(name = "USERNAME")
   private String username;
@@ -102,7 +103,6 @@ public class Dochsum extends AbstractGenIdEntity {
   public Long getPersonId() {
     return personId;
   }
-
   public void setPersonId(Long personId) {
     this.personId = personId;
   }
@@ -110,16 +110,14 @@ public class Dochsum extends AbstractGenIdEntity {
   public LocalDate getDsDate() {
     return dsDate;
   }
-
   public void setDsDate(LocalDate dochDate) {
     this.dsDate = dochDate;
   }
 
-  public Integer getDsYm() {
+  public YearMonth getDsYm() {
     return dsYm;
   }
-
-  public void setDsYm(Integer dsYm) {
+  public void setDsYm(YearMonth dsYm) {
     this.dsYm = dsYm;
   }
 

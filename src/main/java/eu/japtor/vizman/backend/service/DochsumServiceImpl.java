@@ -22,7 +22,7 @@ public class DochsumServiceImpl implements DochsumService, HasLogger {
     private DochsumRepo dochsumRepo;
 
     @Autowired
-    public DochsumServiceImpl(DochRepo dochRepo) {
+    public DochsumServiceImpl(DochsumRepo dochsumRepo) {
         super();
         this.dochsumRepo = dochsumRepo;
     }
@@ -31,8 +31,9 @@ public class DochsumServiceImpl implements DochsumService, HasLogger {
     public List<Dochsum> fetchDochsumForPersonAndYm(Long personId, YearMonth dsYm) {
 //        return dochRepo.findByPersonIdAndDochDateOrderByFromTimeDesc(personId, dochDate);
 //        return dochRepo.findDochForPersonAndDate(personId, dochDate);
-        Integer dsYmInt = 100 * dsYm.getYear() + dsYm.getMonthValue();
-        return dochsumRepo.findByPersonIdAndDsYm(personId, dsYmInt);
+//        Integer dsYmInt = 100 * dsYm.getYear() + dsYm.getMonthValue();
+//        return dochsumRepo.findByPersonIdAndDsYm(personId, dsYmInt);
+        return dochsumRepo.findByPersonIdAndDsYm(personId, dsYm);
     }
 
     @Override
