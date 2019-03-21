@@ -28,7 +28,7 @@ public class DochsumParag extends AbstractGenIdEntity {
   private Long paragId;
   private String cparag;
   private String username;
-  private BigDecimal dsWorkOff;
+  private BigDecimal dspWorkOff;
 
 
   public DochsumParag() {
@@ -84,10 +84,10 @@ public class DochsumParag extends AbstractGenIdEntity {
     this.username = username;
   }
 
-  public BigDecimal getDsWorkOff() {
-    return dsWorkOff;
+  public BigDecimal getDspWorkOff() {
+    return dspWorkOff;
   }
-  public void setDsWorkOff(BigDecimal dsWork) {
-    this.dsWorkOff = dsWork;
+  public void setDspWorkOff(BigDecimal dspWork) {
+    this.dspWorkOff = dspWork;
   }
 }

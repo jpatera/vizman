@@ -9,9 +9,10 @@ public class GridItemRemoveBtn extends Button {
 
     public GridItemRemoveBtn(final ComponentEventListener itemAction) {
         super();
-//        this.setText("");
-//        this.setIcon(new Icon("lumo", "edit"));
-        this.setIcon(new Icon(VaadinIcon.CLOSE_SMALL));
+        Icon icon = VaadinIcon.CLOSE_SMALL.create();
+        icon.getStyle().set("theme", "small icon secondary");
+        icon.setSize("0.8em");
+//        icon.setColor("crimson");
         this.getElement().setAttribute("theme", "tertiary");
         this.addClickListener(itemAction);
     }

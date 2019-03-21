@@ -10,7 +10,7 @@ public class PruhSum extends AbstractPruh implements HasLogger {
     String sumText;
 
     public PruhSum(String sumText) {
-        this.sumText = this.sumText;
+        this.sumText = sumText;
         this.hods = new HashMap<>();
         for (int i = 1; i <= 31; i++) {
             hods.put(i, null);

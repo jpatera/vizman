@@ -4,7 +4,6 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -29,12 +28,25 @@ public class DochsumZak  extends AbstractGenIdEntity {
   private Long zakId;
   private String ckontOrig;
   private String username;
-  private BigDecimal dsWork;
-  private Double dsWorkNorm;
-  private BigDecimal dsMzda;
-  private BigDecimal dsPojist;
-  private BigDecimal dsMzdas;
-  private BigDecimal dsPojists;
+
+  @Column(name = "DSZ_WORK_PRUH")
+  private BigDecimal dszWorkPruh;
+
+  @Column(name = "DSZ_WORK_NORM")
+  private Double dszWorkNorm;
+
+  @Column(name = "DSZ_MZDA")
+  private BigDecimal dszMzda;
+
+  @Column(name = "DSZ_POJIST")
+  private BigDecimal dszPojist;
+
+  @Column(name = "DSZ_MZDAS")
+  private BigDecimal dszMzdas;
+
+  @Column(name = "DSZ_POJISTS")
+  private BigDecimal dszPojists;
+
   private BigDecimal sazba;
   private String tmp;
 
@@ -103,57 +115,57 @@ public class DochsumZak  extends AbstractGenIdEntity {
   }
 
 
-  public BigDecimal getDsWork() {
-    return dsWork;
+  public BigDecimal getDszWorkPruh() {
+    return dszWorkPruh;
   }
 
-  public void setDsWork(BigDecimal dsWork) {
-    this.dsWork = dsWork;
-  }
-
-
-  public Double getDsWorkNorm() {
-    return dsWorkNorm;
-  }
-
-  public void setDsWorkNorm(Double dsWorkNorm) {
-    this.dsWorkNorm = dsWorkNorm;
+  public void setDszWorkPruh(BigDecimal dszWorkPruh) {
+    this.dszWorkPruh = dszWorkPruh;
   }
 
 
-  public BigDecimal getDsMzda() {
-    return dsMzda;
+  public Double getDszWorkNorm() {
+    return dszWorkNorm;
   }
 
-  public void setDsMzda(BigDecimal dsMzda) {
-    this.dsMzda = dsMzda;
-  }
-
-
-  public BigDecimal getDsPojist() {
-    return dsPojist;
-  }
-
-  public void setDsPojist(BigDecimal dsPojist) {
-    this.dsPojist = dsPojist;
+  public void setDszWorkNorm(Double dsWorkNorm) {
+    this.dszWorkNorm = dsWorkNorm;
   }
 
 
-  public BigDecimal getDsMzdas() {
-    return dsMzdas;
+  public BigDecimal getDszMzda() {
+    return dszMzda;
   }
 
-  public void setDsMzdas(BigDecimal dsMzdas) {
-    this.dsMzdas = dsMzdas;
+  public void setDszMzda(BigDecimal dsMzda) {
+    this.dszMzda = dsMzda;
   }
 
 
-  public BigDecimal getDsPojists() {
-    return dsPojists;
+  public BigDecimal getDszPojist() {
+    return dszPojist;
   }
 
-  public void setDsPojists(BigDecimal dsPojists) {
-    this.dsPojists = dsPojists;
+  public void setDszPojist(BigDecimal dsPojist) {
+    this.dszPojist = dsPojist;
+  }
+
+
+  public BigDecimal getDszMzdas() {
+    return dszMzdas;
+  }
+
+  public void setDszMzdas(BigDecimal dsMzdas) {
+    this.dszMzdas = dsMzdas;
+  }
+
+
+  public BigDecimal getDszPojists() {
+    return dszPojists;
+  }
+
+  public void setDszPojists(BigDecimal dsPojists) {
+    this.dszPojists = dsPojists;
   }
 
 

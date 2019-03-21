@@ -891,7 +891,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         }));
 //        pruhZakGrid.setDetailsVisibleOnClick(false);
 
-        Binder<Doch> upperBinder = new Binder<>(Doch.class);
+//        Binder<Doch> upperBinder = new Binder<>(Doch.class);
 
         upperDochGrid.addColumn(Doch::getDochState)
                 .setHeader("St.")
