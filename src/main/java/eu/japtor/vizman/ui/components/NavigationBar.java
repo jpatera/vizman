@@ -5,6 +5,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterLink;
@@ -46,19 +48,19 @@ public class NavigationBar extends Div implements RouterLayout {
         // Navigation:
         RouterLink homeLink = new RouterLink(null, HomeView.class);
         Icon ICON_HOME = new Icon (VaadinIcon.HOME);
-        ICON_HOME.setColor("magenta");
+        ICON_HOME.setColor("darkslateblue");
         homeLink.add(ICON_HOME, new Text(TITLE_HOME));
         homeLink.addClassName("main-layout__nav-item");
 
         RouterLink dochLink = new RouterLink(null, DochView.class);
-        Icon ICON_DOCH = new Icon (VaadinIcon.CLOCK);
-        ICON_DOCH.setColor("blue");
+        Icon ICON_DOCH = VaadinIcon.TIME_FORWARD.create();
+        ICON_DOCH.setColor("purple");
         dochLink.add(ICON_DOCH, new Text(TITLE_DOCH));
         dochLink.addClassName("main-layout__nav-item");
 
         RouterLink pruhLink = new RouterLink(null, PruhView.class);
-        Icon ICON_PRUH = new Icon (VaadinIcon.LINES_LIST);
-        ICON_DOCH.setColor("orchid");
+        Icon ICON_PRUH = VaadinIcon.CALENDAR_CLOCK.create();
+        ICON_PRUH.setColor("seagreen");
         pruhLink.add(ICON_PRUH, new Text(TITLE_PRUH));
         pruhLink.addClassName("main-layout__nav-item");
 
@@ -111,15 +113,28 @@ public class NavigationBar extends Div implements RouterLayout {
 //        });
 
 
-        this.add(homeLink, dochLink, pruhLink, kzTreeLink, kontListLink, zakLink);
+        HorizontalLayout naviBar = new HorizontalLayout();
+        naviBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        naviBar.setWidthFull();
+        naviBar.setSpacing(false);
+
+        HorizontalLayout leftNaviBar = new HorizontalLayout();
+        HorizontalLayout middleNaviBar = new HorizontalLayout();
+        HorizontalLayout rightNaviBar = new HorizontalLayout();
+//        this.add(homeLink, dochLink, pruhLink, kzTreeLink, kontListLink, zakLink);
+        leftNaviBar.add(homeLink);
+        middleNaviBar.add(dochLink, pruhLink, kzTreeLink);
+
+        if (SecurityUtils.isAccessGranted(CfgTabsView.class)) {
+            rightNaviBar.add(cfgLink);
+        }
+        rightNaviBar.add(logoutLink);
 //        if (SecurityUtils.isAccessGranted(UserListView.class)) {
 //            this.add(personLink);
 //        }
 
-        if (SecurityUtils.isAccessGranted(CfgTabsView.class)) {
-            this.add(cfgLink);
-        }
-        this.add(logoutLink);
+        naviBar.add(leftNaviBar,  middleNaviBar, rightNaviBar);
+        this.add(naviBar);
         this.addClassName("main-layout__nav");
     }
 }

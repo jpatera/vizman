@@ -79,6 +79,8 @@ public class ZakListView extends VerticalLayout implements BeforeEnterObserver {
         VerticalLayout container = new VerticalLayout();
         container.setClassName("view-container");
         container.setAlignItems(Alignment.STRETCH);
+
+
 //        VerticalLayout gridContainer = new VerticalLayout();
 //        gridContainer.setClassName("view-container");
 //        gridContainer.setAlignItems(Alignment.CENTER);

@@ -201,15 +201,6 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver,
         kzTextRenderer = new ComponentRenderer<>(kontZak -> {
             KzText kzText = new KzText(kontZak.getText());
             kzText.getStyle().set("color", VzmFormatUtils.getItemTypeColorName(kontZak.getTyp()));
-
-//            if (ItemType.SUB == kontZak.getTyp()) {
-//                kzText.getStyle().set("color", "red");
-//            } else if (ItemType.AKV == kontZak.getTyp()) {
-//                kzText.getStyle().set("color", "darkgreen");
-//            } else if (ItemType.ZAK == kontZak.getTyp()) {
-//                kzText.getStyle().set("color", "darkmagenta");
-//            }
-
             if (ItemType.KONT != kontZak.getTyp()) {
                 kzText.getStyle().set("text-indent", "1em");
             }
@@ -225,7 +216,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver,
 
             kzText.addKeyPressListener((ComponentEventListener<KeyPressEvent>) keyPressEvent -> {
                 //                Notification.show("ENTER pressed III - will open form", 1500, Notification.Position.BOTTOM_END);
-                Notification.show("ENTER pressed III - will open form");
+//                Notification.show("ENTER pressed III - will open form");
             });
 
             return kzText;

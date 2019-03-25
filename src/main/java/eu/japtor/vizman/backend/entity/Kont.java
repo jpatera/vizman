@@ -102,6 +102,9 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     }
 
     @Transient
+    private boolean checked;
+
+    @Transient
     public String getKlientName() {
         return null == klient ? "" : (null == klient.getName() ? "" : klient.getName());
     }
@@ -241,6 +244,12 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     }
 
     @Transient
+    @Override
+    public Long getItemId() {
+        return getId();
+    }
+
+    @Transient
     public Integer getLastCzak() {
         return getZaks().stream()
                 .mapToInt(fakt -> fakt.getCzak())
@@ -264,6 +273,18 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     @Override
     public String getSkupina() {
         return null;
+    }
+
+
+    @Transient
+    @Override
+    public boolean isChecked() {
+        return checked;
+    }
+
+    @Override
+    public void setChecked(boolean checked) {
+        this.checked = checked;
     }
 
 

@@ -228,6 +228,10 @@ public class VzmFormatUtils {
         if(null == locale) {
             locale = Locale.getDefault();
         }
+//        DecimalFormat df = new DecimalFormat();
+//            df.setGroupingUsed(false);
+//            df.setMaximumFractionDigits(1);
+//            df.setMinimumFractionDigits(1);
         NumberFormat format = NumberFormat.getInstance(locale);
         if (format instanceof DecimalFormat) {
             format.setGroupingUsed(false);
@@ -236,6 +240,8 @@ public class VzmFormatUtils {
         }
         return format;
     }
+
+
 
     public static NumberFormat getPercentFormat(Locale locale) {
         if(null == locale) {

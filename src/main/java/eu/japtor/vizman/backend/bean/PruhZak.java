@@ -11,14 +11,18 @@ public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializ
 //    private NumberFormat pruhDayFormatter = new DecimalFormat("00");
 
     Long zakId;
-    String ckontCzak;
+    String ckont;
+    Integer czak;
     ItemType itemType;
-    String zakText;
+    String text;
     String tmp;
 
-    public PruhZak(String ckontCzak, String zakText) {
-        this.ckontCzak = ckontCzak;
-        this.zakText = zakText;
+    public PruhZak(Long zakId, ItemType itemType, String ckont, Integer czak, String text) {
+        this.zakId = zakId;
+        this.itemType = itemType;
+        this.ckont = ckont;
+        this.czak = czak;
+        this.text = text;
         hods = new HashMap<>();
         for (int i = 1; i <= 31; i++) {
             hods.put(i, null);
@@ -28,16 +32,6 @@ public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializ
     public Long getZakId() {
         return zakId;
     }
-    public void setZakId(Long zakId) {
-        this.zakId = zakId;
-    }
-
-    public String getCkontCzak() {
-        return ckontCzak;
-    }
-    public void setCkontCzak(String ckontCzak) {
-        this.ckontCzak = ckontCzak;
-    }
 
     public ItemType getItemType() {
         return itemType;
@@ -46,11 +40,25 @@ public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializ
         this.itemType = itemType;
     }
 
-    public String getZakText() {
-        return zakText;
+    public String getCkont() {
+        return ckont;
     }
-    public void setZakText(String zakText) {
-        this.zakText = zakText;
+    public void setCkont(String ckont) {
+        this.ckont = ckont;
+    }
+
+    public Integer getCzak() {
+        return czak;
+    }
+    public void setCzak(Integer czak) {
+        this.czak = czak;
+    }
+
+    public String getText() {
+        return text;
+    }
+    public void setText(String text) {
+        this.text = text;
     }
 
     public String getTmp() {
@@ -60,8 +68,17 @@ public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializ
         this.tmp = tmp;
     }
 
+    public String getPruhCellText() {
+        return String.format("%s / %d, %s", ckont, czak, text);
+    }
+
+
     public boolean isRezieZak() {
         return ItemType.REZ == itemType;
+    }
+
+    public boolean isLekarZak() {
+        return ItemType.LEK == itemType;
     }
 
 

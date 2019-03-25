@@ -1,5 +1,7 @@
 package eu.japtor.vizman.backend.entity;
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.persistence.*;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -296,6 +298,14 @@ public class Doch extends AbstractGenIdEntity {
 
     public String getCinnost() {
         return cinnost;
+    }
+
+    public String getCinnostForCell() {
+        if (StringUtils.isBlank(poznamka)) {
+            return cinnost;
+        } else {
+            return cinnost + "\r\n" + "[" + poznamka + "]";
+        }
     }
 
     public void setCinnost(String cinnost) {

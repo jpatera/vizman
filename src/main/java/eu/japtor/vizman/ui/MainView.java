@@ -52,7 +52,7 @@ public class MainView extends VerticalLayout implements RouterLayout, BeforeEnte
     @Autowired
     public MainView() {
 
-        System.out.println("###  MainView constructor");
+        getLogger().info("###  MainView constructor");
         ConfirmDialog.setDialogSessionLanguage(Locale.getDefault());
 //        addClassName("main-layout");
 
@@ -140,12 +140,12 @@ public class MainView extends VerticalLayout implements RouterLayout, BeforeEnte
 
 
     private Component buildSiteHeader() {
-//        H2 title = new H2("VizMan");
-        Div title = new Div();
-        title.add(new Label("VizMan"));
-//        title.addClassName("main-layout__title");
+////        H2 title = new H2("VizMan");
+//        Div title = new Div();
+//        title.add(new Label("VizMan"));
+////        title.addClassName("main-layout__title");
 
-        Div siteHeader = new Div(title, navigationBar);
+        Div siteHeader = new Div(navigationBar);
         siteHeader.addClassName("main-layout__header");
         return siteHeader;
     }

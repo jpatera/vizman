@@ -119,9 +119,8 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     @Column(name = "RM")
     private BigDecimal rm;
 
-
-
-
+    @Transient
+    private boolean checked;
 
 
 
@@ -135,6 +134,12 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
 
     public Integer getCzak() {
         return czak;
+    }
+
+    @Transient
+    @Override
+    public Long getItemId() {
+        return getId();
     }
 
     public void setCzak(Integer czak) {
@@ -306,7 +311,6 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     }
 
 
-
     public Kont getKont() {
         return kont;
     }
@@ -446,6 +450,16 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         return over;
     }
 
+    @Transient
+    @Override
+    public boolean isChecked() {
+        return checked;
+    }
+
+    @Override
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
 
     @Override
     public int hashCode() {

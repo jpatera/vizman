@@ -15,7 +15,7 @@ public class VizmanConst {
 //	public static final String TAG_ROOT = "home";
 //	public static final String ROUTE_ROOT  = "";
 
-	public static final String TITLE_HOME = "Home";
+	public static final String TITLE_HOME = "VizMan";
 	public static final String PAGE_TITLE_HOME = PAGE_TITLE_BASE + " - " + TITLE_HOME;
 	public static final String TAG_HOME = "home";
 	public static final String ROUTE_HOME  = "home";
@@ -53,7 +53,7 @@ public class VizmanConst {
 	public static final String TAG_KONT_LIST = "kont-list-view";
 	public static final String ROUTE_KONT = "kontlist";
 
-	public static final String TITLE_KZ_TREE = "Kont/Zak";
+	public static final String TITLE_KZ_TREE = "Zakázky";
 	public static final String PAGE_TITLE_KZ_TREE = PAGE_TITLE_BASE + " - " + TITLE_KZ_TREE;
 	public static final String TAG_KZ_TREE = "kz-tree-view";
 	public static final String ROUTE_KZ_TREE = "kztree";

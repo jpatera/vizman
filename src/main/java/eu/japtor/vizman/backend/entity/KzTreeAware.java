@@ -8,6 +8,7 @@ public interface KzTreeAware<T extends KzTreeAware> {
 
     String getCkont();
     Integer getCzak();
+    Long getItemId();
     ItemType getTyp();
     Boolean getArch();
 //    String getObjednatel();
@@ -21,4 +22,6 @@ public interface KzTreeAware<T extends KzTreeAware> {
     List<T> getNodes();
     long getBeforeTerms();
     long getAfterTerms();
+    boolean isChecked();
+    void setChecked(boolean checked);
 }

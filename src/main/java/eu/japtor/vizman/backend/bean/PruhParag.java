@@ -1,6 +1,7 @@
 package eu.japtor.vizman.backend.bean;
 
 import eu.japtor.vizman.app.HasLogger;
+import eu.japtor.vizman.backend.entity.ItemType;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -12,13 +13,13 @@ public class PruhParag extends AbstractPruh implements HasLogger, java.io.Serial
 //    private NumberFormat pruhDayFormatter = new DecimalFormat("00");
 
     Long paragId;
+    ItemType itemType;
     String cparag;
-//    ItemType itemType;
-    String paragText;
+    String text;
 
-    public PruhParag(String cparag, String paragText) {
+    public PruhParag(String cparag, ItemType itemType, String text) {
         this.cparag = cparag;
-        this.paragText = this.paragText;
+        this.text = text;
         this.hods = new HashMap<>();
         for (int i = 1; i <= 31; i++) {
             hods.put(i, null);
@@ -39,10 +40,14 @@ public class PruhParag extends AbstractPruh implements HasLogger, java.io.Serial
         this.cparag = cparag;
     }
 
-    public String getParagText() {
-        return paragText;
+    public String getText() {
+        return text;
     }
-    public void setParagText(String paragText) {
-        this.paragText = paragText;
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public String getPruhCellText() {
+        return String.format("%s, %s", cparag, text);
     }
 }

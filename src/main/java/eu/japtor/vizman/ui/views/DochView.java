@@ -16,6 +16,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
@@ -31,6 +32,7 @@ import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.Operation;
+import eu.japtor.vizman.ui.components.Ribbon;
 import eu.japtor.vizman.ui.forms.DochFormDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
@@ -56,10 +58,11 @@ import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_DOCH;
 @UIScope
 //@Push
 // public class DochView extends VerticalLayout implements HasLogger, BeforeEnterListener {
-public class DochView extends VerticalLayout implements HasLogger, BeforeEnterListener {
+public class DochView extends HorizontalLayout implements HasLogger, BeforeEnterListener {
 
     private static final String DOCH_DURATION_KEY = "doch-duration-key";
     private static final String DOCH_CINNOST_KEY = "doch-cinnost-key";
+    private static final String DOCH_POZNAMKA_KEY = "doch-poznamka-key";
 
     private static final DateTimeFormatter dochTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static final DateTimeFormatter upperDochDateHeaderFormatter = DateTimeFormatter.ofPattern("EEEE");
@@ -74,7 +77,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private Button dochMonthReportBtn = new Button();
     private Button dochYearReportBtn = new Button();
 
-    private HorizontalLayout dochHeader = new HorizontalLayout();
+    private HorizontalLayout dochHeader;
 
     FormLayout dochControl = new FormLayout();
     FormLayout nepritControl = new FormLayout();
@@ -84,7 +87,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     //    private Span upperDochDateInfo = new Span();
     private Paragraph upperDochDateInfo;
-    private Span dochLowerDateInfo = new Span();
+    private Span lowerDochDateInfo;
 
     private Button loadTodayButton;
     private Button loadPrevDateButton;
@@ -177,6 +180,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     HorizontalLayout upperDochHeader;
     HorizontalLayout upperDochFooterBar;
+    HorizontalLayout lowerDochHeader;
     Grid<Doch> upperDochGrid;
     List<Doch> upperDochList = new ArrayList<>();
 //    HorizontalLayout dochRecUpperFooter = new HorizontalLayout();
@@ -295,7 +299,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         dochDatePicker.setLocale(czLocale);
 
         dochDatePrev = LocalDate.now().minusDays(1);
-        dochLowerDateInfo.setText(dochDatePrev.format(lowerDochDateHeaderFormatter));
+        lowerDochDateInfo.setText(dochDatePrev.format(lowerDochDateHeaderFormatter));
 
         timeThread = new TimeThread(attachEvent.getUI(), this);
         timeThread.start();
@@ -338,6 +342,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
             dochDatePicker.setValue(dochDate);
         }
         updateUpperDochGridPane(dochPerson, dochDate);
+        LocalDate prevDochDate = dochService.findPrevDochDate(dochPerson.getId(), dochDate);
+        updateLowerDochGridPane(dochPerson, prevDochDate);
     }
 
     private void initPersonList() {
@@ -363,53 +369,33 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //    }
 
     private void buildForm() {
-        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-        this.setWidth("1200px");
-        this.setAlignSelf(Alignment.CENTER);
+        this.setDefaultVerticalComponentAlignment(Alignment.STRETCH);
+        this.setWidthFull();
+        this.setHeightFull();
+        this.setMargin(false);
         this.getStyle().set("margin-top", "2em");
-        this.getStyle().set("margin-bottom", "2em");
-        this.getStyle().set("background-color", "#fffcf5");
-        this.getStyle().set("background-color", "#e1dcd6");
-        this.getStyle().set("background-color", "#fcfffe");
-        this.getStyle().set("background-color", "LightYellow");
-        this.getStyle().set("background-color", "#fefefd");
+        this.getStyle().set("margin-bottom", "1em");
+        this.setPadding(false);
+        this.setSpacing(false);
+        this.setAlignSelf(Alignment.CENTER);
+        this.setJustifyContentMode(JustifyContentMode.BETWEEN);
+
+        VerticalLayout mainDochPanel = new VerticalLayout();
+        mainDochPanel.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+        mainDochPanel.setWidth("1300px");
+        mainDochPanel.setMargin(false);
+        mainDochPanel.setSpacing(false);
+        mainDochPanel.setAlignSelf(Alignment.CENTER);
+        mainDochPanel.getStyle()
+                .set("background-color", "#fefefd")
+                .set("padding-bottom", "0")
+        ;
 
         dochMonthReportBtn.setText("Měsíční přehled");
-//        dochMonthReportBtn.setWidth("100%");
-
-//        dochYearReportBtn = new Button("Roční přehled");
         dochYearReportBtn.setText("Roční přehled");
-//        dochYearReportBtn.setWidth("100%");
-
-        H3 dochTitle = new H3("DOCHÁZKA");
-        dochTitle.getStyle()
-                .set("margin-top", "10px")
-                .set("margin-left", "20px")
-        ;
-
-//        Paragraph dochTitle = new Paragraph("DOCHÁZKA");
-//        dochTitle.getStyle()
-//                .set("font-size", "var(--lumo-font-size-xl)");
-//
-//        HorizontalLayout dochHeader = new HorizontalLayout();
-        dochHeader.add(
-                dochTitle
-//                new H4("Uživatel(ka): ")
-                , initPersonCombo()
-//                , initDochDatePicker()
-                , dochMonthReportBtn
-                , dochYearReportBtn)
-        ;
-
-
-//        dochControl = new FormLayout();
-//        dochControl.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
-//        dochControl.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
-//                new FormLayout.ResponsiveStep("15em", 2));
         dochControl.setWidth("30em");
         dochControl.getStyle()
                 .set("margin-top", "0.3em");
-//        dochControl.add(initDochDatePicker());
         dochControl.add(
                 initClockComponent()
                 , initPrichodButton()
@@ -447,29 +433,61 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 , initVolnoZrusButton()
         );
 
-        dochLowerDateInfo.setText("Předchozí den docházky...");
-
-        dochRecLowerHeader.getStyle()
-                .set("margin-top", "2em");
-        dochRecLowerHeader.add(dochLowerDateInfo);
+//        lowerDochDateInfo.setText("Předchozí den docházky...");
+//        dochRecLowerHeader.getStyle()
+//                .set("margin-top", "2em");
+//        dochRecLowerHeader.add(lowerDochDateInfo);
 
         VerticalLayout dochRecPane = new VerticalLayout();
+//        dochRecPane.setHeight("700px"); // Kvuli FirFoxu
+        dochRecPane.setClassName("view-container");
+        dochRecPane.setAlignItems(Alignment.STRETCH);
+
+
         dochRecPane.add(initUpperDochHeaderBar());
         dochRecPane.add(initUpperDochGrid());
         dochRecPane.add(initUpperDochFooterBar());
 
-        dochRecPane.add(dochRecLowerHeader);
+//        dochRecPane.add(initLowerDochDateInfo());
+        dochRecPane.add(initLowerDochHeaderBar());
         dochRecPane.add(initLowerDochGrid());
-        dochRecPane.add(dochRecLowerFooter);
+//        dochRecPane.add(dochRecLowerFooter);
 
         HorizontalLayout dochPanel = new HorizontalLayout();
         dochPanel.add(dochControl);
         dochPanel.add(dochRecPane);
         dochPanel.add(nepritControl);
 
-        this.add(dochHeader, dochPanel);
+        mainDochPanel.add(initDochHeader(), dochPanel);
+        this.add(new Ribbon(), mainDochPanel, new Ribbon());
     }
 
+
+    private Component initDochHeader() {
+        H3 dochTitle = new H3("DOCHÁZKA");
+        dochTitle.getStyle()
+                .set("margin-left", "0")
+                .set("margin-top", "10px")
+                .set("margin-bottom", "20px")
+        ;
+        dochHeader = new HorizontalLayout();
+        dochHeader.setSpacing(false);
+        dochHeader.setWidthFull();
+        dochHeader.getStyle()
+            .set("margin-bottom", "1em");
+        dochHeader.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        HorizontalLayout buttonBox = new HorizontalLayout();
+        buttonBox.add(
+                dochMonthReportBtn
+                , dochYearReportBtn
+        );
+        dochHeader.add(
+                dochTitle
+                , initPersonCombo()
+                , buttonBox
+        );
+        return dochHeader;
+    }
 
     private Component initClockComponent() {
         clockContainer = new VerticalLayout();
@@ -513,6 +531,16 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return upperDochDateInfo;
     }
 
+    private Component initLowerDochDateInfo() {
+        lowerDochDateInfo = new Span();
+        lowerDochDateInfo.getStyle()
+                .set("font-weight", "bold")
+                .set("margin-right", "0.8em")
+        ;
+        lowerDochDateInfo.setText("Předchozí den docházky...");
+        return lowerDochDateInfo;
+    }
+
     private Component initPersonCombo() {
         dochPersonCombo = new ComboBox();
         dochPersonCombo.setLabel(null);
@@ -522,6 +550,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         dochPersonCombo.addValueChangeListener(event -> {
             dochPerson = event.getValue();
             updateUpperDochGridPane(dochPerson, dochDate);
+            LocalDate prevDochDate = dochService.findPrevDochDate(dochPerson.getId(), dochDate);
+            updateLowerDochGridPane(dochPerson, prevDochDate);
         });
         dochPersonCombo.addBlurListener(event -> {
 //            loadUpperDochGridData(dochPerson.getId(), dochDate);
@@ -538,6 +568,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         dochDatePicker.addValueChangeListener(event -> {
             dochDate = event.getValue();
             updateUpperDochGridPane(dochPerson, dochDate);
+            LocalDate prevDochDate = dochService.findPrevDochDate(dochPerson.getId(), dochDate);
+            updateLowerDochGridPane(dochPerson, prevDochDate);
         });
         return dochDatePicker;
     }
@@ -650,6 +682,9 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         upperDochHeader = new HorizontalLayout();
         upperDochHeader.setWidth("100%");
         upperDochHeader.setSpacing(false);
+        upperDochHeader.getStyle()
+                .set("margin-bottom", "1em")
+        ;
         upperDochHeader.setJustifyContentMode(JustifyContentMode.BETWEEN);
         HorizontalLayout buttonBox = new HorizontalLayout();
         buttonBox.add(
@@ -671,7 +706,8 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Component initUpperDochFooterBar() {
         upperDochFooterBar = new HorizontalLayout();
-        upperDochFooterBar.setWidth("100%");
+//        upperDochFooterBar.setWidth("100%");
+        upperDochFooterBar.setWidthFull();
         upperDochFooterBar.getStyle().set("margin-top", "0.5em");
         upperDochFooterBar.setSpacing(false);
         upperDochFooterBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
@@ -688,6 +724,21 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         );
         return upperDochFooterBar;
     }
+
+    private Component initLowerDochHeaderBar() {
+        lowerDochHeader = new HorizontalLayout();
+        lowerDochHeader.setWidthFull();;
+        lowerDochHeader.setSpacing(false);
+        lowerDochHeader.getStyle()
+                .set("margin-top", "2em")
+                .set("margin-bottom", "0")
+        ;
+        lowerDochHeader.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        lowerDochHeader.add(
+                initLowerDochDateInfo()
+        );
+        return lowerDochHeader;
+    };
 
     private void setDochNaviButtonsEnabled(boolean enabled) {
         loadTodayButton.setEnabled(enabled);
@@ -723,7 +774,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private Component initLoadPrevDateButton() {
 //        loadPrevDateButton = new Button("Předchozí");
 //        loadPrevDateButton = new Button(VaadinIcon.STEP_BACKWARD.create());
-        loadPrevDateButton = new Button(VaadinIcon.TIME_BACKWARD.create());
+        loadPrevDateButton = new Button(VaadinIcon.STEP_BACKWARD.create());
         loadPrevDateButton.addClickListener(event -> {
             if (null != dochPerson && null != dochDate) {
                 LocalDate prevDochDate = dochService.findPrevDochDate(dochPerson.getId(), dochDate);
@@ -870,7 +921,7 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Component initUpperDochGrid() {
         upperDochGrid = new Grid<>();
-        upperDochGrid.setHeight("20em");
+        upperDochGrid.setHeight("30em");
 //        pruhZakGrid.setHeight("0");
         upperDochGrid.setColumnReorderingAllowed(false);
         upperDochGrid.setClassName("vizman-simple-grid");
@@ -879,17 +930,23 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //            pruhZakGrid.getColumnByKey("dochDuration").setFooter(formatDuration(getDurationSum()));
 //        }
 
-        upperDochGrid.setItemDetailsRenderer(new ComponentRenderer<>(doch -> {
-            Emphasis poznamkaComp = new Emphasis(StringUtils.isBlank(doch.getPoznamka()) ? new Span("") : new Span(doch.getPoznamka()));
-            poznamkaComp.getStyle().set("margin-left", "16em");
-            return poznamkaComp;
-//            VerticalLayout layout = new VerticalLayout();
-//            layout.add(new Label("Address: " + person.getAddress().getStreet()
-//                    + " " + person.getAddress().getNumber()));
-//            layout.add(new Label("Year of birth: " + person.getYearOfBirth()));
-//            return layout;
-        }));
-//        pruhZakGrid.setDetailsVisibleOnClick(false);
+//        upperDochGrid.setItemDetailsRenderer(new ComponentRenderer<>(doch -> {
+////            Emphasis poznamkaComp = new Emphasis(StringUtils.isBlank(doch.getPoznamka()) ? new Paragraph("") : new Paragraph(doch.getPoznamka()));
+//            Emphasis poznamkaComp = new Emphasis(StringUtils.isBlank(doch.getPoznamka()) ? "" : doch.getPoznamka());
+//            poznamkaComp.getStyle()
+//                    .set("margin-left", "270px")
+////                    .set("padding-left", "260px")
+////                    .set("width", "300px")
+////                    .set("text-align", "start")
+//            ;
+//            return poznamkaComp;
+////            VerticalLayout layout = new VerticalLayout();
+////            layout.add(new Label("Address: " + person.getAddress().getStreet()
+////                    + " " + person.getAddress().getNumber()));
+////            layout.add(new Label("Year of birth: " + person.getYearOfBirth()));
+////            return layout;
+//        }));
+////        pruhZakGrid.setDetailsVisibleOnClick(false);
 
 //        Binder<Doch> upperBinder = new Binder<>(Doch.class);
 
@@ -909,70 +966,40 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //            .setVisible(false)
 //        ;
 
-        upperDochGrid.addColumn((ValueProvider<Doch, String>) doch -> {
-                upperDochGrid.setDetailsVisible(doch, StringUtils.isNotBlank(doch.getPoznamka()));
-                return "";
-            })
-            .setFlexGrow(0)
-            .setVisible(false)
-        ;
+//        upperDochGrid.addColumn((ValueProvider<Doch, String>) doch -> {
+//                upperDochGrid.setDetailsVisible(doch, StringUtils.isNotBlank(doch.getPoznamka()));
+//                return "";
+//            })
+//            .setFlexGrow(0)
+//            .setVisible(false)
+//        ;
 
-        upperDochGrid.addColumn(new ComponentRenderer<>(doch -> {
-                    // Note: following icons MUST NOT be created outside this renderer (the KontFormDialog cannot be reopened)
-                    Icon icoManualFlag = new Icon(VaadinIcon.DOT_CIRCLE);
-                    icoManualFlag.setSize("0.8em");
-                    icoManualFlag.getStyle().set("theme", "small icon secondary");
-                    icoManualFlag.setColor("crimson");
-                    return (null != doch.getFromManual() && doch.getFromManual()) ? icoManualFlag : new Span("");
-                }))
-//                .setHeader("Man.")
-                .setWidth("2em")
-                .setTextAlign(ColumnTextAlign.END)
-                .setFlexGrow(0)
-                .setResizable(false)
-        ;
-
-////        pruhZakGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
-////        pruhZakGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
-//        TextField casOdField = new TextField();
-//        upperBinder.forField(casOdField)
-////                .withValidator(name -> name.startsWith("Person"),
-////                        "Name should start with Person")
-//                .withConverter(new VzmFormatUtils.LocalDateTimeToHhMmStringConverter())
-////                .withStatusLabel(validationStatus).bind("AAAAAA");
-////                .withStatusLabel(validationStatus).bind("name");
-//                .bind(Doch::getDCasOd, Doch::setDCasOd);
-////        Grid.Column<Doch> casOdColumn = pruhZakGrid.addColumn(new ComponentRenderer<>(doch -> getCasOdComponent(doch)))
-
-//        Grid.Column<Doch> casOdColumn = pruhZakGrid.addColumn(fromTimeValProv)
         upperDochGrid.addColumn(fromTimeValProv)
                 .setHeader("Od")
-                .setWidth("5em")
+                .setWidth("3em")
                 .setFlexGrow(0)
                 .setTextAlign(ColumnTextAlign.END)
                 .setResizable(true)
-//                .getElement().setProperty("padding-left", "0.1em")
         ;
-//        casOdColumn.setEditorComponent(casOdField);
-
 
         upperDochGrid.addColumn(new ComponentRenderer<>(doch -> {
-                    // Note: following icons MUST NOT be created outside this renderer (the KontFormDialog cannot be reopened)
-                    Icon icon = new Icon(VaadinIcon.DOT_CIRCLE);
-                    icon.setSize("0.8em");
-                    icon.getStyle().set("theme", "small icon secondary");
-                    icon.setColor("crimson");
-                    return (null != doch.getToManual() && doch.getToManual()) ? icon : new Span("");
-                }))
+            // Note: following icons MUST NOT be created outside this renderer (the KontFormDialog cannot be reopened)
+            Icon icoManualFlag = new Icon(VaadinIcon.DOT_CIRCLE);
+            icoManualFlag.setSize("0.8em");
+            icoManualFlag.getStyle().set("theme", "small icon secondary");
+            icoManualFlag.setColor("crimson");
+            return (null != doch.getFromManual() && doch.getFromManual()) ? icoManualFlag : new Span("");
+        }))
+//                .setHeader("Man.")
                 .setWidth("2em")
-                .setTextAlign(ColumnTextAlign.END)
+                .setTextAlign(ColumnTextAlign.START)
                 .setFlexGrow(0)
                 .setResizable(false)
         ;
 
         upperDochGrid.addColumn(toTimeValProv)
                 .setHeader("Do")
-                .setWidth("5em")
+                .setWidth("3em")
                 .setFlexGrow(0)
                 .setTextAlign(ColumnTextAlign.END)
                 .setResizable(true)
@@ -980,24 +1007,54 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        pruhZakGrid.addComponentColumn(new ComponentRenderer<>(doch -> getHodinComponent(doch)))
 //        pruhZakGrid.addComponentColumn(doch -> getHodinComponent(doch))
 
-
-        upperDochGrid.addColumn(Doch::getCinnost)
-                .setHeader("Činnost")
-                .setWidth("4em")
-//                .setFooter("")
-                .setFlexGrow(1)
-                .setKey(DOCH_CINNOST_KEY)
-                .setResizable(true);
+        upperDochGrid.addColumn(new ComponentRenderer<>(doch -> {
+            // Note: following icons MUST NOT be created outside this renderer (the KontFormDialog cannot be reopened)
+            Icon icon = new Icon(VaadinIcon.DOT_CIRCLE);
+            icon.setSize("0.8em");
+            icon.getStyle().set("theme", "small icon secondary");
+            icon.setColor("crimson");
+            return (null != doch.getToManual() && doch.getToManual()) ? icon : new Span("");
+        }))
+                .setWidth("2em")
+                .setTextAlign(ColumnTextAlign.START)
+                .setFlexGrow(0)
+                .setResizable(false)
+        ;
 
         upperDochGrid.addColumn(durationValProv)
                 .setHeader("Hod.")
 //                .setFooter("S: " + formatDuration(getDurationSum()))
                 .setFooter("")
-                .setWidth("5em")
+                .setWidth("3em")
                 .setFlexGrow(0)
                 .setTextAlign(ColumnTextAlign.END)
                 .setKey(DOCH_DURATION_KEY)
                 .setResizable(true)
+        ;
+
+//        upperDochGrid.addColumn(new ComponentRenderer<>(doch -> {
+//            Paragraph cinnostComp = new Paragraph(doch.getCinnost());
+//            cinnostComp.getElement().setAttribute("margin-left","20px");
+//            return cinnostComp;
+//        }))
+
+        upperDochGrid.addColumn(Doch::getCinnost)
+                .setHeader("Činnost")
+//                .setWidth("4em")
+//                .setFooter("")
+                .setFlexGrow(1)
+                .setKey(DOCH_CINNOST_KEY)
+                .setResizable(true);
+
+
+        upperDochGrid.addColumn(TemplateRenderer.<Doch> of(
+                "<div><i>[[item.poznamka]]</i></div>")
+                .withProperty("poznamka", Doch::getPoznamka)
+            )
+            .setHeader("Poznámka")
+            .setFlexGrow(2)
+            .setKey(DOCH_POZNAMKA_KEY)
+            .setResizable(true)
         ;
 
         return upperDochGrid;
@@ -1029,36 +1086,117 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Component initLowerDochGrid() {
         lowerDochGrid = new Grid<>();
-        lowerDochGrid.setHeight("20em");
-//        lowerDochGrid.setHeight("0");
+//        lowerDochGrid.setHeight("30em");
         lowerDochGrid.setColumnReorderingAllowed(false);
         lowerDochGrid.setClassName("vizman-simple-grid");
         lowerDochGrid.setSelectionMode(Grid.SelectionMode.NONE);
+        lowerDochGrid.getStyle()
+                .set("margin-bottom", "1em")
+        ;
+
+        lowerDochGrid.setItemDetailsRenderer(new ComponentRenderer<>(doch -> {
+            Emphasis poznamkaComp = new Emphasis(StringUtils.isBlank(doch.getPoznamka()) ? "" : doch.getPoznamka());
+            poznamkaComp.getStyle()
+                    .set("margin-left", "270px")
+            ;
+            return poznamkaComp;
+        }));
+
         lowerDochGrid.addColumn(Doch::getDochState)
                 .setHeader("St.")
                 .setWidth("2em")
-                .setResizable(true);
-//        pruhZakGrid.addColumn(Doch::getCinT1).setHeader("T1").setWidth("2em").setResizable(true);
-//        pruhZakGrid.addColumn(Doch::getCinT2).setHeader("T2").setWidth("2em").setResizable(true);
-        lowerDochGrid.addColumn(Doch::getFromTime)
+                .setFlexGrow(0)
+                .setResizable(true)
+        ;
+
+        lowerDochGrid.addColumn((ValueProvider<Doch, String>) doch -> {
+            lowerDochGrid.setDetailsVisible(doch, StringUtils.isNotBlank(doch.getPoznamka()));
+            return "";
+        })
+                .setFlexGrow(0)
+                .setVisible(false)
+        ;
+
+        lowerDochGrid.addColumn(fromTimeValProv)
                 .setHeader("Od")
                 .setWidth("3em")
-//                .setTextAlign(ColumnTextAlign.END)
-                .setResizable(true);
-        lowerDochGrid.addColumn(Doch::getToTime)
+                .setFlexGrow(0)
+                .setTextAlign(ColumnTextAlign.END)
+                .setResizable(true)
+        ;
+
+        lowerDochGrid.addColumn(new ComponentRenderer<>(doch -> {
+            // Note: following icons MUST NOT be created outside this renderer (the KontFormDialog cannot be reopened)
+            Icon icoManualFlag = new Icon(VaadinIcon.DOT_CIRCLE);
+            icoManualFlag.setSize("0.8em");
+            icoManualFlag.getStyle().set("theme", "small icon secondary");
+            icoManualFlag.setColor("crimson");
+            return (null != doch.getFromManual() && doch.getFromManual()) ? icoManualFlag : new Span("");
+        }))
+                .setWidth("2em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setFlexGrow(0)
+                .setResizable(false)
+        ;
+
+        lowerDochGrid.addColumn(toTimeValProv)
                 .setHeader("Do")
                 .setWidth("3em")
-//                .setTextAlign(ColumnTextAlign.END)
-                .setResizable(true);
-        lowerDochGrid.addColumn(Doch::getDochDur)
+                .setFlexGrow(0)
+                .setTextAlign(ColumnTextAlign.END)
+                .setResizable(true)
+        ;
+
+        lowerDochGrid.addColumn(new ComponentRenderer<>(doch -> {
+            // Note: following icons MUST NOT be created outside this renderer (the KontFormDialog cannot be reopened)
+            Icon icon = new Icon(VaadinIcon.DOT_CIRCLE);
+            icon.setSize("0.8em");
+            icon.getStyle().set("theme", "small icon secondary");
+            icon.setColor("crimson");
+            return (null != doch.getToManual() && doch.getToManual()) ? icon : new Span("");
+        }))
+                .setWidth("2em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setFlexGrow(0)
+                .setResizable(false)
+        ;
+
+        lowerDochGrid.addColumn(durationValProv)
                 .setHeader("Hod.")
+//                .setFooter("S: " + formatDuration(getDurationSum()))
+                .setFooter("")
                 .setWidth("3em")
-//                .setTextAlign(ColumnTextAlign.END)
-                .setResizable(true);
+                .setFlexGrow(0)
+                .setTextAlign(ColumnTextAlign.END)
+                .setKey(DOCH_DURATION_KEY)
+                .setResizable(true)
+        ;
+
+//        lowerDochGrid.addColumn(Doch::getCinnost)
+//                .setHeader("Činnost")
+////                .setWidth("4em")
+//                .setFlexGrow(1)
+//                .setKey(DOCH_CINNOST_KEY)
+//                .setResizable(true);
+
         lowerDochGrid.addColumn(Doch::getCinnost)
                 .setHeader("Činnost")
-                .setWidth("4em")
+//                .setWidth("4em")
+//                .setFooter("")
+                .setFlexGrow(1)
+                .setKey(DOCH_CINNOST_KEY)
                 .setResizable(true);
+
+
+        lowerDochGrid.addColumn(TemplateRenderer.<Doch> of(
+                "<div><i>[[item.poznamka]]</i></div>")
+                .withProperty("poznamka", Doch::getPoznamka)
+        )
+                .setHeader("Poznámka")
+                .setFlexGrow(2)
+                .setKey(DOCH_POZNAMKA_KEY)
+                .setResizable(true)
+        ;
 
         return lowerDochGrid;
     }
@@ -1096,6 +1234,12 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
         upperDochDateInfo.setText(null == dochDate ? "" : dochDate.format(upperDochDateHeaderFormatter));
     }
 
+    private void updateLowerDochGridPane(final Person dochPerson, final LocalDate dochDate) {
+        loadLowerDochGridData(dochPerson, dochDate);
+        lowerDochDateInfo.setText(null == dochDate ? "" : dochDate.format(lowerDochDateHeaderFormatter));
+    }
+
+
     private Component getDurationFooter(Duration durationSum) {
 //        LocalTime.MIDNIGHT.plus(d).format(DateTimeFormatter.ofPattern("HH+mm"));
 
@@ -1106,9 +1250,10 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
 
     private Component getDurationLabelFooter() {
-        Paragraph comp = new Paragraph("Odpracováno: ");
+        Paragraph comp = new Paragraph("(odpracováno)");
 //        comp.setWidth("5em");
-        comp.getStyle().set("text-align", "end");
+//        comp.getStyle().set("text-align", "end");
+        comp.getStyle().set("text-align", "start");
         return comp;
     }
 
@@ -1128,6 +1273,24 @@ public class DochView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setFooter(getDurationLabelFooter());
 
         upperDochGrid.getDataProvider().refreshAll();
+    }
+
+    private void loadLowerDochGridData(Person dochPerson, LocalDate dochDate) {
+        if (null == dochPerson || null == dochPerson.getId() || null == dochDate) {
+            lowerDochList = new ArrayList();
+        } else {
+            lowerDochList = dochService.fetchDochForPersonAndDate(dochPerson.getId(), dochDate);
+        }
+        lowerDochGrid.setItems(lowerDochList);
+//        for (Doch doch : pruhZakList) {
+//            pruhZakGrid.setDetailsVisible(doch, StringUtils.isNotBlank(doch.getPoznamka()));
+//        }
+        lowerDochGrid.getColumnByKey(DOCH_DURATION_KEY)
+                .setFooter(getDurationFooter(getDurationSum()));
+        lowerDochGrid.getColumnByKey(DOCH_CINNOST_KEY)
+                .setFooter(getDurationLabelFooter());
+
+        lowerDochGrid.getDataProvider().refreshAll();
     }
 
 
