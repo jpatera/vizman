@@ -11,35 +11,35 @@ import java.time.YearMonth;
 @Entity
 @Table(name = "CALYM")
 public class Calym extends AbstractGenIdEntity {
-  public static final String SORT_PROP_CALYM = "calYm";
+  public static final String SORT_PROP_YM = "ym";
 
   @Column(
-          name = "CAL_YM",
+          name = "YM",
           columnDefinition = "INTEGER"
   )
   @Convert(
           converter = YearMonthIntegerAttributeConverter.class
   )
-  private YearMonth calYm;
+  private YearMonth ym;
 
-  private BigDecimal pracFondYm;
+  private BigDecimal monthFond;
 
 
-  public YearMonth getCalYm() {
-    return calYm;
+  public YearMonth getYm() {
+    return ym;
   }
 
-  public void setCalYm(YearMonth calYm) {
-    this.calYm = calYm;
+  public void setYm(YearMonth calYm) {
+    this.ym = calYm;
   }
 
 
-  public BigDecimal getPracFondYm() {
-    return pracFondYm;
+  public BigDecimal getMonthFond() {
+    return monthFond;
   }
 
   public void setPracFondYr(BigDecimal pracFondYm) {
-    this.pracFondYm = pracFondYm;
+    this.monthFond = pracFondYm;
   }
 
 }

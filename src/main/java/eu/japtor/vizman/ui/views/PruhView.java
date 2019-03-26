@@ -252,7 +252,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private  Optional<Calym> getCalymFromListByYm(final YearMonth ym) {
         return pruhCalymList.stream()
-                .filter(calym -> calym.getCalYm().equals(ym))
+                .filter(calym -> calym.getYm().equals(ym))
                 .findFirst();
 //                .findFirst().orElse(null);
     }
@@ -264,7 +264,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private void loadCalymDataFromDb() {
-        pruhCalymList = calymRepo.findAll(Sort.by(Sort.Direction.DESC, Calym.SORT_PROP_CALYM));
+        pruhCalymList = calymRepo.findAll(Sort.by(Sort.Direction.DESC, Calym.SORT_PROP_YM));
         pruhCalymSelector.setValue(null);
         pruhCalymSelector.setItems(pruhCalymList);
     }
@@ -272,7 +272,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private void updatePruhGrids(final Person person, final Calym calym) {
 
         Long personId = null == person ? null : person.getId();
-        YearMonth ym = null == calym ? null : calym.getCalYm();
+        YearMonth ym = null == calym ? null : calym.getYm();
         loadPruhZakDataFromDb(personId, ym);
         loadPruhSumDataFromDb(personId, ym);
         loadPruhParagDataFromDb(personId, ym);
@@ -520,7 +520,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pruhCalymSelector.setItemLabelGenerator(this::getYmLabel);
         pruhCalymSelector.addValueChangeListener(event -> {
             pruhCalym = event.getValue();
-            pruhDayMax = (null == pruhCalym || null == pruhCalym.getCalYm()) ? 0 : pruhCalym.getCalYm().lengthOfMonth();
+            pruhDayMax = (null == pruhCalym || null == pruhCalym.getYm()) ? 0 : pruhCalym.getYm().lengthOfMonth();
             updatePruhGrids(pruhPerson, pruhCalym);
         });
         return pruhCalymSelector;
@@ -583,7 +583,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private String getYmLabel(Calym calym) {
-        return null == calym || null == calym.getCalYm() ? "" : calym.getCalYm().toString();
+        return null == calym || null == calym.getYm() ? "" : calym.getYm().toString();
     }
 
 //    private ValueProvider<Doch, String> durationValProv =
@@ -966,7 +966,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
             for (int i = 1; i <= pruhDayMax; i++) {
                 BigDecimal cellHod = pzak.getHod(i);
                 if (null != cellHod && cellHod.compareTo(BigDecimal.ZERO) != 0) {
-                    LocalDate cellDate = pruhCalym.getCalYm().atDay(i);
+                    LocalDate cellDate = pruhCalym.getYm().atDay(i);
                     DochsumZak dsZak = new DochsumZak(pruhPerson.getId(), cellDate, pzak.getZakId());
                     dsZak.setDszWorkPruh(cellHod);
                     // TODO mzda
