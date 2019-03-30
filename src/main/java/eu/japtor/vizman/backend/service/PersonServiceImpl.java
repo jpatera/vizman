@@ -46,8 +46,8 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
     }
 
     @Override
-    public List<Person> fetchAllActive() {
-        return personRepo.findByStateOrderByUsername(PersonState.ACTIVE);
+    public List<Person> fetchAllNotHidden() {
+        return personRepo.findByHiddenOrderByUsername(false);
     }
 
     @Override

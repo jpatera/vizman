@@ -72,7 +72,7 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 
         private final Grid<T> rightGrid = new Grid<>();
 
-        private Collection<T> itemsPool;
+        private final Collection<T> itemPool;
 
         private ListDataProvider<T> leftGridDataProvider;
 
@@ -91,9 +91,10 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 //        private Grid<T> draggedGrid;
 
 
-        public TwinColGrid(final Collection<T> poolItems) {
-            this(DataProvider.ofCollection(new LinkedHashSet<>(poolItems)));
-        }
+//        public TwinColGrid(final Collection<T> itemPool) {
+//            this.itemPool = itemPool;
+//            this(DataProvider.ofCollection(new LinkedHashSet<>(itemPool)));
+//        }
 
 //        /**
 //         * Constructs a new TwinColGrid with caption and data provider for options.
@@ -119,25 +120,28 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
         /**
          * Constructs a new TwinColGrid with data provider for options.
          */
-        public TwinColGrid(final ListDataProvider<T> poolDataProvider) {
+//        public TwinColGrid(final ListDataProvider<T> allItemsDataProvider) {
+        public TwinColGrid(final Collection<T> itemPool) {
+            this.itemPool = itemPool;
 //            super();
-            itemsPool = poolDataProvider.getItems();
-//            initLeftItems(itemsPool);
+//            itemPool = allItemsDataProvider.getItems();
+//            initLeftItems(itemPool);
 
 //            setPoolDataProvider(poolDataProvider);
-            setPoolDataProvider(itemsPool);
 
             getContent().setAlignItems(FlexComponent.Alignment.STRETCH);
             getContent().setHeight(null);
 
             this.leftGridDataProvider = DataProvider.ofCollection(new LinkedHashSet<>());
             leftGrid.setDataProvider(this.leftGridDataProvider);
-//            this.rightGridDataProvider = DataProvider.ofCollection(new LinkedHashSet<>());
-//            rightGrid.setDataProvider(this.rightGridDataProvider);
+            this.rightGridDataProvider = DataProvider.ofCollection(new LinkedHashSet<>());
+            rightGrid.setDataProvider(this.rightGridDataProvider);
 
             leftGrid.setSelectionMode(Grid.SelectionMode.MULTI);
             leftGrid.setId("left-grid");
             leftGrid.setClassName("vizman-simple-grid");
+//            setPoolDataProvider(itemPool);
+
             rightGrid.setSelectionMode(Grid.SelectionMode.MULTI);
             rightGrid.setId("right-grid");
             rightGrid.setClassName("vizman-simple-grid");
@@ -189,9 +193,9 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
         }
 
 //    private void setPoolDataProvider(ListDataProvider<T> poolDataProvider) {
-    private void setPoolDataProvider(Collection<T> itemsPool) {
+    private void setPoolDataProvider(Collection<T> itemPool) {
 //        this.rightGridDataProvider = poolDataProvider;
-        rightGridDataProvider = new ListDataProvider<>(new LinkedHashSet<>(itemsPool));
+        rightGridDataProvider = new ListDataProvider<>(new LinkedHashSet<>(itemPool));
         rightGrid.setDataProvider(rightGridDataProvider);
         if (leftGridDataProvider != null) {
             leftGridDataProvider.getItems().clear();
@@ -202,14 +206,14 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 
 //        public void initLeftItems(Set<T> leftItems, Collection<T> allItems) {
         public void initLeftItems(Set<T> leftItems) {
-//            itemsPool = new LinkedHashSet(allItems);
-//            itemsPool.removeAll(leftItems);
+//            itemPool = new LinkedHashSet(allItems);
+//            itemPool.removeAll(leftItems);
             rightGridDataProvider.getItems().clear();
-            rightGridDataProvider.getItems().addAll(itemsPool);
+            rightGridDataProvider.getItems().addAll(itemPool);
             leftGridDataProvider.getItems().clear();
             leftGridDataProvider.getItems().addAll(leftItems);
 //            updateLeftGridItems(rightGrid.getSelectedItems());
-//            rightGrid.setDataProvider(new ListDataProvider<>(itemsPool));
+//            rightGrid.setDataProvider(new ListDataProvider<>(itemPool));
 //            updateLeftGridItems(new LinkedHashSet<>(items), new HashSet<>());
         }
 
@@ -295,28 +299,38 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
             return this;
         }
 
+    private void setLeftItems(final Set<T> leftItems) {
+        rightGridDataProvider.getItems().addAll(itemPool);
+        rightGridDataProvider.getItems().removeAll(leftItems);
+        leftGridDataProvider.refreshAll();
 
-    //        private void updateLeftGridItems(final Set<T> addedItems, final Set<T> removedItems) {
-    private void updateLeftGridItems(final Set<T> selectedItems) {
-//            Set<T> selectedItems = rightGrid.getSelectedItems();
-//            rightGridDataProvider.getItems().addAll(removedItems);
-        rightGridDataProvider.getItems().removeAll(selectedItems);
+        leftGridDataProvider.getItems().clear();;
+        leftGridDataProvider.getItems().addAll(leftItems);
         rightGridDataProvider.refreshAll();
 
-        leftGridDataProvider.getItems().addAll(selectedItems);
+        leftGrid.getSelectionModel().deselectAll();
+        rightGrid.getSelectionModel().deselectAll();
+    }
+
+    private void updateLeftGridItems(final Set<T> selectedRightItems) {
+        rightGridDataProvider.getItems().removeAll(selectedRightItems);
+        rightGridDataProvider.refreshAll();
+
+        leftGridDataProvider.getItems().addAll(selectedRightItems);
         leftGridDataProvider.refreshAll();
 
         leftGrid.getSelectionModel().deselectAll();
         rightGrid.getSelectionModel().deselectAll();
     }
 
-    private void updateRightGridItems(final Set<T> selectedItems) {
-        leftGridDataProvider.getItems().removeAll(selectedItems);
+    private void updateRightGridItems(final Set<T> selectedLeftItems) {
+        leftGridDataProvider.getItems().removeAll(selectedLeftItems);
         leftGridDataProvider.refreshAll();
-        leftGrid.getSelectionModel().deselectAll();
 
-        rightGridDataProvider.getItems().addAll(selectedItems);
+        rightGridDataProvider.getItems().addAll(selectedLeftItems);
         rightGridDataProvider.refreshAll();
+
+        leftGrid.getSelectionModel().deselectAll();
         rightGrid.getSelectionModel().deselectAll();
     }
 
@@ -326,9 +340,9 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 //    public void setValue(final Set<T> value) {
     public void setValue(Object value) {
         Objects.requireNonNull(value);
-        final Set<T> newValues = ((Set<T>)value).stream().map(Objects::requireNonNull)
+        final Set<T> valueItems = ((Set<T>)value).stream().map(Objects::requireNonNull)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
-        updateLeftGridItems(newValues);
+        setLeftItems(valueItems);
     }
 
 

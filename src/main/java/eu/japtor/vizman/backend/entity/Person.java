@@ -21,9 +21,15 @@ public class Person extends AbstractGenIdEntity {
 //    public static final String ACCUSATIVE_SINGULAR = "Uživatele";
 //    public static final String ACCUSATIVE_PLURAL = "Uživatele";
 
-    @Column(name="STATUS")
+    @Column(name="STATE")
     @Enumerated(EnumType.STRING)
-    private PersonState state = PersonState.NEW;
+    private PersonState state = PersonState.LOGGEDOUT;
+
+    @Column(name="HIDDEN")
+    private Boolean hidden = false;
+
+    @Column(name="LOGIN_ENABLED")
+    private Boolean loginEnabled = false;
 
     @Column(name="USERNAME")
     private String username = "";
@@ -46,7 +52,13 @@ public class Person extends AbstractGenIdEntity {
     @Column(name="SAZBA")
     private BigDecimal sazba = BigDecimal.ZERO;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(
+            fetch = FetchType.EAGER,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            }
+    )
     @JoinTable(
             name = "person_role",
             joinColumns = @JoinColumn(
@@ -54,7 +66,6 @@ public class Person extends AbstractGenIdEntity {
             inverseJoinColumns = @JoinColumn(
                     name = "role_id", referencedColumnName = "id"))
     private Set<Role> roles;
-
 
 // -----------------------------------------------------
 
@@ -67,6 +78,20 @@ public class Person extends AbstractGenIdEntity {
     }
     public void setState(PersonState state) {
         this.state = state;
+    }
+
+    public Boolean getHidden() {
+        return hidden;
+    }
+    public void setHidden(Boolean hidden) {
+        this.hidden = hidden;
+    }
+
+    public Boolean getLoginEnabled() {
+        return loginEnabled;
+    }
+    public void setLoginEnabled(Boolean loginEnabled) {
+        this.loginEnabled = loginEnabled;
     }
 
     public String getUsername() {

@@ -76,6 +76,24 @@ public class SecurityUtils {
 //                .anyMatch(a -> allowedAuths.contains(a));
     }
 
+    /**
+     * Checks if user is allowed select pruh of other userss.
+     *
+     * @return true if access  prices/money information is granted, false otherwise.
+     */
+    public static boolean canViewOtherUsers() {
+        Authentication userAuthentication = SecurityContextHolder.getContext().getAuthentication();
+        if (userAuthentication == null) {
+            return false;
+        }
+        Set<String> otherUsersPermNames =  Perm.getPermNames(Arrays.asList(
+                Perm.VIEW_OTHER_USERS, Perm.VIEW_ALL, Perm.MODIFY_ALL));
+        return userAuthentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(otherUsersPermNames::contains);
+//                .anyMatch(a -> allowedAuths.contains(a));
+    }
+
 
     /**
      * Checks if the user is logged in.

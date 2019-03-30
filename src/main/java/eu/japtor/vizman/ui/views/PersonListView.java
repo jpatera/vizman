@@ -17,6 +17,7 @@ package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.notification.Notification;
@@ -37,6 +38,7 @@ import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.service.RoleService;
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.PersonEditorDialog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,17 +61,11 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 public class PersonListView extends VerticalLayout implements BeforeEnterObserver {
 
     private PersonEditorDialog personEditForm;
-    private final SearchField searchField;
+//    private final SearchField searchField;
     private final Button newItemButton;
     private final Button reloadViewButton;
     private Grid<Person> personGrid;
-    private final VerticalLayout gridContainer;
-    private final Component viewToolbar;
 
-    // Create a DecimalFormat for later use in column renderers and captions
-    // that should display values as currency, dollars in this case
-    //    DecimalFormat dollarFormat = new DecimalFormat("$#,##0.00");
-    private DecimalFormat sazbaFormat = new DecimalFormat("#,##0");
 
     @Autowired
     public PersonService personService;
@@ -85,14 +81,14 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         setAlignItems(Alignment.STRETCH);
-        searchField = new SearchField(
-//                "Hledej uživatele...", event ->
-//                "Hledej uživatele...", event -> updateGridContent()
-                "Hledej uživatele...",
-//                event -> ((ConfigurableFilterDataProvider) personGrid.getDataProvider()).setFilter(event.getValue())
-                event -> ((CallbackDataProvider) personGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getValue()))
-//                event -> ((CallbackDataProvider) personGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getValue()))
-        );
+//        searchField = new SearchField(
+////                "Hledej uživatele...", event ->
+////                "Hledej uživatele...", event -> updateGridContent()
+//                "Hledej uživatele...", null
+////                event -> ((ConfigurableFilterDataProvider) personGrid.getDataProvider()).setFilter(event.getValue())
+////                event -> ((CallbackDataProvider) personGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getValue()))
+////                event -> ((CallbackDataProvider) personGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getValue()))
+//        );
 
         newItemButton = new NewItemButton("Nový uživatel",
                 event -> personEditForm.open(new Person(), Operation.ADD, "")
@@ -102,17 +98,15 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
                 event -> reloadView()
         );
 
-        viewToolbar = buildViewToolBar(reloadViewButton, newItemButton);
-
-        personGrid = buildPersonGrid();
-        gridContainer = buildGridContainer(personGrid);
-        this.add(viewToolbar, gridContainer);
+        this.add(
+                buildViewToolBar(reloadViewButton, newItemButton)
+                , buildGridContainer()
+        );
     }
 
     @PostConstruct
     public void init() {
 
-//        DataProvider<Person, Person> personDataProvider = DataProvider.fromFilteringCallbacks(
         DataProvider<Person, String> personDataProvider = DataProvider.fromFilteringCallbacks(
                 query -> {
                     query.getOffset();
@@ -170,7 +164,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 
         personEditForm = new PersonEditorDialog(
                 this::savePerson, this::deletePerson, personService, roleService.fetchAllRoles(), passwordEncoder);
-//        buildPersonGrid();
+//        initPersonGrid();
 
 //        updateGridContent();
 
@@ -186,48 +180,74 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         System.out.println("###  ZaklListView.beforeEnter");
     }
 
-    private VerticalLayout buildGridContainer(Grid<Person> grid) {
+    private VerticalLayout buildGridContainer() {
         VerticalLayout gridContainer = new VerticalLayout();
         gridContainer.setClassName("view-container");
         gridContainer.setAlignItems(Alignment.STRETCH);
-        gridContainer.add(grid);
+        gridContainer.add(initPersonGrid());
         return gridContainer;
     }
 
-    private Grid buildPersonGrid() {
-        Grid<Person> grid = new Grid<>();
-        grid.setMultiSort(true);
-        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        grid.setId("person-grid");  // .. same ID as is used in shared-styles grid's dom module
+    private Grid initPersonGrid() {
+        personGrid = new Grid<>();
+        personGrid.setMultiSort(true);
+        personGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        personGrid.setId("person-grid");  // .. same ID as is used in shared-styles grid's dom module
 
-        grid.addColumn(Person::getState).setHeader("Status").setWidth("3em").setResizable(true)
-            .setFrozen(true);
-
-        grid.addColumn(Person::getUsername).setHeader("Username").setWidth("8em").setResizable(true)
-            .setSortProperty("username")
-            .setFrozen(true);
-//        personGrid.addColumn(Person::getPassword).setHeader("Password").setWidth("8em").setResizable(true);
-
-        grid.addColumn(Person::getJmeno).setHeader("Jméno").setWidth("8em").setResizable(true);
-
-        grid.addColumn(Person::getPrijmeni).setHeader("Příjmení").setWidth("8em").setResizable(true)
-            .setSortProperty("prijmeni");
-
-        grid.addColumn(new NumberRenderer<>(Person::getSazba, sazbaFormat))
-//                .textAlign("End")   // ...should come with V12, vaadin-personGrid/5.2.0-beta1
-                .setHeader("Sazba").setWidth("8em").setResizable(true);
-
-//            TemplateRenderer.of("<div style='text-align:right'>[[item.sazba]]</div>")
-//            .withProperty("sazba", Person::getSazba))
-//            .withProperty("sazba", new NumberRenderer<>(Person::getSazba, sazbaFormat)))
-//                new ComponentRenderer<>(() -> new Icon(VaadinIcon.FEMALE)))
-
-        grid.addColumn(Person::getNastup).setHeader("Nástup").setWidth("8em").setResizable(true);
-        grid.addColumn(Person::getVystup).setHeader("Ukončení").setWidth("8em").setResizable(true);
-        grid.addColumn(new ComponentRenderer<>(this::buildEditBtn)).setFlexGrow(0);
-//        getStyle().set("border", "1px solid #9E9E9E");    // Horizontal borders?
-
-        return grid;
+        personGrid.addColumn(Person::getId)
+                .setTextAlign(ColumnTextAlign.END)
+                .setHeader("ID")
+                .setSortProperty("id")
+                .setWidth("5em")
+                .setResizable(true)
+                .setFrozen(true)
+        ;
+        personGrid.addColumn(Person::getState)
+                .setHeader("State")
+                .setSortProperty("state")
+                .setWidth("5em")
+                .setResizable(true)
+                .setFrozen(true)
+        ;
+        personGrid.addColumn(new ComponentRenderer<>(this::buildEditBtn))
+                .setFlexGrow(0)
+        ;
+        personGrid.addColumn(Person::getUsername)
+                .setHeader("Username")
+                .setSortProperty("username")
+                .setWidth("8em")
+                .setResizable(true)
+                .setFrozen(true)
+        ;
+        personGrid.addColumn(Person::getJmeno)
+                .setHeader("Jméno")
+                .setSortProperty("jmeno")
+                .setWidth("8em")
+                .setResizable(true)
+        ;
+        personGrid.addColumn(Person::getPrijmeni)
+                .setHeader("Příjmení")
+                .setSortProperty("prijmeni")
+                .setWidth("8em")
+                .setResizable(true)
+        ;
+        personGrid.addColumn(new NumberRenderer<>(Person::getSazba, VzmFormatUtils.moneyFormat))
+                .setTextAlign(ColumnTextAlign.END)
+                .setHeader("Sazba")
+                .setWidth("8em")
+                .setResizable(true)
+        ;
+        personGrid.addColumn(Person::getNastup)
+                .setHeader("Nástup")
+                .setWidth("8em")
+                .setResizable(true)
+        ;
+        personGrid.addColumn(Person::getVystup)
+                .setHeader("Ukončení")
+                .setWidth("8em")
+                .setResizable(true)
+        ;
+        return personGrid;
     }
 
     private Button buildEditBtn(Person person) {
@@ -235,6 +255,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
                 person, Operation.EDIT, ""));
         return editBtn;
     }
+
 
     private Component buildViewToolBar(final Button reloadViewButton, final Button newItemButton) {
 
@@ -249,7 +270,9 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
                 .set("font-weight", "600")
                 .set("padding-right", "0.75em");
 
-        HorizontalLayout searchToolBar = new HorizontalLayout(viewTitle, searchField);
+        // TODO: person serach field
+        //        HorizontalLayout searchToolBar = new HorizontalLayout(viewTitle, searchField);
+        HorizontalLayout searchToolBar = new HorizontalLayout(viewTitle);
         searchToolBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
         HorizontalLayout gridToolBar = new HorizontalLayout(reloadViewButton);
@@ -265,7 +288,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         return viewToolBar;
     }
 
-    private void updateGridContent() {
+//    private void updateGridContent() {
 //        personDataProvider.refreshAll();
 //        grid.setItems(service.findAll())
 
@@ -288,15 +311,14 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 //        personGrid.setDataProvider(filteredDataProvider);
 //        personGrid.setDataProvider(SpringDataProviderBuilder.forRepository(personRepo));
 //        personGrid.setDataProvider(personDataProvider);
-    }
+//    }
 
 
     private void reloadView() {
 //        personDataProvider.clearFilters();
 //        personDataProvider.refreshAll();
         personGrid.getDataProvider().refreshAll();
-
-        //        personDataProvider.refreshItem(personToRefresh);
+//        personDataProvider.refreshItem(personToRefresh);
     }
 
 
@@ -304,36 +326,13 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         Person newInstance = personService.savePerson(person);
         personGrid.getDataProvider().refreshItem(newInstance);
         Notification.show(
-//                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
                 "Změny uživatele uloženy", 2000, Notification.Position.BOTTOM_END);
-        updateGridContent();
     }
 
     private void deletePerson(Person person) {
         personService.deletePerson(person);
         personGrid.getDataCommunicator().getKeyMapper().removeAll();
         personGrid.getDataProvider().refreshAll();
-
         Notification.show("Uživatel zrušen.", 2000, Notification.Position.BOTTOM_END);
-        updateGridContent();
     }
-
-//    private Component createComponent(Integer id, String color) {
-//
-//        HorizontalLayout compWrap = new HorizontalLayout();
-//        for (int i = 1; i < 4; i++) {
-//            Button comp = new Button("Comp " + id + " - " + i);
-//            comp.getStyle()
-//                    .set("background-color", color)
-//                    .set("theme", "icon small")
-////                    .set("margin", "0")
-//            ;
-//            comp.setText("");
-//            comp.setIcon(new Icon("lumo", "reload"));
-//            comp.getElement().setAttribute("theme", "secondary small");
-//            compWrap.add(comp);
-//        }
-//        return compWrap;
-//    }
-
 }

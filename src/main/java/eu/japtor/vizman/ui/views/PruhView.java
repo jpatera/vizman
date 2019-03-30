@@ -23,10 +23,12 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
+import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.backend.bean.PruhParag;
 import eu.japtor.vizman.backend.bean.PruhSum;
 import eu.japtor.vizman.backend.bean.PruhZak;
@@ -34,6 +36,7 @@ import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.CalymRepo;
 import eu.japtor.vizman.backend.repository.CinRepo;
 import eu.japtor.vizman.backend.repository.ParagRepo;
+import eu.japtor.vizman.backend.repository.PruhRepo;
 import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
@@ -52,6 +55,9 @@ import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static eu.japtor.vizman.app.security.SecurityUtils.canViewOtherUsers;
+import static eu.japtor.vizman.backend.entity.Pruh.PRUH_STATE_LOCKED;
+import static eu.japtor.vizman.backend.entity.Pruh.PRUH_STATE_UNLOCKED;
 import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_PRUH;
 
 @Route(value = ROUTE_PRUH, layout = MainView.class)
@@ -62,7 +68,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_PRUH;
 @UIScope
 public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterListener {
 
-    private static final String COL_WIDTH = "2.5em";
+    private static final String COL_WIDTH = "2.4em";
 
 //    private static final DateTimeFormatter dochTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 //    private static final DateTimeFormatter upperDochDateHeaderFormatter = DateTimeFormatter.ofPattern("EEEE");
@@ -70,23 +76,34 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //    private static final DateTimeFormatter yearMonthFormatter = DateTimeFormatter.ofPattern("yyyy-MM");
     private static final String DZ_KEY_PREF = "dz";
 //    public static final String DS_KEY_PREF = "ds";
-//    public static final String DP_KEY_PREF = "dp";
+    public static final String DP_KEY_PREF = "dp";
     private static final String ZAK_TEXT_COL_KEY = "zak-text-col";
+
+    String LOCK_PRUH_BUTTON_TEXT = "Uzavřít proužek";
+    String UNLOCK_PRUH_BUTTON_TEXT = "Otevřít proužek";
 
 //    private ConfirmDialog zakSelectDialog;
 
-    private String authUsername = "vancik";
+//    private String authUsername = "vancik";
+    private String authUsername;
+    private YearMonth currentYm;
 
     private List<Person> pruhPersonList;
     private Person pruhPerson;
     private ComboBox<Person> pruhPersonSelector;
 
-    private List<Calym> pruhCalymList;
-    private Calym pruhCalym;
+//    private List<Calym> pruhCalymList;
+    private List<YearMonth> pruhCalymList;
+//    private Calym pruhCalym;
+    private YearMonth pruhCalym;
     private int pruhDayMax;
-    private ComboBox<Calym> pruhCalymSelector;
+//    private ComboBox<Calym> pruhYmSelector;
+    private ComboBox<YearMonth> pruhYmSelector;
 
-    private  Icon pruhStatusIcon;
+    private Integer pruhState;
+
+    private  Icon pruhStateIconUnlocked;
+    private  Icon pruhStateIconLocked;
 
     private ZakSelectFormDialog zakSelectFormDialog;
     private static final Locale czLocale = new Locale("cs", "CZ");
@@ -97,21 +114,32 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Button cancelEditButton;
     private Button saveEditButton;
+    private Button zaksCopyButton;
     private Button zaksAddButton;
-    private Button switchPruhStatusButton;
+    private Button togglePruhStateButton;
 
     private HorizontalLayout pruhTitleBar;
 
     private Grid<PruhZak> pruhZakGrid;
     private List<PruhZak> pruhZakList = new ArrayList<>();
+    Registration zakGridEditRegistration = null;
+
     private PruhSum pruhSum;
     private FooterRow sumHodsFooterRow;
     private FooterRow missingHodsFooterRow;
     private Grid<PruhParag> pruhParagGrid;
     private List<PruhParag> pruhParagList = new ArrayList<>();
-    private Comparator<PruhZak> pruhZakCkontComparator
-            = (pz1, pz2) -> pz2.getCkont().equals("00001") ? -1 : pz1.getCkont().compareTo(pz2.getCkont());
-
+    private Comparator<PruhZak> pruhZakOrderComparator
+            = (pz1, pz2) -> {
+                if (pz1.equals(pz2))
+                    return 0;
+                if (pz1.isRezijniZak())
+                    return -1;
+                if (pz2.isRezijniZak())
+                    return +1;
+                return pz2.getCkont().compareTo(pz1.getCkont());
+            }
+    ;
 
     @Autowired
     public PersonService personService;
@@ -140,14 +168,21 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     @Autowired
     public ParagRepo paragRepo;
 
+    @Autowired
+    public PruhRepo pruhRepo;
+
 
     public PruhView() {
         super();
         buildForm();
     }
 
+
     @PostConstruct
     public void init() {
+//        !SecurityUtils.isAccessGranted(event.getNavigationTarget())
+        authUsername = SecurityUtils.getUsername();
+//        pruhCalym = YearMonth.now();
         initPruhData();
         zakSelectFormDialog = new ZakSelectFormDialog(
                 this::addKzTreeAwareZaksToGrid
@@ -210,7 +245,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
 //        pruhYmSelectList.setLocale(new Locale("cs", "CZ"));
-//        pruhCalymSelector.setLocale(czLocale);
+//        pruhYmSelector.setLocale(czLocale);
 
 //        dochDatePrev = LocalDate.now().minusDays(1);
 //        gridZakSumTitle.setText(dochDatePrev.format(lowerDochDateHeaderFormatter));
@@ -232,52 +267,62 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private void initPruhData() {
         loadPersonDataFromDb();
-        Person pruhPersonByAuth = getPersonFromList(authUsername)
-                .orElse(null);
+        Person pruhPersonByAuth = getPruhPersonFromList(authUsername).orElse(null);
         pruhPersonSelector.setValue(pruhPersonByAuth);
+
         loadCalymDataFromDb();
-        Calym pruhCalymByToday = getCalymFromListByYm(YearMonth.now())
+        YearMonth pruhYmByToday = getYmFromCalymListByYm(YearMonth.now())
                 .orElse(null);
-        pruhCalymSelector.setValue(pruhCalymByToday);
+        pruhYmSelector.setValue(pruhYmByToday);
+
         updatePruhGrids(pruhPerson, pruhCalym);
     }
 
 
-    private Optional<Person> getPersonFromList(String username) {
+    private Optional<Person> getPruhPersonFromList(String username) {
         return pruhPersonList.stream()
                 .filter(person -> person.getUsername().toLowerCase().equals(username.toLowerCase()))
                 .findFirst();
 //                .findFirst().orElse(null);
     }
 
-    private  Optional<Calym> getCalymFromListByYm(final YearMonth ym) {
+//    private  Optional<Calym> getYmFromCalymListByYm(final YearMonth ym) {
+    private  Optional<YearMonth> getYmFromCalymListByYm(final YearMonth ym) {
         return pruhCalymList.stream()
-                .filter(calym -> calym.getYm().equals(ym))
+                .filter(pruhYm -> pruhYm.equals(ym))
                 .findFirst();
 //                .findFirst().orElse(null);
     }
 
     private void loadPersonDataFromDb() {
-        pruhPersonList = personService.fetchAllActive();
+        pruhPersonList = personService.fetchAllNotHidden();
         pruhPersonSelector.setValue(null);
         pruhPersonSelector.setItems(pruhPersonList);
     }
 
     private void loadCalymDataFromDb() {
-        pruhCalymList = calymRepo.findAll(Sort.by(Sort.Direction.DESC, Calym.SORT_PROP_YM));
-        pruhCalymSelector.setValue(null);
-        pruhCalymSelector.setItems(pruhCalymList);
+        pruhCalymList = calymRepo.findAll(Sort.by(Sort.Direction.DESC, Calym.SORT_PROP_YM)).stream()
+                .map(Calym::getYm)
+                .collect(Collectors.toList())
+        ;
+        pruhYmSelector.setValue(null);
+        pruhYmSelector.setItems(pruhCalymList);
     }
 
-    private void updatePruhGrids(final Person person, final Calym calym) {
+//    private void updatePruhGrids(final Person person, final Calym calym) {
+    private void updatePruhGrids(final Person person, final YearMonth ym) {
 
         Long personId = null == person ? null : person.getId();
-        YearMonth ym = null == calym ? null : calym.getYm();
-        loadPruhZakDataFromDb(personId, ym);
-        loadPruhSumDataFromDb(personId, ym);
+//        YearMonth ym = null == calym ? null : calym.getYm();
+        loadPruhZakAndSumDataFromDb(personId, ym);
+//        loadPruhSumDataFromDb(personId, ym);
         loadPruhParagDataFromDb(personId, ym);
         calcAndSetPruhMissingHods();
         setPruhSumHods();
+
+        Pruh pruh = pruhRepo.findFirstByYmAndPersonId(ym, personId);
+        pruhState = null == pruh ? null : pruh.getState();
+        setPruhStateControls(pruhState);
 
         pruhZakGrid.getDataProvider().refreshAll();
 //        pruhSumGrid.getDataProvider().refreshAll();
@@ -287,43 +332,51 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //            pruhZakGrid.setDetailsVisible(pruchZak, StringUtils.isNotBlank(pruhZak.getParagText()));
 //        }
 
+        pruhZakGrid.focus();
+//        UI.getCurrent().getPage().executeJavaScript("$0._scrollToIndex($1)", pruhZakGrid, 1);
+
     }
 
-    private void loadPruhZakDataFromDb(Long personId, YearMonth ym) {
+    private void loadPruhZakAndSumDataFromDb(Long personId, YearMonth ym) {
+
+        // Pruh SUM:
+        if (null == personId || null == ym) {
+            pruhSum = new PruhSum("suma z dochazky");
+        } else {
+            List<Dochsum> dsSums = dochsumService.fetchDochsumForPersonAndYm(personId, ym);
+            if (null == dsSums) {
+                pruhSum = new PruhSum("suma z dochazky");
+            } else {
+                pruhSum = transposeDochsumsToPruhSums(dsSums);
+            }
+        }
+
+        // Pruh ZAKS:
         if (null == personId || null == ym) {
             pruhZakList = new ArrayList<>();
         } else {
-
-
-//            List<Dochsum> dochsums = dochsumService.fetchDochsumForPersonAndYm(dochPerson.getId(), pruhCalym);
-////            List<DochsumZak> dochsumZaks = dochsumZakService.fetchDochsumForPersonAndYm(dochPerson.getId(), pruhDate)
-
-
             List<DochsumZak> dsZaks = dochsumZakService.fetchDochsumZaksForPersonAndYm(personId, ym);
             if (null == dsZaks) {
                 pruhZakList = new ArrayList<>();
             } else {
                 pruhZakList = transposeDochsumZaksToPruhZaks(dsZaks);
-                pruhZakList.sort(pruhZakCkontComparator.reversed());
+                pruhZakList.sort(pruhZakOrderComparator);
+//                pruhZakList.sort(pruhZakOrderComparator.reversed());
             }
         }
+
         pruhZakGrid.setItems(pruhZakList);
         setDayColumnsVisibility(pruhZakGrid, pruhDayMax, DZ_KEY_PREF);
 
-//        ListDataProvider listDataProvider = (ListDataProvider) pruhZakGrid.getDataProvider();
-//        ArrayList items = (new ArrayList(listDataProvider.getItems()));
-//        int index = items.indexOf(item);
-//        pruhZakGrid.scrollTo(index, ScrollDestination.END);
-
-        pruhZakGrid.focus();
-        UI.getCurrent().getPage().executeJavaScript("$0._scrollToIndex($1)", pruhZakGrid, 1);
-
+//        pruhZakGrid.focus();
+//        UI.getCurrent().getPage().executeJavaScript("$0._scrollToIndex($1)", pruhZakGrid, 1);
     }
 
     private void calcAndSetPruhMissingHods() {
         for (int day = 1; day <= 31; day++) {
             Grid.Column col = pruhZakGrid.getColumnByKey(DZ_KEY_PREF + String.valueOf(day));
             if (null != col) {
+                getMissingHodString(day);
                 missingHodsFooterRow.getCell(col).setText(getMissingHodString(day));
             }
         }
@@ -342,36 +395,37 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         if (null == personId || null == ym) {
             pruhParagList = new ArrayList<>();
         } else {
-            List<DochsumParag> dochsumParags = dochsumParagService.fetchDochsumParagsForPersonAndYm(personId, ym);
-            if (null == dochsumParags) {
+            List<DochsumParag> dsParags = dochsumParagService.fetchDochsumParagsForPersonAndYm(personId, ym);
+            if (null == dsParags) {
                 pruhParagList = new ArrayList<>();
             } else {
-                pruhParagList = transposeDochsumParagsToPruhParags(dochsumParags);
+                pruhParagList = transposeDochsumParagsToPruhParags(dsParags);
 //                pruhParagList.sort(pruhParagCkonComparator.reversed());
             }
         }
         pruhParagGrid.setItems(pruhParagList);
-        setDayColumnsVisibility(pruhParagGrid, pruhDayMax, "dp");
+        setDayColumnsVisibility(pruhParagGrid, pruhDayMax, DP_KEY_PREF);
+
     }
 
-    private void loadPruhSumDataFromDb(Long personId, YearMonth ym) {
-        if (null == personId || null == ym) {
-//            pruhSumList = new ArrayList();
-            pruhSum = new PruhSum("suma z dochazky");
-        } else {
-            List<Dochsum> dochsums = dochsumService.fetchDochsumForPersonAndYm(personId, ym);
-            if (null == dochsums) {
-//                pruhSumList = new ArrayList<>();
-                pruhSum = new PruhSum("suma z dochazky");
-            } else {
-//                pruhSumList = transposeDochsumsToPruhSums(dochsums);
-                pruhSum = transposeDochsumsToPruhSums(dochsums);
-//                pruhZakSum = new PruhZak("suma z dochazky", "");
-            }
-        }
-//        pruhZakSumGrid.setItems(pruhSumList);
-//        setDayColumnsVisibility(pruhSumGrid, pruhDayMax, "ds");
-    }
+//    private void loadPruhSumDataFromDb(Long personId, YearMonth ym) {
+//        if (null == personId || null == ym) {
+////            pruhSumList = new ArrayList();
+//            pruhSum = new PruhSum("suma z dochazky");
+//        } else {
+//            List<Dochsum> dochsums = dochsumService.fetchDochsumForPersonAndYm(personId, ym);
+//            if (null == dochsums) {
+////                pruhSumList = new ArrayList<>();
+//                pruhSum = new PruhSum("suma z dochazky");
+//            } else {
+////                pruhSumList = transposeDochsumsToPruhSums(dochsums);
+//                pruhSum = transposeDochsumsToPruhSums(dochsums);
+////                pruhZakSum = new PruhZak("suma z dochazky", "");
+//            }
+//        }
+////        pruhZakSumGrid.setItems(pruhSumList);
+////        setDayColumnsVisibility(pruhSumGrid, pruhDayMax, "ds");
+//    }
 
 
     private void setDayColumnsVisibility(final Grid grid, int daysMax, String keyPrefix) {
@@ -391,7 +445,13 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
 //        this.setWidth("1200px");
         this.setWidth("100%");
+        this.setPadding(false);
+
+        // TODO:
+        //        this.setMaxHeight("700px");
+
         this.setAlignSelf(Alignment.CENTER);
+
 //        this.getStyle().set("margin-top", "2em");
 //        this.getStyle().set("margin-bottom", "2em");
 //        this.getStyle().set("background-color", "#fffcf5");
@@ -408,7 +468,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //                , initSumGrid()
                 , initZakGridButtonBar()
 //                , initZakGridSumTitle()
-                , initGridPargaTitleBar()
+                , initGridParagTitleBar()
                 , initParagGrid()
         );
 //        pruhRecPane.add(initMiddlePruhFooterBar());
@@ -439,11 +499,17 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Component initZakGridTitleBar() {
         gridZakTitleBar = new HorizontalLayout();
+        gridZakTitleBar.getStyle()
+                .set("margin-top", "0.5em")
+                .set("margin-bottom", "0.2em")
+        ;
+
 //        gridZakTitleBar.setHeight("4em");
         Emphasis gridZakTitle = new Emphasis("Odpracováno na zakázkách");
         gridZakTitle.getStyle()
                 .set("font-weight", "bold")
-//                .set("margin-top", "2em")
+                .set("margin-right", "2em")
+                .set("margin-top", "0.2em")
                 .set("margin-bottom", "0.2em")
         ;
         gridZakTitleBar.add(gridZakTitle);
@@ -463,14 +529,20 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return gridZakButtonBar;
     }
 
-    private Component initGridPargaTitleBar() {
+    private Component initGridParagTitleBar() {
         gridParagTitleBar = new HorizontalLayout();
+        gridParagTitleBar.getStyle()
+                .set("margin-top", "0.2em")
+                .set("margin-bottom", "0.2em")
+        ;
 //        gridParagTitleBar.setHeight("4em");
         Emphasis gridParagTitle = new Emphasis("Nepřítomnost");
         gridParagTitle.getStyle()
 //                .set("margin-top", "2em")
                 .set("font-weight", "bold")
+                .set("margin-top", "0")
                 .set("margin-bottom", "0.2em")
+                .set("margin-right", "2em")
         ;
         gridParagTitleBar.add(gridParagTitle);
         return gridParagTitleBar;
@@ -483,12 +555,13 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pruhPersonSelector.setPlaceholder("Pracovník");
         pruhPersonSelector.setItems(new ArrayList<>());
         pruhPersonSelector.setItemLabelGenerator(this::getPersonLabel);
+        pruhPersonSelector.setEnabled(canViewOtherUsers());
         pruhPersonSelector.addValueChangeListener(event -> {
             pruhPerson = event.getValue();
             updatePruhGrids(pruhPerson, pruhCalym);
         });
         pruhPersonSelector.addBlurListener(event -> {
-//            loadPruhZakDataFromDb(pruhPerson.getId(), pruhCalym);
+//            loadPruhZakAndSumDataFromDb(pruhPerson.getId(), pruhCalym);
             pruhZakGrid.getDataProvider().refreshAll();
         });
         return pruhPersonSelector;
@@ -499,91 +572,222 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private Component initPruhYmSelector() {
-//        pruhCalymSelector = new Select<>();
-        pruhCalymSelector = new ComboBox<>();
+//        pruhYmSelector = new Select<>();
+        pruhYmSelector = new ComboBox<>();
 
-        pruhCalymSelector.getStyle().set("margin-right", "1em");
-        pruhCalymSelector.setWidth("10em");
-        pruhCalymSelector.setPlaceholder("Rok-měsíc");
-        pruhCalymSelector.setItems(new ArrayList<>());
+        pruhYmSelector.getStyle().set("margin-right", "1em");
+        pruhYmSelector.setWidth("10em");
+        pruhYmSelector.setPlaceholder("Rok-měsíc");
+        pruhYmSelector.setItems(new ArrayList<>());
 
-//        pruhCalymSelector.setItems(YearMonth.now());
+//        pruhYmSelector.setItems(YearMonth.now());
         // The empty selection item is the first item that maps to an null item.
         // As the item is not selectable, using it also as placeholder
 
-//        pruhCalymSelector.setEmptySelectionCaption("Rok-měsíc proužku...");
-//        pruhCalymSelector.setEmptySelectionAllowed(true);
-//        pruhCalymSelector.setItemEnabledProvider(Objects::nonNull);
+//        pruhYmSelector.setEmptySelectionCaption("Rok-měsíc proužku...");
+//        pruhYmSelector.setEmptySelectionAllowed(true);
+//        pruhYmSelector.setItemEnabledProvider(Objects::nonNull);
 //        // add a divider after the empty selection item
-//        pruhCalymSelector.addComponents(null, new Hr());
+//        pruhYmSelector.addComponents(null, new Hr());
 
-        pruhCalymSelector.setItemLabelGenerator(this::getYmLabel);
-        pruhCalymSelector.addValueChangeListener(event -> {
+        pruhYmSelector.setItemLabelGenerator(this::getYmLabel);
+        pruhYmSelector.addValueChangeListener(event -> {
             pruhCalym = event.getValue();
-            pruhDayMax = (null == pruhCalym || null == pruhCalym.getYm()) ? 0 : pruhCalym.getYm().lengthOfMonth();
+            pruhDayMax = (null == pruhCalym ) ? 0 : pruhCalym.lengthOfMonth();
             updatePruhGrids(pruhPerson, pruhCalym);
         });
-        return pruhCalymSelector;
+        return pruhYmSelector;
     }
 
-    private Component initPruhStatusIcon() {
-        pruhStatusIcon = VaadinIcon.UNLOCK.create();
-        pruhStatusIcon.setColor("green");
-        pruhStatusIcon.getStyle().set("margin-right", "1em");
-        return pruhStatusIcon;
+    private Component initPruhStateBox() {
+        HorizontalLayout box = new HorizontalLayout();
+        box.setWidth("3em");
+        box.setMinWidth("3em");
+        box.setVerticalComponentAlignment(Alignment.END);
+        box.getStyle()
+            .set("margin-top", "0.7em");
+
+
+        pruhStateIconUnlocked = VaadinIcon.UNLOCK.create();
+        pruhStateIconUnlocked.setColor("green");
+        pruhStateIconUnlocked.getStyle().set("margin-right", "1em");
+        pruhStateIconUnlocked.setVisible(false);
+
+        pruhStateIconLocked = VaadinIcon.LOCK.create();
+        pruhStateIconLocked.setColor("crimson");
+        pruhStateIconLocked.getStyle().set("margin-right", "1em");
+        pruhStateIconLocked.setVisible(false);
+
+        box.add(pruhStateIconLocked, pruhStateIconUnlocked);
+        return box;
     }
 
-    private Component initPruhSwitchStatusButton() {
-        String LOCK_PRUH_CAPTION = "Uzavřít proužek";
-        String UNLOCK_PRUH_CAPTION = "Otevřít proužek";
-        switchPruhStatusButton = new Button(LOCK_PRUH_CAPTION);
-        switchPruhStatusButton.addClickListener(event -> {
+    private boolean pruhToBeLocked() {
+        return togglePruhStateButton.getText().equals(LOCK_PRUH_BUTTON_TEXT);
+    }
+
+    private boolean pruhToBeUnlocked() {
+        return togglePruhStateButton.getText().equals(UNLOCK_PRUH_BUTTON_TEXT);
+    }
+
+    private boolean pruhIsLockedOrUnknown() {
+        return (null == pruhState) || pruhState.equals(PRUH_STATE_LOCKED);
+    }
+
+    private boolean pruhIsUnlocked() {
+        return (null != pruhState) && pruhState.equals(PRUH_STATE_UNLOCKED);
+    }
+
+    private Component initTogglePruhStateButton() {
+
+        togglePruhStateButton = new Button(LOCK_PRUH_BUTTON_TEXT);
+        togglePruhStateButton.addClickListener(event -> {
             if (pruhZakGrid.getEditor().isOpen()) {
                 pruhZakGrid.getEditor().closeEditor();
             }
 
-            ConfirmDialog.createInfo()
-                    .withCaption("UZAVŘENÍ PROUŽKU")
-                    .withMessage("Zatím to nedělá nic. Ale bude.")
-                    .open()
-            ;
-//            return;
+//            ConfirmDialog.createInfo()
+//                    .withCaption("UZAVŘENÍ PROUŽKU")
+//                    .withMessage("Zatím to nedělá nic. Ale bude.")
+//                    .open()
+//            ;
+////            return;
 
-//            if (null == pruhPerson || null == pruhCalym) {
-//            }
+            String dialogCaption = togglePruhStateButton.getText().equals(LOCK_PRUH_BUTTON_TEXT) ?
+                    "UZAVŘENÍ PROUŽKU": "OTEVŘENÍ PROUŽKU";
 
-            if (false) {
+            Long personId = null == pruhPerson ? null : pruhPerson.getId();
+//            YearMonth ym = null == pruhCalym ? null : pruhCalym.getYm();
+//            YearMonth ym = pruhCalym;
+//            Integer state = null == pruhState ? PRUH_STATE_UNDEFINED : pruhState;
+
+            if (null == pruhPerson || null == pruhCalym) {
+//                if (togglePruhStateButton.getText().equals(LOCK_PRUH_BUTTON_TEXT))
+                    ConfirmDialog.createWarning()
+                            .withCaption(dialogCaption)
+                            .withMessage("Není vybrán proužek, nelze provést akci.")
+                            .open()
+                    ;
+                return;
+            }
+
+            if (pruhToBeUnlocked() && pruhIsUnlocked()) {
                 ConfirmDialog.createInfo()
-                        .withCaption("UZAVŘENÍ PROUŽKU")
-                        .withMessage("V proužku jsou nevyplněné hodiny na zakázkách, proužek nelze uzavřít.")
+                        .withCaption(dialogCaption)
+                        .withMessage("Proužek je již otevřen, nelze znova.")
+                        .open()
+                        ;
+                return;
+            }
+
+            if (pruhToBeLocked() && pruhIsLockedOrUnknown()) {
+                ConfirmDialog.createInfo()
+                        .withCaption(dialogCaption)
+                        .withMessage("Proužek je již zavřen, nelze znova.")
                         .open()
                 ;
                 return;
             }
 
-            if (false) {
-                ConfirmDialog.createInfo()
-                        .withCaption("OTEVŘENÍ PROUŽKU")
-                        .withMessage("Je otevřen proužek YYYY-MM. Dokud nevbvude uzavřen, nelze otevřít jinný proužek.")
+            if (pruhToBeLocked() && getMissingHodSum().compareTo(BigDecimal.ZERO) > 0) {
+                ConfirmDialog.createWarning()
+                        .withCaption(LOCK_PRUH_BUTTON_TEXT)
+                        .withMessage("V proužku jsou nevyplněné hodiny na zakázkách, nelze uzavřít.")
                         .open()
                 ;
                 return;
             }
 
-            if (false) {
-                ConfirmDialog.createInfo()
-                        .withCaption("OTEVŘENÍ PROUŽKU")
-                        .withMessage("Proužek už byl analyticky zpracován, otevřít ho může jen administrátor.")
-                        .open()
-                ;
-                return;
+            if (pruhToBeLocked()) {
+                Pruh openedPruh = pruhRepo.findFirstByYmAndPersonId(pruhCalym, personId);
+                pruhState = Pruh.PRUH_STATE_LOCKED;
+                openedPruh.setState(pruhState);
+                pruhRepo.save(openedPruh);
+                setPruhStateControls(pruhState);
+            } else {
+                Pruh openedPruh = pruhRepo.findFirstByPersonIdAndState(personId, PRUH_STATE_UNLOCKED);
+                if (null != openedPruh) {
+//                    if (!openedPruh.getYm().equals(ym)) {
+                        ConfirmDialog.createWarning()
+                                .withCaption(dialogCaption)
+                                .withMessage("Je otevřen proužek " + openedPruh.getYm() + ". Dokud nebude uzavřen, nelze otevřít jiný proužek.")
+                                .withCancelButton(ButtonOption.caption("ZPĚT"))
+                            .open()
+                        ;
+                        return;
+//                    }
+                } else {
+                    Pruh pruh = pruhRepo.findFirstByYmAndPersonId(pruhCalym, personId);
+                    if (null == pruh) {
+                        pruh = new Pruh();
+                        pruh.setYm(pruhCalym);
+                        pruh.setPersonId(personId);
+                    }
+                    pruhState = Pruh.PRUH_STATE_UNLOCKED;
+                    pruh.setState(pruhState);
+                    pruhRepo.save(pruh);
+                    setPruhStateControls(pruhState);
+                }
             }
         });
-        return switchPruhStatusButton;
+        return togglePruhStateButton;
     }
 
-    private String getYmLabel(Calym calym) {
-        return null == calym || null == calym.getYm() ? "" : calym.getYm().toString();
+    private void setPruhStateControls(Integer newState) {
+        if (null == newState) {
+            setPruhControlsUnknown();
+        } else if (newState.equals(PRUH_STATE_UNLOCKED)) {
+            setPruhControlsUnlocked();
+        } else if (newState.equals(PRUH_STATE_LOCKED)) {
+            setPruhControlsLocked();
+        }
+    }
+
+    private void setPruhControlsLocked() {
+//        pruhStateIconLocked.setVisible(togglePruhStateButton.getText().equals(UNLOCK_PRUH_BUTTON_TEXT));
+//        pruhStateIconUnlocked.setVisible(togglePruhStateButton.getText().equals(LOCK_PRUH_BUTTON_TEXT));
+        pruhStateIconLocked.setVisible(true);
+        pruhStateIconUnlocked.setVisible(false);
+        togglePruhStateButton.setText(UNLOCK_PRUH_BUTTON_TEXT);
+        saveEditButton.setEnabled(false);
+        cancelEditButton.setEnabled(false);
+        zaksCopyButton.setEnabled(false);
+        zaksAddButton.setEnabled(false);
+
+//        if (zakGridEditRegistration != null) {
+//            zakGridEditRegistration.remove();
+//        }
+    }
+
+    private void setPruhControlsUnlocked() {
+        pruhStateIconLocked.setVisible(false);
+        pruhStateIconUnlocked.setVisible(true);
+        togglePruhStateButton.setText(LOCK_PRUH_BUTTON_TEXT);
+        saveEditButton.setEnabled(true);
+        cancelEditButton.setEnabled(true);
+        zaksCopyButton.setEnabled(true);
+        zaksAddButton.setEnabled(true);
+//        zakGridEditRegistration = pruhZakGrid.addItemDoubleClickListener(event -> {
+//            pruhZakGrid.getEditor().editItem(event.getItem());
+//        });
+    }
+
+    private void setPruhControlsUnknown() {
+        pruhStateIconLocked.setVisible(false);
+        pruhStateIconUnlocked.setVisible(false);
+        togglePruhStateButton.setText(UNLOCK_PRUH_BUTTON_TEXT);
+        saveEditButton.setEnabled(false);
+        cancelEditButton.setEnabled(false);
+        zaksCopyButton.setEnabled(false);
+        zaksAddButton.setEnabled(false);
+
+//        if (zakGridEditRegistration != null) {
+//            zakGridEditRegistration.remove();
+//        }
+    }
+
+    private String getYmLabel(YearMonth ym) {
+        return null == ym ? "" : ym.toString();
     }
 
 //    private ValueProvider<Doch, String> durationValProv =
@@ -597,16 +801,17 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
         H3 pruhTitle = new H3("PROUŽEK");
         pruhTitle.getStyle()
-                .set("margin-top", "10px")
-//                .set("margin-left", "20px")
+                .set("margin-top", "0.5em")
+                .set("margin-right", "1em")
+                .set("margin-bottom", "0.2em")
         ;
 
         HorizontalLayout selectorBox = new HorizontalLayout();
         selectorBox.add(
                 initPersonSelector()
                 , initPruhYmSelector()
-                , initPruhStatusIcon()
-                , initPruhSwitchStatusButton()
+                , initPruhStateBox()
+                , initTogglePruhStateButton()
         );
 
         HorizontalLayout buttonBox = new HorizontalLayout();
@@ -630,7 +835,11 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Component initZakGrid() {
         pruhZakGrid = new Grid<>();
-        pruhZakGrid.setHeight("50em");
+        pruhZakGrid.setHeight("24em");
+        pruhZakGrid.getStyle()
+                .set("margin-top", "0.2em")
+                .set("margin-bottom", "0.2em")
+        ;
 //        pruhZakGrid.setWidth("100%");
         pruhZakGrid.setColumnReorderingAllowed(false);
         pruhZakGrid.setClassName("vizman-pruh-grid");
@@ -638,10 +847,6 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pruhZakGrid.addThemeNames("column-borders", "row-stripes");
 //        pruhZakGrid.addThemeNames("no-border", "no-row-borders", "row-stripes");
 //        pruhZakGrid.addThemeNames("border", "row-borders", "row-stripes");
-
-        Binder<PruhZak> pzBinder = new Binder<>(PruhZak.class);
-        Editor<PruhZak> pzEditor = pruhZakGrid.getEditor();
-        pzEditor.setBinder(pzBinder);
 
         pruhZakGrid.addColumn(PruhZak::getPruhCellText)
                 .setHeader("ČK / ČZ, zakázka")
@@ -653,21 +858,13 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setKey(ZAK_TEXT_COL_KEY)
                 .setResizable(true)
         ;
-
         pruhZakGrid.addColumn(new ComponentRenderer<>(this::buildPruhZakRemoveBtn))
-//        pruhZakGrid.addColumn(new ComponentRenderer<>(this::buildFaktEditBtn))
-                .setWidth("5em")
+                .setWidth("4em")
                 .setTextAlign(ColumnTextAlign.CENTER)
                 .setFlexGrow(0)
                 .setFrozen(true)
                 .setResizable(false)
         ;
-
-        pruhZakGrid.addItemDoubleClickListener(event -> {
-            pzEditor.editItem(event.getItem());
-//            field.focus();
-        });
-
         missingHodsFooterRow = pruhZakGrid.appendFooterRow();
         sumHodsFooterRow = pruhZakGrid.appendFooterRow();
         missingHodsFooterRow.getCell(pruhZakGrid.getColumnByKey(ZAK_TEXT_COL_KEY))
@@ -679,6 +876,30 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setComponent(sumHodsTextComp)
 //                .setText("Odpracováno z docházky")
         ;
+        Binder<PruhZak> pzBinder = new Binder<>(PruhZak.class);
+        Editor<PruhZak> pzEditor = pruhZakGrid.getEditor();
+        pzEditor.setBinder(pzBinder);
+        zakGridEditRegistration = pruhZakGrid.addItemDoubleClickListener(event -> {
+            // TODO keyPress listeners...
+            if (event.getItem().isRezijniZak()) {
+                ConfirmDialog.createInfo()
+                        .withCaption("EDITACE proužku")
+                        .withMessage("Režijní zakázky nelze editovat.")
+                        .open()
+                ;
+                return;
+            }
+            if  (pruhState.equals(PRUH_STATE_UNLOCKED)) {
+                pzEditor.editItem(event.getItem());
+            } else {
+                ConfirmDialog.createInfo()
+                        .withCaption("EDITACE proužku")
+                        .withMessage("Proužek není otevřený, nelze editovat")
+                        .open()
+                ;
+            }
+//            field.focus();
+        });
 
         for (int i = 1; i <= 31; i++) {
             int ii = i;
@@ -695,10 +916,20 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return pruhZakGrid;
     }
 
+//    private ComponentEventListener initZakGridEditorListener() {
+//
+//        return (event -> {
+//            pzEditor.editItem(event.getItem());
+////            field.focus();
+//    });
 
     private Component initParagGrid() {
         pruhParagGrid = new Grid<>();
-        pruhParagGrid.setHeight("20em");
+        pruhParagGrid.setHeight("8em");
+        pruhParagGrid.getStyle()
+                .set("margin-top", "0.2em")
+                .set("margin-bottom", "0.2em")
+        ;
         pruhParagGrid.setColumnReorderingAllowed(false);
         pruhParagGrid.setClassName("vizman-pruh-grid");
         pruhParagGrid.setSelectionMode(Grid.SelectionMode.NONE);
@@ -718,7 +949,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         ;
 
         pruhParagGrid.addColumn(new ComponentRenderer<>(pruhParag -> new Span("")))
-                .setWidth("5em")
+                .setWidth("4em")
+                .setTextAlign(ColumnTextAlign.CENTER)
                 .setFlexGrow(0)
                 .setFrozen(true)
                 .setResizable(false)
@@ -758,7 +990,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
             .setWidth(COL_WIDTH)
 //            .setTextAlign(ColumnTextAlign.END)
             .setFlexGrow(0)
-            .setKey("dz" + String.valueOf(day))
+            .setKey(DZ_KEY_PREF + String.valueOf(day))
             .setResizable(false)
         ;
         // TODO: remove margins
@@ -819,9 +1051,18 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     }
 
+    private BigDecimal getMissingHodSum() {
+        BigDecimal missingHodSum = BigDecimal.ZERO;
+        for (int day = 1; day <= pruhDayMax; day++) {
+            missingHodSum = missingHodSum.add(getDayZakMissing(getDayZakHodSum(day), getDaySumHodSum(day)));
+        }
+        return missingHodSum;
+    }
+
     private String getMissingHodString(int day) {
         BigDecimal missingHods = getDayZakMissing(getDayZakHodSum(day), getDaySumHodSum(day));
-        return null == missingHods ? "" : VzmFormatUtils.decHodFormat.format(missingHods);
+        return (null == missingHods || missingHods.compareTo(BigDecimal.ZERO) == 0) ?
+                "" : VzmFormatUtils.decHodFormat.format(missingHods);
     }
 
     private String getSumHodString(int day) {
@@ -830,7 +1071,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private BigDecimal getDayZakMissing(final BigDecimal zakHodSum, final BigDecimal sumHodSum) {
-        BigDecimal zakHodMissing = null;
+        BigDecimal zakHodMissing = BigDecimal.ZERO;
         if (null == sumHodSum) {
             if (null != zakHodSum) {
                 zakHodMissing = BigDecimal.ZERO.subtract(zakHodSum);
@@ -876,7 +1117,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setWidth(COL_WIDTH)
 //                .setTextAlign(ColumnTextAlign.END)
                 .setFlexGrow(0)
-                .setKey(DZ_KEY_PREF + String.valueOf(day))
+                .setKey(DP_KEY_PREF + String.valueOf(day))
                 .setResizable(false)
         ;
         // TODO: remove margins
@@ -885,8 +1126,11 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private Component buildPruhZakRemoveBtn(PruhZak pruhZak) {
+        if (pruhZak.isRezijniZak()) {
+            return new Span("");
+        }
         Button removePruhZakBtn = new GridItemRemoveBtn(event ->
-                ConfirmDialog.createInfo()
+                ConfirmDialog.createQuestion()
                         .withCaption("Zákázka proužku")
                         .withMessage("Odstranit zakázku z proužku včetně vyplněných hodin?")
                         .withOkButton(() -> {
@@ -966,7 +1210,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
             for (int i = 1; i <= pruhDayMax; i++) {
                 BigDecimal cellHod = pzak.getHod(i);
                 if (null != cellHod && cellHod.compareTo(BigDecimal.ZERO) != 0) {
-                    LocalDate cellDate = pruhCalym.getYm().atDay(i);
+                    LocalDate cellDate = pruhCalym.atDay(i);
                     DochsumZak dsZak = new DochsumZak(pruhPerson.getId(), cellDate, pzak.getZakId());
                     dsZak.setDszWorkPruh(cellHod);
                     // TODO mzda
@@ -1025,7 +1269,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     .withCaption("Editace proužku")
                     .withMessage("Vrátit všechny změny proužku od posledního uložení?")
                     .withOkButton(() -> {
-//                        loadPruhZakDataFromDb(pruhPerson, pruhCalym);
+//                        loadPruhZakAndSumDataFromDb(pruhPerson, pruhCalym);
                         updatePruhGrids(pruhPerson, pruhCalym);
                         saveEditButton.setEnabled(false);
                     }, ButtonOption.focus(), ButtonOption.caption("VRÁTIT ZMĚNY"))
@@ -1046,9 +1290,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     .withCaption("Editace proužku")
                     .withMessage("Uložit proužek?")
                     .withOkButton(() -> {
-//                        loadPruhZakDataFromDb(pruhPerson, pruhCalym);
+//                        loadPruhZakAndSumDataFromDb(pruhPerson, pruhCalym);
                         List<DochsumZak> dsZaks = transposePruhZaksToDochsumZaks(pruhZakList);
-                        // TODO: dochsumZakService.store(dsZaks, pruhYm, personiD)
+                        // TODO: dochsumZakService.store(dsZaks, pruhCalym, personiD)
                         updatePruhGrids(pruhPerson, pruhCalym);
                     }, ButtonOption.focus(), ButtonOption.caption("ULOŽIT"))
                     .withCancelButton(ButtonOption.caption("ZPĚT"))
@@ -1079,8 +1323,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private Component initZaksCopyButton() {
-        zaksAddButton = new Button("Nakopírovat zakázky");
-        zaksAddButton.addClickListener(event -> {
+        zaksCopyButton = new Button("Nakopírovat zakázky");
+        zaksCopyButton.addClickListener(event -> {
             if (pruhZakGrid.getEditor().isOpen()) {
                 pruhZakGrid.getEditor().closeEditor();
             }
@@ -1118,13 +1362,14 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                             return;
                         }
                         List<PruhZak> lastPruhZakList = transposeDochsumZaksToPruhZaks(lastDsZaks);
-                        lastPruhZakList.sort(pruhZakCkontComparator.reversed());
+//                        lastPruhZakList.sort(pruhZakOrderComparator.reversed());
+                        lastPruhZakList.sort(pruhZakOrderComparator);
                         addPruhZaksToGrid(lastPruhZakList);
                     })
                     .open()
             ;
         });
-        return zaksAddButton;
+        return zaksCopyButton;
     }
 
     private YearMonth getLastUserPruhYm(Long userId) {

@@ -69,9 +69,16 @@ public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializ
     }
 
     public String getPruhCellText() {
-        return String.format("%s / %d, %s", ckont, czak, text);
+        if (isRezijniZak()) {
+            return String.format("%s, %s", ckont, text);
+        } else {
+            return String.format("%s / %d, %s", ckont, czak, text);
+        }
     }
 
+    public boolean isRezijniZak() {
+        return ("00001".equals(ckont) || "00004".equals(ckont));
+    }
 
     public boolean isRezieZak() {
         return ItemType.REZ == itemType;

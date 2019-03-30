@@ -29,7 +29,8 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
 
 //    private ComboBox<PersonState> statusField; // = new ComboBox("Status");
     private TextField usernameField; // = new TextField("Username");
-    private PasswordField passwordField; // = new TextField("Password");
+//    private PasswordField passwordField; // = new TextField("Password");
+    private TextField passwordField; // = new TextField("Password");
     private TextField jmenoField; // = new TextField("Jméno");
     private TextField prijmeniField; // = new TextField("Příjmení");
     private TextField sazbaField; // = new TextField("Sazba");
@@ -69,7 +70,7 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
 //                new FormLayout.ResponsiveStep("12em", 3));
 
         this.personService = personService;
-        this.rolesPool = new HashSet<Role>(allRoles);
+        this.rolesPool = new HashSet<>(allRoles);
         this.passwordEncoder = passwordEncoder;
 
 //        getBinder().forField(jmenoField)
@@ -87,7 +88,8 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
 //        };
 
         usernameField = new TextField("Přihlašovací jméno");
-        passwordField = new PasswordField("Heslo");
+//        passwordField = new PasswordField("Heslo");
+        passwordField = new TextField("Heslo");
         jmenoField = new TextField("Jméno");
         prijmeniField = new TextField("Příjmení");
 
@@ -106,6 +108,7 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
         addNastupAndVystupField();
         addSazbaField();
 
+//        getFormLayout().add(initRolesField(rolesPool));
         getFormLayout().add(initRolesField(rolesPool));
 
 //        roleGridContainer = buildRoleGridContainer(roleTwinGrid);
@@ -172,14 +175,15 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
         getBinder().forField(passwordField)
                 .bind(Person::getPassword, Person::setPassword);
 
-        getBinder().forField(passwordField)
-                .withValidator(pass -> {return pass.matches("^(|(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,})$"); }
-                    , "need 6 or more chars, mixing digits, lowercase and uppercase letters")
-                .bind(user -> passwordField.getEmptyValue(), (user, pass) -> {
-                    if (!passwordField.getEmptyValue().equals(pass)) {
-                        user.setPassword(passwordEncoder.encode(pass));
-                    }
-                });
+        // TODO: start  using  password encoder
+//        getBinder().forField(passwordField)
+//                .withValidator(pass -> {return pass.matches("^(|(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,})$"); }
+//                    , "need 6 or more chars, mixing digits, lowercase and uppercase letters")
+//                .bind(user -> passwordField.getEmptyValue(), (user, pass) -> {
+//                    if (!passwordField.getEmptyValue().equals(pass)) {
+//                        user.setPassword(passwordEncoder.encode(pass));
+//                    }
+//                });
     }
 
     private void addJmenoField() {

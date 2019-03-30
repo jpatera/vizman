@@ -30,6 +30,7 @@ import java.util.Map;
 
 public class VzmFormatUtils {
 
+    public static final DecimalFormat decimalFormat = new DecimalFormat("#,##0");
     public static final NumberFormat yearFormat = getYearFormat(Locale.getDefault());
     public static final NumberFormat moneyFormat = getMoneyFormat(Locale.getDefault());
     public static final NumberFormat percentFormat = getPercentFormat(Locale.getDefault());
@@ -224,7 +225,7 @@ public class VzmFormatUtils {
     }
 
 
-    public static NumberFormat getDecHodFormat(Locale locale) {
+    private static NumberFormat getDecHodFormat(Locale locale) {
         if(null == locale) {
             locale = Locale.getDefault();
         }
@@ -243,7 +244,7 @@ public class VzmFormatUtils {
 
 
 
-    public static NumberFormat getPercentFormat(Locale locale) {
+    private static NumberFormat getPercentFormat(Locale locale) {
         if(null == locale) {
             locale = Locale.getDefault();
         }
@@ -256,7 +257,7 @@ public class VzmFormatUtils {
         return format;
     }
 
-    public static NumberFormat getYearFormat(Locale locale) {
+    private static NumberFormat getYearFormat(Locale locale) {
         if(null == locale) {
             locale = Locale.getDefault();
         }

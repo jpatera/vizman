@@ -12,6 +12,8 @@ public enum Perm implements GrantedAuthority {
     VIEW_ALL("Lze prohlížet všechna dostupná data"),
     MODIFY_ALL("Lze vytvářet/editovat/rušit všechna dostupná data"),
 
+    VIEW_OTHER_USERS("Má přístup k datům ostatních uživatelů"),
+
     DOCH_USE("Lze používat docházku"),
     PRUH_USE("Lze používat proužky"),
 

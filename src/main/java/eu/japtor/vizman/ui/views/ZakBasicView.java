@@ -92,12 +92,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver,
     private static final String ROK_COL_KEY = "rok-col";
 
     private Random rand = new Random();
-//    private final H3 kontHeader = new H3(TITLE_KZ_TREE);
-
-//    private Kont kontOrig;
     private String kontFolderOrig;
-//    private Zak zakOrig;
-//    private String zakFolderOrig;
 
     private KontFormDialog kontFormDialog;
     private ZakFormDialog zakFormDialog;
@@ -1221,153 +1216,153 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver,
 // ===============================================================================
 
 
-    public static class Person {
-        private String name;
-        private Person parent;
-
-        public String getName() {
-            return name;
-        }
-
-        public Person getParent() {
-            return parent;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public void setParent(Person parent) {
-            this.parent = parent;
-        }
-
-        public Person(String name, Person parent) {
-            this.name = name;
-            this.parent = parent;
-        }
-
-//        @Override
-//        public String toString() {
+//    public static class Person {
+//        private String name;
+//        private Person parent;
+//
+//        public String getName() {
 //            return name;
 //        }
 //
-//        @Override
-//        public boolean equals(Object o) {
-//            if (this == o) return true;
-//            if (o == null || getClass() != o.getClass()) return false;
-//
-//            Person person = (Person) o;
-//
-//            if (name != null ? !name.equals(person.name) : person.name != null) return false;
-//            return parent != null ? parent.equals(person.parent) : person.parent == null;
+//        public Person getParent() {
+//            return parent;
 //        }
 //
-//        @Override
-//        public int hashCode() {
-//            int result = name != null ? name.hashCode() : 0;
-//            result = 31 * result + (parent != null ? parent.hashCode() : 0);
-//            return result;
+//        public void setName(String name) {
+//            this.name = name;
 //        }
-    }
-
-
-//    private void initSimplePersonGrid() {
-//        TreeGrid<Person> personGrid = new TreeGrid<>(Person.class);
-//        personGrid.addColumn(Person::getName).setHeader("X-NAME");
-//        personGrid.setHierarchyColumn("name");
 //
+//        public void setParent(Person parent) {
+//            this.parent = parent;
+//        }
 //
-////        List<Person> all = generatePersons();
+//        public Person(String name, Person parent) {
+//            this.name = name;
+//            this.parent = parent;
+//        }
+//
+////        @Override
+////        public String toString() {
+////            return name;
+////        }
 ////
-//        Person dad = new Person("dad", null);
-//        Person son = new Person("son", dad);
-//        Person daughter = new Person("daughter", dad);
+////        @Override
+////        public boolean equals(Object o) {
+////            if (this == o) return true;
+////            if (o == null || getClass() != o.getClass()) return false;
+////
+////            Person person = (Person) o;
+////
+////            if (name != null ? !name.equals(person.name) : person.name != null) return false;
+////            return parent != null ? parent.equals(person.parent) : person.parent == null;
+////        }
+////
+////        @Override
+////        public int hashCode() {
+////            int result = name != null ? name.hashCode() : 0;
+////            result = 31 * result + (parent != null ? parent.hashCode() : 0);
+////            return result;
+////        }
+//    }
+//
+//
+////    private void initSimplePersonGrid() {
+////        TreeGrid<Person> personGrid = new TreeGrid<>(Person.class);
+////        personGrid.addColumn(Person::getName).setHeader("X-NAME");
+////        personGrid.setHierarchyColumn("name");
+////
+////
+//////        List<Person> all = generatePersons();
+//////
+////        Person dad = new Person("dad", null);
+////        Person son = new Person("son", dad);
+////        Person daughter = new Person("daughter", dad);
+//////        List<Person> all = Arrays.asList(dad, son, daughter);
+//////        return all;
+//////        all.forEach(p -> personGrid.getTreeData().addItem(p.getParent(), p));
+////        personGrid.getTreeData().addItem(null, dad);
+////        personGrid.getTreeData().addItem(dad, son);
+////        personGrid.getTreeData().addItem(dad, daughter);
+////
+////    }
+////
+////
+////    private List<Person> generatePersons() {
+////
+////        Person dad = new Person("dad", null);
+////        Person son = new Person("son", dad);
+////        Person daughter = new Person("daughter", dad);
 ////        List<Person> all = Arrays.asList(dad, son, daughter);
 ////        return all;
-////        all.forEach(p -> personGrid.getTreeData().addItem(p.getParent(), p));
-//        personGrid.getTreeData().addItem(null, dad);
-//        personGrid.getTreeData().addItem(dad, son);
-//        personGrid.getTreeData().addItem(dad, daughter);
-//
-//    }
+////    }
 //
 //
-//    private List<Person> generatePersons() {
 //
-//        Person dad = new Person("dad", null);
-//        Person son = new Person("son", dad);
-//        Person daughter = new Person("daughter", dad);
-//        List<Person> all = Arrays.asList(dad, son, daughter);
-//        return all;
-//    }
-
-
-
-//    public class HeightDialog extends Dialog {
-//        HeightDialog() {
-//            VerticalLayout dialogContainer = new VerticalLayout();
-//            add(dialogContainer);
-//
-//            TextField heightInput = new TextField("", "500", "e. g. 300");
-//            Button byPixels = new Button("Set by pixels", e -> {
-//                kzTreeGrid.setHeight(Integer.valueOf(heightInput.getValue()));
-//
-//                this.setSizeUndefined();
-//                setFlexStyles(false);
-//            });
-//            byPixels.getElement().setProperty("title", "Calendar height is fixed by pixels.");
-//            dialogContainer.add(new HorizontalLayout(heightInput, byPixels));
-//
-////            Button autoHeight = new Button("Auto height", e -> {
-////                kzTreeGrid.setHeightAuto();
+////    public class HeightDialog extends Dialog {
+////        HeightDialog() {
+////            VerticalLayout dialogContainer = new VerticalLayout();
+////            add(dialogContainer);
+////
+////            TextField heightInput = new TextField("", "500", "e. g. 300");
+////            Button byPixels = new Button("Set by pixels", e -> {
+////                kzTreeGrid.setHeight(Integer.valueOf(heightInput.getValue()));
 ////
 ////                this.setSizeUndefined();
 ////                setFlexStyles(false);
 ////            });
-////            autoHeight.getElement().setProperty("title", "Calendar height is set to auto.");
-////            dialogContainer.add(autoHeight);
-//
-////            Button heightByBlockParent = new Button("Height by block parent", e -> {
-////                kzTreeGrid.setHeightByParent();
-////                kzTreeGrid.setSizeFull();
+////            byPixels.getElement().setProperty("title", "Calendar height is fixed by pixels.");
+////            dialogContainer.add(new HorizontalLayout(heightInput, byPixels));
 ////
-////                this.setSizeFull();
-////                setFlexStyles(false);
-////            });
-////            heightByBlockParent.getElement().setProperty("title", "Container is display:block + setSizeFull(). Calendar height is set to parent + setSizeFull(). Body element kept unchanged.");
-////            dialogContainer.add(heightByBlockParent);
-//
-////            Button heightByBlockParentAndCalc = new Button("Height by block parent + calc()", e -> {
+//////            Button autoHeight = new Button("Auto height", e -> {
+//////                kzTreeGrid.setHeightAuto();
+//////
+//////                this.setSizeUndefined();
+//////                setFlexStyles(false);
+//////            });
+//////            autoHeight.getElement().setProperty("title", "Calendar height is set to auto.");
+//////            dialogContainer.add(autoHeight);
+////
+//////            Button heightByBlockParent = new Button("Height by block parent", e -> {
+//////                kzTreeGrid.setHeightByParent();
+//////                kzTreeGrid.setSizeFull();
+//////
+//////                this.setSizeFull();
+//////                setFlexStyles(false);
+//////            });
+//////            heightByBlockParent.getElement().setProperty("title", "Container is display:block + setSizeFull(). Calendar height is set to parent + setSizeFull(). Body element kept unchanged.");
+//////            dialogContainer.add(heightByBlockParent);
+////
+//////            Button heightByBlockParentAndCalc = new Button("Height by block parent + calc()", e -> {
+//////                calendar.setHeightByParent();
+//////                calendar.getElement().getStyle().set("height", "calc(100vh - 450px)");
+//////
+//////                Demo.this.setSizeFull();
+//////                setFlexStyles(false);
+//////            });
+//////            heightByBlockParentAndCalc.getElement().setProperty("title", "Container is display:block + setSizeFull(). Calendar height is set to parent + css height is calculated by calc(100vh - 450px) as example. Body element kept unchanged.");
+//////            dialogContainer.add(heightByBlockParentAndCalc);
+////
+////            Button heightByFlexParent = new Button("Height by flex parent", e -> {
 ////                calendar.setHeightByParent();
-////                calendar.getElement().getStyle().set("height", "calc(100vh - 450px)");
 ////
 ////                Demo.this.setSizeFull();
-////                setFlexStyles(false);
+////                setFlexStyles(true);
 ////            });
-////            heightByBlockParentAndCalc.getElement().setProperty("title", "Container is display:block + setSizeFull(). Calendar height is set to parent + css height is calculated by calc(100vh - 450px) as example. Body element kept unchanged.");
-////            dialogContainer.add(heightByBlockParentAndCalc);
-//
-//            Button heightByFlexParent = new Button("Height by flex parent", e -> {
-//                calendar.setHeightByParent();
-//
-//                Demo.this.setSizeFull();
-//                setFlexStyles(true);
-//            });
-//            heightByFlexParent.getElement().setProperty("title", "Container is display:flex + setSizeFull(). Calendar height is set to parent + flex-grow: 1. Body element kept unchanged.");
-//            dialogContainer.add(heightByFlexParent);
-//
-//            Button heightByFlexParentAndBody = new Button("Height by flex parent and flex body", e -> {
-//                calendar.setHeightByParent();
-//
-//                Demo.this.setSizeUndefined();
-//                setFlexStyles(true);
-//
-//                UI.getCurrent().getElement().getStyle().set("display", "flex");
-//            });
-//            heightByFlexParentAndBody.getElement().setProperty("title", "Container is display:flex. Calendar height is set to parent + flex-grow: 1. Body element is set to display: flex.");
-//            dialogContainer.add(heightByFlexParentAndBody);
-//        }
-//    }
+////            heightByFlexParent.getElement().setProperty("title", "Container is display:flex + setSizeFull(). Calendar height is set to parent + flex-grow: 1. Body element kept unchanged.");
+////            dialogContainer.add(heightByFlexParent);
+////
+////            Button heightByFlexParentAndBody = new Button("Height by flex parent and flex body", e -> {
+////                calendar.setHeightByParent();
+////
+////                Demo.this.setSizeUndefined();
+////                setFlexStyles(true);
+////
+////                UI.getCurrent().getElement().getStyle().set("display", "flex");
+////            });
+////            heightByFlexParentAndBody.getElement().setProperty("title", "Container is display:flex. Calendar height is set to parent + flex-grow: 1. Body element is set to display: flex.");
+////            dialogContainer.add(heightByFlexParentAndBody);
+////        }
+////    }
 
 // ===============================================================================
 

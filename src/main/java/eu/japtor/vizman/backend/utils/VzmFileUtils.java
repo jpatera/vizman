@@ -246,7 +246,7 @@ public class VzmFileUtils {
                 Files.createDirectories(orgTextyPath);
                 Path pripominkyPath = Paths.get(orgPath.toString(), "3_PRIPOMINKY");
                 Files.createDirectories(pripominkyPath);
-                Path zaznamyPath = Paths.get(orgPath.toString(), "3_ZAZNAMY");
+                Path zaznamyPath = Paths.get(orgPath.toString(), "4_ZAZNAMY");
                 Files.createDirectories(zaznamyPath);
 
                 return true;

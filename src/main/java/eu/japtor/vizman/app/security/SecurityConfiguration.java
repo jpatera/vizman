@@ -130,6 +130,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .antMatchers("/" + ROUTE_DOCH).hasAnyAuthority(
                             Perm.DOCH_USE.name(),
                             Perm.VIEW_ALL.name(), Perm.MODIFY_ALL.name())
+                    .antMatchers("/" + ROUTE_PRUH).hasAnyAuthority(
+                            Perm.PRUH_USE.name(),
+                            Perm.VIEW_ALL.name(), Perm.MODIFY_ALL.name())
                     .antMatchers("/" + ROUTE_PERSON).hasAnyAuthority(
                             Perm.PERSON_BASIC_READ.name(), Perm.PERSON_EXT_READ.name(),
                             Perm.VIEW_ALL.name(), Perm.MODIFY_ALL.name())

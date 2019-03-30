@@ -13,7 +13,7 @@ public class Role extends AbstractGenIdEntity {
 
     // TODO: List ?
     @ManyToMany(mappedBy = "roles")
-    private Set<Person> persons;
+    private Set<Person> persons = new HashSet<>();
 
     @ElementCollection(targetClass=Perm.class, fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING) // Possibly optional (I'm not sure) but defaults to ORDINAL.

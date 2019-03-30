@@ -15,7 +15,7 @@ public interface PersonRepo extends JpaRepository<Person, Long>, PersonRepoCusto
 
         List<Person> findAllByOrderByUsername();
 
-        List<Person> findByStateOrderByUsername(PersonState state);
+        List<Person> findByHiddenOrderByUsername(boolean hidden);
 
 //        Page<Product> findByNameLikeIgnoreCase(String name, Pageable page);
 

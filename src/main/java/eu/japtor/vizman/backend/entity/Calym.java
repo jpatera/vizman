@@ -1,10 +1,7 @@
 package eu.japtor.vizman.backend.entity;
 
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.YearMonth;
 
@@ -22,24 +19,37 @@ public class Calym extends AbstractGenIdEntity {
   )
   private YearMonth ym;
 
-  private BigDecimal monthFond;
+  @Basic
+  @Column(name = "MONTH_FOND_HOURS")
+  private BigDecimal monthFondHours;
+
+  @Basic
+  @Column(name = "MONTH_FOND_DAYS")
+  private BigDecimal monthFondDays;
 
 
   public YearMonth getYm() {
     return ym;
   }
-
   public void setYm(YearMonth calYm) {
     this.ym = calYm;
   }
 
 
-  public BigDecimal getMonthFond() {
-    return monthFond;
+  public BigDecimal getMonthFondHours() {
+    return monthFondHours;
+  }
+  public void setMonthFondHours(BigDecimal monthFondHours) {
+    this.monthFondHours = monthFondHours;
   }
 
-  public void setPracFondYr(BigDecimal pracFondYm) {
-    this.monthFond = pracFondYm;
+
+  public BigDecimal getMonthFondDays() {
+    return monthFondDays;
   }
+  public void setMonthFondDays(BigDecimal monthFondDays) {
+    this.monthFondDays = monthFondDays;
+  }
+
 
 }

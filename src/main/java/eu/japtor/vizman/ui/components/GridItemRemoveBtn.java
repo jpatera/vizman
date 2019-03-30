@@ -11,8 +11,9 @@ public class GridItemRemoveBtn extends Button {
         super();
         Icon icon = VaadinIcon.CLOSE_SMALL.create();
         icon.getStyle().set("theme", "small icon secondary");
-        icon.setSize("0.8em");
-//        icon.setColor("crimson");
+//        icon.setSize("0.8em");
+        icon.setColor("crimson");
+        this.setIcon(icon);
         this.getElement().setAttribute("theme", "tertiary");
         this.addClickListener(itemAction);
     }

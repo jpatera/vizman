@@ -18,7 +18,7 @@ public interface PersonService {
 
     List<Person> fetchAll();
 
-    List<Person> fetchAllActive();
+    List<Person> fetchAllNotHidden();
 
     long countAll();
 
