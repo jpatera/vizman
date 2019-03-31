@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import static eu.japtor.vizman.app.security.SecurityUtils.canViewOtherUsers;
 import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_DOCH;
 
 @Route(value = ROUTE_DOCH, layout = MainView.class)
@@ -535,6 +536,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         dochPersonSelector.setPlaceholder("Pracovník");
         dochPersonSelector.setItems(new ArrayList<>());
         dochPersonSelector.setItemLabelGenerator(this::getPersonLabel);
+        dochPersonSelector.setEnabled(canViewOtherUsers());
         dochPersonSelector.addValueChangeListener(event -> {
             dochPerson = event.getValue();
             updateUpperDochGridPane(dochPerson, dochDate);
