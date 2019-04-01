@@ -33,10 +33,7 @@ import eu.japtor.vizman.backend.bean.PruhParag;
 import eu.japtor.vizman.backend.bean.PruhSum;
 import eu.japtor.vizman.backend.bean.PruhZak;
 import eu.japtor.vizman.backend.entity.*;
-import eu.japtor.vizman.backend.repository.CalymRepo;
-import eu.japtor.vizman.backend.repository.CinRepo;
-import eu.japtor.vizman.backend.repository.ParagRepo;
-import eu.japtor.vizman.backend.repository.PruhRepo;
+import eu.japtor.vizman.backend.repository.*;
 import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
@@ -94,8 +91,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
 //    private List<Calym> pruhCalymList;
     private List<YearMonth> pruhCalymList;
-//    private Calym pruhCalym;
-    private YearMonth pruhCalym;
+//    private Calym pruhYm;
+    private YearMonth pruhYm;
     private int pruhDayMax;
 //    private ComboBox<Calym> pruhYmSelector;
     private ComboBox<YearMonth> pruhYmSelector;
@@ -171,6 +168,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     @Autowired
     public PruhRepo pruhRepo;
 
+    @Autowired
+    public PersonWageRepo personWageRepo;
+
 
     public PruhView() {
         super();
@@ -182,7 +182,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     public void init() {
 //        !SecurityUtils.isAccessGranted(event.getNavigationTarget())
         authUsername = SecurityUtils.getUsername();
-//        pruhCalym = YearMonth.now();
+//        pruhYm = YearMonth.now();
         initPruhData();
         zakSelectFormDialog = new ZakSelectFormDialog(
                 this::addKzTreeAwareZaksToGrid
@@ -275,7 +275,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .orElse(null);
         pruhYmSelector.setValue(pruhYmByToday);
 
-        updatePruhGrids(pruhPerson, pruhCalym);
+        updatePruhGrids(pruhPerson, pruhYm);
     }
 
 
@@ -310,17 +310,17 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
 //    private void updatePruhGrids(final Person person, final Calym calym) {
-    private void updatePruhGrids(final Person person, final YearMonth ym) {
+    private void updatePruhGrids(final Person pruhPerson, final YearMonth ym) {
 
-        Long personId = null == person ? null : person.getId();
+        Long pruhPersonId = null == pruhPerson ? null : pruhPerson.getId();
 //        YearMonth ym = null == calym ? null : calym.getYm();
-        loadPruhZakAndSumDataFromDb(personId, ym);
+        loadPruhZakAndSumDataFromDb(pruhPersonId, ym);
 //        loadPruhSumDataFromDb(personId, ym);
-        loadPruhParagDataFromDb(personId, ym);
+        loadPruhParagDataFromDb(pruhPersonId, ym);
         calcAndSetPruhMissingHods();
         setPruhSumHods();
 
-        Pruh pruh = pruhRepo.findFirstByYmAndPersonId(ym, personId);
+        Pruh pruh = pruhRepo.findFirstByYmAndPersonId(ym, pruhPersonId);
         pruhState = null == pruh ? null : pruh.getState();
         setPruhStateControls(pruhState);
 
@@ -558,10 +558,10 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pruhPersonSelector.setEnabled(canViewOtherUsers());
         pruhPersonSelector.addValueChangeListener(event -> {
             pruhPerson = event.getValue();
-            updatePruhGrids(pruhPerson, pruhCalym);
+            updatePruhGrids(pruhPerson, pruhYm);
         });
         pruhPersonSelector.addBlurListener(event -> {
-//            loadPruhZakAndSumDataFromDb(pruhPerson.getId(), pruhCalym);
+//            loadPruhZakAndSumDataFromDb(pruhPerson.getId(), pruhYm);
             pruhZakGrid.getDataProvider().refreshAll();
         });
         return pruhPersonSelector;
@@ -592,9 +592,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
         pruhYmSelector.setItemLabelGenerator(this::getYmLabel);
         pruhYmSelector.addValueChangeListener(event -> {
-            pruhCalym = event.getValue();
-            pruhDayMax = (null == pruhCalym ) ? 0 : pruhCalym.lengthOfMonth();
-            updatePruhGrids(pruhPerson, pruhCalym);
+            pruhYm = event.getValue();
+            pruhDayMax = (null == pruhYm) ? 0 : pruhYm.lengthOfMonth();
+            updatePruhGrids(pruhPerson, pruhYm);
         });
         return pruhYmSelector;
     }
@@ -657,11 +657,11 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     "UZAVŘENÍ PROUŽKU": "OTEVŘENÍ PROUŽKU";
 
             Long personId = null == pruhPerson ? null : pruhPerson.getId();
-//            YearMonth ym = null == pruhCalym ? null : pruhCalym.getYm();
-//            YearMonth ym = pruhCalym;
+//            YearMonth ym = null == pruhYm ? null : pruhYm.getYm();
+//            YearMonth ym = pruhYm;
 //            Integer state = null == pruhState ? PRUH_STATE_UNDEFINED : pruhState;
 
-            if (null == pruhPerson || null == pruhCalym) {
+            if (null == pruhPerson || null == pruhYm) {
 //                if (togglePruhStateButton.getText().equals(LOCK_PRUH_BUTTON_TEXT))
                     ConfirmDialog.createWarning()
                             .withCaption(dialogCaption)
@@ -698,8 +698,20 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 return;
             }
 
+            Integer pruhYmInt = 100 * pruhYm.getYear() + pruhYm.getMonthValue();
+//            PersonWage personWage = personWageRepo.findTopByPersonIdAndYmFromLessThanEqualOrderByYmFromDesc(pruhPerson.getId(), pruhYm);
+            PersonWage personWage = personWageRepo.findPersonWageForMonth(pruhPerson.getId(), pruhYm);
+            if (null == personWage) {
+                ConfirmDialog.createWarning()
+                        .withCaption("UZAVŘENÍ PROUŽKU")
+                        .withMessage("Nenalezena platná sazba pro uživatele a měsíc, nelze uzavřít proužek.")
+                        .open()
+                ;
+                return;
+            }
+
             if (pruhToBeLocked()) {
-                Pruh openedPruh = pruhRepo.findFirstByYmAndPersonId(pruhCalym, personId);
+                Pruh openedPruh = pruhRepo.findFirstByYmAndPersonId(pruhYm, personId);
                 pruhState = Pruh.PRUH_STATE_LOCKED;
                 openedPruh.setState(pruhState);
                 pruhRepo.save(openedPruh);
@@ -717,10 +729,10 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                         return;
 //                    }
                 } else {
-                    Pruh pruh = pruhRepo.findFirstByYmAndPersonId(pruhCalym, personId);
+                    Pruh pruh = pruhRepo.findFirstByYmAndPersonId(pruhYm, personId);
                     if (null == pruh) {
                         pruh = new Pruh();
-                        pruh.setYm(pruhCalym);
+                        pruh.setYm(pruhYm);
                         pruh.setPersonId(personId);
                     }
                     pruhState = Pruh.PRUH_STATE_UNLOCKED;
@@ -1016,7 +1028,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //                    BigDecimal missingHods = getDayZakMissing(getDayZakHodSum(day), getDaySumHodSum(day));
                     missingHodsFooterRow.getCell(col)
                             .setText(getMissingHodString(day));
-                    saveEditButton.setEnabled(pzBinder.hasChanges());
+
+                    // TODO: disable when pruh is loaded, enable when changed (either hodPrac changed, or zak added/deleted)
+//                    saveEditButton.setEnabled(pzBinder.hasChanges());
 
                 } catch (ValidationException e) {
                     e.printStackTrace();
@@ -1133,12 +1147,12 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 ConfirmDialog.createQuestion()
                         .withCaption("Zákázka proužku")
                         .withMessage("Odstranit zakázku z proužku včetně vyplněných hodin?")
+                        .withCancelButton(ButtonOption.caption("ZPĚT"))
                         .withOkButton(() -> {
                                 removeZakFromPruh(pruhZak.getZakId());
-                                updatePruhGrids(pruhPerson, pruhCalym);
+                                updatePruhGrids(pruhPerson, pruhYm);
                             }, ButtonOption.focus(), ButtonOption.caption("ODSTRANIT")
                         )
-                        .withCancelButton(ButtonOption.caption("ZPĚT"))
                         .open()
 
         );
@@ -1182,7 +1196,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         List<Zak> zaks = zakService.fetchByIds(zakIds);
         List<PruhZak> pruhZaks = new ArrayList<>();
         for (Zak zak : zaks) {
-            PruhZak pzak = new PruhZak(zak.getId(), zak.getTyp(), zak.getCkont(), zak.getCzak(), zak.getText());
+            PruhZak pzak = new PruhZak(zak);
             for (DochsumZak dsZak : dsZaks) {
                 if (dsZak.getZakId().equals(zak.getId())) {
                     int dayOm = dsZak.getDsDate().getDayOfMonth();
@@ -1197,30 +1211,66 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
 
+//    private List<Long> getDsZakIdsToDelete(List<PruhZak> pruhZaks) {
+//        List<DochsumZak> dsZaksDb = dochsumZakService.fetchDochsumZaksForPersonAndYm(pruhPerson.getId(), pruhYm);
+//        List<Long> dsZakIdsDb = dsZaksDb.stream()
+//                .map(dszDb -> dszDb.getZakId()).distinct().collect(Collectors.toList());
+//        List<Long> dsZakIdsPruh = pruhZaks.stream()
+//                .map(zakPruh -> zakPruh.getZakId()).distinct().collect(Collectors.toList());
+//        List<Long> dsZakIdsToDelete = dsZakIdsDb.stream()
+//                .filter(dszZakIdDb -> !dsZakIdsPruh.contains(dszZakIdDb))
+//                .collect(Collectors.toList());
+//    }
+
     private List<DochsumZak> transposePruhZaksToDochsumZaks(List<PruhZak> pruhZaks) {
 
-        List<Long> zakIds = new ArrayList<>();
-        for (PruhZak pzak : pruhZaks) {
-            zakIds.add(pzak.getZakId());
-        }
+//        List<Long> zakIds = new ArrayList<>();
+//        for (PruhZak pzak : pruhZaks) {
+//            zakIds.add(pzak.getZakId());
+//        }
 
-        List<DochsumZak> dsZaks = new ArrayList<>();
-        for (PruhZak pzak : pruhZaks) {
-//            Long zakId = pzak.getZakId();
-            for (int i = 1; i <= pruhDayMax; i++) {
-                BigDecimal cellHod = pzak.getHod(i);
-                if (null != cellHod && cellHod.compareTo(BigDecimal.ZERO) != 0) {
-                    LocalDate cellDate = pruhCalym.atDay(i);
-                    DochsumZak dsZak = new DochsumZak(pruhPerson.getId(), cellDate, pzak.getZakId());
-                    dsZak.setDszWorkPruh(cellHod);
-                    // TODO mzda
-                    // TODO pojistne
-                    // TODO normo, skutecne...
-                    dsZaks.add(dsZak);
-                }
-            }
-        }
-        return dsZaks;
+//        List<DochsumZak> dsZaks = new ArrayList<>();
+//        List<DochsumZak> dsZaksDb = dochsumZakService.fetchDochsumZaksForPersonAndYm(pruhPerson.getId(), pruhYm);
+//
+//        List<Long> dsZakIdsDb = dsZaksDb.stream()
+//                .map(dszDb -> dszDb.getZakId()).distinct().collect(Collectors.toList());
+//        List<Long> dsZakIdsPruh = pruhZaks.stream()
+//                .map(zakPruh -> zakPruh.getZakId()).distinct().collect(Collectors.toList());
+//        List<Long> dsZakIdsToDelete = dsZakIdsDb.stream()
+//                .filter(dszZakIdDb -> !dsZakIdsPruh.contains(dszZakIdDb))
+//                .collect(Collectors.toList());
+
+//        Integer pruhYmInt = 100 * pruhYm.getYear() + pruhYm.getMonthValue();
+//        PersonWage personWage = personWageRepo.findPersonWageForMonth(pruhPerson.getId(), pruhYm);
+////        PersonWage personWage = personWageRepo.findPersonWageForMonth(pruhPerson.getId(), pruhYm);
+//
+//        for (PruhZak pzak : pruhZaks) {
+//            Long pzakZakId = pzak.getZakId();
+////            pzak.getZakId()...
+//            for (int i = 1; i <= pruhDayMax; i++) {
+//                BigDecimal newCellHod = pzak.getHod(i);
+//                LocalDate pzakDate = LocalDate.of(pruhYm.getYear(), pruhYm.getMonth(), i);
+//                DochsumZak dsZakDb = dsZaksDb.stream()
+//                        .filter(zakDb -> zakDb.getZakId().equals(pzakZakId)
+//                                && zakDb.getDsDate().equals(pzakDate)
+//                        )
+//                        .findFirst().orElse(null);
+//                if (null != dsZakDb) {
+//                    if (!dsZakDb.getDszWorkPruh().equals(newCellHod)) {
+//                        dsZakDb.setDszWorkPruh(newCellHod);
+//                        dsZaks.add(dsZakDb);
+//                    }
+//                } else {
+//                    if (null != newCellHod && newCellHod.compareTo(BigDecimal.ZERO) != 0) {
+//                        DochsumZak dsZakNew = new DochsumZak(
+//                                pruhPerson.getId(), pzakDate, pzakZakId, newCellHod, personWage.getWage());
+//                        dsZaks.add(dsZakNew);
+//                    }
+//                }
+//            }
+//        }
+//        return dsZaks;
+        return null;
     }
 
 
@@ -1266,14 +1316,15 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         cancelEditButton.getElement().setAttribute("theme", "secondary error");
         cancelEditButton.addClickListener(event -> {
             ConfirmDialog.createQuestion()
-                    .withCaption("Editace proužku")
-                    .withMessage("Vrátit všechny změny proužku od posledního uložení?")
-                    .withOkButton(() -> {
-//                        loadPruhZakAndSumDataFromDb(pruhPerson, pruhCalym);
-                        updatePruhGrids(pruhPerson, pruhCalym);
-                        saveEditButton.setEnabled(false);
-                    }, ButtonOption.focus(), ButtonOption.caption("VRÁTIT ZMĚNY"))
+                    .withCaption("EDITACE PROUŽKU")
+                    .withMessage("Vrátit změny proužku od posledního uložení?")
                     .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .withOkButton(() -> {
+//                        loadPruhZakAndSumDataFromDb(pruhPerson, pruhYm);
+                        updatePruhGrids(pruhPerson, pruhYm);
+                        // TODO: disable when pruh is loaded, enable when changed (either hodPrac changed, or zak added/deleted)
+//                        saveEditButton.setEnabled(false);
+                    }, ButtonOption.focus(), ButtonOption.caption("VRÁTIT ZMĚNY"))
                     .open()
             ;
         });
@@ -1287,15 +1338,23 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         saveEditButton.getElement().setAttribute("theme", "primary");
         saveEditButton.addClickListener(event -> {
             ConfirmDialog.createQuestion()
-                    .withCaption("Editace proužku")
+                    .withCaption("EDITACE PROUŽKU")
                     .withMessage("Uložit proužek?")
-                    .withOkButton(() -> {
-//                        loadPruhZakAndSumDataFromDb(pruhPerson, pruhCalym);
-                        List<DochsumZak> dsZaks = transposePruhZaksToDochsumZaks(pruhZakList);
-                        // TODO: dochsumZakService.store(dsZaks, pruhCalym, personiD)
-                        updatePruhGrids(pruhPerson, pruhCalym);
-                    }, ButtonOption.focus(), ButtonOption.caption("ULOŽIT"))
                     .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .withYesButton(() -> {
+//                        dochsumZakService.updateDochsumZaksForPersonAndMonth(
+//                                pruhPerson.getId(), pruhYm, transposePruhZaksToDochsumZaks(pruhZakList));
+                        if (pruhZakGrid.getEditor().isOpen()) {
+                            pruhZakGrid.getEditor().closeEditor();
+                        }
+                        boolean ok = dochsumZakService.updateDochsumZaksForPersonAndMonth(
+                            pruhPerson.getId()
+                            , pruhYm
+                            , pruhDayMax
+                            , pruhZakList
+                        );
+                        updatePruhGrids(pruhPerson, pruhYm);
+                    } , ButtonOption.focus(), ButtonOption.caption("ULOŽIT"))
                     .open()
             ;
         });
@@ -1309,7 +1368,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
             if (pruhZakGrid.getEditor().isOpen()) {
                 pruhZakGrid.getEditor().closeEditor();
             }
-            if (null == pruhPerson || null == pruhCalym) {
+            if (null == pruhPerson || null == pruhYm) {
                 ConfirmDialog.createInfo()
                         .withCaption("PŘIDÁNÍ ZAKÁZEK")
                         .withMessage("Nejprve musí být vybrán proužek do něhož se bude přidávat.")
@@ -1328,7 +1387,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
             if (pruhZakGrid.getEditor().isOpen()) {
                 pruhZakGrid.getEditor().closeEditor();
             }
-            if (null == pruhPerson || null == pruhCalym) {
+            if (null == pruhPerson || null == pruhYm) {
                 ConfirmDialog.createInfo()
                         .withCaption("KOPÍROVÁNÍ ZAKÁZEK")
                         .withMessage("Nejprve musí být vybrán proužek do něhož se bude kopírovat.")
@@ -1349,8 +1408,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
             ConfirmDialog.createQuestion()
                     .withCaption("KOPÍROVÁNÍ ZAKÁZEK")
-                    .withMessage(String.format("Nakopírovat zakázky z posledního známého proužku %s ?", lastYm))
-                    .withCancelButton()
+                    .withMessage(String.format("Nakopírovat zakázky z proužku %s ?", lastYm))
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
                     .withYesButton(() -> {
                         List<DochsumZak> lastDsZaks = dochsumZakService.fetchDochsumZaksForPersonAndYm(pruhPerson.getId(), lastYm);
                         if (null == lastDsZaks) {

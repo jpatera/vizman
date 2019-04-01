@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.service;
 
+import eu.japtor.vizman.backend.bean.PruhZak;
 import eu.japtor.vizman.backend.entity.Dochsum;
 import eu.japtor.vizman.backend.entity.DochsumZak;
 
@@ -12,5 +13,16 @@ public interface DochsumZakService {
 
     long countDochsumZaksForPersonAndYm(Long personId, YearMonth dsYm);
 
+//    boolean updateDochsumZaksForPersonAndMonth(
+//            Long personId
+//            , YearMonth ym
+//            , List<DochsumZak> dsZaks
+//    );
 
+    boolean updateDochsumZaksForPersonAndMonth(
+            Long pruhPersonId
+            , YearMonth pruhYm
+            , int pruhDayMax
+            , List<PruhZak> pruhZaks
+    );
 }

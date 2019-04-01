@@ -119,12 +119,15 @@ public class NavigationBar extends Div implements RouterLayout {
         naviBar.setSpacing(false);
 
         HorizontalLayout leftNaviBar = new HorizontalLayout();
-        HorizontalLayout middleNaviBar = new HorizontalLayout();
-        HorizontalLayout rightNaviBar = new HorizontalLayout();
-//        this.add(homeLink, dochLink, pruhLink, kzTreeLink, kontListLink, zakLink);
         leftNaviBar.add(homeLink);
-        middleNaviBar.add(dochLink, pruhLink, kzTreeLink);
 
+        HorizontalLayout middleNaviBar = new HorizontalLayout();
+        middleNaviBar.add(dochLink, pruhLink);
+        if (SecurityUtils.isAccessGranted(ZakBasicView.class)) {
+            middleNaviBar.add(kzTreeLink);
+        }
+
+        HorizontalLayout rightNaviBar = new HorizontalLayout();
         if (SecurityUtils.isAccessGranted(CfgTabsView.class)) {
             rightNaviBar.add(cfgLink);
         }

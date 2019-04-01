@@ -61,6 +61,16 @@ public class DochsumZak  extends AbstractGenIdEntity {
     this.zakId = zakId;
   }
 
+  public DochsumZak(Long personId, LocalDate dsDate, Long zakId, BigDecimal dszWorkPruh, BigDecimal sazba) {
+    this.personId = personId;
+    this.dsDate = dsDate;
+    this.zakId = zakId;
+    this.dszWorkPruh = dszWorkPruh;
+    this.sazba = sazba;
+    this.dszMzda = this.sazba.multiply(this.dszWorkPruh);
+    this.dsYm = YearMonth.from(dsDate);
+  }
+
 
   public Long getPersonId() {
     return personId;

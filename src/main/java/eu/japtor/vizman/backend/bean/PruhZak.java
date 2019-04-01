@@ -2,6 +2,7 @@ package eu.japtor.vizman.backend.bean;
 
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.ItemType;
+import eu.japtor.vizman.backend.entity.Zak;
 
 import java.util.HashMap;
 
@@ -23,6 +24,18 @@ public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializ
         this.ckont = ckont;
         this.czak = czak;
         this.text = text;
+        hods = new HashMap<>();
+        for (int i = 1; i <= 31; i++) {
+            hods.put(i, null);
+        }
+    }
+
+    public PruhZak(Zak zak) {
+        this.zakId = zak.getId();
+        this.itemType = zak.getTyp();
+        this.ckont = zak.getCkont();
+        this.czak = zak.getCzak();
+        this.text = zak.getText();
         hods = new HashMap<>();
         for (int i = 1; i <= 31; i++) {
             hods.put(i, null);

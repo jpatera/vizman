@@ -369,7 +369,11 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         ;
 
         dochMonthReportBtn.setText("Měsíční přehled");
+        dochMonthReportBtn.setEnabled(false);
+
         dochYearReportBtn.setText("Roční přehled");
+        dochYearReportBtn.setEnabled(false);
+
         dochControl.setWidth("30em");
         dochControl.getStyle()
                 .set("margin-top", "0.3em");
@@ -965,6 +969,14 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private Component initPrenosPersonDateButton() {
         prenosPersonDateButton = new Button("Přenos do proužku");
         prenosPersonDateButton.getElement().setAttribute("theme", "primary");
+        prenosPersonDateButton.addClickListener(event -> {
+            ConfirmDialog.createInfo()
+                    .withCaption("PŘENOS DOCHÁZKY")
+                    .withMessage("Comming soon...")
+                    .open()
+            ;
+            return;
+        });
         return prenosPersonDateButton;
     }
 
@@ -974,16 +986,26 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 //                .set("font-color", "red")
                 .set("color", "crimson")
         ;
+        cancelPrenosPersonDateButton.addClickListener(event -> {
+            ConfirmDialog.createInfo()
+                    .withCaption("ZRUŠENÍ PŘENOSU DOCHÁZKY")
+                    .withMessage("Comming soon...")
+                    .open()
+            ;
+            return;
+        });
         return cancelPrenosPersonDateButton;
     }
 
     private Component initPrenosPersonMonthButton() {
         prenosPersonDateMonthButton = new Button("Přenést měsíc");
+        prenosPersonDateMonthButton.setEnabled(false);
         return prenosPersonDateMonthButton;
     }
 
     private Component initPrenosPersonAllButton() {
         prenosPersonDateAllButton = new Button("Přenést vše");
+        prenosPersonDateAllButton.setEnabled(false);
         return prenosPersonDateAllButton;
     }
 
