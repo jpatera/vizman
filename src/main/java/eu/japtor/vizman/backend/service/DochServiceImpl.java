@@ -116,9 +116,15 @@ public class DochServiceImpl implements DochService, HasLogger {
 
     private Doch openDochRec(Doch recToOpen) {
         if (null != recToOpen) {
-            Integer lastCdoch = dochRepo.findLastCdochForPersonAndDate(recToOpen.getPersonId(), recToOpen.getdDochDate());
-            Integer nextCdoch = null == lastCdoch ? 1 : Math.max(1, lastCdoch + 1);
-            recToOpen.setCdoch(nextCdoch);
+            Integer cdoch;
+            if (Cin.ATYP_FIX_CAS.equals(recToOpen.getCinAkceTyp())) {
+                Integer firstCdoch = dochRepo.findFirstCdochForPersonAndDate(recToOpen.getPersonId(), recToOpen.getdDochDate());
+            cdoch = null == firstCdoch ? 0 : Math.min(0, firstCdoch -1);
+            }  else {
+                Integer lastCdoch = dochRepo.findLastCdochForPersonAndDate(recToOpen.getPersonId(), recToOpen.getdDochDate());
+                cdoch = null == lastCdoch ? 1 : Math.max(1, lastCdoch + 1);
+            }
+            recToOpen.setCdoch(cdoch);
             return dochRepo.save(recToOpen);
         }
         return null;

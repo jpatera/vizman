@@ -98,6 +98,7 @@ public class Cin extends AbstractGenIdEntity {
         P,      // Prichod,         Na pracovisti
         MO,     // Odchod na obed   Mimo pracoviste - obed
         PM,     // Odchod pracovne  Pracovne mimo
+        SC,     // Sluzebka (cely den)  Sluzebka
         L,      // Odchod k lekari  U lekare
 
         KP,     // Ukonceni/preruseni prace

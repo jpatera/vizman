@@ -132,7 +132,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 
         saveButton = new Button("Uložit");
         saveButton.getElement().setAttribute("theme", "primary");
-        saveButton.setEnabled(false);
+//        saveButton.setEnabled(false);
 
         HorizontalLayout leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);
@@ -252,7 +252,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
         }
         registrationForSave = saveButton.addClickListener(e -> saveClicked(operation));
         saveButton.setText("Uložit " + itemTypeAccuS.toLowerCase());
-        saveButton.setEnabled(false);
+//        saveButton.setEnabled(false);
 
         this.open();
     }

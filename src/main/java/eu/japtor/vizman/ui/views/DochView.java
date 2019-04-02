@@ -207,12 +207,19 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     , false
                     , dochManual.getPoznamka()
             );
-            recToClose = getLastZkDochRec();
-            if (recToClose != null) {
-                recToClose.setToTime(dochManual.getFromTime());
-                recToClose.setToModifDatetime(modifStamp);
-                recToClose.setToManual(!dochManual.getFromTime().equals(dochManual.getFromTimeOrig()));
+            if (Cin.CinKod.SC == dochManual.getCinCinKod()) {
+                recToOpen.setDochDur(Duration.ofMinutes(8*60+30));
+            } else {
+                recToOpen.setDochDur(Duration.ofHours(8));
             }
+
+            recToClose = null;
+//            recToClose = getLastZkDochRec();
+//            if (recToClose != null) {
+//                recToClose.setToTime(dochManual.getFromTime());
+//                recToClose.setToModifDatetime(modifStamp);
+//                recToClose.setToManual(!dochManual.getFromTime().equals(dochManual.getFromTimeOrig()));
+//            }
         } else if (Operation.STAMP_PRICH_MAN == operation) {
             // In dochManual is inside rec to be opened:
             recToOpen = new Doch(
@@ -233,23 +240,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
         } else if ((Operation.STAMP_ODCH_MAN == operation) || (Operation.STAMP_ODCH_MAN_LAST == operation)) {
             // In dochManual is inside rec to be closed:
-            if (Operation.STAMP_ODCH_MAN_LAST == operation) {
-                recToOpen = null;
-
-                recToClose = getLastZkDochRec();
-                if (null == recToClose) {
-                    ConfirmDialog.createWarning()
-                            .withCaption("DOCHÁZKA RUČNĚ")
-                            .withMessage("Interní chyba při zpracování.")
-                            .open()
-                    ;
-                    return;
-                }
-                recToClose.setToTime(dochManual.getToTime());
-                recToClose.setToModifDatetime(modifStamp);
-                recToClose.setToManual(!dochManual.getToTime().equals(dochManual.getToTimeOrig()));
-                recToClose.setPoznamka(dochManual.getPoznamka());
-            } else {
+            recToOpen = null;
+            if (Operation.STAMP_ODCH_MAN == operation){
                 recToOpen = new Doch(
                         dochDate
                         , dochPerson
@@ -259,21 +251,27 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                         , !dochManual.getFromTime().equals(dochManual.getFromTimeOrig())
                         , dochManual.getPoznamka()
                 );
-
-                recToClose = getLastZkDochRec();
-                if (null == recToClose) {
-                    ConfirmDialog.createWarning()
-                            .withCaption("DOCHÁZKA RUČNĚ")
-                            .withMessage("Interní chyba při zpracování.")
-                            .open()
-                    ;
-                    return;
-                }
+            }
+            recToClose = getLastZkDochRec();
+            if (null == recToClose) {
+                ConfirmDialog.createWarning()
+                        .withCaption("DOCHÁZKA RUČNĚ")
+                        .withMessage("Interní chyba při zpracování.")
+                        .open()
+                ;
+                return;
+            }
+            if (Operation.STAMP_ODCH_MAN_LAST == operation) {
+                recToClose.setToTime(dochManual.getToTime());
+                recToClose.setToModifDatetime(modifStamp);
+                recToClose.setToManual(!dochManual.getToTime().equals(dochManual.getToTimeOrig()));
+                recToClose.setPoznamka(dochManual.getPoznamka());
+            } else {
                 recToClose.setToTime(dochManual.getFromTime());
                 recToClose.setToModifDatetime(modifStamp);
                 recToClose.setToManual(!dochManual.getFromTime().equals(dochManual.getFromTimeOrig()));
+                recToClose.setPoznamka(dochManual.getPoznamka());
             }
-
         } else  {
             recToClose = null;
             recToOpen = null;
@@ -318,7 +316,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
 
 
-    public void initDochData() {
+    private void initDochData() {
 //        getLogger().info("## Initializing doch data");
 
         odchodRadio.setItems(cinRepo.getCinsForDochOdchodRadio());
@@ -349,7 +347,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     }
 
     //    public void updateDochClockTime(LocalTime time) {
-    public void updateDochClockTime() {
+    void updateDochClockTime() {
         clockDisplay.setText(LocalTime.now().format(dochTimeFormatter));
     }
 
@@ -788,7 +786,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         sluzebkaButton.getElement().setAttribute("theme", "primary");
         sluzebkaButton.addClickListener(event -> {
             LocalDateTime currentDateTime = LocalDateTime.now(minuteClock);
-            stampSingleManualRecord(currentDateTime, Cin.CinKod.PM);
+            stampSingleManualRecord(currentDateTime, Cin.CinKod.SC);
         });
         return sluzebkaButton;
     }
@@ -1076,7 +1074,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     .withMessage("Comming soon...")
                     .open()
             ;
-            return;
         });
         return prenosPersonDateButton;
     }
@@ -1093,7 +1090,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     .withMessage("Comming soon...")
                     .open()
             ;
-            return;
         });
         return cancelPrenosPersonDateButton;
     }
@@ -1399,7 +1395,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 //        return new Paragraph(null == doch.getDochDur() ? "" : formatDuration(doch.getDochDur()));
 //    }
 
-    public static String formatDuration(Duration duration) {
+    private static String formatDuration(Duration duration) {
         long seconds = duration.getSeconds();
         long absSeconds = Math.abs(seconds);
         String positive = String.format(
@@ -1572,7 +1568,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         if (!canStampStandaloneRec()) {
             return;
         }
-        Doch standaloneRec = new Doch(
+        Doch singleRec = new Doch(
                 dochDate
                 , dochPerson
                 , cinRepo.findByCinKod(cinKod)
@@ -1582,8 +1578,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 , null
 
         );
-        standaloneRec.setDochDur(Duration.ofHours(8));
-        dochService.openFirstRec(standaloneRec);
+        singleRec.setDochDur(Duration.ofHours(8));
+        dochService.openFirstRec(singleRec);
         updateUpperDochGridPane(dochPerson, dochDate);
         upperDochGrid.getDataProvider().refreshAll();
     }
@@ -1640,7 +1636,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 //        );
 
         // Currently only sluzebka 8:30
-        if (Cin.CinKod.PM == cinKod) {
+        if (Cin.CinKod.SC == cinKod) {
             DochManual dochManual = new DochManual(
                     dochDate
                     , cinRepo.findByCinKod(cinKod)
@@ -1669,12 +1665,14 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         }
 
         Doch lastZkDochRec = getLastZkDochRec();
-        lastZkDochRec.setToTime(currentDateTime.toLocalTime());
-        lastZkDochRec.setToModifDatetime(currentDateTime);
+        if (null != lastZkDochRec) {
+            lastZkDochRec.setToTime(currentDateTime.toLocalTime());
+            lastZkDochRec.setToModifDatetime(currentDateTime);
+            dochService.closeLastRec(lastZkDochRec);
 
-        dochService.closeLastRec(getLastZkDochRec());
-        updateUpperDochGridPane(dochPerson, dochDate);
-        upperDochGrid.getDataProvider().refreshAll();
+            updateUpperDochGridPane(dochPerson, dochDate);
+            upperDochGrid.getDataProvider().refreshAll();
+        }
 
     }
 
@@ -1685,20 +1683,22 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
             return;
         }
         Doch lastZkDochRec = getLastZkDochRec();
-        DochManual dochOdchManual = new DochManual(
-                dochDate
-                , cinRepo.findByCinKod(lastZkDochRec.getCinCinKod())
-                , lastZkDochRec.getFromTime()
-                , currentDateTime.toLocalTime()
-                , null
-        );
-        dochFormDialog.openDialog(
-                dochOdchManual
-                , Operation.STAMP_ODCH_MAN_LAST
-                , "Odchod jiný čas"
-                , false
-                , true
-        );
+        if  (null != (lastZkDochRec)) {
+            DochManual dochOdchManual = new DochManual(
+                    dochDate
+                    , cinRepo.findByCinKod(lastZkDochRec.getCinCinKod())
+                    , lastZkDochRec.getFromTime()
+                    , currentDateTime.toLocalTime()
+                    , null
+            );
+            dochFormDialog.openDialog(
+                    dochOdchManual
+                    , Operation.STAMP_ODCH_MAN_LAST
+                    , "Odchod jiný čas"
+                    , false
+                    , true
+            );
+        }
     }
 
     private void stampOdchodAndNewOutsideRec(final LocalDateTime currentDateTime, Cin.CinKod odchodWhereKod) {
@@ -1717,10 +1717,12 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 //        stampDochManualFromDialog(newOutsideRec, Operation.STAMP_ODCH);
 
         Doch lastInsideRec = getLastZkDochRec();
-        lastInsideRec.setToTime(currentDateTime.toLocalTime());
-        lastInsideRec.setToModifDatetime(currentDateTime);
+        if (null == lastInsideRec) {
+            lastInsideRec.setToTime(currentDateTime.toLocalTime());
+            lastInsideRec.setToModifDatetime(currentDateTime);
+            dochService.closeRecAndOpenNew(lastInsideRec, newOutsideRec);
+        }
 
-        dochService.closeRecAndOpenNew(lastInsideRec, newOutsideRec);
         updateUpperDochGridPane(dochPerson, dochDate);
         upperDochGrid.getDataProvider().refreshAll();
     }
@@ -1770,14 +1772,14 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private boolean canStampOdchod() {
         return checkDayDochIsOpened("nelze editovat.")
                 && checkDochDateIsToday("je třeba použít 'Příchod jiný čas'.")
-//                && checkPersonIsInOffice("nelze zaznamenat odchod.")
+                && checkPersonIsInOffice("nelze zaznamenat odchod.")
         ;
     }
 
     private boolean canStampOdchodAlt() {
         return checkDayDochIsOpened("nelze editovat.")
 //                && checkDochDateIsToday("je třeba použít 'Příchod jiný čas'.")
-//                && checkPersonIsInOffice("nelze zaznamenat odchod.")
+                && checkPersonIsInOffice("nelze zaznamenat odchod.")
         ;
     }
 
@@ -1892,7 +1894,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         }
         ConfirmDialog
                 .createInfo()
-                .withCaption("Přítomnost na pracovišti")
+                .withCaption("Záznam docházky")
                 .withMessage(String.format("Osoba je evidována na pracovišti%s", adjustAdditionalMsg(additionalMsg)))
                 .withOkButton()
                 .open();
@@ -1905,7 +1907,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         }
         ConfirmDialog
                 .createInfo()
-                .withCaption("Nepřítomnost na pracovišti")
+                .withCaption("Záznam docházky")
                 .withMessage(String.format("Osoba není evidována na pracovišti%s", adjustAdditionalMsg(additionalMsg)))
                 .withOkButton()
                 .open();
