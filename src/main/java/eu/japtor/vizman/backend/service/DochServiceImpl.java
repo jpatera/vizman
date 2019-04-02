@@ -109,7 +109,7 @@ public class DochServiceImpl implements DochService, HasLogger {
 
     @Override
     @Transactional
-    public Doch closeLastRecAndOpenNew(Doch lastDochRec, Doch newDochRec) {
+    public Doch closeRecAndOpenNew(Doch lastDochRec, Doch newDochRec) {
         closeDochRec(lastDochRec);
         return openDochRec(newDochRec);
     }
@@ -149,6 +149,22 @@ public class DochServiceImpl implements DochService, HasLogger {
             prevZkDoch.setToModifDatetime(null);
             prevZkDoch.setToManual(false);
             dochRepo.save(prevZkDoch);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeDochRec(final Long personId, final LocalDate dochDate, Cin.CinKod cinKod) {
+        Doch dochRecToRemove = dochRepo.findTop1ByPersonIdAndDochDateAndCinCinKod(personId, dochDate, cinKod);
+        if (null == dochRecToRemove) {
+            if (Cin.CinKod.dp == cinKod) {
+                dochRecToRemove = dochRepo.findTop1ByPersonIdAndDochDateAndCinCinKod(personId, dochDate, Cin.CinKod.dc);
+            } else if (Cin.CinKod.dc == cinKod) {
+                dochRecToRemove = dochRepo.findTop1ByPersonIdAndDochDateAndCinCinKod(personId, dochDate, Cin.CinKod.dp);
+            }
+        }
+        if (null != dochRecToRemove) {
+            dochRepo.deleteById(dochRecToRemove.getId());
         }
     }
 

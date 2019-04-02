@@ -130,9 +130,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
             = (pz1, pz2) -> {
                 if (pz1.equals(pz2))
                     return 0;
-                if (pz1.isRezijniZak())
+                if (pz1.isNonZakItem())
                     return -1;
-                if (pz2.isRezijniZak())
+                if (pz2.isNonZakItem())
                     return +1;
                 return pz2.getCkont().compareTo(pz1.getCkont());
             }
@@ -893,10 +893,10 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pzEditor.setBinder(pzBinder);
         zakGridEditRegistration = pruhZakGrid.addItemDoubleClickListener(event -> {
             // TODO keyPress listeners...
-            if (event.getItem().isRezijniZak()) {
+            if (event.getItem().isLekarZak()) {
                 ConfirmDialog.createInfo()
-                        .withCaption("EDITACE proužku")
-                        .withMessage("Režijní zakázky nelze editovat.")
+                        .withCaption("EDITACE PROUŽKU")
+                        .withMessage("Položku [U lékaře] lze editovat jen v docházce")
                         .open()
                 ;
                 return;
@@ -1140,7 +1140,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private Component buildPruhZakRemoveBtn(PruhZak pruhZak) {
-        if (pruhZak.isRezijniZak()) {
+        if (pruhZak.isLekarZak()) {
             return new Span("");
         }
         Button removePruhZakBtn = new GridItemRemoveBtn(event ->

@@ -117,7 +117,9 @@ public class Doch extends AbstractGenIdEntity {
         this.cinCinKod = cin.getCinKod();
         this.cinnost = cin.getCinnost();
         this.calcprac = cin.getCalcprac();
-        this.fromTime = fromTime;
+        if (!Cin.ATYP_FIX_CAS.equals(cin.getAkceTyp())) {
+            this.fromTime = fromTime;
+        }
         this.fromModifDatetime = fromModifStamp;
         this.fromManual = fromManual;
         this.poznamka = poznamka;
@@ -344,7 +346,22 @@ public class Doch extends AbstractGenIdEntity {
 
     @Transient
     public boolean isNemoc() {
-        return (cinCinKod.equals(Cin.CinKod.ne)) || (cinCinKod.equals(Cin.CinKod.nv));
+        return (cinCinKod.equals(Cin.CinKod.ne));
+    }
+
+    @Transient
+    public boolean isSluzebka() {
+        return (cinCinKod.equals(Cin.CinKod.PM) && Cin.ATYP_FIX_CAS.equals(cinAkceTyp));
+    }
+
+    @Transient
+    public boolean isDovolenaFull() {
+        return (cinCinKod.equals(Cin.CinKod.dc));
+    }
+
+    @Transient
+    public boolean isDovolenaHalf() {
+        return (cinCinKod.equals(Cin.CinKod.dp));
     }
 
     @Transient

@@ -19,7 +19,8 @@ public enum Operation {
 //    STAMP_PRICH_MAN_FIRST("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
     STAMP_ODCH("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
     STAMP_ODCH_MAN("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
-    STAMP_ODCH_MAN_LAST("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false)
+    STAMP_ODCH_MAN_LAST("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false),
+    STAMP_SINGLE("Zadání", "Zadání", "Zadání", "Zadat", "zadat", false)
     ;
 
     private final String titleOperNameForMasculine;

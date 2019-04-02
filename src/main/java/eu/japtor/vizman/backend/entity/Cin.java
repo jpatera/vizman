@@ -9,7 +9,7 @@ public class Cin extends AbstractGenIdEntity {
     public static final String ATYP_ZACATEK_KONEC_CIN = "ZK";
     public static final String ATYP_KONEC_CIN = "K";
     public static final String ATYP_KONEC_DNE = "X";
-    public static final String ATYP_FIX_CAS = "F";
+    public static final String ATYP_FIX_CAS = "F";  // Fixni
     public static final String ATYP_AUTO = "A";
 
     @Column(name = "PORADI")

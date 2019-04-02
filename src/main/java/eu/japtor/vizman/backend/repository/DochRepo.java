@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.repository;
 
+import eu.japtor.vizman.backend.entity.Cin;
 import eu.japtor.vizman.backend.entity.Doch;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,6 +25,8 @@ public interface DochRepo extends JpaRepository<Doch, Long> {
 //    List<DochDateOnly> findDistinctTop2ByPersonIdAndDochDateOrderByDochDateDesc(Long personId, LocalDate dochDate);
 
     Doch findTop1ByPersonIdAndDochDateAndDochState(Long personId, LocalDate dochDate, String dochState);
+
+    Doch findTop1ByPersonIdAndDochDateAndCinCinKod(Long personId, LocalDate dochDate, Cin.CinKod cinKod);
 
     @Query(value = "SELECT TOP 1 * FROM VIZMAN.DOCH WHERE PERSON_ID = ?1 AND DOCH_DATE = ?2 AND CIN_AKCE_TYP = 'ZK' " +
             " ORDER BY CDOCH DESC", nativeQuery = true)

@@ -38,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
 
@@ -194,7 +195,25 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     ;
             return;
         }
-        if (Operation.STAMP_PRICH_MAN == operation) {
+
+        if (Operation.STAMP_SINGLE == operation) {
+            // In dochManual is inside rec to be opened:
+            recToOpen = new Doch(
+                    dochDate
+                    , dochPerson
+                    , cinRepo.findByCinKod(dochManual.getCinCinKod())
+                    , dochManual.getFromTime()
+                    , modifStamp
+                    , false
+                    , dochManual.getPoznamka()
+            );
+            recToClose = getLastZkDochRec();
+            if (recToClose != null) {
+                recToClose.setToTime(dochManual.getFromTime());
+                recToClose.setToModifDatetime(modifStamp);
+                recToClose.setToManual(!dochManual.getFromTime().equals(dochManual.getFromTimeOrig()));
+            }
+        } else if (Operation.STAMP_PRICH_MAN == operation) {
             // In dochManual is inside rec to be opened:
             recToOpen = new Doch(
                     dochDate
@@ -260,7 +279,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
             recToOpen = null;
         }
 
-        dochService.closeLastRecAndOpenNew(recToClose, recToOpen);
+        dochService.closeRecAndOpenNew(recToClose, recToOpen);
         updateUpperDochGridPane(dochPerson, dochDate);
         upperDochGrid.getDataProvider().refreshAll();
     }
@@ -657,6 +676,10 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private Component initVolnoButton() {
         volnoButton = new Button("Neplacené volno (8h)");
         volnoButton.getElement().setAttribute("theme", "primary");
+        volnoButton.addClickListener(event -> {
+            LocalDateTime currentDateTime = LocalDateTime.now(minuteClock);
+            stampSingleRecord(currentDateTime, Cin.CinKod.nv);
+        });
         return volnoButton;
     }
 
@@ -665,12 +688,32 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         volnoZrusButton.getStyle()
                 .set("color", "crimson")
         ;
+        volnoZrusButton.addClickListener(event -> {
+            if (!checkDochContainsNahradniVolno("není co rušit")) {
+                return;
+            }
+            ConfirmDialog.createQuestion()
+                    .withCaption("Záznam docházky")
+                    .withMessage("Zrušit náhradní volno?")
+                    .withYesButton(() -> {
+                            dochService.removeDochRec(dochPerson.getId(), dochDate, Cin.CinKod.nv);
+                            updateUpperDochGridPane(dochPerson, dochDate);
+                    }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT"))
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .open()
+            ;
+        });
+
         return volnoZrusButton;
     }
 
     private Component initNemocButton() {
         nemocButton = new Button("Nemoc (8h)");
         nemocButton.getElement().setAttribute("theme", "primary");
+        nemocButton.addClickListener(event -> {
+            LocalDateTime currentDateTime = LocalDateTime.now(minuteClock);
+            stampSingleRecord(currentDateTime, Cin.CinKod.ne);
+        });
         return nemocButton;
     }
 
@@ -679,22 +722,61 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         nemocZrusButton.getStyle()
                 .set("color", "crimson")
         ;
+        nemocZrusButton.addClickListener(event -> {
+            if (!checkDochContainsNemoc("není co rušit")) {
+                return;
+            }
+            ConfirmDialog.createQuestion()
+                    .withCaption("Záznam docházky")
+                    .withMessage("Zrušit nemoc?")
+                    .withYesButton(() -> {
+                        dochService.removeDochRec(dochPerson.getId(), dochDate, Cin.CinKod.ne);
+                        updateUpperDochGridPane(dochPerson, dochDate);
+                    }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT"))
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .open()
+            ;
+        });
         return nemocZrusButton;
     }
 
     private Component initDovolenaButton() {
         dovolenaButton = new Button("Dovolená (8h)");
         dovolenaButton.getElement().setAttribute("theme", "primary");
+        dovolenaButton.addClickListener(event -> {
+                LocalDateTime currentDateTime = LocalDateTime.now(minuteClock);
+                stampSingleRecord(currentDateTime, Cin.CinKod.dc);
+        });
+//        dovolenaButton.setEnabled(false);
         return dovolenaButton;
     }
 
     private Component initDovolenaHalfButton() {
         dovolenaHalfButton = new Button("Dovolená (4h)");
+        dovolenaHalfButton.addClickListener(event -> {
+            LocalDateTime currentDateTime = LocalDateTime.now(minuteClock);
+            stampDovolenaHalf(currentDateTime, Cin.CinKod.dp);
+        });
         return dovolenaHalfButton;
     }
 
     private Component initDovolenaZrusButton() {
         dovolenaZrusButton = new Button("Zrušit dovolenou");
+        dovolenaZrusButton.addClickListener(event -> {
+            if (!checkDochContainsDovolena("není co rušit")) {
+                return;
+            }
+            ConfirmDialog.createQuestion()
+                    .withCaption("Záznam docházky")
+                    .withMessage("Zrušit dovolenou?")
+                    .withYesButton(() -> {
+                            dochService.removeDochRec(dochPerson.getId(), dochDate, Cin.CinKod.dc);
+                            updateUpperDochGridPane(dochPerson, dochDate);
+                    }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT"))
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .open()
+            ;
+        });
         dovolenaZrusButton.getStyle()
                 .set("color", "crimson")
         ;
@@ -704,6 +786,10 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private Component initSluzebkaButton() {
         sluzebkaButton = new Button("Služebka (8h)");
         sluzebkaButton.getElement().setAttribute("theme", "primary");
+        sluzebkaButton.addClickListener(event -> {
+            LocalDateTime currentDateTime = LocalDateTime.now(minuteClock);
+            stampSingleManualRecord(currentDateTime, Cin.CinKod.PM);
+        });
         return sluzebkaButton;
     }
 
@@ -712,6 +798,21 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         sluzebkaZrusButton.getStyle()
                 .set("color", "crimson")
         ;
+        sluzebkaZrusButton.addClickListener(event -> {
+            if (!checkDochContainsSluzebka("není co rušit")) {
+                return;
+            }
+            ConfirmDialog.createQuestion()
+                    .withCaption("Záznam docházky")
+                    .withMessage("Zrušit služebku?")
+                    .withYesButton(() -> {
+                        dochService.removeDochRec(dochPerson.getId(), dochDate, Cin.CinKod.PM);
+                        updateUpperDochGridPane(dochPerson, dochDate);
+                    }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT"))
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .open()
+            ;
+        });
         return sluzebkaZrusButton;
     }
 
@@ -929,8 +1030,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 ConfirmDialog.createQuestion()
                     .withCaption("Záznam docházky")
                     .withMessage("Zrušit poslední záznam v docházce?")
-                    .withOkButton(() -> {
-                        dochService.removeLastZkDochAndReopenPrev(getLastZkDochRec());
+                    .withYesButton(() -> {
+                        dochService.removeLastZkDochAndReopenPrev(getLastDochRec());
                         updateUpperDochGridPane(dochPerson, dochDate);
                     }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT"))
                     .withCancelButton(ButtonOption.caption("ZPĚT"))
@@ -1418,11 +1519,13 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 , null
         );
 
-        Doch recToclose = getLastZkDochRec();
-        if (null == recToclose) {
+        Doch recToClose = getLastZkDochRec();
+        if (null == recToClose) {
             dochService.openFirstRec(newInsideRec);
         } else {
-            dochService.closeLastRecAndOpenNew(newInsideRec, getLastZkDochRec());
+            recToClose.setToTime(currentDateTime.toLocalTime());
+            recToClose.setToModifDatetime(currentDateTime);
+            dochService.closeRecAndOpenNew(recToClose, newInsideRec);
         }
         updateUpperDochGridPane(dochPerson, dochDate);
         upperDochGrid.getDataProvider().refreshAll();
@@ -1459,6 +1562,104 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 //        pruhZakList.add(0, dochService.closePrevZkDochAndOpenNew(newDochPrich));
 //        updateUpperDochGridPane(dochPerson, dochDate);
 //        pruhZakGrid.getDataProvider().refreshAll();
+    }
+
+
+    private void stampSingleRecord(final LocalDateTime currentDateTime, Cin.CinKod cinKod) {
+//        if (checkDochNotContainsRec("nelze provést požadovanou akci.")) {
+//            return;
+//        }
+        if (!canStampStandaloneRec()) {
+            return;
+        }
+        Doch standaloneRec = new Doch(
+                dochDate
+                , dochPerson
+                , cinRepo.findByCinKod(cinKod)
+                , currentDateTime.toLocalTime()
+                , currentDateTime
+                , false
+                , null
+
+        );
+        standaloneRec.setDochDur(Duration.ofHours(8));
+        dochService.openFirstRec(standaloneRec);
+        updateUpperDochGridPane(dochPerson, dochDate);
+        upperDochGrid.getDataProvider().refreshAll();
+    }
+
+
+    private void stampDovolenaHalf(final LocalDateTime currentDateTime, Cin.CinKod cinKod) {
+//        if (!checkDochContainsRec(", nelze provést požadovanou akci.")) {
+//            return;
+//        }
+        Doch standaloneRec = new Doch(
+                dochDate
+                , dochPerson
+                , cinRepo.findByCinKod(cinKod)
+                , currentDateTime.toLocalTime()
+                , currentDateTime
+                , false
+                , null
+
+        );
+        if (Cin.CinKod.dp == cinKod) {
+            standaloneRec.setDochDur(Duration.ofHours(4));
+            dochService.openFirstRec(standaloneRec);
+            updateUpperDochGridPane(dochPerson, dochDate);
+            upperDochGrid.getDataProvider().refreshAll();
+        } else {
+            ConfirmDialog
+                    .createWarning()
+                    .withCaption("Záznam docházky")
+                    .withMessage("Nelze provést, je očekávána půldenní dovolená")
+                    .withOkButton()
+                    .open();
+        }
+    }
+
+
+
+    private void stampSingleManualRecord(final LocalDateTime currentDateTime, Cin.CinKod cinKod) {
+//        if (checkDochNotContainsRec("nelze provést požadovanou akci.")) {
+//            return;
+//        }
+        if (!canStampStandaloneRec()) {
+            return;
+        }
+
+//        Doch standaloneRec = new Doch(
+//                dochDate
+//                , dochPerson
+//                , cinRepo.findByCinKod(cinKod)
+//                , currentDateTime.toLocalTime()
+//                , currentDateTime
+//                , false
+//                , null
+//
+//        );
+
+        // Currently only sluzebka 8:30
+        if (Cin.CinKod.PM == cinKod) {
+            DochManual dochManual = new DochManual(
+                    dochDate
+                    , cinRepo.findByCinKod(cinKod)
+                    , currentDateTime.toLocalTime()
+                    , null
+                    , cinKod
+            );
+            dochFormDialog.openDialog(
+                    dochManual
+                    , Operation.STAMP_SINGLE
+                    , "Služebka"
+                    , false
+                    , false
+            );
+        }
+
+//        dochService.openFirstRec(standaloneRec);
+//        updateUpperDochGridPane(dochPerson, dochDate);
+//        upperDochGrid.getDataProvider().refreshAll();
     }
 
 
@@ -1519,7 +1720,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         lastInsideRec.setToTime(currentDateTime.toLocalTime());
         lastInsideRec.setToModifDatetime(currentDateTime);
 
-        dochService.closeLastRecAndOpenNew(lastInsideRec, newOutsideRec);
+        dochService.closeRecAndOpenNew(lastInsideRec, newOutsideRec);
         updateUpperDochGridPane(dochPerson, dochDate);
         upperDochGrid.getDataProvider().refreshAll();
     }
@@ -1581,9 +1782,9 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     }
 
     private boolean canStampPrichod() {
-        return checkDayDochIsOpened("nelze editovat.")
-                && checkDochDateIsToday("je třeba použít 'Příchod jiný čas'.")
-                && checkPersonIsOutOfOffice("nelze zaznamenat další příchod.")
+        return checkDayDochIsOpened(", nelze editovat.")
+                && checkDochDateIsToday(", je třeba použít 'Příchod jiný čas'.")
+                && checkPersonIsOutOfOffice(", nelze zaznamenat další příchod.")
         ;
     }
 
@@ -1592,6 +1793,12 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 //                && checkDochDateIsToday("je třeba použít 'Příchod jiný čas'.")
                 && checkPersonIsOutOfOffice("nelze zaznamenat další příchod.")
         ;
+    }
+
+    private boolean canStampStandaloneRec() {
+        return checkDayDochIsOpened(", nelze editovat.")
+                && checkDochNotContainsRec("nelze provést požadovanou akci.")
+                ;
     }
 
     private boolean canRemoveDochRec() {
@@ -1618,7 +1825,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         ConfirmDialog
                 .createInfo()
                 .withCaption("Záznam docházky")
-                .withMessage(String.format("Denní docházka je uzavřena%s", adjustAdditionalMsg(additionalMsg)))
+                .withMessage(String.format("Docházka je uzavřena%s", adjustAdditionalMsg(additionalMsg)))
                 .withOkButton()
                 .open();
         return false;
@@ -1706,7 +1913,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     }
 
     private boolean checkZkDochRecToDelExists() {
-        Doch lastZkDochRec = getLastZkDochRec();
+//        Doch lastZkDochRec = getLastZkDochRec();
+        Doch lastZkDochRec = getLastDochRec();
         if (lastZkDochRec != null) {
             return true;
         }
@@ -1719,6 +1927,33 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         return false;
     }
 
+    private boolean checkDochContainsRec(final String additionalMsg) {
+        if (!CollectionUtils.isEmpty(upperDochList)) {
+            return true;
+        }
+        ConfirmDialog
+                .createInfo()
+                .withCaption("Záznam docházky")
+                .withMessage(String.format("Docházka neobsahuje záznamy%s", adjustAdditionalMsg(additionalMsg)))
+                .withOkButton()
+                .open();
+        return false;
+    }
+
+    private boolean checkDochNotContainsRec(final String additionalMsg) {
+        if (CollectionUtils.isEmpty(upperDochList)) {
+            return true;
+        }
+        ConfirmDialog
+                .createInfo()
+                .withCaption("Záznam docházky")
+                .withMessage(String.format("Docházka obsahuje záznamy%s", adjustAdditionalMsg(additionalMsg)))
+                .withOkButton()
+                .open();
+        return false;
+    }
+
+
     private boolean checkDochContainsNemoc(final String additionalMsg) {
         if (upperDochList.stream().anyMatch(Doch::isNemoc)) {
             return true;
@@ -1726,11 +1961,39 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         ConfirmDialog
                 .createInfo()
                 .withCaption("Záznam docházky")
-                .withMessage(String.format("Denní docházka obsahuje nemoc%s", adjustAdditionalMsg(additionalMsg)))
+                .withMessage(String.format("Docházka neobsahuje nemoc%s", adjustAdditionalMsg(additionalMsg)))
                 .withOkButton()
                 .open();
         return false;
     }
+
+    private boolean checkDochContainsSluzebka(final String additionalMsg) {
+        if (upperDochList.stream().anyMatch(Doch::isSluzebka)) {
+            return true;
+        }
+        ConfirmDialog
+                .createInfo()
+                .withCaption("Záznam docházky")
+                .withMessage(String.format("Docházka neobsahuje služebku%s", adjustAdditionalMsg(additionalMsg)))
+                .withOkButton()
+                .open();
+        return false;
+    }
+
+    private boolean checkDochContainsDovolena(final String additionalMsg) {
+        if (upperDochList.stream().anyMatch(Doch::isDovolenaFull)
+                || upperDochList.stream().anyMatch(Doch::isDovolenaHalf)) {
+            return true;
+        }
+        ConfirmDialog
+                .createInfo()
+                .withCaption("Záznam docházky")
+                .withMessage(String.format("Docházka neobsahuje dovolenou %s", adjustAdditionalMsg(additionalMsg)))
+                .withOkButton()
+                .open();
+        return false;
+    }
+
 
     private boolean checkDochContainsNahradniVolno(final String additionalMsg) {
         if (upperDochList.stream().anyMatch(Doch::isNahradniVolno)) {
@@ -1739,7 +2002,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         ConfirmDialog
                 .createInfo()
                 .withCaption("Záznam docházky")
-                .withMessage(String.format("Denní docházka obsahuje náhradní volno%s", adjustAdditionalMsg(additionalMsg)))
+                .withMessage(String.format("Docházka obsahuje náhradní volno%s", adjustAdditionalMsg(additionalMsg)))
                 .withOkButton()
                 .open();
         return false;
@@ -1786,6 +2049,15 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                         && (null == lastZkDochRec.getToTime()))
                    )
         );
+    }
+
+    private Doch getLastDochRec() {
+        // use ListIterator to iterate List in reverse order
+//        ListIterator<Doch> dochReversedTimeIter = pruhZakList.listIterator(pruhZakList.size());
+
+        // hasPrevious() returns true if the list has previous element
+//        while (dochReversedIter.hasPrevious()) {
+        return upperDochList.get(0);
     }
 
     private Doch getLastZkDochRec() {

@@ -35,9 +35,11 @@ public interface DochService {
 
     Doch closeLastRec(Doch lastDochRec);
 
-    Doch closeLastRecAndOpenNew(Doch lastDochRec, Doch newDochRec);
+    Doch closeRecAndOpenNew(Doch lastDochRec, Doch newDochRec);
 
     void removeLastZkDochAndReopenPrev(Doch doch);
+
+    void removeDochRec(Long personId, LocalDate dochDate, Cin.CinKod cinKod);
 
     boolean removeAllDochRecsForPersonAndDate(Long personId, LocalDate dochDate);
 
