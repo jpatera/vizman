@@ -11,7 +11,7 @@ import java.time.YearMonth;
 //@Transactional(readOnly = true)
 public interface PersonWageRepo extends JpaRepository<PersonWage, Long> {
 
-    @Query(value = "SELECT TOP 1 * FROM VIZMAN.PERSON_WAGE WHERE person_id = ?1 AND YM_FROM <= ?2 ORDER BY YM_FROM DESC"
+    @Query(value = "SELECT TOP 1 * FROM VIZMAN.PERSON_WAGE WHERE PERSON_ID = ?1 AND YM_FROM <= ?2 ORDER BY YM_FROM DESC"
             , nativeQuery = true)
     PersonWage findPersonWageForMonth(Long personId, YearMonth ym);
 

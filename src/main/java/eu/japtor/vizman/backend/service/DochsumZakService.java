@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface DochsumZakService {
 
+    YearMonth retrieveLastPruhYmForPerson(Long personId, YearMonth excludeYm);
+
     List<DochsumZak> fetchDochsumZaksForPersonAndYm(Long personId, YearMonth dsYm);
 
     long countDochsumZaksForPersonAndYm(Long personId, YearMonth dsYm);

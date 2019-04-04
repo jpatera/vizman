@@ -405,6 +405,7 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         this.uuid = UUID.randomUUID();
         this.honorar = BigDecimal.valueOf(0);
         this.kont = parentKont;
+        this.arch = false;
 
         UUID uuid = UUID.randomUUID();
         String randomUUIDString = uuid.toString();

@@ -218,8 +218,12 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     @Transient
     @Override
     public Boolean getArch() {
-        return getZaks().stream()
-                .allMatch(zak -> zak.getArch());
+        if ((null == getZaks()) || (getZaks().size() == 0)) {
+            return false;
+        } else {
+            return getZaks().stream()
+                    .allMatch(zak -> zak.getArch());
+        }
     }
 
 

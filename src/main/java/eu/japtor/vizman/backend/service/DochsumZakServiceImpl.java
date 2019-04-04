@@ -2,12 +2,8 @@ package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.bean.PruhZak;
-import eu.japtor.vizman.backend.entity.AbstractGenIdEntity;
-import eu.japtor.vizman.backend.entity.Dochsum;
 import eu.japtor.vizman.backend.entity.DochsumZak;
 import eu.japtor.vizman.backend.entity.PersonWage;
-import eu.japtor.vizman.backend.repository.DochRepo;
-import eu.japtor.vizman.backend.repository.DochsumRepo;
 import eu.japtor.vizman.backend.repository.DochsumZakRepo;
 import eu.japtor.vizman.backend.repository.PersonWageRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +38,29 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
 //        super();
 //        this.dochsumZakRepo = dochsumZakRepo;
 //    }
+
+    @Override
+    public YearMonth retrieveLastPruhYmForPerson(Long personId, YearMonth excludeYm) {
+//        return dochsumZakRepo.getLastTwoPruhYmDochForPerson(personId, excludeYm);
+//        return dochsumZakRepo.getTop1DsYmByPersonIdAndDsYmNotOrderByDsYmDesc(personId, excludeYm);
+//        DochsumZak dsZak = dochsumZakRepo.getLastTwoPruhYmDochForPerson(personId, excludeYm);
+        List<Integer> dsZak = dochsumZakRepo.getLastTwoPruhYmDochForPerson(personId);
+//        return null == dsZak ? null : dsZak.getDsYm();
+        if (null == dsZak || dsZak.size() == 0) {
+            return null;
+        }
+        if (dsZak.size() == 1) {
+            return YearMonth.of(dsZak.get(0) / 100, dsZak.get(0) % 100);
+        } else {
+            YearMonth ymNewer = YearMonth.of(dsZak.get(0) / 100, dsZak.get(0) % 100);
+            YearMonth ymOlder = YearMonth.of(dsZak.get(1) / 100, dsZak.get(1) % 100);
+            if (ymNewer.equals(excludeYm)) {
+                return ymOlder;
+            } else {
+                return ymNewer;
+            }
+        }
+    }
 
     @Override
     public List<DochsumZak> fetchDochsumZaksForPersonAndYm(Long personId, YearMonth dsYm) {
@@ -94,6 +113,7 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
             // --------------------------------------
             List<DochsumZak> dsZaksToUpdate = new ArrayList<>();
             List<DochsumZak> dsZaksToInsert = new ArrayList<>();
+            List<DochsumZak> dsZaksToDelete = new ArrayList<>();
             for (PruhZak pzak : pruhZaks) {
                 Long pzakZakId = pzak.getZakId();
     //            pzak.getZakId()...
@@ -105,16 +125,32 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
                                     && zakDb.getDsDate().equals(pzakDate)
                             )
                             .findFirst().orElse(null);
-                    if (null != dsZakDb) {
-                        if (dsZakDb.getDszWorkPruh().compareTo(newCellHod) != 0) {
+                    if (i == 1) {
+                        if (null == newCellHod){
+                            newCellHod = BigDecimal.ZERO;
+                        }
+                        if (null != dsZakDb) {
                             dsZakDb.setDszWorkPruh(newCellHod);
                             dsZaksToUpdate.add(dsZakDb);
-                        }
-                    } else {
-                        if (null != newCellHod && newCellHod.compareTo(BigDecimal.ZERO) != 0) {
+                        } else {
                             DochsumZak dsZakNew = new DochsumZak(
                                     pruhPersonId, pzakDate, pzakZakId, newCellHod, personWage.getWage());
                             dsZaksToInsert.add(dsZakNew);
+                        }
+                    } else {
+                        if (null != dsZakDb) {
+                            if ((null == newCellHod) || newCellHod.compareTo(BigDecimal.ZERO) == 0) {
+                                dsZakDb.setDszWorkPruh(null);
+                            } else if (dsZakDb.getDszWorkPruh().compareTo(newCellHod) != 0) {
+                                dsZakDb.setDszWorkPruh(newCellHod);
+                            }
+                            dsZaksToUpdate.add(dsZakDb);
+                        } else {
+                            if (null != newCellHod && newCellHod.compareTo(BigDecimal.ZERO) != 0) {
+                                DochsumZak dsZakNew = new DochsumZak(
+                                        pruhPersonId, pzakDate, pzakZakId, newCellHod, personWage.getWage());
+                                dsZaksToInsert.add(dsZakNew);
+                            }
                         }
                     }
                 }
@@ -164,7 +200,7 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
                 em.flush();
             }
 
-            dochsumZakRepo.deleteZeroDochsumZaksByPruhAndZakIds(pruhYm, pruhPersonId);
+            dochsumZakRepo.deleteZeroDochsumZaksByPruhYmAndPerson(pruhYm, pruhPersonId);
             em.flush();
 
             return true;

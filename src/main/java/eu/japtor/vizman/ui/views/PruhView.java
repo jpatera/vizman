@@ -223,7 +223,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     .anyMatch(zakId -> zakId.equals(pzToAdd.getZakId()))
             ;
             if (!isZakInPruh) {
-                pruhZakList.add(new PruhZak(pzToAdd.getZakId(), pzToAdd.getItemType(), pzToAdd.getCkont(), pzToAdd.getCzak(), pzToAdd.getText()));
+                pruhZakList.add(0, new PruhZak(pzToAdd.getZakId(), pzToAdd.getItemType(), pzToAdd.getCkont(), pzToAdd.getCzak(), pzToAdd.getText()));
             }
         }
 
@@ -841,8 +841,11 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
 
-    private void removeZakFromPruh(Long zakId) {
-        // TODO: remove zak, update DB, load from DB, update view
+//    private void removeZakFromPruh(Long zakId) {
+    private void removeZakFromPruh(PruhZak pruhZak) {
+//        pruhZakList.removeIf(pzak -> pzak.getZakId().equals(zakId));
+        pruhZakList.remove(pruhZak);
+        // TODO: remove zak, update DB, load from DB
     }
 
     private Component initZakGrid() {
@@ -1149,8 +1152,10 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                         .withMessage("Odstranit zakázku z proužku včetně vyplněných hodin?")
                         .withCancelButton(ButtonOption.caption("ZPĚT"))
                         .withOkButton(() -> {
-                                removeZakFromPruh(pruhZak.getZakId());
-                                updatePruhGrids(pruhPerson, pruhYm);
+//                                removeZakFromPruh(pruhZak.getZakId());
+                                removeZakFromPruh(pruhZak);
+                                pruhZakGrid.getDataProvider().refreshAll();
+//                                updatePruhGrids(pruhPerson, pruhYm);
                             }, ButtonOption.focus(), ButtonOption.caption("ODSTRANIT")
                         )
                         .open()
@@ -1396,7 +1401,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 return;
             }
 
-            YearMonth lastYm = getLastUserPruhYm(pruhPerson.getId());
+            YearMonth lastYm = getLastUserPruhYmNotCurrent(pruhPerson.getId());
             if (null == lastYm) {
                 ConfirmDialog.createInfo()
                         .withCaption("KOPÍROVÁNÍ ZAKÁZEK")
@@ -1431,8 +1436,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return zaksCopyButton;
     }
 
-    private YearMonth getLastUserPruhYm(Long userId) {
-        return YearMonth.of(2018, 12);
+    private YearMonth getLastUserPruhYmNotCurrent(Long userId) {
+        return dochsumZakService.retrieveLastPruhYmForPerson(pruhPerson.getId(), pruhYm);
     }
 
     private boolean checkPruhZaksIsRezie(final String additionalMsg) {
