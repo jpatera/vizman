@@ -38,7 +38,7 @@ public class SubFormDialog extends AbstractEditorDialog<Fakt> {
     public SubFormDialog(BiConsumer<Fakt, Operation> itemSaver,
                          Consumer<Fakt> itemDeleter
     ){
-        super("800px", null, false, false, itemSaver, itemDeleter);
+        super("800px", null, false, false, itemSaver, itemDeleter, false);
 
 
         getFormLayout().add(

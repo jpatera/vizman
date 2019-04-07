@@ -125,7 +125,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
                           KlientService klientService,
                           CfgPropsCache cfgPropsCache
     ){
-        super("1300px", "800px", true, true, itemSaver, itemDeleter);
+        super("1300px", "800px", true, true, itemSaver, itemDeleter, false);
 
         this.getElement().getStyle().set("padding", "0");
         this.getElement().getStyle().set("margin", "0");
@@ -350,20 +350,23 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
                             .withMessage("Složka kontraktu není zadána, nelze vytvořit adresáře")
                             .open();
                 } else {
-                    if (!VzmFileUtils.createKontDocDirs(
-                            cfgPropsCache.getDocRootServer(), kont.getFolder())) {
-                        ConfirmDialog
-                                .createError()
-                                .withCaption("Dokumentové adresáře kontraktu")
-                                .withMessage("Adresářovou strukturu se nepodařilo vytvořit")
-                                .open();
+                    boolean kontDocDirsOk = VzmFileUtils.createKontDocDirs(
+                            cfgPropsCache.getDocRootServer(), kont.getFolder());
+                    boolean kontProjDirsOk = VzmFileUtils.createKontProjDirs(
+                            cfgPropsCache.getProjRootServer(), kont.getFolder());
+                    String errMsg = null;
+                    if (!kontDocDirsOk && !kontProjDirsOk) {
+                        errMsg = "Projektové ani dokumentové adresáře se nepodařilo vytvořit";
+                    } else if (!kontDocDirsOk) {
+                        errMsg = "Dokumentové adresáře se nepodařilo vytvořit";
+                    } else if (!kontProjDirsOk) {
+                        errMsg = "Projektové adresáře se nepodařilo vytvořit";
                     }
-                    if (!VzmFileUtils.createKontProjDirs(
-                            cfgPropsCache.getProjRootServer(), kont.getFolder())) {
+                    if (null != errMsg) {
                         ConfirmDialog
                                 .createError()
-                                .withCaption("Projektové adresáře kontraktu")
-                                .withMessage("Adresářovou strukturu se nepodařilo vytvořit")
+                                .withCaption("Adresáře kontraktu")
+                                .withMessage(errMsg)
                                 .open();
                     }
                     //            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
@@ -1050,7 +1053,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
         zakGridBar.setSpacing(false);
         zakGridBar.setPadding(false);
         zakGridBar.getStyle().set("margin-left", "-3em");
-        zakGridBar.setWidth("100%");
+//        zakGridBar.setWidth("100%");
         zakGridBar.setAlignItems(FlexComponent.Alignment.BASELINE);
         zakGridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         zakGridBar.add(

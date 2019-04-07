@@ -34,7 +34,7 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 
     private H3 mainTitle;
     private Div headerMiddleComponent = new Div();
-    private final H5 headerEndComponent = new H5();
+    private H5 headerEndComponent;
     private HtmlComponent headerDevider;
 
     private Button mainResizeBtn;
@@ -61,9 +61,10 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 
     private Binder<T> binder = new Binder<>();
     private T currentItem;
+    private boolean closeAfterSave;
 
 //    private final ConfirmationDialog<T> confirmationDialog = new ConfirmationDialog<>();
-    private final ConfirmDialog confirmDialog = ConfirmDialog.createQuestion();
+///    private final ConfirmDialog confirmDialog = ConfirmDialog.createQuestion();
 
     private GrammarGender itemGender;
     private String itemTypeNomS;
@@ -81,7 +82,27 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
             BiConsumer<T, Operation> itemSaver,
             Consumer<T> itemDeleter
     ){
-        this("1000px", "800px", false, false, itemSaver, itemDeleter);
+        this("1000px", "800px", false, false, itemSaver, itemDeleter, true);
+    }
+
+    protected AbstractEditorDialog(
+            BiConsumer<T, Operation> itemSaver,
+            Consumer<T> itemDeleter,
+            boolean closeAfterSave
+    ){
+        this("1000px", "800px", false, false, itemSaver, itemDeleter, closeAfterSave);
+    }
+
+
+    protected AbstractEditorDialog(
+            String dialogWidth,
+            String dialogHeight,
+            boolean useUpperRightPane,
+            boolean useLowerPane,
+            BiConsumer<T, Operation> itemSaver,
+            Consumer<T> itemDeleter
+    ) {
+        this(dialogWidth, dialogHeight, useUpperRightPane, useLowerPane, itemSaver, itemDeleter, true);
     }
 
     /**
@@ -102,7 +123,8 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
             boolean useUpperRightPane,
             boolean useLowerPane,
             BiConsumer<T, Operation> itemSaver,
-            Consumer<T> itemDeleter
+            Consumer<T> itemDeleter,
+            boolean closeAfterSave
     ){
 //    protected AbstractEditorDialog(
 //            final GrammarGender itemGender, final Map<GrammarShapes, String> itemNameMap
@@ -122,6 +144,7 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 
         this.itemSaver = itemSaver;
         this.itemDeleter = itemDeleter;
+        this.closeAfterSave = closeAfterSave;
 
         // Because underlying dialog container is not accessible (only width and height can be set),
         // we need following additional flexible dialogContainer t make child components grow/shrink
@@ -278,9 +301,17 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         dialogHeader.add(
                 initHeaderLeftComponent()
                 , headerMiddleComponent
-                , headerEndComponent
+                , initHeaderEndComponent()
         );
         return dialogHeader;
+    }
+
+    private Component initHeaderEndComponent() {
+        headerEndComponent = new H5();
+        headerEndComponent.getStyle()
+            .set("margin-right","1.2em")
+        ;
+        return headerEndComponent;
     }
 
     private Component initHeaderLeftComponent() {
@@ -550,7 +581,9 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         boolean isValid = binder.writeBeanIfValid(currentItem);
         if (isValid) {
             itemSaver.accept(currentItem, operation);
-            close();
+            if (closeAfterSave) {
+                close();
+            }
         } else {
             BinderValidationStatus<T> status = binder.validate();
         }

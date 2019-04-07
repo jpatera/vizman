@@ -202,7 +202,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private void stampDochManualFromDialog(DochManual dochManual, Operation operation) {
         Doch recToClose;
         Doch recToOpen;
-        LocalDateTime modifStamp = LocalDateTime.now();
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        LocalDate currentDate = LocalDate.now();
 
         if (null == dochManual) {
             ConfirmDialog.createWarning()
@@ -219,8 +220,10 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     dochDate
                     , dochPerson
                     , cinRepo.findByCinKod(dochManual.getCinCinKod())
-                    , dochManual.getFromTime()
-                    , modifStamp
+//                    , dochManual.getFromTime()
+//                    , modifStamp
+                    , null
+                    , null
                     , false
                     , dochManual.getPoznamka()
             );
@@ -238,20 +241,49 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 //                recToClose.setToManual(!dochManual.getFromTime().equals(dochManual.getFromTimeOrig()));
 //            }
         } else if (Operation.STAMP_PRICH_MAN == operation) {
-            // In dochManual is inside rec to be opened:
+            recToClose = getLastZkDochRec();
+            LocalTime  manualFromTime = dochManual.getFromTime();
+            LocalDateTime manualFromDateTime = LocalDateTime.of(dochDate, dochManual.getFromTime());
+
+            if (null != recToClose && manualFromTime.compareTo(recToClose.getFromTime() ) < 0) {
+                ConfirmDialog.createInfo()
+                        .withCaption("DOCHÁZKA MANUÁLNĚ")
+                        .withMessage("Nelze zadat dřívější čas než je  poslední záznam.")
+                        .open()
+                ;
+                return;
+            }
+            if (dochDate.compareTo(currentDate) == 0) {
+                if (manualFromDateTime.compareTo(currentDateTime) > 0) {
+                    ConfirmDialog.createInfo()
+                            .withCaption("DOCHÁZKA MANUÁLNĚ")
+                            .withMessage("Nelze zadávat budoucí čas.")
+                            .open()
+                    ;
+                    return;
+                }
+            }
+            if (dochDate.compareTo(currentDate) > 0) {
+                ConfirmDialog.createInfo()
+                        .withCaption("DOCHÁZKA MANUÁLNĚ")
+                        .withMessage("Docházku lze zadávat nejpozději pro dnešek.")
+                        .open()
+                ;
+                return;
+            }
+
             recToOpen = new Doch(
                     dochDate
                     , dochPerson
                     , cinRepo.findByCinKod(dochManual.getCinCinKod())
                     , dochManual.getFromTime()
-                    , modifStamp
+                    , currentDateTime
                     , !dochManual.getFromTime().equals(dochManual.getFromTimeOrig())
                     , dochManual.getPoznamka()
             );
-            recToClose = getLastZkDochRec();
             if (recToClose != null) {
                 recToClose.setToTime(dochManual.getFromTime());
-                recToClose.setToModifDatetime(modifStamp);
+                recToClose.setToModifDatetime(currentDateTime);
                 recToClose.setToManual(!dochManual.getFromTime().equals(dochManual.getFromTimeOrig()));
             }
 
@@ -264,7 +296,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                         , dochPerson
                         , cinRepo.findByCinKod(dochManual.getOutsideCinKod())
                         , dochManual.getFromTime()
-                        , modifStamp
+                        , currentDateTime
                         , !dochManual.getFromTime().equals(dochManual.getFromTimeOrig())
                         , dochManual.getPoznamka()
                 );
@@ -278,14 +310,85 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 ;
                 return;
             }
+            LocalTime manualFromTime = dochManual.getFromTime();
+            LocalDateTime manualFromDateTime = LocalDateTime.of(dochDate, dochManual.getFromTime());
+            LocalTime manualToTime = null;
+            LocalDateTime manualToDateTime = null;
+            if (Operation.STAMP_ODCH_MAN_LAST == operation) {
+                manualToTime = dochManual.getToTime();
+                manualToDateTime = LocalDateTime.of(dochDate, dochManual.getToTime());
+            } else {
+
+            }
+
+//            LocalTime manualTimeCheck;
+//            LocalDateTime manualDateTimeCheck;
+//            if (Operation.STAMP_ODCH_MAN_LAST == operation) {
+//                manualTimeCheck = manualToTime;
+//                manualDateTimeCheck = manualToDateTime;
+//            } else  {
+//                manualTimeCheck = manualFromTime;
+//                manualDateTimeCheck = manualFromDateTime;
+//            }
+
+            if (Operation.STAMP_ODCH_MAN_LAST == operation) {
+                if (null != recToClose && manualToTime.compareTo(recToClose.getFromTime() ) < 0) {
+                    ConfirmDialog.createInfo()
+                            .withCaption("DOCHÁZKA MANUÁLNĚ")
+                            .withMessage("Nelze zadat dřívější čas než je  poslední záznam.")
+                            .open()
+                    ;
+                    return;
+                }
+                if (dochDate.compareTo(currentDate) == 0) {
+                    if (manualToDateTime.compareTo(currentDateTime) > 0) {
+                        ConfirmDialog.createInfo()
+                                .withCaption("DOCHÁZKA MANUÁLNĚ")
+                                .withMessage("Nelze zadávat budoucí čas.")
+                                .open()
+                        ;
+                        return;
+                    }
+                }
+            } else {
+                if (null != recToClose && manualFromTime.compareTo(recToClose.getFromTime() ) < 0) {
+                    ConfirmDialog.createInfo()
+                            .withCaption("DOCHÁZKA MANUÁLNĚ")
+                            .withMessage("Nelze zadat dřívější čas než je  poslední záznam.")
+                            .open()
+                    ;
+                    return;
+                }
+                if (dochDate.compareTo(currentDate) == 0) {
+                    if (manualFromDateTime.compareTo(currentDateTime) > 0) {
+                        ConfirmDialog.createInfo()
+                                .withCaption("DOCHÁZKA MANUÁLNĚ")
+                                .withMessage("Nelze zadávat budoucí čas.")
+                                .open()
+                        ;
+                        return;
+                    }
+                }
+            }
+
+            if (dochDate.compareTo(currentDate) > 0) {
+                ConfirmDialog.createInfo()
+                        .withCaption("DOCHÁZKA MANUÁLNĚ")
+                        .withMessage("Docházku lze zadávat nejpozději pro dnešek.")
+                        .open()
+                ;
+                return;
+            }
+
+
             if (Operation.STAMP_ODCH_MAN_LAST == operation) {
                 recToClose.setToTime(dochManual.getToTime());
-                recToClose.setToModifDatetime(modifStamp);
+                recToClose.setToModifDatetime(currentDateTime);
                 recToClose.setToManual(!dochManual.getToTime().equals(dochManual.getToTimeOrig()));
                 recToClose.setPoznamka(dochManual.getPoznamka());
             } else {
                 recToClose.setToTime(dochManual.getFromTime());
-                recToClose.setToModifDatetime(modifStamp);
+                recToClose.setToModifDatetime(currentDateTime);
                 recToClose.setToManual(!dochManual.getFromTime().equals(dochManual.getFromTimeOrig()));
                 recToClose.setPoznamka(dochManual.getPoznamka());
             }
@@ -1207,22 +1310,56 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     .withMessage("Přenést docházku do proužku a uzavřít den?")
                     .withCancelButton(ButtonOption.caption("ZPĚT"))
                     .withYesButton(() -> {
-                        try {
-                            updateDochsumAndCloseDochDay();
-                            updateDochControls();
-                        } catch (Exception e) {
-                            getLogger().error("Error when closing  DOCH day", e);
-                            ConfirmDialog
-                                    .createError()
-                                    .withCaption("CHYBA")
-                                    .withMessage("Neočekávaná chyba při přenosu docházky do proužků")
-                                    .open();
-                        }
+                        openDialogProtected(() -> {
+                                    updateDochsumAndCloseDochDay();
+                                    updateDochControls();
+                                }, "Neočekávaná chyba při přenosu docházky do proužků"
+                        );
+//                        closeDoch();
+//                        try {
+//                            updateDochsumAndCloseDochDay();
+//                            updateDochControls();
+//                        } catch (Exception e) {
+//                            getLogger().error("Error when closing  DOCH day", e);
+//                            ConfirmDialog
+//                                    .createError()
+//                                    .withCaption("CHYBA")
+//                                    .withMessage("Neočekávaná chyba při přenosu docházky do proužků")
+//                                    .open();
+//                        }
                     })
                     .open()
             ;
         });
         return prenosPersonDateButton;
+    }
+
+    private void openDialogProtected(Runnable action, final String errMsg) {
+        try {
+            action.run();
+        } catch (Exception e) {
+            getLogger().error("VIZMAN ERROR: ", e);
+            ConfirmDialog
+                    .createError()
+                    .withCaption("CHYBA")
+                    .withMessage(errMsg)
+                    .open();
+        }
+    }
+
+
+    private void closeDoch() {
+        try {
+            updateDochsumAndCloseDochDay();
+            updateDochControls();
+        } catch (Exception e) {
+            getLogger().error("Error when closing  DOCH day", e);
+            ConfirmDialog
+                    .createError()
+                    .withCaption("CHYBA")
+                    .withMessage("Neočekávaná chyba při přenosu docházky do proužků")
+                    .open();
+        }
     }
 
     private Component initCancelPrenosPersonDateButton() {
@@ -2138,7 +2275,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 //        stampDochManualFromDialog(newOutsideRec, Operation.STAMP_ODCH);
 
         Doch lastInsideRec = getLastZkDochRec();
-        if (null == lastInsideRec) {
+        if (null != lastInsideRec) {
             lastInsideRec.setToTime(currentDateTime.toLocalTime());
             lastInsideRec.setToModifDatetime(currentDateTime);
             dochService.closeRecAndOpenNew(lastInsideRec, newOutsideRec);

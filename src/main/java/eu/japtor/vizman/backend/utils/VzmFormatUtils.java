@@ -97,6 +97,7 @@ public class VzmFormatUtils {
         nameToColorMap.put("darkslateblue", new Color(0x483D8B));
         nameToColorMap.put("darkblue", new Color(0x00008B));
         nameToColorMap.put("firebrick", new Color(0xB22222));
+        nameToColorMap.put("crimson", new Color(0xDC143C));
     }
 
     public static String getItemTypeColorName(ItemType itemType) {

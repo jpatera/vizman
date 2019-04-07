@@ -1,0 +1,9 @@
+
+
+INSERT INTO VIZMAN.CIN
+(ID, VERSION, PORADI, AKCE_TYP, AKCE, CIN_KOD, CINNOST, CALCPRAC, TMP)
+VALUES(14, 1, 35, 'F', 'Služebka (celý den)', 'SC', 'Služebka', true, NULL)
+;
+
+COMMIT;
+

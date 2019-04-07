@@ -110,7 +110,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
                          FaktService faktService,
                          CfgPropsCache cfgPropsCache
     ){
-        super(DIALOG_WIDTH, DIALOG_HEIGHT, true, true, itemSaver, itemDeleter);
+        super(DIALOG_WIDTH, DIALOG_HEIGHT, true, true, itemSaver, itemDeleter, false);
         getFormLayout().setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0", 2),
                 new FormLayout.ResponsiveStep("20em", 4)
@@ -311,23 +311,26 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
                                 .open();
                     }
                 } else {
-                    if (!VzmFileUtils.createZakDocDirs(
-                            cfgPropsCache.getDocRootServer(), zak.getKontFolder(), zak.getFolder())) {
-                        ConfirmDialog
-                                .createError()
-                                .withCaption("Dokumentové adresáře zakázky")
-                                .withMessage("Adresářovou strukturu se nepodařilo vytvořit")
-                                .open();
-                    };
-                    if (!VzmFileUtils.createZakProjDirs(
-                            cfgPropsCache.getProjRootServer(), zak.getKontFolder(), zak.getFolder())) {
-                        ConfirmDialog
-                                .createError()
-                                .withCaption("Projektové adresáře zakázky")
-                                .withMessage("Adresářovou strukturu se nepodařilo vytvořit")
-                                .open();
+                    boolean zakDocDirsOk = VzmFileUtils.createZakDocDirs(
+                            cfgPropsCache.getDocRootServer(), zak.getKontFolder(), zak.getFolder());
+                    boolean zakProjDirsOk = VzmFileUtils.createZakProjDirs(
+                            cfgPropsCache.getProjRootServer(), zak.getKontFolder(), zak.getFolder());
                     //            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
                     //            kontProjRootDir.setReadOnly();
+                    String errMsg = null;
+                    if (!zakDocDirsOk && !zakProjDirsOk) {
+                        errMsg = "Projektové ani dokumentové adresáře se nepodařilo vytvořit";
+                    } else if (!zakDocDirsOk) {
+                        errMsg = "Dokumentové adresáře se nepodařilo vytvořit";
+                    } else if (!zakProjDirsOk) {
+                        errMsg = "Projektové adresáře se nepodařilo vytvořit";
+                    }
+                    if (null != errMsg) {
+                        ConfirmDialog
+                                .createError()
+                                .withCaption("Adresáře zakázky")
+                                .withMessage(errMsg)
+                                .open();
                     }
                 }
             } else {
@@ -923,7 +926,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
         faktGridBar.setSpacing(false);
         faktGridBar.setPadding(false);
         faktGridBar.getStyle().set("margin-left", "-3em");
-        faktGridBar.setWidth("100%");
+//        faktGridBar.setWidth("100%");
         faktGridBar.setAlignItems(FlexComponent.Alignment.BASELINE);
         faktGridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         faktGridBar.add(

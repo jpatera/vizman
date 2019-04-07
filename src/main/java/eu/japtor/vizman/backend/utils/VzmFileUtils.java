@@ -1,8 +1,11 @@
 package eu.japtor.vizman.backend.utils;
 
+import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -14,7 +17,9 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VzmFileUtils {
+public class VzmFileUtils implements HasLogger {
+
+    final static Logger LOG = LoggerFactory.getLogger(VzmFileUtils.class);
 
     /**
      * Replace illegal characters in a filename with "_"
@@ -151,19 +156,19 @@ public class VzmFileUtils {
     }
 
     public static boolean createKontProjDirs(String projRoot, String kontFolderNew) {
-
         if (StringUtils.isBlank(kontFolderNew)) {
             return false;
         }
-
-        Path kontDirProjRootPath = getKontDocRootPath(projRoot, kontFolderNew);
-        if (!kontDirProjRootPath.toFile().exists()) {
-            try {
+        try {
+            Path kontDirProjRootPath = getKontDocRootPath(projRoot, kontFolderNew);
+            if (!kontDirProjRootPath.toFile().exists()) {
                 Files.createDirectories(kontDirProjRootPath);
                 return true;
-            } catch (IOException ioExceptionObj) {
-                System.out.println("Problem Occured While Creating The Directory Structure = " + ioExceptionObj.getMessage());
             }
+//        } catch (IOException ioExceptionObj) {
+        } catch (Exception e) {
+            LOG.error("Problem while creating the KONT-PROJ dir structure: " + e.getMessage());
+            LOG.debug("", e);
         }
         return false;
     }
@@ -187,21 +192,20 @@ public class VzmFileUtils {
     }
 
     public static boolean createKontDocDirs(String docRoot, String kontFolderNew) {
-
         if (StringUtils.isBlank(kontFolderNew)) {
             return false;
         }
-
-        Path kontDocRootPath = getKontDocRootPath(docRoot, kontFolderNew);
-        if (!kontDocRootPath.toFile().exists()) {
-            try {
+        try {
+            Path kontDocRootPath = getKontDocRootPath(docRoot, kontFolderNew);
+            if (!kontDocRootPath.toFile().exists()) {
                 Files.createDirectories(kontDocRootPath);
                 Path zeroSodPath = Paths.get(kontDocRootPath.toString(), "0__SOD");
                 Files.createDirectories(zeroSodPath);
                 return true;
-            } catch (IOException ioExceptionObj) {
-                System.out.println("Problem Occured While Creating The Directory Structure = " + ioExceptionObj.getMessage());
             }
+//        } catch (IOException ioExceptionObj) {
+        } catch (Exception e) {
+            LOG.error("Problem while creating the KONT-DOC dir structure: " + e.getMessage());
         }
         return false;
     }
@@ -231,9 +235,9 @@ public class VzmFileUtils {
             return false;
         }
 
-        Path zakProjRootPath = getZakProjRootPath(projRoot, kontFolder, zakFolderNew);
-        if (!zakProjRootPath.toFile().exists()) {
-            try {
+        try {
+            Path zakProjRootPath = getZakProjRootPath(projRoot, kontFolder, zakFolderNew);
+            if (!zakProjRootPath.toFile().exists()) {
                 Files.createDirectories(zakProjRootPath);
                 Path inzenyringPath = Paths.get(zakProjRootPath.toString(), "INZENYRING");
                 Files.createDirectories(inzenyringPath);
@@ -250,9 +254,13 @@ public class VzmFileUtils {
                 Files.createDirectories(zaznamyPath);
 
                 return true;
-            } catch (IOException ioExceptionObj) {
-                System.out.println("Problem occured while creating the directory structure = " + ioExceptionObj.getMessage());
             }
+//        } catch (IOException ioExceptionObj) {
+//            System.out.println("Problem occured while creating the directory structure = " + ioExceptionObj.getMessage());
+//        }
+        } catch (Exception e) {
+            LOG.error("Problem while creating the ZAK-DOC dir structure: " + e.getMessage());
+            LOG.debug("", e);
         }
         return false;
     }
@@ -312,18 +320,21 @@ public class VzmFileUtils {
             return false;
         }
 
-        Path zakDocRootPath = getZakDocRootPath(docRoot, kontFolder, zakFolderNew);
-        if (!zakDocRootPath.toFile().exists()) {
-            try {
+        try {
+            Path zakDocRootPath = getZakDocRootPath(docRoot, kontFolder, zakFolderNew);
+            if (!zakDocRootPath.toFile().exists()) {
                 Files.createDirectories(zakDocRootPath);
                 Path dopisyPath = Paths.get(zakDocRootPath.toString(), "Odesilaci_dopisy");
                 Files.createDirectories(dopisyPath);
                 Path fakturyPath = Paths.get(zakDocRootPath.toString(), "Faktury");
                 Files.createDirectories(fakturyPath);
                 return true;
-            } catch (IOException ioExceptionObj) {
-                System.out.println("Problem occured while creating zakazka directory structure = " + ioExceptionObj.getMessage());
             }
+//        } catch (IOException ioExceptionObj) {
+//            System.out.println("Problem occured while creating zakazka directory structure = " + ioExceptionObj.getMessage());
+        } catch (Exception e) {
+            LOG.error("Problem while creating the ZAK-DOC dir structure: " + e.getMessage());
+            LOG.debug("", e);
         }
         return false;
     }

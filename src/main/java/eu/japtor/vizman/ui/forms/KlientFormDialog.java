@@ -49,7 +49,7 @@ public class KlientFormDialog extends AbstractEditorDialog<Klient> {
             , Consumer<Klient> itemDeleter
             , KlientService klientService
     ){
-        super("800px", "600px", false, false, itemSaver, itemDeleter);
+        super("800px", "600px", false, false, itemSaver, itemDeleter, false);
 
 
 //        getFormLayout().setResponsiveSteps(

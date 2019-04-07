@@ -123,9 +123,9 @@ public class NavigationBar extends Div implements RouterLayout {
 
         HorizontalLayout middleNaviBar = new HorizontalLayout();
         middleNaviBar.add(dochLink, pruhLink);
-        if (SecurityUtils.isAccessGranted(ZakBasicView.class)) {
+//        if (SecurityUtils.isAccessGranted(ZakBasicView.class)) {
             middleNaviBar.add(kzTreeLink);
-        }
+//        }
 
         HorizontalLayout rightNaviBar = new HorizontalLayout();
         if (SecurityUtils.isAccessGranted(CfgTabsView.class)) {

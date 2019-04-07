@@ -3,6 +3,7 @@ package eu.japtor.vizman.backend.bean;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Zak;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 
@@ -35,7 +36,7 @@ public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializ
         this.itemType = zak.getTyp();
         this.ckont = zak.getCkont();
         this.czak = zak.getCzak();
-        this.text = zak.getText();
+        this.text = StringUtils.substring(zak.getKont().getText(), 0, 20) + " / " +  zak.getText();
         hods = new HashMap<>();
         for (int i = 1; i <= 31; i++) {
             hods.put(i, null);

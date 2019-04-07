@@ -48,6 +48,7 @@ import javax.annotation.PostConstruct;
 import java.text.DecimalFormat;
 import java.util.List;
 
+import static eu.japtor.vizman.app.security.SecurityUtils.isWagesAccessGranted;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
 //@Route(value = ROUTE_PERSON, layout = MainView.class)
@@ -231,12 +232,14 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
                 .setWidth("8em")
                 .setResizable(true)
         ;
-        personGrid.addColumn(new NumberRenderer<>(Person::getSazba, VzmFormatUtils.moneyFormat))
-                .setTextAlign(ColumnTextAlign.END)
-                .setHeader("Sazba")
-                .setWidth("8em")
-                .setResizable(true)
-        ;
+        if (isWagesAccessGranted()) {
+            personGrid.addColumn(new NumberRenderer<>(Person::getSazba, VzmFormatUtils.moneyFormat))
+                    .setTextAlign(ColumnTextAlign.END)
+                    .setHeader("Sazba")
+                    .setWidth("8em")
+                    .setResizable(true)
+            ;
+        }
         personGrid.addColumn(Person::getNastup)
                 .setHeader("Nástup")
                 .setWidth("8em")

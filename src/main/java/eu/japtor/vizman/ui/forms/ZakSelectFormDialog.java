@@ -224,7 +224,7 @@ public class ZakSelectFormDialog extends Dialog {
         kzTreeGrid = new TreeGrid<>();
         kzTreeGrid.getStyle().set("marginTop", "0.5em");
         kzTreeGrid.setColumnReorderingAllowed(true);
-        kzTreeGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        kzTreeGrid.setSelectionMode(Grid.SelectionMode.NONE);
 
 //        kzTreeGrid.getElement().addEventListener("keypress", e -> {
 //            JsonObject eventData = e.getEventData();
@@ -414,7 +414,7 @@ public class ZakSelectFormDialog extends Dialog {
                     .withMessage("Nejsou vybrány žádné zakázky")
                     .open()
             ;
-        } else{
+        } else {
 //            inMemoryKzTreeProvider.refreshAll();
             zaksSelector.accept(kzZakItems);
             close();

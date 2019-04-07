@@ -64,15 +64,43 @@ public class SecurityUtils {
      *
      * @return true if access  prices/money information is granted, false otherwise.
      */
-    public static boolean isMoneyAccessGranted() {
+    public static boolean isHonorareAccessGranted() {
         Authentication userAuthentication = SecurityContextHolder.getContext().getAuthentication();
         if (userAuthentication == null) {
             return false;
         }
-        Set<String> pricesPermNames =  Perm.getPermNames(Arrays.asList(Perm.VIEW_ALL, Perm.MODIFY_ALL));
+        Set<String> moneyPermNames =  Perm.getPermNames(Arrays.asList(Perm.VIEW_ALL, Perm.MODIFY_ALL));
         return userAuthentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .anyMatch(pricesPermNames::contains);
+                .anyMatch(moneyPermNames::contains);
+//                .anyMatch(a -> allowedAuths.contains(a));
+    }
+
+    public static boolean isWagesAccessGranted() {
+        Authentication userAuthentication = SecurityContextHolder.getContext().getAuthentication();
+        if (userAuthentication == null) {
+            return false;
+        }
+        Set<String> moneyPermNames =  Perm.getPermNames(Arrays.asList(
+                Perm.VIEW_ALL, Perm.MODIFY_ALL, Perm.PERSON_EXT_READ)
+        );
+        return userAuthentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(moneyPermNames::contains);
+//                .anyMatch(a -> allowedAuths.contains(a));
+    }
+
+    public static boolean isZakFormsAccessGranted() {
+        Authentication userAuthentication = SecurityContextHolder.getContext().getAuthentication();
+        if (userAuthentication == null) {
+            return false;
+        }
+        Set<String> kontZakformPermNames =  Perm.getPermNames(Arrays.asList
+                (Perm.VIEW_ALL, Perm.MODIFY_ALL, Perm.ZAK_EXT_READ)
+        );
+        return userAuthentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(kontZakformPermNames::contains);
 //                .anyMatch(a -> allowedAuths.contains(a));
     }
 

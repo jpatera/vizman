@@ -23,6 +23,8 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static eu.japtor.vizman.app.security.SecurityUtils.isWagesAccessGranted;
+
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class PersonEditorDialog extends AbstractEditorDialog<Person> {
@@ -34,6 +36,7 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
     private TextField jmenoField; // = new TextField("Jméno");
     private TextField prijmeniField; // = new TextField("Příjmení");
     private TextField sazbaField; // = new TextField("Sazba");
+    private TextField fakeSazbaField; // = new TextField("Sazba");
     private DatePicker nastupField; // = new DatePicker("Nástup");
     private DatePicker vystupField; // = new DatePicker("Výstup");
     private TwinColGrid<Role> twinRolesGridField;
@@ -100,6 +103,12 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
         sazbaField.setPattern("[0-9]*");
         sazbaField.setPreventInvalidInput(true);
         sazbaField.setSuffixComponent(new Span("CZK"));
+
+        fakeSazbaField = new TextField("");
+        fakeSazbaField.setVisible(false);
+//        sazbaField.setPattern("[0-9]*");
+//        sazbaField.setPreventInvalidInput(true);
+//        sazbaField.setSuffixComponent(new Span("CZK"));
 
         addUsernameField();
         addPasswordField();
@@ -201,11 +210,15 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
     }
 
     private void addSazbaField() {
-        getFormLayout().add(sazbaField);
-        getBinder().forField(sazbaField)
-                .withConverter(
-                        new StringToBigDecimalConverter("Špatný formát čísla"))
-                .bind(Person::getSazba, Person::setSazba);
+        if (!isWagesAccessGranted()) {
+            getFormLayout().add(fakeSazbaField);
+        } else {
+            getFormLayout().add(sazbaField);
+            getBinder().forField(sazbaField)
+                    .withConverter(
+                            new StringToBigDecimalConverter("Špatný formát čísla"))
+                    .bind(Person::getSazba, Person::setSazba);
+        }
     }
 
     private Component initRolesField(final Set<Role> allRoles) {

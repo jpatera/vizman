@@ -22,7 +22,7 @@ public class GridItemEditBtn extends Button {
         }
         this.setIcon(ico);
 //        this.addClassName("review__edit");
-        this.getElement().setAttribute("theme", "tertiary small");
+        this.getElement().setAttribute("theme", "tertiary small icon");
         this.addClickListener(openItemEditDialog);
     }
 
