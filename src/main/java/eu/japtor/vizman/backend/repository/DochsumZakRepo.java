@@ -5,10 +5,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 
 public interface DochsumZakRepo extends JpaRepository<DochsumZak, Long> {
+
+    DochsumZak findTop1ByPersonIdAndDsDateAndZakId(Long personId, LocalDate dsDate, Long zakId);
 
     List<DochsumZak> findByPersonIdAndDsYm(Long personId, YearMonth dsYm);
     long countByPersonIdAndDsYm(Long personId, YearMonth dsYm);

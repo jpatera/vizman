@@ -100,6 +100,13 @@ public class Dochsum extends AbstractGenIdEntity {
 
   public Dochsum() {}
 
+  public Dochsum(Person dochPerson, LocalDate dochDate) {
+    this.personId = dochPerson.getId();
+    this.username = dochPerson.getUsername();
+    this.dsDate = dochDate;
+    this.dsYm = YearMonth.of(dochDate.getYear(), dochDate.getMonth());
+  }
+
   public Long getPersonId() {
     return personId;
   }

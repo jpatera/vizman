@@ -33,6 +33,8 @@ public interface DochService {
 
     Doch openFirstRec(Doch firstDochRec);
 
+    Doch addSingleRec(Doch singleDochRec);
+
     Doch closeLastRec(Doch lastDochRec);
 
     Doch closeRecAndOpenNew(Doch lastDochRec, Doch newDochRec);

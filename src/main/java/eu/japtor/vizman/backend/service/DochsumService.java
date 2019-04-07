@@ -13,5 +13,10 @@ public interface DochsumService {
 
     long countDochsumForPersonAndDate(Long personId, YearMonth dochYm);
 
+    void deleteByDsDateAndPersonId(LocalDate dochaAte, Long personId);
+
+    void updateDochsumCloseDoch(LocalDate dochDate, Long personId, Dochsum dochsum);
+
+    void deleteDochsumOpenDoch(LocalDate dochDate, Long personId);
 
 }

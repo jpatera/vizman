@@ -8,7 +8,6 @@ import java.time.YearMonth;
 @Entity
 @Table(name = "PRUH")
 public class Pruh extends AbstractGenIdEntity {
-  public final static Integer PRUH_STATE_UNDEFINED = 0;
   public final static Integer PRUH_STATE_UNLOCKED = 10;
   public final static Integer PRUH_STATE_LOCKED = 20;
 

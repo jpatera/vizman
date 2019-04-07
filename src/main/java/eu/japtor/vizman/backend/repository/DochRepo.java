@@ -33,6 +33,11 @@ public interface DochRepo extends JpaRepository<Doch, Long> {
     Doch findLastZkDochForPersonAndDate(Long personId, LocalDate dochDate);
 //    public List<Doch> findLastZkDochForPersonAndDate(Long personId, LocalDate dochDate);
 
+    @Query(value = "SELECT TOP 1 * FROM VIZMAN.DOCH WHERE PERSON_ID = ?1 AND DOCH_DATE = ?2 " +
+            " AND CALCPRAC = TRUE AND CIN_CIN_KOD <> 'OA' AND CIN_CIN_KOD <> 'OA'" +
+            " ORDER BY CDOCH DESC", nativeQuery = true)
+    Doch findLastPracDochForPersonAndDateNotOa(Long personId, LocalDate dochDate);
+
     @Query(value = "SELECT TOP 1 CDOCH FROM VIZMAN.DOCH WHERE PERSON_ID = ?1 AND DOCH_DATE = ?2 " +
             " ORDER BY CDOCH DESC", nativeQuery = true)
     Integer findLastCdochForPersonAndDate(Long personId, LocalDate dochDate);

@@ -12,6 +12,8 @@ import java.time.LocalTime;
 @Table(name = "DOCH")
 //@SequenceGenerator(initialValue = 100001, name = "id_gen", sequenceName = "doch_seq")
 public class Doch extends AbstractGenIdEntity {
+    public static final String STATE_KONEC = "K";
+    public static final String STATE_NONE = null;
 
     @Basic
     @Column(name = "PERSON_ID")
@@ -119,10 +121,34 @@ public class Doch extends AbstractGenIdEntity {
         this.calcprac = cin.getCalcprac();
         if (!Cin.ATYP_FIX_CAS.equals(cin.getAkceTyp())) {
             this.fromTime = fromTime;
+            this.fromModifDatetime = fromModifStamp;
         }
-        this.fromModifDatetime = fromModifStamp;
         this.fromManual = fromManual;
         this.poznamka = poznamka;
+    }
+
+    public static Doch createSingleFixed(
+            final LocalDate dochDate
+            , final Person person
+            , final String state
+            , final Cin cin
+            , final Duration duration
+            , String poznamka
+    ) {
+        Doch singleDoch = new Doch();
+        singleDoch.personId = person.getId();
+        singleDoch.username = person.getUsername();
+        singleDoch.dochDate = dochDate;
+        singleDoch.dochState = state;
+        singleDoch.cinId = cin.getId();
+        singleDoch.cinAkceTyp = cin.getAkceTyp();
+        singleDoch.cinCinKod = cin.getCinKod();
+        singleDoch.cinnost = cin.getCinnost();
+        singleDoch.calcprac = cin.getCalcprac();
+        singleDoch.poznamka = poznamka;
+        singleDoch.dochDur = duration;
+
+        return singleDoch;
     }
 
     public Long getPersonId() {
@@ -220,6 +246,11 @@ public class Doch extends AbstractGenIdEntity {
 //    public Duration getDochDurationUI() {
 //        return this.dochDurationUI;
 //    }
+
+    @Transient
+    public boolean hasClosedState() {
+        return null != dochState && dochState.equals(STATE_KONEC);
+    }
 
     @Transient
     public Duration getSignedDochDur() {

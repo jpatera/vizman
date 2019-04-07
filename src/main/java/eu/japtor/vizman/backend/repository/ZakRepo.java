@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.repository;
 
+import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Zak;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,6 +13,8 @@ public interface ZakRepo extends JpaRepository<Zak, Long>, ZakRepoCustom {
 //    Zak findTopByCkontIgnoreCaseAndCzak(String ckont, Integer czak);
 
     Zak findTopByTextIgnoreCase(String text);
+
+    Zak findTop1ByTyp(ItemType itemType);
 
 //    Zak findTopByFolderIgnoreCase(String docdir);
 

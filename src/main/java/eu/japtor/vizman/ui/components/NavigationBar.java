@@ -35,14 +35,14 @@ public class NavigationBar extends Div implements RouterLayout {
 
 //        UI.getCurrent().navigate(href);
 //        init();
-        System.out.println("###  NavigationBar constructor");
+//        System.out.println("###  NavigationBar constructor");
 
     }
 
     @PostConstruct
     public void init() {
 
-        System.out.println("###  NavigationBar init");
+//        System.out.println("###  NavigationBar init");
         this.removeAll();
 
         // Navigation:

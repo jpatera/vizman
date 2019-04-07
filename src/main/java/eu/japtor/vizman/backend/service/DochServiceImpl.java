@@ -103,6 +103,12 @@ public class DochServiceImpl implements DochService, HasLogger {
 
     @Override
     @Transactional
+    public Doch addSingleRec(Doch singleDochRec) {
+        return addDochRec(singleDochRec);
+    }
+
+    @Override
+    @Transactional
     public Doch closeLastRec(Doch lastDochRec) {
         return closeDochRec(lastDochRec);
     }
@@ -126,6 +132,17 @@ public class DochServiceImpl implements DochService, HasLogger {
             }
             recToOpen.setCdoch(cdoch);
             return dochRepo.save(recToOpen);
+        }
+        return null;
+    }
+
+    private Doch addDochRec(Doch recToAdd) {
+        if (null != recToAdd) {
+            Integer cdoch;
+            Integer lastCdoch = dochRepo.findLastCdochForPersonAndDate(recToAdd.getPersonId(), recToAdd.getdDochDate());
+            cdoch = null == lastCdoch ? 1 : Math.max(1, lastCdoch + 1);
+            recToAdd.setCdoch(cdoch);
+            return dochRepo.save(recToAdd);
         }
         return null;
     }

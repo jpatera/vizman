@@ -52,7 +52,7 @@ public class MainView extends VerticalLayout implements RouterLayout, BeforeEnte
     @Autowired
     public MainView() {
 
-        getLogger().info("###  MainView constructor");
+//        getLogger().info("###  MainView constructor");
         ConfirmDialog.setDialogSessionLanguage(Locale.getDefault());
 //        addClassName("main-layout");
 
@@ -116,7 +116,7 @@ public class MainView extends VerticalLayout implements RouterLayout, BeforeEnte
     @PostConstruct
     public void setup() {
 
-        getLogger().info("###  MainView SETUP started");
+//        getLogger().info("###  MainView SETUP started");
 
 //        this.navigationBar.init();
 
@@ -134,7 +134,7 @@ public class MainView extends VerticalLayout implements RouterLayout, BeforeEnte
 
         addClassName("main-layout");    // ###***
 
-        getLogger().info("INIT finished");
+//        getLogger().info("### INIT finished");
 
     }
 

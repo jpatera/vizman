@@ -27,7 +27,9 @@ import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.CinRepo;
+import eu.japtor.vizman.backend.repository.PruhRepo;
 import eu.japtor.vizman.backend.service.DochService;
+import eu.japtor.vizman.backend.service.DochsumService;
 import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
@@ -37,19 +39,21 @@ import eu.japtor.vizman.ui.forms.DochFormDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
 
+import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 import static eu.japtor.vizman.app.security.SecurityUtils.canViewOtherUsers;
+import static eu.japtor.vizman.backend.entity.Pruh.PRUH_STATE_LOCKED;
+import static eu.japtor.vizman.backend.entity.Pruh.PRUH_STATE_UNLOCKED;
 import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_DOCH;
 
 @Route(value = ROUTE_DOCH, layout = MainView.class)
@@ -71,6 +75,14 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private static final String DOCH_LOWER_POZNAMKA_KEY = "doch-low-poznamka-key";
 
     private static final String DISABLED_ICON_COLOR = "silver";
+
+    private Icon pruhStateIconUnlocked;
+    private Icon pruhStateIconLocked;
+    private Icon pruhStateIconNone;
+    private Integer pruhState;
+
+    private Icon dochStateIconOpened;
+    private Icon dochStateIconClosed;
 
     private String authUsername;
 
@@ -164,6 +176,11 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     @Autowired
     public DochService dochService;
 
+    @Autowired
+    public DochsumService dochsumService;
+
+    @Autowired
+    public PruhRepo pruhRepo;
 
 
     //    @Autowired
@@ -286,7 +303,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     @Override
     protected void onAttach(AttachEvent attachEvent) {
 
-        getLogger().info("## ON ATTACH DochView ##");
+//        getLogger().info("## ON ATTACH DochView ##");
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -303,7 +320,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         // Cleanup
-        getLogger().info("## ON DETACH DochView ##");
+//        getLogger().info("## ON DETACH DochView ##");
 
         timeThread.interrupt();
         timeThread = null;
@@ -314,6 +331,110 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     }
 
+
+    private Component initPruhStateBox() {
+        HorizontalLayout box = new HorizontalLayout();
+//        box.setWidth("3em");
+//        box.setMinWidth("3em");
+        box.setVerticalComponentAlignment(Alignment.END);
+        box.getStyle()
+                .set("margin-top", "0.7em");
+
+
+        pruhStateIconUnlocked = VaadinIcon.UNLOCK.create();
+        pruhStateIconUnlocked.setColor("green");
+        pruhStateIconUnlocked.getStyle().set("margin-right", "0.3em");
+        pruhStateIconUnlocked.setVisible(false);
+
+        pruhStateIconLocked = VaadinIcon.LOCK.create();
+        pruhStateIconLocked.setColor("crimson");
+        pruhStateIconLocked.getStyle().set("margin-right", "0.3em");
+        pruhStateIconLocked.setVisible(false);
+
+        pruhStateIconNone = VaadinIcon.GRID_SMALL_O.create();
+        pruhStateIconNone.setColor("darkmagenta");
+        pruhStateIconNone.getStyle().set("margin-right", "0.3em");
+        pruhStateIconNone.setVisible(false);
+
+        box.add(pruhStateIconLocked, pruhStateIconUnlocked, pruhStateIconNone);
+        return box;
+    }
+
+    private Component initDochStateBox() {
+        HorizontalLayout box = new HorizontalLayout();
+        box.setWidth("3em");
+        box.setMinWidth("3em");
+        box.setVerticalComponentAlignment(Alignment.END);
+        box.getStyle()
+                .set("margin-top", "0.7em");
+
+        dochStateIconOpened = VaadinIcon.FLAG.create();
+        dochStateIconOpened.setColor("green");
+        dochStateIconOpened.getStyle().set("margin-right", "1em");
+        dochStateIconOpened.setVisible(false);
+
+        dochStateIconClosed = VaadinIcon.FLAG_CHECKERED.create();
+        dochStateIconClosed.setColor("crimson");
+        dochStateIconClosed.getStyle().set("margin-right", "1em");
+        dochStateIconClosed.setVisible(false);
+
+        box.add(dochStateIconClosed, dochStateIconOpened);
+        return box;
+    }
+
+    private void setDochControlsLocked(Integer pruhState) {
+
+        boolean dochClosed = dochDayIsClosed();
+        boolean ctrlsEnabled = !dochClosed && (null == pruhState || PRUH_STATE_UNLOCKED.equals(pruhState));
+
+        pruhStateIconLocked.setVisible(PRUH_STATE_LOCKED.equals(pruhState));
+        pruhStateIconUnlocked.setVisible(PRUH_STATE_UNLOCKED.equals(pruhState));
+        pruhStateIconNone.setVisible(null == pruhState);
+
+        dochStateIconClosed.setVisible(dochClosed);
+        dochStateIconOpened.setVisible(!dochClosed);
+
+        removeLastDochRecButton.setEnabled(ctrlsEnabled);
+        removeAllDochRecButton.setEnabled(ctrlsEnabled);
+
+        prichodBtn.setEnabled(ctrlsEnabled);
+        prichodAltBtn.setEnabled(ctrlsEnabled);
+
+        odchodRadio.setEnabled(ctrlsEnabled);
+        odchodButton.setEnabled(ctrlsEnabled);
+        odchodAltButton.setEnabled(ctrlsEnabled);
+
+        sluzebkaButton.setEnabled(ctrlsEnabled);
+        sluzebkaZrusButton.setEnabled(ctrlsEnabled);
+
+        dovolenaButton.setEnabled(ctrlsEnabled);
+        dovolenaHalfButton.setEnabled(ctrlsEnabled);
+        dovolenaZrusButton.setEnabled(ctrlsEnabled);
+
+        nemocButton.setEnabled(ctrlsEnabled);
+        nemocZrusButton.setEnabled(ctrlsEnabled);
+
+        volnoButton.setEnabled(ctrlsEnabled);
+        volnoZrusButton.setEnabled(ctrlsEnabled);
+
+        if (null == pruhState) {
+            prenosPersonDateButton.setEnabled(false);
+            cancelPrenosPersonDateButton.setEnabled(false);
+        } else if (PRUH_STATE_UNLOCKED.equals(pruhState)) {
+            prenosPersonDateButton.setEnabled(!dochClosed);
+            cancelPrenosPersonDateButton.setEnabled(dochClosed);
+        } else {
+            prenosPersonDateButton.setEnabled(false);
+            cancelPrenosPersonDateButton.setEnabled(false);
+        }
+        prenosPersonDateAllButton.setEnabled(false);
+        prenosPersonDateMonthButton.setEnabled(false);
+    }
+
+    private boolean dochDayIsClosed() {
+        return upperDochList.stream()
+                .anyMatch(Doch::hasClosedState);
+    }
 
 
     private void initDochData() {
@@ -330,8 +451,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
             dochDate = LocalDate.now();
             dochDateSelector.setValue(dochDate);
         }
-        updateUpperDochGridPane(dochPerson, dochDate);
-        updateLowerDochGridPane(dochPerson, dochDate);
+        updateDochControls();
     }
 
     private void loadPruhDataFromDb() {
@@ -491,6 +611,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         );
         dochHeader.add(
                 dochTitle
+                , initDochStateBox()
                 , initPersonSelector()
                 , buttonBox
         );
@@ -560,8 +681,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         dochPersonSelector.setEnabled(canViewOtherUsers());
         dochPersonSelector.addValueChangeListener(event -> {
             dochPerson = event.getValue();
-            updateUpperDochGridPane(dochPerson, dochDate);
-            updateLowerDochGridPane(dochPerson, dochDate);
+            updateDochControls();
         });
         dochPersonSelector.addBlurListener(event -> {
 //            loadUpperDochGridData(dochPerson.getId(), dochDate);
@@ -578,12 +698,33 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 //        dochDateSelector.getStyle().set("margin-right", "1em");
         dochDateSelector.addValueChangeListener(event -> {
             dochDate = event.getValue();
-            updateUpperDochGridPane(dochPerson, dochDate);
-            updateLowerDochGridPane(dochPerson, dochDate);
+            updateDochControls();
         });
         return dochDateSelector;
     }
 
+    private void updateDochControls() {
+        updateUpperDochGridPane(dochPerson, dochDate);
+        updateLowerDochGridPane(dochPerson, dochDate);
+        Pruh pruh = null;
+        if (null != dochDate && null != dochPerson) {
+            pruh = pruhRepo.findFirstByYmAndPersonId(YearMonth.from(dochDate), dochPerson.getId());
+        }
+        pruhState = null == pruh ? null : pruh.getState();
+        setPruhStateControls(pruhState);
+    }
+
+
+    private void setPruhStateControls(Integer newState) {
+//        if (null == newState) {
+//            setDochControlsLocked(null);
+//        } else if (newState.equals(PRUH_STATE_LOCKED)) {
+//            setDochControlsLocked(true);
+//        } else {
+//            setDochControlsLocked(false);
+//        }
+        setDochControlsLocked(newState);
+    }
 
     private Component initPrichodButton() {
         prichodBtn = new Button("Příchod");
@@ -683,8 +824,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     private Component initVolnoZrusButton() {
         volnoZrusButton = new Button("Zrušit neplac.volno");
-        volnoZrusButton.getStyle()
-                .set("color", "crimson")
+        volnoZrusButton
+                .getElement().setAttribute("theme", "error secondary");
         ;
         volnoZrusButton.addClickListener(event -> {
             if (!checkDochContainsNahradniVolno("není co rušit")) {
@@ -717,8 +858,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     private Component initNemocZrusButton() {
         nemocZrusButton = new Button("Zrušit nemoc");
-        nemocZrusButton.getStyle()
-                .set("color", "crimson")
+        nemocZrusButton
+                .getElement().setAttribute("theme", "error secondary");
         ;
         nemocZrusButton.addClickListener(event -> {
             if (!checkDochContainsNemoc("není co rušit")) {
@@ -775,14 +916,14 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     .open()
             ;
         });
-        dovolenaZrusButton.getStyle()
-                .set("color", "crimson")
+        dovolenaZrusButton
+                .getElement().setAttribute("theme", "error secondary");
         ;
         return dovolenaZrusButton;
     }
 
     private Component initSluzebkaButton() {
-        sluzebkaButton = new Button("Služebka (8h)");
+        sluzebkaButton = new Button("Služebka (celodenní)");
         sluzebkaButton.getElement().setAttribute("theme", "primary");
         sluzebkaButton.addClickListener(event -> {
             LocalDateTime currentDateTime = LocalDateTime.now(minuteClock);
@@ -793,8 +934,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     private Component initSluzebkaZrusButton() {
         sluzebkaZrusButton = new Button("Zrušit služebku");
-        sluzebkaZrusButton.getStyle()
-                .set("color", "crimson")
+        sluzebkaZrusButton
+                .getElement().setAttribute("theme", "error secondary");
         ;
         sluzebkaZrusButton.addClickListener(event -> {
             if (!checkDochContainsSluzebka("není co rušit")) {
@@ -871,7 +1012,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         upperDochFooterBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
         HorizontalLayout buttonBox = new HorizontalLayout();
         buttonBox.add(
-                initPrenosPersonDateButton()
+                initPruhStateBox()
+                , initPrenosPersonDateButton()
                 , initCancelPrenosPersonDateButton()
                 , initPrenosPersonMonthButton()
                 , initPrenosPersonAllButton()
@@ -950,11 +1092,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     dochDate = prevDochDate;
                     dochDateSelector.setValue(dochDate);
                     fireEvent(new GeneratedVaadinDatePicker.ChangeEvent<>(dochDateSelector, false));
-//                    updateUpperDochGridPane(dochPerson, dochDate);
-
-//                    dochDateSelector.setValue(dochDate);
-//                    fireEvent(new GeneratedVaadinDatePicker.ChangeEvent(dochDateSelector, false));
-//                    loadUpperDochGridData(dochPerson, dochDate);
                     setDochNaviButtonsEnabled(true);
                 }
             } else {
@@ -965,7 +1102,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     }
 
     private Component initLoadNextDateButton() {
-//        loadNextDateButton = new Button("Následující");
         loadNextDateButton = new Button(VaadinIcon.STEP_FORWARD.create());
         loadNextDateButton.addClickListener(event -> {
             if (null != dochPerson && null != dochDate) {
@@ -976,11 +1112,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     dochDate = nextDochDate;
                     dochDateSelector.setValue(dochDate);
                     fireEvent(new GeneratedVaadinDatePicker.ChangeEvent<>(dochDateSelector, false));
-//                    updateUpperDochGridPane(dochPerson, dochDate);
-
-//                    dochDateSelector.setValue(dochDate);
-//                    fireEvent(new GeneratedVaadinDatePicker.ChangeEvent(dochDateSelector, false));
-//                    loadUpperDochGridData(dochPerson, dochDate);
                     setDochNaviButtonsEnabled(true);
                 }
             } else {
@@ -991,7 +1122,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     }
 
     private Component initLoadLastDateButton() {
-//        loadLastDateButton = new Button("Poslední");
         loadLastDateButton = new Button(VaadinIcon.FAST_FORWARD.create());
         loadLastDateButton.addClickListener(event -> {
             if (null != dochPerson && null != dochDate) {
@@ -1002,11 +1132,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     dochDate = lastDochDate;
                     dochDateSelector.setValue(dochDate);
                     fireEvent(new GeneratedVaadinDatePicker.ChangeEvent<>(dochDateSelector, false));
-//                    updateUpperDochGridPane(dochPerson, dochDate);
-
-//                    dochDateSelector.setValue(dochDate);
-//                    fireEvent(new GeneratedVaadinDatePicker.ChangeEvent(dochDateSelector, false));
-//                    loadUpperDochGridData(dochPerson, dochDate);
                     setDochNaviButtonsEnabled(true);
                 }
             } else {
@@ -1069,9 +1194,31 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         prenosPersonDateButton = new Button("Přenos do proužku");
         prenosPersonDateButton.getElement().setAttribute("theme", "primary");
         prenosPersonDateButton.addClickListener(event -> {
-            ConfirmDialog.createInfo()
+            if (pruhState.equals(PRUH_STATE_LOCKED)) {
+                ConfirmDialog.createWarning()
+                        .withCaption("PŘENOS DOCHÁZKY")
+                        .withMessage("Nelze vykonat, příslušný proužek je uzamčen.")
+                        .open()
+                ;
+                return;
+            }
+            ConfirmDialog.createQuestion()
                     .withCaption("PŘENOS DOCHÁZKY")
-                    .withMessage("Comming soon...")
+                    .withMessage("Přenést docházku do proužku a uzavřít den?")
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .withYesButton(() -> {
+                        try {
+                            updateDochsumAndCloseDochDay();
+                            updateDochControls();
+                        } catch (Exception e) {
+                            getLogger().error("Error when closing  DOCH day", e);
+                            ConfirmDialog
+                                    .createError()
+                                    .withCaption("CHYBA")
+                                    .withMessage("Neočekávaná chyba při přenosu docházky do proužků")
+                                    .open();
+                        }
+                    })
                     .open()
             ;
         });
@@ -1080,19 +1227,274 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     private Component initCancelPrenosPersonDateButton() {
         cancelPrenosPersonDateButton = new Button("Zrušit přenos");
-        cancelPrenosPersonDateButton.getStyle()
-//                .set("font-color", "red")
-                .set("color", "crimson")
+        cancelPrenosPersonDateButton
+                .getElement().setAttribute("theme", "error secondary");
         ;
         cancelPrenosPersonDateButton.addClickListener(event -> {
+            if (pruhState.equals(PRUH_STATE_LOCKED)) {
+                ConfirmDialog.createWarning()
+                        .withCaption("ZRUŠENÍ PŘENOSU DOCHÁZKY")
+                        .withMessage("Nelze vykonat, příslušný proužek je uzamčen.")
+                        .open()
+                ;
+                return;
+            }
             ConfirmDialog.createInfo()
                     .withCaption("ZRUŠENÍ PŘENOSU DOCHÁZKY")
-                    .withMessage("Comming soon...")
+                    .withMessage("Vynulovat docházku v proužku a otevřít den?")
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .withYesButton(() -> {
+                        deleteFromDochsumAndOpenDochDay();
+                        updateDochControls();
+                    })
                     .open()
             ;
         });
         return cancelPrenosPersonDateButton;
     }
+
+
+    private void updateDochsumAndCloseDochDay() {
+//        generateAutomaticLunch();
+
+        final Duration obedRequired = Duration.ofMinutes(30);
+        final Duration durForObedAuto = Duration.ofMinutes(4 * 60 + 30);
+
+        Duration durPrac = sumOfDochPrac();
+        Duration durObedMan = sumOfObedStamped();
+        Duration durObedAutMinus = sumOfObedAutMinus();
+
+        // Generate obed auto:
+        Duration durPracProductive = sumOfDochPracProductive();
+        if ((durPracProductive.compareTo(durForObedAuto) > 0)
+                && (durObedMan.minus(durObedAutMinus).compareTo(obedRequired) < 0)) {
+            Duration durObedAutNewMinus = Duration.ZERO.minus(obedRequired.minus(durObedMan));
+            stampSingleObedAuto(durObedAutNewMinus);
+            durObedAutMinus = durObedAutMinus.plus(durObedAutNewMinus);
+        }
+
+        Dochsum dochsum = new Dochsum(dochPerson, dochDate);
+
+        LocalTime fromTimeMin = getDsFromFirst();
+        LocalDateTime fromDateTimeMin = null;
+        if (null != fromTimeMin) {
+            fromDateTimeMin = LocalDateTime.of(dochDate.getYear(), dochDate.getMonth(), dochDate.getDayOfMonth()
+                    , fromTimeMin.getHour(), fromTimeMin.getMinute());
+        }
+        dochsum.setDsFromFirst(fromDateTimeMin);
+
+        LocalTime toTimeMax = getDsToLast();
+        LocalDateTime toDateTimeMax = null;
+        if (null != toTimeMax) {
+            toDateTimeMax = LocalDateTime.of(dochDate.getYear(), dochDate.getMonth(), dochDate.getDayOfMonth()
+                    , toTimeMax.getHour(), toTimeMax.getMinute());
+        }
+        dochsum.setDsToLast(toDateTimeMax);
+
+        dochsum.setDsDov(durToDecNulled(sumOfDovolena()));
+        dochsum.setDsNem(durToDecNulled(sumOfNemoc()));
+        dochsum.setDsVol(durToDecNulled(sumOfVolno()));
+        dochsum.setDsLek(durPracToDecRoundedNulled(sumOfLekar()));
+        dochsum.setDsObedMan(durToDecNulled(durObedMan));
+        dochsum.setDsObedAut(durToDecNulled(Duration.ZERO.minus(durObedAutMinus))); // Obedy v dochsum chceme mit v '+'
+        dochsum.setDsObed(durToDecNulled(durObedMan.minus(durObedAutMinus)));
+        dochsum.setObedKratky((null == durObedAutMinus) || (Duration.ZERO.compareTo(durObedAutMinus) != 0));
+        dochsum.setDsWork(durToDecNulled(durPrac));
+        dochsum.setDsWorkPruh(durPracToDecRounded(durPrac.plus(durObedAutMinus)));
+//        dochsum.setDsWorkRed();
+
+        try {
+            dochsumService.updateDochsumCloseDoch(dochDate, dochPerson.getId(), dochsum);
+
+        } catch (Exception e) {
+            ConfirmDialog.createError()
+                    .withCaption("Přenos docházky")
+                    .withMessage("Chyba při přenosu docházky.")
+                    .open()
+            ;
+        }
+    }
+
+    private void deleteFromDochsumAndOpenDochDay() {
+        try {
+            dochsumService.deleteDochsumOpenDoch(dochDate, dochPerson.getId());
+        } catch (Exception e) {
+            ConfirmDialog.createError()
+                    .withCaption("Otevření docházky")
+                    .withMessage("Chyba při otevírání docházky.")
+                    .open()
+            ;
+        }
+    }
+
+//    private LocalTime getFromFirst() {
+//        return upperDochList.stream()
+//                .mapToInt(doch -> doch.getFromTime())
+//                .max().orElseThrow(NoSuchElementException::new);
+//                ;
+//    }
+
+    private BigDecimal durToDecNulled(Duration dur) {
+        BigDecimal durDec = durToDec(dur);
+        return (durDec.compareTo(BigDecimal.ZERO) == 0) ? null : durDec;
+    }
+
+    private BigDecimal durToDec(Duration dur) {
+        if (null == dur) {
+            return BigDecimal.ZERO;
+        }
+        Long hours  = dur.toHours();
+        Long minutes = dur.toMinutes() - hours * 60;
+        return BigDecimal.valueOf(hours).add(BigDecimal.valueOf((minutes % 60) / 60f));
+    }
+
+    private BigDecimal durPracToDecRoundedNulled(Duration dur) {
+        BigDecimal durDec = durPracToDecRounded(dur);
+        return (durDec.compareTo(BigDecimal.ZERO) == 0) ? null : durDec;
+    }
+
+    private BigDecimal durPracToDecRounded(Duration durPrac) {
+        if (null == durPrac) {
+            return null;
+        }
+        Long hours  = durPrac.toHours();
+        Long minutes = durPrac.toMinutes() - hours * 60;
+        BigDecimal hoursDecPart;
+
+        if ((hours == 7 && minutes > 30) && (hours == 8 && minutes < 30)) {
+            hours = 8L;
+//            minutes = 0L;
+            hoursDecPart = BigDecimal.valueOf(0.0);
+        } else {
+            if (minutes >= 30) {
+//                minutes = 30L;
+                hoursDecPart = BigDecimal.valueOf(0.5);
+            } else {
+//                minutes = 0L;
+                hoursDecPart = BigDecimal.ZERO;
+            }
+        }
+
+//        if (minutes < 15) {
+//            minutes = 0L;
+//            hoursDecPart = BigDecimal.ZERO;
+//        } else if (minutes >= 15 && minutes <= 45) {
+//            minutes = 30L;
+//            hoursDecPart = BigDecimal.valueOf(0.5);
+//        } else {
+//            minutes = 0L;
+//            hoursDecPart = BigDecimal.ZERO;
+//            hours = hours + 1;
+//        }
+
+        return BigDecimal.valueOf(hours).add(hoursDecPart);
+    }
+
+    private LocalTime getDsFromFirst() {
+        return upperDochList.stream()
+                .filter(doch -> null != doch.getFromTime())
+                .map(doch -> doch.getFromTime())
+                .min(LocalTime::compareTo)
+                .orElse(null)
+                ;
+    }
+
+    private LocalTime getDsToLast() {
+        return upperDochList.stream()
+                .filter(doch -> null != doch.getToTime())
+                .map(doch -> doch.getToTime())
+                .max(LocalTime::compareTo)
+                .orElse(null)
+                ;
+    }
+
+    private Duration sumOfDochPrac() {
+        return upperDochList.stream()
+                .filter(doch -> null != doch.getDochDur() &&  doch.getCalcprac())
+                .map(doch -> doch.getDochDur())
+                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                ;
+    }
+
+    private Duration sumOfDochPracProductive() {
+        LocalTime pracProdTimeMin = LocalTime.of(7, 0);
+        LocalTime pracProdTimeMax = LocalTime.of(18, 0);
+        Duration durPracProd = Duration.ZERO;
+        LocalTime timeFromProd;
+        LocalTime timeToProd;
+        for (Doch doch : upperDochList) {
+            if (doch.getCalcprac()) {
+                if (null == doch.getFromTime() || null == doch.getToTime()) {
+                    // Fixed zaznamy bez od-do; momentalne Sluzebka celodenni (a nove taky Lekar ?)
+                    durPracProd = doch.getDochDur();
+                    durPracProd.plus(doch.getDochDur());
+                } else {
+                    if (pracProdTimeMin.compareTo(doch.getFromTime()) > 0) {
+                        timeFromProd = pracProdTimeMin;
+                    } else {
+                        timeFromProd = doch.getFromTime();
+                    }
+                    if (pracProdTimeMax.compareTo(doch.getToTime()) < 0) {
+                        timeToProd = pracProdTimeMax;
+                    } else {
+                        timeToProd = doch.getToTime();
+                    }
+                    durPracProd = durPracProd.plus(Duration.between(timeFromProd, timeToProd));
+                }
+            }
+        }
+        return durPracProd;
+    }
+
+    private Duration sumOfObedStamped() {
+        return upperDochList.stream()
+                .filter(doch -> Cin.CinKod.MO == doch.getCinCinKod())
+                .map(doch -> doch.getDochDur())
+                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                ;
+    }
+
+    private Duration sumOfObedAutMinus() {
+        return upperDochList.stream()
+                .filter(doch -> Cin.CinKod.OA == doch.getCinCinKod())
+                .map(doch -> doch.getDochDur())
+                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                ;
+    }
+
+    private Duration sumOfNemoc() {
+        return upperDochList.stream()
+                .filter(doch -> Cin.CinKod.ne == doch.getCinCinKod())
+                .map(doch -> doch.getDochDur())
+                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                ;
+    }
+
+    private Duration sumOfDovolena() {
+        return upperDochList.stream()
+                .filter(doch -> Cin.CinKod.dc == doch.getCinCinKod() || Cin.CinKod.dp == doch.getCinCinKod())
+                .map(doch -> doch.getDochDur())
+                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                ;
+    }
+
+    private Duration sumOfVolno() {
+        return upperDochList.stream()
+                // TODO: je nahradni volno vs neplacene  volno ?
+                .filter(doch -> Cin.CinKod.nv == doch.getCinCinKod())
+                .map(doch -> doch.getDochDur())
+                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                ;
+    }
+
+    private Duration sumOfLekar() {
+        return upperDochList.stream()
+                .filter(doch -> Cin.CinKod.L == doch.getCinCinKod())
+                .map(doch -> doch.getDochDur())
+                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                ;
+    }
+
 
     private Component initPrenosPersonMonthButton() {
         prenosPersonDateMonthButton = new Button("Přenést měsíc");
@@ -1101,7 +1503,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     }
 
     private Component initPrenosPersonAllButton() {
-        prenosPersonDateAllButton = new Button("Přenést vše");
+        prenosPersonDateAllButton = new Button("Zrušit přenos měsíce");
         prenosPersonDateAllButton.setEnabled(false);
         return prenosPersonDateAllButton;
     }
@@ -1580,6 +1982,25 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         );
         singleRec.setDochDur(Duration.ofHours(8));
         dochService.openFirstRec(singleRec);
+        updateUpperDochGridPane(dochPerson, dochDate);
+        upperDochGrid.getDataProvider().refreshAll();
+    }
+
+    private void stampSingleObedAuto(Duration durObedAuto) {
+//        if (!canStampStandaloneRec()) {
+//            return;
+//        }
+
+        Doch singleRec = Doch.createSingleFixed (
+                dochDate
+                , dochPerson
+                , Doch.STATE_KONEC
+                , cinRepo.findByCinKod(Cin.CinKod.OA)
+                , durObedAuto
+                , null
+        );
+
+        dochService.addSingleRec(singleRec);
         updateUpperDochGridPane(dochPerson, dochDate);
         upperDochGrid.getDataProvider().refreshAll();
     }
@@ -2102,6 +2523,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
 
     private static class TimeThread extends Thread {
+        private final Logger LOG = LoggerFactory.getLogger(getClass());
+
         private final UI ui;
         private final DochView dochView;
 
@@ -2128,7 +2551,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 //                    view.add(new Span("Done updating"));
 //                });
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                LOG.debug("Doch clock timer interrupted. Orig.message: {}", e.getMessage() );
             }
         }
     }

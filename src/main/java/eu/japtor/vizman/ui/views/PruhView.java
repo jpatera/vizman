@@ -216,6 +216,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         if (pruhZakGrid.getEditor().isOpen()) {
             pruhZakGrid.getEditor().closeEditor();
         }
+        int i = 0;
         for (PruhZak pzToAdd : pruhZakListToAdd) {
             pzToAdd.getCkont();
             boolean isZakInPruh = pruhZakList.stream()
@@ -224,11 +225,20 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
             ;
             if (!isZakInPruh) {
                 pruhZakList.add(0, new PruhZak(pzToAdd.getZakId(), pzToAdd.getItemType(), pzToAdd.getCkont(), pzToAdd.getCzak(), pzToAdd.getText()));
+                i++;
             }
         }
 
-        Notification.show("Zakázky přidány"
-                , 2500, Notification.Position.TOP_CENTER);
+        if (i > 0) {
+            Notification.show(String.format("Zakázky přidány: %s", i)
+                    , 2500, Notification.Position.TOP_CENTER);
+        } else {
+            ConfirmDialog.createInfo()
+                    .withCaption("PŘIDÁNÍ ZAKÁZEK")
+                    .withMessage("Žádné zakázky nebyly přidány, všechny jsou již v proužku přítomny")
+                    .open()
+            ;
+        }
 
 //        calcAndSetPruhMissingHods();
 //        setPruhSumHods();
@@ -689,7 +699,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 return;
             }
 
-            if (pruhToBeLocked() && getMissingHodSum().compareTo(BigDecimal.ZERO) > 0) {
+            if (pruhToBeLocked() && getMissingHodSum().compareTo(BigDecimal.ZERO) != 0) {
                 ConfirmDialog.createWarning()
                         .withCaption(LOCK_PRUH_BUTTON_TEXT)
                         .withMessage("V proužku jsou nevyplněné hodiny na zakázkách, nelze uzavřít.")
@@ -1083,7 +1093,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private String getSumHodString(int day) {
-        BigDecimal sumHods = getDayZakHodSum(day);
+        BigDecimal sumHods = getDaySumHodSum(day);
         return null == sumHods ? "" : VzmFormatUtils.decHodFormat.format(sumHods);
     }
 
@@ -1417,7 +1427,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     .withCancelButton(ButtonOption.caption("ZPĚT"))
                     .withYesButton(() -> {
                         List<DochsumZak> lastDsZaks = dochsumZakService.fetchDochsumZaksForPersonAndYm(pruhPerson.getId(), lastYm);
-                        if (null == lastDsZaks) {
+                        if (null == lastDsZaks || lastDsZaks.size() == 0) {
                             ConfirmDialog.createInfo()
                                     .withCaption("KOPÍROVÁNÍ ZAKÁZEK")
                                     .withMessage(String.format("V  posledním proužku uživatele %s nenalezena žádná data.", pruhPerson.getUsername()))
@@ -1428,7 +1438,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                         List<PruhZak> lastPruhZakList = transposeDochsumZaksToPruhZaks(lastDsZaks);
 //                        lastPruhZakList.sort(pruhZakOrderComparator.reversed());
                         lastPruhZakList.sort(pruhZakOrderComparator);
-                        addPruhZaksToGrid(lastPruhZakList);
+                        if (null != lastPruhZakList && lastPruhZakList.size() > 0) {
+                            addPruhZaksToGrid(lastPruhZakList);
+                        }
                     })
                     .open()
             ;
