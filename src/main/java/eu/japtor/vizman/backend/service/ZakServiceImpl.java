@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.service;
 
+import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.repository.ZakRepo;
 import eu.japtor.vizman.ui.components.OkDialog;
@@ -10,7 +11,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Service
-public class ZakServiceImpl implements ZakService {
+public class ZakServiceImpl implements ZakService, HasLogger {
 
     private ZakRepo zakRepo;
 
@@ -44,8 +45,13 @@ public class ZakServiceImpl implements ZakService {
 
     @Override
     public boolean deleteZak(Zak zak) {
-        new OkDialog().open("Rušení zakázek není implementováno", "", "");
-        return false;
+        try {
+            zakRepo.delete(zak);
+        } catch (Exception e) {
+            getLogger().error("Error while deleting ZAKAZKA", e);
+            return false;
+        }
+        return true;
     }
 
     @Override

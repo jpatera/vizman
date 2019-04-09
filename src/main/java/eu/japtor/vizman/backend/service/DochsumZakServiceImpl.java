@@ -71,6 +71,16 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
     }
 
     @Override
+    public List<DochsumZak> fetchLatestDochsumZaks(Long zakId) {
+        return dochsumZakRepo.findTop10ByZakIdOrderByDsDateDesc(zakId);
+    }
+
+    @Override
+    public Long getCountDochsumZak(Long zakId) {
+        return dochsumZakRepo.countByZakId(zakId);
+    }
+
+    @Override
     public long countDochsumZaksForPersonAndYm(Long personId, YearMonth dsYm) {
 //        int dsYmInt = 100 * dsYm.getYear() + dsYm.getMonthValue();
         return dochsumZakRepo.countByPersonIdAndDsYm(personId, dsYm);

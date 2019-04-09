@@ -13,6 +13,10 @@ public interface DochsumZakService {
 
     List<DochsumZak> fetchDochsumZaksForPersonAndYm(Long personId, YearMonth dsYm);
 
+    List<DochsumZak> fetchLatestDochsumZaks(Long zakId);
+
+    Long getCountDochsumZak(Long zakId);
+
     long countDochsumZaksForPersonAndYm(Long personId, YearMonth dsYm);
 
 //    boolean updateDochsumZaksForPersonAndMonth(

@@ -16,6 +16,10 @@ public interface DochsumZakRepo extends JpaRepository<DochsumZak, Long> {
     List<DochsumZak> findByPersonIdAndDsYm(Long personId, YearMonth dsYm);
     long countByPersonIdAndDsYm(Long personId, YearMonth dsYm);
 
+    List<DochsumZak> findTop10ByZakIdOrderByDsDateDesc(Long zakId);
+
+    Long countByZakId(Long zakId);
+
 //    @Query(value = "DELETE FROM VIZMAN.DOCHSUM_ZAK WHERE person_id = ?1 AND DS_YM = ?2"
 //            , nativeQuery = true)
     void deleteAllByPersonIdAndDsYm(Long personId, YearMonth ym);

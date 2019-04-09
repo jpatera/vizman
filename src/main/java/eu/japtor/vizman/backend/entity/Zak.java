@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -417,6 +418,13 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     public List<KzTreeAware> getNodes() {
         return new ArrayList();
     }
+
+//    public List<Fakt> getFakts() {
+//        if (null == fakts) {
+//            return Collections.emptyList();
+//        }
+//        return fakts;
+//    }
 
 
 //    @Override

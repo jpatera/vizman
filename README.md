@@ -16,3 +16,17 @@ Open http://localhost:8080/ in browser
 For documentation on using Vaadin Flow and Spring, visit [vaadin.com/docs](https://vaadin.com/docs/v10/flow/spring/tutorial-spring-basic.html)
 
 For more information on Vaadin Flow, visit https://vaadin.com/flow.
+
+
+------------------------------------------
+
+Parametr zalezi zerjme na tom jak je napsan v  pom.xml:
+--------------------------------------------------------
+mvn package -Dvaadin.productionMode
+mvn spring-boot:run -Dvaadin.productionMode
+
+mvn package -Pproduction-mode
+mvn spring-boot:run -Pproduction-mode
+
+
+java -jar vizman-1.0-SNAPSHOT.jar

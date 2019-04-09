@@ -125,6 +125,9 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver,
     public KlientService klientService;
 
     @Autowired
+    public DochsumZakService dochsumZakService;
+
+    @Autowired
     private CfgPropsCache cfgPropsCache;
 
 
@@ -142,7 +145,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver,
 
         kontFormDialog = new KontFormDialog(
                 this::saveKontForGrid, this::deleteKontForGrid
-                , kontService, zakService, faktService, klientService
+                , kontService, zakService, faktService, klientService, dochsumZakService
                 , cfgPropsCache
         );
 //        kontFormDialog.addDialogCloseActionListener(ev -> {
@@ -152,7 +155,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver,
 
         zakFormDialog = new ZakFormDialog(
                 this::saveZakForGrid, this::deleteZak
-                , zakService, faktService, cfgPropsCache
+                , zakService, faktService, dochsumZakService, cfgPropsCache
         );
 //        subFormDialog = new SubFormDialog(
 //                this::saveZakForGrid, this::deleteZak
@@ -874,8 +877,8 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver,
         KzTreeAware newSelectedKont = stream.findFirst().orElse(null);
 
         try {
-            boolean isDeleted = kontService.deleteKont(kontToDelete);
-            if (!isDeleted) {
+            boolean kontWasDeleted = kontService.deleteKont(kontToDelete);
+            if (!kontWasDeleted) {
                 ConfirmDialog
                         .createWarning()
                         .withCaption("Zrušení kontraktu.")
@@ -1008,23 +1011,38 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver,
 //    }
 
     private void deleteZak(Zak zak) {
-        String ckzDel = zak.getCkont() + " - " + zak.getCzak();
-        boolean deleted = zakService.deleteZak(zak);
-        if (!deleted) {
-            ConfirmDialog
-                    .createWarning()
-                    .withCaption("Zrušení zakázky")
-                    .withMessage("Chyba při rušení zakázky " + ckzDel + ".")
-                    .open();
-        } else {
-            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-            kzTreeGrid.getDataProvider().refreshAll();
+        String ckzDel = String.format("%s / %d", zak.getCkont(), zak.getCzak());
+        try {
+            boolean deleted = zakService.deleteZak(zak);
 
+            if (!deleted) {
+                ConfirmDialog
+                        .createError()
+                        .withCaption("Zrušení zakázky")
+                        .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
+                        .open();
+            } else {
+                kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+                kzTreeGrid.getDataProvider().refreshAll();
+                getLogger().info(String.format("ZAKAZKA %s deleted", ckzDel));
+                Notification.show(String.format("Zakázka %s zrušena.", ckzDel)
+                        , 2500, Notification.Position.TOP_CENTER)
+                ;
+                ConfirmDialog
+                        .createInfo()
+                        .withCaption("Zrušení zakázky")
+                        .withMessage("Zakázka " + ckzDel + " byla zrušena.")
+                        .open()
+                ;
+            }
+        } catch (Exception e) {
+            getLogger().error(String.format("Error during deletion ZAKAZKA %s / %d", zak.getCkont(), zak.getCzak()), e);
             ConfirmDialog
-                    .createInfo()
+                    .createError()
                     .withCaption("Zrušení zakázky")
-                    .withMessage("Zakázka " + ckzDel + " byla zrušena.")
-                    .open();
+                    .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
+                    .open()
+            ;
         }
     }
 

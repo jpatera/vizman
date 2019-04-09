@@ -117,15 +117,18 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
 
 
 
-    public KontFormDialog(BiConsumer<Kont, Operation> itemSaver,
-                          Consumer<Kont> itemDeleter,
+    public KontFormDialog(BiConsumer<Kont, Operation> kontSaver,
+                          Consumer<Kont> kontDeleter,
+//                          BiConsumer<Zak, Operation> zakSaver,
+//                          Consumer<Kont> zakDeleter,
                           KontService kontService,
                           ZakService zakService,
                           FaktService faktService,
                           KlientService klientService,
+                          DochsumZakService dochsumZakService,
                           CfgPropsCache cfgPropsCache
     ){
-        super("1300px", "800px", true, true, itemSaver, itemDeleter, false);
+        super("1300px", "800px", true, true, kontSaver, kontDeleter, false);
 
         this.getElement().getStyle().set("padding", "0");
         this.getElement().getStyle().set("margin", "0");
@@ -191,11 +194,11 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
 
 //        kontEvidFormDialog = new KontEvidFormDialog(this::saveKontEvid, kontService);
         zakFormDialog = new ZakFormDialog(
-                this::saveZakForForm, this::deleteZak
-                , zakService, faktService, cfgPropsCache
+                this::saveZakForForm, this::deleteZakForForm
+                , zakService, faktService, dochsumZakService, cfgPropsCache
         );
 //        subFormDialog = new SubFormDialog(
-//                this::saveZakForForm, this::deleteZak
+//                this::saveZakForForm, this::deleteZakForForm
 //                , zakService, faktService, cfgPropsCache
 //        );
 //        zakFormDialog.getDialogLeftBarPart().add(initKontEvidButton());
@@ -305,19 +308,21 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
     @Override
     protected void confirmDelete() {
 
+        String ckDel = String.format("%s", getCurrentItem().getCkont());
         long nodesCount = getCurrentItem().getNodes().size();
         if (nodesCount > 0) {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Zrušení kontraktu")
                     .withMessage("Kontrakt " + getCurrentItem().getCkont() + " nelze zrušit, obsahuje zakázky / akvizice")
-                    .open();
-        } else {
-            openConfirmDeleteDialog("Zrušení kontraktu"
-                    ,"Opravdu zrušit kontrakt " + getCurrentItem().getCkont() + " ?"
-                    ,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny."
-            );
+                    .open()
+            ;
+            return;
         }
+        openConfirmDeleteDialog("Zrušení kontraktu"
+                ,"Opravdu zrušit kontrakt " + getCurrentItem().getCkont() + " ?"
+                ,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny."
+        );
     }
 
     public Kont saveKont(Kont kont, Operation operation) {
@@ -457,13 +462,40 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
 //                "Změny zakázky uloženy", 3000, Notification.Position.TOP_CENTER);
     }
 
-    private void deleteZak(Zak zak) {
-//        zakService.deleteZak(zak);
-//        zakGrid.getDataCommunicator().getKeyMapper().removeAll();
-//        zakGrid.getDataProvider().refreshAll();
+    private void deleteZakForForm(Zak zak) {
+        String ckzDel = String.format("%s / %d", zak.getCkont(), zak.getCzak());
+        try {
+            boolean zakWasDeleted = zakService.deleteZak(zak);
 
-        Notification.show("Rušení zakázek není implementováno.", 2500, Notification.Position.TOP_CENTER);
-//        updateGridContent();
+            if (!zakWasDeleted) {
+                ConfirmDialog
+                        .createError()
+                        .withCaption("Zrušení zakázky")
+                        .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
+                        .open();
+            } else {
+                zakGrid.getDataCommunicator().getKeyMapper().removeAll();
+                zakGrid.getDataProvider().refreshAll();
+                getLogger().info(String.format("ZAKAZKA %s deleted", ckzDel));
+                Notification.show(String.format("Zakázka %s zrušena.", ckzDel)
+                        , 2500, Notification.Position.TOP_CENTER)
+                ;
+                ConfirmDialog
+                        .createInfo()
+                        .withCaption("Zrušení zakázky")
+                        .withMessage(String.format("Zakázka %s byla zrušena.", ckzDel))
+                        .open()
+                ;
+            }
+        } catch (Exception e) {
+            getLogger().error(String.format("Error during deletion ZAKAZKA %s / %d", zak.getCkont(), zak.getCzak()), e);
+            ConfirmDialog
+                    .createError()
+                    .withCaption("Zrušení zakázky")
+                    .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
+                    .open()
+            ;
+        }
     }
 
 

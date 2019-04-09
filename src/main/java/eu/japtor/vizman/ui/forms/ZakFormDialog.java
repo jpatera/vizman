@@ -24,6 +24,7 @@ import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.bean.EvidZak;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
+import eu.japtor.vizman.backend.service.DochsumZakService;
 import eu.japtor.vizman.backend.service.FaktService;
 import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.backend.utils.VzmFileUtils;
@@ -31,8 +32,10 @@ import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.*;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ConfirmDialog;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -96,6 +99,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
 //    @Autowired
     private ZakService zakService;
     private FaktService faktService;
+    private DochsumZakService dochsumZakService;
     private CfgPropsCache cfgPropsCache;
 
 
@@ -108,6 +112,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
                          Consumer<Zak> itemDeleter,
                          ZakService zakService,
                          FaktService faktService,
+                         DochsumZakService dochsumZakService,
                          CfgPropsCache cfgPropsCache
     ){
         super(DIALOG_WIDTH, DIALOG_HEIGHT, true, true, itemSaver, itemDeleter, false);
@@ -128,6 +133,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
 
         this.zakService = zakService;
         this.faktService = faktService;
+        this.dochsumZakService = dochsumZakService;
         this.cfgPropsCache = cfgPropsCache;
 
 
@@ -473,16 +479,35 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
 
 //        new OkDialog().open("Zrušení zakázky", "Rušení zakázek není implementováno", "");
 
-        ConfirmDialog
-                .createInfo()
-                .withCaption("Zrušení zakázky")
-                .withMessage("Rušení zakázek není implementováno")
-//                .withOkButton(() -> {
-//                    System.out.println("YES. Implement logic here.")
-//                }, ButtonOption.focus(), ButtonOption.caption("YES"))
-//                .withCancelButton(ButtonOption.caption("NO"))
-                .open();
-
+        String ckzDel = String.format("%s / %d", getCurrentItem().getCkont(), getCurrentItem().getCzak());
+        long nodesCount = getCurrentItem().getFakts().size();
+        if (nodesCount > 0) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Zrušení zakázky")
+                    .withMessage(String.format("Zakázku %s nelze zrušit, obsahuje subdodávky / fakturace .", ckzDel))
+                    .open()
+            ;
+            return;
+        }
+        Long dochsumZakCount = dochsumZakService.getCountDochsumZak(getCurrentItem().getId());
+        if (dochsumZakCount > 0) {
+            List<DochsumZak> lastDochsumZaks = dochsumZakService.fetchLatestDochsumZaks(getCurrentItem().getId());
+//            if (CollectionUtils.isEmpty(lastDochsumZaks)) {
+                ConfirmDialog
+                        .createInfo()
+                        .withCaption("Zrušení zakázky")
+                        .withMessage(String.format("Zakázku %d nelze zrušit, má %d záznamů na proužcích."
+                                ,  getCurrentItem().getCzak(), dochsumZakCount))
+                        .open()
+                ;
+//            }
+            return;
+        }
+        openConfirmDeleteDialog("Zrušení zakázky"
+                ,String.format("Opravdu zrušit zakázku %s ?", ckzDel)
+                ,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny."
+        );
 //        long nodesCount = getCurrentItem().getNodes().size();
 //        if (nodesCount > 0) {
 //            new OkDialog().open(
