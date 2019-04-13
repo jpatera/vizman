@@ -357,10 +357,10 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     @Transient
     public String getKzText() {
         StringBuilder builder = new StringBuilder();
-        String kontText = null == kont ? "" : kont.getText() == null ? "" : kont.getText().substring(0, 25);
+        String kontText = null == kont ? "" : kont.getText() == null ? "" : StringUtils.substring(kont.getText(), 0, 25);
         builder .append(kontText)
                 .append(" / ")
-                .append(null == text ? "" : czak)
+                .append(null == text ? "" : text)
         ;
         String result = builder.toString();
         return StringUtils.isBlank(result) ? null : result;

@@ -12,11 +12,6 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.provider.DataProvider;
-import com.vaadin.flow.data.provider.ListDataProvider;
-import com.vaadin.flow.data.provider.SortDirection;
-import com.vaadin.flow.data.provider.hierarchy.TreeData;
-import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -24,20 +19,20 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.KzTreeAware;
 import eu.japtor.vizman.backend.entity.Zak;
+import eu.japtor.vizman.backend.entity.ZakBasic;
+import eu.japtor.vizman.backend.repository.ZakBasicRepo;
+import eu.japtor.vizman.backend.repository.ZakRepo;
 import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Ribbon;
-import eu.japtor.vizman.ui.components.ZakCompactGrid;
+import eu.japtor.vizman.ui.components.ZakBasicGrid;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -50,22 +45,23 @@ public class ZakSelectFormDialog extends Dialog {
 
     private static final String SEL_COL_KEY = "zak-sel-col";
 
-//    private TreeGrid<KzTreeAware> zakGrid;
-    private Grid<Zak> zakGrid;
-//    private TreeDataProvider<KzTreeAware> inMemoryKzTreeProvider;
-    private ComponentRenderer<HtmlComponent, Zak> kzTextRenderer;
+    private Grid<ZakBasic> zakGrid;
+    private List<ZakBasic> zakList;
+    private ComponentRenderer<HtmlComponent, ZakBasic> kzTextRenderer;
 
     VerticalLayout mainPanel;
     HorizontalLayout buttonBar;
     private Button selectButton;
     private Button cancelButton;
 
-    private List<Zak> zakList;
 
     private Consumer<List<Zak>> zaksSelector;
 
+//    @Autowired
+//    public ZakService zakService;
+
     @Autowired
-    public ZakService zakService;
+    public ZakBasicRepo zakBasicRepo;
 
 
     public ZakSelectFormDialog()
@@ -131,7 +127,7 @@ public class ZakSelectFormDialog extends Dialog {
 
 
 //    @PostConstruct
-//    public void init() {
+//    public void postInit() {
 //
 ////        initKzTextRenderer();
 ////        initView();
@@ -142,7 +138,7 @@ public class ZakSelectFormDialog extends Dialog {
 
     private ComponentRenderer initKzTextRenderer() {
         kzTextRenderer = new ComponentRenderer<>(kontZak -> {
-            Paragraph kzText = new Paragraph(kontZak.getText());
+            Paragraph kzText = new Paragraph(kontZak.getKzText());
             kzText.getStyle().set("color", VzmFormatUtils.getItemTypeColorName(kontZak.getTyp()));
             if (ItemType.KONT != kontZak.getTyp()) {
                 kzText.getStyle().set("text-indent", "1em");
@@ -200,9 +196,9 @@ public class ZakSelectFormDialog extends Dialog {
         gridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
 
         gridContainer.add(initKzToolBar());
-        zakGrid = new ZakCompactGrid();
+        zakGrid = new ZakBasicGrid();
 //        gridContainer.add(initKzTreeGrid());
-        gridContainer.add(new ZakCompactGrid());
+        gridContainer.add(new ZakBasicGrid());
 
 //        this.add();
 //        this.add(gridContainer);
@@ -374,7 +370,8 @@ public class ZakSelectFormDialog extends Dialog {
 
     private void reloadDataProvider() {
 //        List<? super Zak> kzList;
-        zakList = zakService.fetchAll();
+//        zakList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDes();
+        zakList = zakBasicRepo.findAll();
 //        ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
 //        ListDataProvider<Zak> zakProvider = new ListDataProvider(zakList);
 //        zakProvider.set

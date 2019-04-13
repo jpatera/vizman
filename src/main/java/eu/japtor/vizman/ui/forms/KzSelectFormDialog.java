@@ -120,7 +120,7 @@ public class KzSelectFormDialog extends Dialog {
 
 
 //    @PostConstruct
-//    public void init() {
+//    public void postInit() {
 //
 ////        initKzTextRenderer();
 ////        initView();

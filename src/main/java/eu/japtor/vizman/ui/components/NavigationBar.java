@@ -34,7 +34,7 @@ public class NavigationBar extends Div implements RouterLayout {
     public NavigationBar() {
 
 //        UI.getCurrent().navigate(href);
-//        init();
+//        postInit();
 //        System.out.println("###  NavigationBar constructor");
 
     }
@@ -42,7 +42,7 @@ public class NavigationBar extends Div implements RouterLayout {
     @PostConstruct
     public void init() {
 
-//        System.out.println("###  NavigationBar init");
+//        System.out.println("###  NavigationBar postInit");
         this.removeAll();
 
         // Navigation:
@@ -64,23 +64,29 @@ public class NavigationBar extends Div implements RouterLayout {
         pruhLink.add(ICON_PRUH, new Text(TITLE_PRUH));
         pruhLink.addClassName("main-layout__nav-item");
 
+        RouterLink zakListLink = new RouterLink(null, ZakListView.class);
+        Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);
+        ICON_ZAK_LIST.setColor("green");
+        zakListLink.add(ICON_ZAK_LIST, new Text(TITLE_ZAK_LIST));
+        zakListLink.addClassName("main-layout__nav-item");
+
         RouterLink kzTreeLink = new RouterLink(null, KzTreeView.class);
         Icon ICON_KONT_TREE = new Icon (VaadinIcon.TREE_TABLE);
         ICON_KONT_TREE.setColor("brown");
         kzTreeLink.add(ICON_KONT_TREE, new Text(TITLE_KZ_TREE));
         kzTreeLink.addClassName("main-layout__nav-item");
 
+        RouterLink zakEvalListLink = new RouterLink(null, ZakEvalListView.class);
+        Icon ICON_ZAK_EVAL = new Icon (VaadinIcon.LIST);
+        ICON_ZAK_EVAL.setColor("red");
+        zakEvalListLink.add(ICON_ZAK_EVAL, new Text(TITLE_ZAK_EVAL));
+        zakEvalListLink.addClassName("main-layout__nav-item");
+
         RouterLink kontListLink = new RouterLink(null, KontListView.class);
         Icon ICON_KONT_LIST = new Icon (VaadinIcon.LIST);
         ICON_KONT_LIST.setColor("orange");
         kontListLink.add(ICON_KONT_LIST, new Text(TITLE_KONT_LIST));
         kontListLink.addClassName("main-layout__nav-item");
-
-        RouterLink zakLink = new RouterLink(null, ZakListView.class);
-        Icon ICON_ZAK = new Icon (VaadinIcon.LIST);
-        ICON_ZAK.setColor("green");
-        zakLink.add(ICON_ZAK, new Text(TITLE_ZAK));
-        zakLink.addClassName("main-layout__nav-item");
 
 
 //        RouterLink personLink = new RouterLink(null, PersonListView.class);
@@ -122,10 +128,10 @@ public class NavigationBar extends Div implements RouterLayout {
         leftNaviBar.add(homeLink);
 
         HorizontalLayout middleNaviBar = new HorizontalLayout();
-        middleNaviBar.add(dochLink, pruhLink);
-//        if (SecurityUtils.isAccessGranted(KzTreeView.class)) {
+        middleNaviBar.add(dochLink, pruhLink, zakListLink);
+        if (SecurityUtils.isAccessGranted(KzTreeView.class)) {
             middleNaviBar.add(kzTreeLink);
-//        }
+        }
 
         HorizontalLayout rightNaviBar = new HorizontalLayout();
         if (SecurityUtils.isAccessGranted(CfgTabsView.class)) {

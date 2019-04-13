@@ -147,7 +147,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                             Perm.ZAK_BASIC_READ.name(), Perm.ZAK_EXT_READ.name(),
                             Perm.VIEW_ALL.name(), Perm.MODIFY_ALL.name())
 
-                    .antMatchers("/" + ROUTE_ZAK).hasAnyAuthority(
+                    .antMatchers("/" + ROUTE_ZAK_LIST).hasAnyAuthority(
                             Perm.ZAK_BASIC_READ.name(), Perm.ZAK_EXT_READ.name(),
                             Perm.VIEW_ALL.name(), Perm.MODIFY_ALL.name())
 //                    // Allow all flow internal requests.

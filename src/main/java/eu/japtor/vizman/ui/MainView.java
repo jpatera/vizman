@@ -64,8 +64,8 @@ public class MainView extends VerticalLayout implements RouterLayout, BeforeEnte
 //        this.setHeight("100%");
 //    public MainView(NavigationBar navigationBar) {
 //        this.navigationBar = navigationBar;
-//        this.navigationBar.init();
-//        init();
+//        this.navigationBar.postInit();
+//        postInit();
     }
 
     @Override
@@ -102,7 +102,7 @@ public class MainView extends VerticalLayout implements RouterLayout, BeforeEnte
 //        }
 //        pages.add(new PageInfo(PAGE_LOGOUT, ICON_LOGOUT, TITLE_LOGOUT));
 //
-//        appNavigation.init(pages, PAGE_DEFAULT, PAGE_LOGOUT);
+//        appNavigation.postInit(pages, PAGE_DEFAULT, PAGE_LOGOUT);
 //
 //        getElement().appendChild(confirmDialog.getElement());
 //    }
@@ -118,12 +118,12 @@ public class MainView extends VerticalLayout implements RouterLayout, BeforeEnte
 
 //        getLogger().info("###  MainView SETUP started");
 
-//        this.navigationBar.init();
+//        this.navigationBar.postInit();
 
 //        RouterLink zakListLink = new RouterLink(null, ZakListView.class);
 //        Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);
 //        ICON_ZAK_LIST.setColor("green");
-//        zakListLink.add(ICON_ZAK_LIST, new Text(TITLE_ZAK));
+//        zakListLink.add(ICON_ZAK_LIST, new Text(TITLE_ZAK_LIST));
 //        zakListLink.addClassName("main-layout__nav-item");
 
 //        Div navComoponent = new Div(zakListLink);
@@ -176,7 +176,7 @@ public class MainView extends VerticalLayout implements RouterLayout, BeforeEnte
 //        RouterLink zakListRoute = new RouterLink(null, ZakListView.class);
 //        Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);
 //        ICON_ZAK_LIST.setColor("green");
-//        zakListRoute.add(ICON_ZAK_LIST, new Text(TITLE_ZAK));
+//        zakListRoute.add(ICON_ZAK_LIST, new Text(TITLE_ZAK_LIST));
 //        zakListRoute.addClassName("main-layout__nav-item");
 //        return zakListRoute;
 //    }

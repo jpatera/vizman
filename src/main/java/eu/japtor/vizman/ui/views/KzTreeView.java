@@ -138,10 +138,27 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
         }
     }
 
+    public KzTreeView() {
+        initView();
+    }
+
+    private void initView() {
+        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+        this.setPadding(false);
+        this.setMargin(false);
+
+//        this.setWidth("100%");
+//        this.setWidth("90vw");
+//        this.setHeight("90vh");
+
+//        <vaadin-vertical-layout style="width: 100%; height: 100%;" theme="padding">
+//        <vaadin-text-field style="width: 100%;" placeholder="ID" id="idSearchTextField"></vaadin-text-field>
+//        <vaadin-treeGrid items="[[items]]" id="treeGrid" style="width: 100%;"></vaadin-treeGrid>
+    }
 
 
     @PostConstruct
-    public void init() {
+    public void postInit() {
 
         kontFormDialog = new KontFormDialog(
                 this::saveKontForGrid, this::deleteKontForGrid
@@ -164,7 +181,6 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 
         initKzTextRenderer();
 
-        initView();
         initZakProvider();
         this.add(initGridContainer());
 
@@ -309,35 +325,14 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //
 //
 
-    private void initView() {
-        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-        this.setPadding(false);
-        this.setMargin(false);
-
-//        this.setWidth("100%");
-//        this.setWidth("90vw");
-//        this.setHeight("90vh");
-
-//        <vaadin-vertical-layout style="width: 100%; height: 100%;" theme="padding">
-//        <vaadin-text-field style="width: 100%;" placeholder="ID" id="idSearchTextField"></vaadin-text-field>
-//        <vaadin-treeGrid items="[[items]]" id="treeGrid" style="width: 100%;"></vaadin-treeGrid>
-    }
-
 
 
     private Component initGridContainer() {
 
-//        initSimplePersonTreeGrid();
-//        gridContainer.add(personGrid);
-
-
-//        initNodeTreeGrid();
-//        gridContainer.add(treeGrid);
-
         VerticalLayout gridContainer = new VerticalLayout();
         gridContainer.setClassName("view-container");
         gridContainer.getStyle().set("marginTop", "0.5em");
-        gridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
+        gridContainer.setAlignItems(Alignment.STRETCH);
 
         gridContainer.add(initKzToolBar());
         gridContainer.add(initKzTreeGrid());
@@ -365,13 +360,13 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        gridContainer.setAlignItems(Alignment.STRETCH);
 
         kzTreeGrid = new TreeGrid<>();
+        kzTreeGrid.getStyle().set("marginTop", "0.5em");
 //        kzTreeGrid.setWidth( "100%" );
 //        kzTreeGrid.setHeight( null );
-        kzTreeGrid.getStyle().set("marginTop", "0.5em");
 
         kzTreeGrid.setColumnReorderingAllowed(true);
-
         kzTreeGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+
 //        GridSelectionModel<?> selectionMode = kzTreeGrid.setSelectionMode(Grid.SelectionMode.MULTI);
 //        ((GridMultiSelectionModel<?>) selectionMode).setSelectionColumnFrozen(true);
 //        GridSelectionModel<?> selectionMode = kzTreeGrid.setSelectionMode(Grid.SelectionMode.SINGLE);

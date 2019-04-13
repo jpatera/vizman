@@ -28,6 +28,42 @@ public class VizmanConst {
 	public static final String TITLE_LOGOUT = "Odhlášení";
 	public static final String ROUTE_LOGOUT = "login/logout";
 
+	public static final String TITLE_DOCH = "Docházka";
+	public static final String PAGE_TITLE_DOCH = PAGE_TITLE_BASE + " - " + TITLE_DOCH;
+	public static final String TAG_DOCH = "doch-form";
+	public static final String ROUTE_DOCH = "doch";
+
+	public static final String TITLE_PRUH = "Proužky";
+	public static final String PAGE_TITLE_PRUH = PAGE_TITLE_BASE + " - " + TITLE_PRUH;
+	public static final String TAG_PRUH = "pruh-list-view";
+	public static final String ROUTE_PRUH = "pruh";
+
+	public static final String TITLE_KONT_LIST = "Kontrakty";
+	public static final String PAGE_TITLE_KONT_LIST = PAGE_TITLE_BASE + " - " + TITLE_KONT_LIST;
+	public static final String TAG_KONT_LIST = "kont-list-view";
+	public static final String ROUTE_KONT = "kont";
+
+	public static final String TITLE_ZAK_LIST = "Zakázky";
+	public static final String PAGE_TITLE_ZAK_LIST = PAGE_TITLE_BASE + " - " + TITLE_ZAK_LIST;
+	public static final String TAG_ZAK = "zak-list-view";
+	public static final String ROUTE_ZAK_LIST = "zak";
+
+	public static final String TITLE_KZ_TREE = "Kont-Zak";
+	public static final String PAGE_TITLE_KZ_TREE = PAGE_TITLE_BASE + " - " + TITLE_KZ_TREE;
+	public static final String TAG_KZ_TREE = "kz-tree-view";
+	public static final String ROUTE_KZ_TREE = "kz";
+
+	public static final String TITLE_ZAK_EVAL = "Vyhodnocení";
+	public static final String PAGE_TITLE_ZAK_EVAL = PAGE_TITLE_BASE + " - " + TITLE_ZAK_EVAL;
+	public static final String TAG_ZAK_EVAL = "zak-eval-list-view";
+	public static final String ROUTE_ZAK_EVAL = "zakeval";
+
+	public static final String TITLE_KLIENT = "Klienti";
+	public static final String PAGE_TITLE_KLIENT = PAGE_TITLE_BASE + " - " + TITLE_KLIENT;
+	public static final String TAG_KLIENT = "klient-list-view";
+	public static final String ROUTE_KLIENT = "klient";
+
+
 	public static final String TITLE_PERSON = "Uživatelé";
 	public static final String PAGE_TITLE_PERSON = PAGE_TITLE_BASE + " - " + TITLE_PERSON;
 	public static final String TAG_PERSON = "person-list-view";
@@ -43,37 +79,8 @@ public class VizmanConst {
 	public static final String TAG_CFG = "cfg-tabs-view";
 	public static final String ROUTE_CFG = "cfg";
 
-	public static final String TITLE_DOCH = "Docházka";
-	public static final String PAGE_TITLE_DOCH = PAGE_TITLE_BASE + " - " + TITLE_DOCH;
-	public static final String TAG_DOCH = "doch-form";
-	public static final String ROUTE_DOCH = "doch";
 
-	public static final String TITLE_KONT_LIST = "Kontrakty";
-	public static final String PAGE_TITLE_KONT_LIST = PAGE_TITLE_BASE + " - " + TITLE_KONT_LIST;
-	public static final String TAG_KONT_LIST = "kont-list-view";
-	public static final String ROUTE_KONT = "kontlist";
-
-	public static final String TITLE_KZ_TREE = "Zakázky";
-	public static final String PAGE_TITLE_KZ_TREE = PAGE_TITLE_BASE + " - " + TITLE_KZ_TREE;
-	public static final String TAG_KZ_TREE = "kz-tree-view";
-	public static final String ROUTE_KZ_TREE = "kztree";
-
-	public static final String TITLE_ZAK = "Vyhodnocení";
-	public static final String PAGE_TITLE_ZAK = PAGE_TITLE_BASE + " - " + TITLE_ZAK;
-	public static final String TAG_ZAK = "zak-list-view";
-	public static final String ROUTE_ZAK = "zak";
-
-	public static final String TITLE_KLIENT = "Klienti";
-	public static final String PAGE_TITLE_KLIENT = PAGE_TITLE_BASE + " - " + TITLE_KLIENT;
-	public static final String TAG_KLIENT = "klient-list-view";
-	public static final String ROUTE_KLIENT = "klient";
-
-	public static final String TITLE_PRUH = "Proužky";
-	public static final String PAGE_TITLE_PRUH = PAGE_TITLE_BASE + " - " + TITLE_PRUH;
-	public static final String TAG_PRUH = "pruh-list-view";
-	public static final String ROUTE_PRUH = "pruh";
-
-	public static final String ROUTE_DEFAULT = ROUTE_ZAK;
+	public static final String ROUTE_DEFAULT = ROUTE_ZAK_LIST;
 
 //	public static final Icon ICON_USERS = new Icon (VaadinIcon.USERS);
 //	//	public static final Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);

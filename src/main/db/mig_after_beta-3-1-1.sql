@@ -7,3 +7,9 @@ VALUES(14, 1, 35, 'F', 'Služebka (celý den)', 'SC', 'Služebka', true, NULL)
 
 COMMIT;
 
+
+CREATE OR REPLACE VIEW VIZMAN.ZAK_BASIC_VIEW AS
+	SELECT zak.ID, kont.CKONT, zak.CZAK, zak.ROK, zak.SKUPINA, kont.TEXT AS TEXT_KONT, zak.TEXT AS TEXT_ZAK, kont.OBJEDNATEL, zak.ID_KONT
+	FROM VIZMAN.ZAK zak
+	LEFT JOIN VIZMAN.KONT kont ON zak.ID_KONT = kont.ID
+;
