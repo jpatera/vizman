@@ -73,7 +73,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
         Perm.ZAK_BASIC_READ, Perm.ZAK_BASIC_MODIFY,
         Perm.ZAK_EXT_READ, Perm.ZAK_EXT_MODIFY
 })
-public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver, HasLogger {
+public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, HasLogger {
 
     private static final String RADIO_KONT_ACTIVE = "Aktivní";
     private static final String RADIO_KONT_ARCH = "Archivované";
@@ -177,7 +177,7 @@ public class ZakBasicView extends VerticalLayout implements BeforeEnterObserver,
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         // Navigation first goes here, then to the beforeEnter of MainView
-//        System.out.println("###  ZakBasicView.beforeEnter");
+//        System.out.println("###  KzTreeView.beforeEnter");
     }
 
 
