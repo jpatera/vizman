@@ -36,7 +36,7 @@ public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializ
         this.itemType = zak.getTyp();
         this.ckont = zak.getCkont();
         this.czak = zak.getCzak();
-        this.text = StringUtils.substring(zak.getKont().getText(), 0, 20) + " / " +  zak.getText();
+        this.text = StringUtils.substring(zak.getKont().getText(), 0, 25) + " / " +  zak.getText();
         hods = new HashMap<>();
         for (int i = 1; i <= 31; i++) {
             hods.put(i, null);

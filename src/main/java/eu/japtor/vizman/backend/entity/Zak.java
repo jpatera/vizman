@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -343,23 +344,49 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     }
 
     @Transient
-    public String getKontFolder() {
-        return null == kont ? null : kont.getFolder();
+    public String getKzCislo() {
+        StringBuilder builder = new StringBuilder();
+        String ckont = null  == kont ? "" : kont.getCkont();
+        builder .append(ckont)
+                .append(StringUtils.isBlank(ckont) ? "" : " / ")
+                .append(null == czak ? "" : czak)
+        ;
+        return builder.toString();
+    }
+
+    @Transient
+    public String getKzText() {
+        StringBuilder builder = new StringBuilder();
+        String kontText = null == kont ? "" : kont.getText() == null ? "" : kont.getText().substring(0, 25);
+        builder .append(kontText)
+                .append(" / ")
+                .append(null == text ? "" : czak)
+        ;
+        String result = builder.toString();
+        return StringUtils.isBlank(result) ? null : result;
     }
 
     @Transient
     public String getKlientName() {
-        return null == kont ? "" : kont.getKlientName();
+        return null == kont ? null : kont.getKlientName();
     }
 
     @Transient
+    public String getKontFolder() {
+        return null == kont ? null : kont.getFolder();
+    }
+
+
+    @Transient
     private Predicate<Fakt> afterTermsPredicate = fakt ->
-            ((null == fakt.getDateVystav()) && (null != fakt.getDateDuzp()) && (  fakt.getDateDuzp().plusDays(1).isBefore(LocalDate.now())));
+        ((null == fakt.getDateVystav()) && (null != fakt.getDateDuzp()) && (fakt.getDateDuzp().plusDays(1).isBefore(LocalDate.now())))
+    ;
 
 
     @Transient
     private Predicate<Fakt> beforeTermsPredicate = fakt ->
-            ((null == fakt.getDateVystav()) && (null != fakt.getDateDuzp()) && (fakt.getDateDuzp().isAfter(LocalDate.now())));
+        ((null == fakt.getDateVystav()) && (null != fakt.getDateDuzp()) && (fakt.getDateDuzp().isAfter(LocalDate.now())))
+    ;
 
     @Transient
     @Override
@@ -381,6 +408,23 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
                 .mapToInt(fakt -> fakt.getCfakt())
                 .max().orElse(0);
     }
+
+    @Transient
+    public BigDecimal getHonorarCisty() {
+        return
+            getHonorarNotNull().add(
+                fakts.stream()
+                    .filter(fakt -> fakt.getTyp() == ItemType.SUB)
+                    .map(fakt -> fakt.getCastka())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add)
+            );
+    }
+
+    @Transient
+    public BigDecimal getHonorarNotNull() {
+        return null == honorar ? BigDecimal.ZERO : honorar;
+    }
+
 
     @Transient
     public Integer getNewCfakt() {

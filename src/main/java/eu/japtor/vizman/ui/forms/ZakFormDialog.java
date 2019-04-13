@@ -64,6 +64,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
     private TextField textField;
     private TextField skupinaField;
     private TextField honorarField;
+    private TextField honorarCistyField;
     private TextField menaField;
 
 //    private Kont kontOrig;
@@ -189,6 +190,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
 //                , new Paragraph("")
                 , initMenaField()
                 , initHonorarField()
+                , initHonorarCistyField()
         );
 
 //        getUpperGridContainer().add(new Ribbon(Ribbon.Orientation.VERTICAL, "1em"));
@@ -774,6 +776,25 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
                 .bind(Zak::getHonorar, Zak::setHonorar);
         honorarField.setValueChangeMode(ValueChangeMode.EAGER);
         return honorarField;
+    }
+
+    private Component initHonorarCistyField() {
+        honorarCistyField = new TextField("Honorář čistý");
+//        honorarField.setReadOnly(true);
+        honorarCistyField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        honorarCistyField.getStyle()
+                .set("font-weight", "bold");
+        getBinder().forField(honorarCistyField)
+//                .asRequired("Honorář nesmí být prázdný")
+//                .withValidator(new StringLengthValidator(
+//                        "Honorář nesmí být prázdný",
+//                        1, null))
+                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
+//                .withValidator(honorar -> null != honorar && honorar.compareTo(BigDecimal.ZERO) >= 0
+//                        , "Honorář nesmí být záporný")
+                .bind(Zak::getHonorarCisty, null);
+        honorarCistyField.setValueChangeMode(ValueChangeMode.EAGER);
+        return honorarCistyField;
     }
 
     // ----------------------------------------------

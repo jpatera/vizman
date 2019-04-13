@@ -19,6 +19,7 @@ import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
@@ -39,7 +40,7 @@ import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.GridItemRemoveBtn;
-import eu.japtor.vizman.ui.forms.ZakSelectFormDialog;
+import eu.japtor.vizman.ui.forms.KzSelectFormDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
@@ -50,6 +51,7 @@ import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static eu.japtor.vizman.app.security.SecurityUtils.canViewOtherUsers;
@@ -66,6 +68,11 @@ import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_PRUH;
 public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterListener {
 
     private static final String COL_WIDTH = "2.4em";
+    private static final String PRUH_HOD_REGEX = "^(-?\\d{1,2}([.|,][0|5]?){0,1})$";
+    private static final Pattern pruhHodPatern = Pattern.compile(PRUH_HOD_REGEX);
+        // Matcher m = pruhHodPatern.matcher("aaaaab");
+        // boolean b = m.matches();
+    private RegexpValidator pruhHodValidator = new RegexpValidator("Nepovolený formát", PRUH_HOD_REGEX, true);
 
 //    private static final DateTimeFormatter dochTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 //    private static final DateTimeFormatter upperDochDateHeaderFormatter = DateTimeFormatter.ofPattern("EEEE");
@@ -102,7 +109,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private  Icon pruhStateIconUnlocked;
     private  Icon pruhStateIconLocked;
 
-    private ZakSelectFormDialog zakSelectFormDialog;
+    private KzSelectFormDialog kzSelectFormDialog;
     private static final Locale czLocale = new Locale("cs", "CZ");
 
     private HorizontalLayout gridZakTitleBar;
@@ -184,7 +191,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         authUsername = SecurityUtils.getUsername();
 //        pruhYm = YearMonth.now();
         initPruhData();
-        zakSelectFormDialog = new ZakSelectFormDialog(
+        kzSelectFormDialog = new KzSelectFormDialog(
                 this::addKzTreeAwareZaksToGrid
                 , kontService
         );
@@ -1061,14 +1068,11 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .set("min-height", "1.8em")
                 .set("--lumo-text-field-size", "var(--lumo-size-s)")
         ;
+        editComp.setPattern(PRUH_HOD_REGEX);
+        editComp.setPreventInvalidInput(true);
         pzBinder.forField(editComp)
-//            .withConverter(VzmFormatUtils.   ddd bigDecimalMoneyConverter)
                 .withNullRepresentation("")
-//            .withConverter(VzmFormatUtils.decHodToStringConverter)
-                // TODO: add regex for dd.d
                 .withConverter(VzmFormatUtils.decHodToStringConverter)
-//                .withConverter(
-//                        new StringToBigDecimalConverter("Špatný formát čísla, je očekáváno 'CC.C'"))
                 .bind(pzHodValProv, pzHodSetter);
         col.setEditorComponent(editComp);
         pzBinder.addStatusChangeListener(event -> {
@@ -1391,7 +1395,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 ;
                 return;
             }
-            zakSelectFormDialog.openDialog("PŘIDÁNÍ ZAKÁZEK");
+            kzSelectFormDialog.openDialog("PŘIDÁNÍ ZAKÁZEK");
         });
         return zaksAddButton;
     }

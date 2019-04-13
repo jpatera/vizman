@@ -9,77 +9,66 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.provider.DataProvider;
-import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.flow.spring.annotation.SpringComponent;
-import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.backend.entity.ItemType;
+import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.KzTreeAware;
-import eu.japtor.vizman.backend.entity.Zak;
-import eu.japtor.vizman.backend.service.ZakService;
+import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
-import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Ribbon;
-import eu.japtor.vizman.ui.components.ZakCompactGrid;
+import eu.japtor.vizman.ui.components.Gap;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Consumer;
 
 
-@SpringComponent
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-@UIScope    // Without this annotation browser refresh throws exception
+//@SpringComponent
+//@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 //public class KzSelectFormDialog<KzTreeAware> extends Dialog {
-public class ZakSelectFormDialog extends Dialog {
+public class KzSelectFormDialog extends Dialog {
 
-    private static final String SEL_COL_KEY = "zak-sel-col";
+    private static final String SEL_COL_KEY = "kz-sel-col";
 
-//    private TreeGrid<KzTreeAware> zakGrid;
-    private Grid<Zak> zakGrid;
-//    private TreeDataProvider<KzTreeAware> inMemoryKzTreeProvider;
-    private ComponentRenderer<HtmlComponent, Zak> kzTextRenderer;
+    private TreeGrid<KzTreeAware> kzTreeGrid;
+    private TreeDataProvider<KzTreeAware> inMemoryKzTreeProvider;
+    private ComponentRenderer<HtmlComponent, KzTreeAware> kzTextRenderer;
 
     VerticalLayout mainPanel;
     HorizontalLayout buttonBar;
     private Button selectButton;
     private Button cancelButton;
 
-    private List<Zak> zakList;
-
-    private Consumer<List<Zak>> zaksSelector;
+    private Consumer<List<KzTreeAware>> zaksSelector;
 
     @Autowired
-    public ZakService zakService;
+    public KontService kontService;
 
-
-    public ZakSelectFormDialog()
+    public KzSelectFormDialog(Consumer<List<KzTreeAware>> itemSelector, KontService kontService)
     {
-//        this.zaksSelector = itemSelector;
+        this.zaksSelector = itemSelector;
 //        super(itemSaver);
         this.setWidth("1200px");
         this.setHeight("700px");
-//        this.zakService = zakService;
+        this.kontService = kontService;
 //        setupEventListeners();
 
         initKzTextRenderer();
-
-        zakList = new ArrayList<>();
 
         this.add(initView());
         this.setCloseOnEsc(true);
@@ -136,7 +125,7 @@ public class ZakSelectFormDialog extends Dialog {
 ////        initKzTextRenderer();
 ////        initView();
 ////        initZakProvider();
-//        reloadDataProvider();
+//        reloadTreeProvider();
 //        inMemoryKzTreeProvider.refreshAll();
 //    }
 
@@ -200,9 +189,7 @@ public class ZakSelectFormDialog extends Dialog {
         gridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
 
         gridContainer.add(initKzToolBar());
-        zakGrid = new ZakCompactGrid();
-//        gridContainer.add(initKzTreeGrid());
-        gridContainer.add(new ZakCompactGrid());
+        gridContainer.add(initKzTreeGrid());
 
 //        this.add();
 //        this.add(gridContainer);
@@ -232,106 +219,106 @@ public class ZakSelectFormDialog extends Dialog {
     private static final String SKUPINA_COL_KEY = "skupina-col";
     private static final String ROK_COL_KEY = "rok-col";
 
-//    private Component initKzTreeGrid() {
+    private Component initKzTreeGrid() {
+
+        kzTreeGrid = new TreeGrid<>();
+        kzTreeGrid.getStyle().set("marginTop", "0.5em");
+        kzTreeGrid.setColumnReorderingAllowed(true);
+        kzTreeGrid.setSelectionMode(Grid.SelectionMode.NONE);
+
+//        kzTreeGrid.getElement().addEventListener("keypress", e -> {
+//            JsonObject eventData = e.getEventData();
+//            String enterKey = eventData.getString("event.key");
+//            if ("Enter".equals(enterKey)) {
+//                new Notification("ENTER pressed - will open form", 1500).open();
+//            }
+//        })
+//                .addEventData("event.key")
+//        ;
+
+//        DomEventListener gridKeyListener = new DomEventListener() {
+//            @Override
+//            public void handleEvent(DomEvent domEvent) {
+//                JsonObject eventData = domEvent.getEventData();
+//                String enterKey = eventData.getString("event.key");
+//                if ("Enter".equals(enterKey)) {
+//                    new Notification("ENTER pressed - will open form", 1500).open();
+//                }
 //
-//        zakGrid = new TreeGrid<>();
-//        zakGrid.getStyle().set("marginTop", "0.5em");
-//        zakGrid.setColumnReorderingAllowed(true);
-//        zakGrid.setSelectionMode(Grid.SelectionMode.NONE);
-//
-////        zakGrid.getElement().addEventListener("keypress", e -> {
-////            JsonObject eventData = e.getEventData();
-////            String enterKey = eventData.getString("event.key");
-////            if ("Enter".equals(enterKey)) {
-////                new Notification("ENTER pressed - will open form", 1500).open();
-////            }
-////        })
-////                .addEventData("event.key")
-////        ;
-//
-////        DomEventListener gridKeyListener = new DomEventListener() {
-////            @Override
-////            public void handleEvent(DomEvent domEvent) {
-////                JsonObject eventData = domEvent.getEventData();
-////                String enterKey = eventData.getString("event.key");
-////                if ("Enter".equals(enterKey)) {
-////                    new Notification("ENTER pressed - will open form", 1500).open();
-////                }
-////
-////            }
-////        };
-//
-//
-////        zakGrid.addColumn(TemplateRenderer.of("[[index]]"))
-////                .setHeader("Řádek")
-////                .setFlexGrow(0)
-////        ;
-//        zakGrid.addHierarchyColumn(ckzValProv)
-//                .setHeader("ČK/ČZ")
+//            }
+//        };
+
+
+//        kzTreeGrid.addColumn(TemplateRenderer.of("[[index]]"))
+//                .setHeader("Řádek")
 //                .setFlexGrow(0)
-//                .setWidth("9em")
-//                .setResizable(true)
-////                .setFrozen(true)
-//                .setKey(CKZ_COL_KEY)
 //        ;
-//        zakGrid.addColumn(KzTreeAware::getRok)
-//                .setHeader("Rok")
-//                .setFlexGrow(0)
-//                .setWidth("8em")
-//                .setResizable(true)
-////                .setFrozen(true)
-//                .setKey(ROK_COL_KEY)
-//        ;
-//        zakGrid.addColumn(KzTreeAware::getSkupina).setHeader("Sk.")
-//                .setFlexGrow(0)
-//                .setWidth("4em")
-//                .setResizable(true)
-////                .setFrozen(true)
-//                .setKey(SKUPINA_COL_KEY)
-//        ;
-//        zakGrid.addColumn(kzCheckRenderer)
-//                .setHeader(("Přidat"))
-//                .setFlexGrow(0)
-//                .setWidth("5em")
-//                .setResizable(true)
-//                .setKey(SEL_COL_KEY)
-////                .setFrozen(true)
-////                .setId("arch-column")
-//        ;
-//        zakGrid.addColumn(kzTextRenderer)
-//                .setHeader("Text")
-//                .setFlexGrow(1)
-//                .setKey(TEXT_COL_KEY)
-//                .setResizable(true)
-//        ;
-//        zakGrid.addColumn(klientValProv)
-//                .setHeader("Objednatel")
-//                .setFlexGrow(0)
-//                .setWidth("18em")
-//                .setKey(OBJEDNATEL_COL_KEY)
-//                .setResizable(true)
-//        ;
-//
-//
-////        HeaderRow filterRow = zakGrid.appendHeaderRow();
-////        TextField textFilterField = new TextField();
-////        ValueProvider<KzTreeAware, String> kzTextValueProvider
-////                = KzTreeAware::getText;
-////        textFilterField.addValueChangeListener(event -> {});
-////        textFilterField.setValueChangeMode(ValueChangeMode.EAGER);
-////        filterRow.getCell(zakGrid.getColumnByKey(TEXT_COL_KEY)).setComponent(textFilterField);
-////        textFilterField.setSizeFull();
-////        textFilterField.setPlaceholder("Filtr (rozbitý)");
-//
-//
-////        for (Grid.Column col : zakGrid.getColumns()) {
-////            setResizable(col);
-////        }
-//        zakGrid.getColumnByKey(CKZ_COL_KEY).setSortable(true);
-//        zakGrid.getColumnByKey(OBJEDNATEL_COL_KEY).setSortable(true);
-//
-//        return zakGrid;
-//    }
+        kzTreeGrid.addHierarchyColumn(ckzValProv)
+                .setHeader("ČK/ČZ")
+                .setFlexGrow(0)
+                .setWidth("9em")
+                .setResizable(true)
+//                .setFrozen(true)
+                .setKey(CKZ_COL_KEY)
+        ;
+        kzTreeGrid.addColumn(KzTreeAware::getRok)
+                .setHeader("Rok")
+                .setFlexGrow(0)
+                .setWidth("8em")
+                .setResizable(true)
+//                .setFrozen(true)
+                .setKey(ROK_COL_KEY)
+        ;
+        kzTreeGrid.addColumn(KzTreeAware::getSkupina).setHeader("Sk.")
+                .setFlexGrow(0)
+                .setWidth("4em")
+                .setResizable(true)
+//                .setFrozen(true)
+                .setKey(SKUPINA_COL_KEY)
+        ;
+        kzTreeGrid.addColumn(kzCheckRenderer)
+                .setHeader(("Přidat"))
+                .setFlexGrow(0)
+                .setWidth("5em")
+                .setResizable(true)
+                .setKey(SEL_COL_KEY)
+//                .setFrozen(true)
+//                .setId("arch-column")
+        ;
+        kzTreeGrid.addColumn(kzTextRenderer)
+                .setHeader("Text")
+                .setFlexGrow(1)
+                .setKey(TEXT_COL_KEY)
+                .setResizable(true)
+        ;
+        kzTreeGrid.addColumn(klientValProv)
+                .setHeader("Objednatel")
+                .setFlexGrow(0)
+                .setWidth("18em")
+                .setKey(OBJEDNATEL_COL_KEY)
+                .setResizable(true)
+        ;
+
+
+//        HeaderRow filterRow = kzTreeGrid.appendHeaderRow();
+//        TextField textFilterField = new TextField();
+//        ValueProvider<KzTreeAware, String> kzTextValueProvider
+//                = KzTreeAware::getText;
+//        textFilterField.addValueChangeListener(event -> {});
+//        textFilterField.setValueChangeMode(ValueChangeMode.EAGER);
+//        filterRow.getCell(kzTreeGrid.getColumnByKey(TEXT_COL_KEY)).setComponent(textFilterField);
+//        textFilterField.setSizeFull();
+//        textFilterField.setPlaceholder("Filtr (rozbitý)");
+
+
+//        for (Grid.Column col : kzTreeGrid.getColumns()) {
+//            setResizable(col);
+//        }
+        kzTreeGrid.getColumnByKey(CKZ_COL_KEY).setSortable(true);
+        kzTreeGrid.getColumnByKey(OBJEDNATEL_COL_KEY).setSortable(true);
+
+        return kzTreeGrid;
+    }
 
 
     private ValueProvider<KzTreeAware, String> ckzValProv =
@@ -372,21 +359,20 @@ public class ZakSelectFormDialog extends Dialog {
 //        }
 //    }
 
-    private void reloadDataProvider() {
-//        List<? super Zak> kzList;
-        zakList = zakService.fetchAll();
-//        ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
-//        ListDataProvider<Zak> zakProvider = new ListDataProvider(zakList);
-//        zakProvider.set
-
-//        zakGrid.setDataProvider(zakProvider);
-        zakGrid.setItems(zakList);
-        zakGrid.focus();
+    private void reloadTreeProvider() {
+        List<? super Kont> kzList;
+        kzList = kontService.fetchHavingSomeZaksActive();
+        ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
+        inMemoryKzTreeProvider
+                = new TreeDataProvider<KzTreeAware>((new TreeData()).addItems(kzList, kzNodesProvider));
+        inMemoryKzTreeProvider.setSortOrder(KzTreeAware::getCkont, SortDirection.DESCENDING);
+        kzTreeGrid.setDataProvider(inMemoryKzTreeProvider);
+        kzTreeGrid.focus();
     }
 
 
 
-    public void openDialog(String dialogTitle, Consumer<List<Zak>> itemSelecto) {
+    public void openDialog(String dialogTitle) {
 //        this.openInternal(
 //                evidKont
 //                , operation
@@ -403,42 +389,36 @@ public class ZakSelectFormDialog extends Dialog {
         selectButton.setText("Přidat zakázky");
 //        selectButton.setEnabled(false);
 
-        reloadDataProvider();
-//        inMemoryKzTreeProvider.refreshAll();
+        reloadTreeProvider();
+        inMemoryKzTreeProvider.refreshAll();
 
         this.open();
     }
 
     private void saveClicked() {
 
-        ConfirmDialog.createInfo()
-                .withCaption("VÝBĚR ZAKÁZEK")
-                .withMessage("Comming soon...")
-        ;
-        return;
+        List<KzTreeAware> kzZakItems = new ArrayList<>();
+        for(KzTreeAware rootItem : inMemoryKzTreeProvider.getTreeData().getRootItems()) {
+            List<KzTreeAware> childItems = inMemoryKzTreeProvider.getTreeData().getChildren(rootItem);
+            for(KzTreeAware child :  childItems) {
+                if (((child.getTyp() == ItemType.ZAK) || (child.getTyp() == ItemType.LEK) || (child.getTyp() == ItemType.REZ))
+                        && !child.getArch() && child.isChecked()) {
+                    kzZakItems.add(child);
+                }
+            }
+        }
 
-//        List<KzTreeAware> kzZakItems = new ArrayList<>();
-//        for(KzTreeAware rootItem : inMemoryKzTreeProvider.getTreeData().getRootItems()) {
-//            List<KzTreeAware> childItems = inMemoryKzTreeProvider.getTreeData().getChildren(rootItem);
-//            for(KzTreeAware child :  childItems) {
-//                if (((child.getTyp() == ItemType.ZAK) || (child.getTyp() == ItemType.LEK) || (child.getTyp() == ItemType.REZ))
-//                        && !child.getArch() && child.isChecked()) {
-//                    kzZakItems.add(child);
-//                }
-//            }
-//        }
-//
-//        if (CollectionUtils.isEmpty(kzZakItems)) {
-//            ConfirmDialog.createInfo()
-//                    .withCaption("Přidání zakázek")
-//                    .withMessage("Nejsou vybrány žádné zakázky")
-//                    .open()
-//            ;
-//        } else {
-////            inMemoryKzTreeProvider.refreshAll();
-//            zaksSelector.accept(kzZakItems);
-//            close();
-//        }
+        if (CollectionUtils.isEmpty(kzZakItems)) {
+            ConfirmDialog.createInfo()
+                    .withCaption("Přidání zakázek")
+                    .withMessage("Nejsou vybrány žádné zakázky")
+                    .open()
+            ;
+        } else {
+//            inMemoryKzTreeProvider.refreshAll();
+            zaksSelector.accept(kzZakItems);
+            close();
+        }
     }
 
 }

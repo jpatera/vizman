@@ -62,6 +62,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
     private TextField investorField;
     private TextField textField;
     private TextField honorarField;
+    private TextField honorarCistyField;
     private ComboBox<Mena> menaCombo;
     private ComboBox<Klient> objednatelCombo;
 
@@ -216,6 +217,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
                 , initInvestorField()
                 , initMenaCombo()
                 , initHonorarField()
+                , initHonorarCistyField()
         );
 
         getUpperGridContainer().add(
@@ -736,6 +738,16 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
                 .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
                 .bind(Kont::getHonorar, null);
         return honorarField;
+    }
+
+    private Component initHonorarCistyField() {
+        honorarCistyField = new TextField("Honorář čistý");
+        honorarCistyField.setReadOnly(true);
+        honorarCistyField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        getBinder().forField(honorarCistyField)
+                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
+                .bind(Kont::getHonorarCisty, null);
+        return honorarCistyField;
     }
 
     // ------------------------------------------

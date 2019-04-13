@@ -274,6 +274,13 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     }
 
     @Transient
+    public BigDecimal getHonorarCisty() {
+        return getNodes().stream()
+                .map(node -> node.getHonorarCisty())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Transient
     @Override
     public String getSkupina() {
         return null;
