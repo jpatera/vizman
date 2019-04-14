@@ -98,6 +98,14 @@ public class VzmFormatUtils {
         nameToColorMap.put("darkblue", new Color(0x00008B));
         nameToColorMap.put("firebrick", new Color(0xB22222));
         nameToColorMap.put("crimson", new Color(0xDC143C));
+
+//        this.getStyle().set("margin-top", "2em");
+//        this.getStyle().set("margin-bottom", "2em");
+//        this.getStyle().set("background-color", "#fffcf5");
+//        this.getStyle().set("background-color", "#e1dcd6");
+//        this.getStyle().set("background-color", "#fcfffe");
+//        this.getStyle().set("background-color", "LightYellow");
+//        this.getStyle().set("background-color", "#fefefd");
     }
 
     public static String getItemTypeColorName(ItemType itemType) {

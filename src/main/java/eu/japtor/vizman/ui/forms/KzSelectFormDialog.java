@@ -54,18 +54,18 @@ public class KzSelectFormDialog extends Dialog {
     private Button selectButton;
     private Button cancelButton;
 
+    public KontService kontService;
     private Consumer<List<KzTreeAware>> zaksSelector;
 
-    @Autowired
-    public KontService kontService;
 
-    public KzSelectFormDialog(Consumer<List<KzTreeAware>> itemSelector, KontService kontService)
-    {
-        this.zaksSelector = itemSelector;
+    public KzSelectFormDialog(Consumer<List<KzTreeAware>> itemSelector, KontService kontService) {
 //        super(itemSaver);
+        this.kontService = kontService;
+        this.zaksSelector = itemSelector;
+
         this.setWidth("1200px");
         this.setHeight("700px");
-        this.kontService = kontService;
+
 //        setupEventListeners();
 
         initKzTextRenderer();

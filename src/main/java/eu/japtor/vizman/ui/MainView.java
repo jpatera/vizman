@@ -120,7 +120,7 @@ public class MainView extends VerticalLayout implements RouterLayout, BeforeEnte
 
 //        this.navigationBar.postInit();
 
-//        RouterLink zakListLink = new RouterLink(null, ZakListView.class);
+//        RouterLink zakListLink = new RouterLink(null, ZakBasicListView.class);
 //        Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);
 //        ICON_ZAK_LIST.setColor("green");
 //        zakListLink.add(ICON_ZAK_LIST, new Text(TITLE_ZAK_LIST));
@@ -173,7 +173,7 @@ public class MainView extends VerticalLayout implements RouterLayout, BeforeEnte
 //    }
 
 //    private Component buildZakListRoute() {
-//        RouterLink zakListRoute = new RouterLink(null, ZakListView.class);
+//        RouterLink zakListRoute = new RouterLink(null, ZakBasicListView.class);
 //        Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);
 //        ICON_ZAK_LIST.setColor("green");
 //        zakListRoute.add(ICON_ZAK_LIST, new Text(TITLE_ZAK_LIST));

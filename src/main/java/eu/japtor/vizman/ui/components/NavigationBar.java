@@ -64,9 +64,9 @@ public class NavigationBar extends Div implements RouterLayout {
         pruhLink.add(ICON_PRUH, new Text(TITLE_PRUH));
         pruhLink.addClassName("main-layout__nav-item");
 
-        RouterLink zakListLink = new RouterLink(null, ZakListView.class);
+        RouterLink zakListLink = new RouterLink(null, ZakBasicListView.class);
         Icon ICON_ZAK_LIST = new Icon (VaadinIcon.LIST);
-        ICON_ZAK_LIST.setColor("green");
+        ICON_ZAK_LIST.setColor("goldenrod");
         zakListLink.add(ICON_ZAK_LIST, new Text(TITLE_ZAK_LIST));
         zakListLink.addClassName("main-layout__nav-item");
 

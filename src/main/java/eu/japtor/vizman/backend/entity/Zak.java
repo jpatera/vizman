@@ -18,7 +18,7 @@ import java.util.function.Predicate;
 @Entity
 @Table(name = "ZAK")
 //@SequenceGenerator(initialValue = 1, name = "id_gen", sequenceName = "zak_seq")
-public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasModifDates {
+public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArch, HasModifDates {
 
 //    @GeneratedValue(generator = "uuid2")
 //    @GenericGenerator(name = "uuid2", strategy = "uuid2")

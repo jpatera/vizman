@@ -24,9 +24,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
-import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -45,7 +43,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.PostConstruct;
-import java.text.DecimalFormat;
 import java.util.List;
 
 import static eu.japtor.vizman.app.security.SecurityUtils.isWagesAccessGranted;
@@ -95,7 +92,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
                 event -> personEditForm.open(new Person(), Operation.ADD, "")
         );
 
-        reloadViewButton = new ReloadViewButton("Inicializovat tabulku",
+        reloadViewButton = new ReloadButton("Inicializovat tabulku",
                 event -> reloadView()
         );
 

@@ -85,7 +85,7 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
                 event -> klientFormDialog.openDialog(new Klient(), Operation.ADD, null, null)
         );
 
-        reloadViewButton = new ReloadViewButton("Znovu načíst tabulku",
+        reloadViewButton = new ReloadButton("Znovu načíst tabulku",
                 event -> reloadView()
         );
 

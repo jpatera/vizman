@@ -41,7 +41,7 @@ import java.util.function.Consumer;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @UIScope    // Without this annotation browser refresh throws exception
 //public class KzSelectFormDialog<KzTreeAware> extends Dialog {
-public class ZakSelectFormDialog extends Dialog {
+public class ZakTreeSelectDialog extends Dialog {
 
     private static final String SEL_COL_KEY = "zak-sel-col";
 
@@ -64,7 +64,7 @@ public class ZakSelectFormDialog extends Dialog {
     public ZakBasicRepo zakBasicRepo;
 
 
-    public ZakSelectFormDialog()
+    public ZakTreeSelectDialog()
     {
 //        this.zaksSelector = itemSelector;
 //        super(itemSaver);
@@ -196,9 +196,11 @@ public class ZakSelectFormDialog extends Dialog {
         gridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
 
         gridContainer.add(initKzToolBar());
-        zakGrid = new ZakBasicGrid();
+        zakGrid = new ZakBasicGrid(true, false, Boolean.FALSE);
+        zakGrid.setMultiSort(true);
+        zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 //        gridContainer.add(initKzTreeGrid());
-        gridContainer.add(new ZakBasicGrid());
+        gridContainer.add(zakGrid);
 
 //        this.add();
 //        this.add(gridContainer);
@@ -372,12 +374,13 @@ public class ZakSelectFormDialog extends Dialog {
 //        List<? super Zak> kzList;
 //        zakList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDes();
         zakList = zakBasicRepo.findAll();
+        zakGrid.setItems(zakList);
+
 //        ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
 //        ListDataProvider<Zak> zakProvider = new ListDataProvider(zakList);
 //        zakProvider.set
 
 //        zakGrid.setDataProvider(zakProvider);
-        zakGrid.setItems(zakList);
         zakGrid.focus();
     }
 

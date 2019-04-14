@@ -70,7 +70,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 @PageTitle(PAGE_TITLE_KZ_TREE)
 //@Tag(TAG_ZAK)    // Kurvi layout
 @Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL,
-        Perm.ZAK_BASIC_READ, Perm.ZAK_BASIC_MODIFY,
+//        Perm.ZAK_BASIC_READ, Perm.ZAK_BASIC_MODIFY,
         Perm.ZAK_EXT_READ, Perm.ZAK_EXT_MODIFY
 })
 public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, HasLogger {

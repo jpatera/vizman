@@ -20,7 +20,7 @@ import java.util.function.Predicate;
 //@ReadOnly
 @Entity
 @Table(name = "ZAK_BASIC_VIEW")
-public class ZakBasic implements Serializable, HasItemType {
+public class ZakBasic implements Serializable, HasItemType, HasArch {
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -117,7 +117,10 @@ public class ZakBasic implements Serializable, HasItemType {
         return idKont;
     }
 
-
+    @Transient
+    public boolean isChecked() {
+        return checked;
+    }
 
 
 //    public void setId(Long id) {
@@ -202,7 +205,7 @@ public class ZakBasic implements Serializable, HasItemType {
     @Transient
     public String getKzText() {
         StringBuilder builder = new StringBuilder();
-        builder .append(getTextKontNotNull())
+        builder .append(StringUtils.substring(getTextKontNotNull(), 0, 25))
                 .append(" / ")
                 .append(getTextZakNotNull())
         ;

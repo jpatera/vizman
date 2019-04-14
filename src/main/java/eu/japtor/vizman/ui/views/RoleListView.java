@@ -72,7 +72,7 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
                 event -> roleEditForm.open(new Role(), Operation.ADD, "")
         );
 
-        reloadViewButton = new ReloadViewButton("Znovu na49st tabulku",
+        reloadViewButton = new ReloadButton("Znovu na49st tabulku",
                 event -> reloadView()
         );
 

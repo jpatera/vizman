@@ -40,7 +40,7 @@ import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.GridItemRemoveBtn;
-import eu.japtor.vizman.ui.forms.KzSelectFormDialog;
+import eu.japtor.vizman.ui.forms.ZakFlatSelectDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
@@ -109,7 +109,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private  Icon pruhStateIconUnlocked;
     private  Icon pruhStateIconLocked;
 
-    private KzSelectFormDialog kzSelectFormDialog;
+    private ZakFlatSelectDialog zakSelectDialog;
     private static final Locale czLocale = new Locale("cs", "CZ");
 
     private HorizontalLayout gridZakTitleBar;
@@ -170,6 +170,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     public ZakService zakService;
 
     @Autowired
+    public ZakBasicRepo zakBasicRepo;
+
+    @Autowired
     public ParagRepo paragRepo;
 
     @Autowired
@@ -184,6 +187,49 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         buildForm();
     }
 
+    private void buildForm() {
+        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+//        this.setWidth("1200px");
+        this.setWidth("100%");
+        this.setPadding(false);
+
+        // TODO:
+        //        this.setMaxHeight("700px");
+
+        this.setAlignSelf(Alignment.CENTER);
+
+        VerticalLayout pruhPanel = new VerticalLayout();
+        pruhPanel.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+        pruhPanel.setAlignItems(Alignment.STRETCH);
+        pruhPanel.setHeight("100%");
+        pruhPanel.add(initPruhTitleBar());
+        pruhPanel.add(
+                initZakGridTitleBar()
+                , initZakGrid()
+//                , initSumGrid()
+                , initZakGridButtonBar()
+//                , initZakGridSumTitle()
+                , initGridParagTitleBar()
+                , initParagGrid()
+        );
+//        pruhRecPane.add(initMiddlePruhFooterBar());
+
+//        pruhRecPane.add(pruhRecLowerHeader);
+//        pruhRecPane.add(initLowerPruhGrid());
+//        pruhRecPane.add(dochRecLowerFooter);
+
+//        pruhPanel.add(
+//                new Ribbon()
+//                , pruhPanel
+//                , new Ribbon()
+//                , buildVertSpace()
+//                , buildVertSpace()
+//        );
+
+        this.add(pruhPanel);
+        // TODO: disable when pruh is loaded, enable when changed (either hodPrac changed, or zak added/deleted)
+//        saveEditButton.setEnabled(false);
+    }
 
     @PostConstruct
     public void init() {
@@ -191,28 +237,36 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         authUsername = SecurityUtils.getUsername();
 //        pruhYm = YearMonth.now();
         initPruhData();
-        kzSelectFormDialog = new KzSelectFormDialog(
-                this::addKzTreeAwareZaksToGrid
-                , kontService
-        );
+        zakSelectDialog = new ZakFlatSelectDialog(this::addZaksToGrid, zakBasicRepo);
     }
 
-    private void addKzTreeAwareZaksToGrid(final List<KzTreeAware> kzZakList) {
+    private void addZaksToGrid(final List<ZakBasic> zakBasicList) {
 
-        for (KzTreeAware kzZak : kzZakList) {
-            kzZak.getCkont();
+        if (pruhZakGrid.getEditor().isOpen()) {
+            pruhZakGrid.getEditor().closeEditor();
+        }
+        int i = 0;
+        for (ZakBasic zakBasic : zakBasicList) {
+            zakBasic.getCkont();
             boolean isZakInPruh = pruhZakList.stream()
                     .map(PruhZak::getZakId)
-                    .anyMatch(zakId -> zakId.equals(kzZak.getItemId()))
+                    .anyMatch(zakId -> zakId.equals(zakBasic.getId()))
             ;
             if (!isZakInPruh) {
-                pruhZakList.add(new PruhZak(kzZak.getItemId(), kzZak.getTyp(), kzZak.getCkont(), kzZak.getCzak(), kzZak.getText()));
+                pruhZakList.add(new PruhZak(zakBasic.getId(), zakBasic.getTyp(), zakBasic.getCkont(), zakBasic.getCzak(), zakBasic.getKzText()));
+                i++;
             }
         }
-
-        Notification.show("Zakázky přidány"
-                , 2500, Notification.Position.TOP_CENTER);
-
+        if (i > 0) {
+            Notification.show(String.format("Zakázky přidány: %s", i)
+                    , 2500, Notification.Position.TOP_CENTER);
+        } else {
+            ConfirmDialog.createInfo()
+                    .withCaption("PŘIDÁNÍ ZAKÁZEK")
+                    .withMessage("Žádné zakázky nebyly přidány, všechny jsou již v proužku přítomny")
+                    .open()
+            ;
+        }
 //        calcAndSetPruhMissingHods();
 //        setPruhSumHods();
         pruhZakGrid.getDataProvider().refreshAll();
@@ -235,7 +289,6 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 i++;
             }
         }
-
         if (i > 0) {
             Notification.show(String.format("Zakázky přidány: %s", i)
                     , 2500, Notification.Position.TOP_CENTER);
@@ -246,7 +299,6 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     .open()
             ;
         }
-
 //        calcAndSetPruhMissingHods();
 //        setPruhSumHods();
 //        pruhZakGrid.setItems(pruhZakList);
@@ -455,56 +507,6 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 col.setVisible(day <= daysMax);
             }
         }
-    }
-
-
-    private void buildForm() {
-        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-//        this.setWidth("1200px");
-        this.setWidth("100%");
-        this.setPadding(false);
-
-        // TODO:
-        //        this.setMaxHeight("700px");
-
-        this.setAlignSelf(Alignment.CENTER);
-
-//        this.getStyle().set("margin-top", "2em");
-//        this.getStyle().set("margin-bottom", "2em");
-//        this.getStyle().set("background-color", "#fffcf5");
-//        this.getStyle().set("background-color", "#e1dcd6");
-//        this.getStyle().set("background-color", "#fcfffe");
-//        this.getStyle().set("background-color", "LightYellow");
-//        this.getStyle().set("background-color", "#fefefd");
-
-        VerticalLayout pruhPanel = new VerticalLayout();
-        pruhPanel.add(initPruhTitleBar());
-        pruhPanel.add(
-                initZakGridTitleBar()
-                , initZakGrid()
-//                , initSumGrid()
-                , initZakGridButtonBar()
-//                , initZakGridSumTitle()
-                , initGridParagTitleBar()
-                , initParagGrid()
-        );
-//        pruhRecPane.add(initMiddlePruhFooterBar());
-
-//        pruhRecPane.add(pruhRecLowerHeader);
-//        pruhRecPane.add(initLowerPruhGrid());
-//        pruhRecPane.add(dochRecLowerFooter);
-
-//        pruhPanel.add(
-//                new Ribbon()
-//                , pruhPanel
-//                , new Ribbon()
-//                , buildVertSpace()
-//                , buildVertSpace()
-//        );
-
-        this.add(pruhPanel);
-        // TODO: disable when pruh is loaded, enable when changed (either hodPrac changed, or zak added/deleted)
-//        saveEditButton.setEnabled(false);
     }
 
 //    private Component initZakGridSumTitle() {
@@ -867,7 +869,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private Component initZakGrid() {
         pruhZakGrid = new Grid<>();
-        pruhZakGrid.setHeight("24em");
+//        pruhZakGrid.setHeight("24em");
+//        pruhZakGrid.setHeight("100%");
+        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         pruhZakGrid.getStyle()
                 .set("margin-top", "0.2em")
                 .set("margin-bottom", "0.2em")
@@ -958,6 +962,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private Component initParagGrid() {
         pruhParagGrid = new Grid<>();
         pruhParagGrid.setHeight("8em");
+        pruhParagGrid.setMaxHeight("8em");
         pruhParagGrid.getStyle()
                 .set("margin-top", "0.2em")
                 .set("margin-bottom", "0.2em")
@@ -1395,7 +1400,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 ;
                 return;
             }
-            kzSelectFormDialog.openDialog("PŘIDÁNÍ ZAKÁZEK");
+            zakSelectDialog.openDialog();
         });
         return zaksAddButton;
     }
