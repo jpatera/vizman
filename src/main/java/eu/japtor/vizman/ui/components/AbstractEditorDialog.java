@@ -233,7 +233,7 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         binder.addValueChangeListener(e -> onValueChange(isDirty()));
 
 //        getGrid().addSelectionListener(e -> {
-//            e.getFirstSelectedItem().ifPresent(entity -> {
+//            e.getF``irstSelectedItem().ifPresent(entity -> {
 //                navigateToEntity(entity.getId().toString());
 //                getGrid().deselectAll();
 //            });

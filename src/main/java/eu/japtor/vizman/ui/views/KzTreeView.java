@@ -28,13 +28,16 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.treegrid.TreeGrid;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.SortDirection;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.dom.*;
 import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -57,6 +60,9 @@ import javax.annotation.PostConstruct;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static eu.japtor.vizman.app.security.SecurityUtils.isHonorareAccessGranted;
@@ -99,6 +105,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //    private final Grid<Zak> zakGrid = new Grid<>();
 
     private TreeGrid<KzTreeAware> kzTreeGrid;
+    private TreeData<KzTreeAware> kzTreeData;
     private TreeDataProvider<KzTreeAware> inMemoryKzTreeProvider;
     private Button newKontButton;
     private RadioButtonGroup<String> archFilterRadio;
@@ -156,15 +163,31 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        <vaadin-treeGrid items="[[items]]" id="treeGrid" style="width: 100%;"></vaadin-treeGrid>
     }
 
+    private Consumer<Kont> deleteKontConsumer = kont -> deleteKontForGrid(kont);
+    private BiConsumer<Kont, Operation> saveKontBiConsumer = (kont, oper) ->  saveKontForGrid(kont, oper);
+
 
     @PostConstruct
     public void postInit() {
 
         kontFormDialog = new KontFormDialog(
-                this::saveKontForGrid, this::deleteKontForGrid
+//                this::saveKontForGrid, this::deleteKontForGrid
+                deleteKontConsumer
+//                , closeKontConsumer
                 , kontService, zakService, faktService, klientService, dochsumZakService
                 , cfgPropsCache
         );
+        kontFormDialog.addOpenedChangeListener(event -> {
+            System.out.println("OPEN-CHANGED: " + event.toString());
+            if (!event.isOpened()) {
+                syncGridAfterFormClosed((KontFormDialog)event.getSource());
+            }
+        });
+        kontFormDialog.addDialogCloseActionListener(event -> {
+            System.out.println("DIALOG-CLOSE: " + event.toString());
+            kontFormDialog.close();
+            syncGridAfterFormClosed((KontFormDialog)event.getSource());
+        });
 //        kontFormDialog.addDialogCloseActionListener(ev -> {
 ////            Notification.show("Close Action Listener");
 //            reloadTreeProvider(archFilterRadio.getValue());
@@ -189,6 +212,85 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        archFilterRadio.getDataProvider().refreshItem();
 //        updateZakGridContent();
     }
+
+
+    void syncGridAfterFormClosed(KontFormDialog kontFormDialog) {
+        Kont kont =  kontFormDialog.getCurrentItem();
+        Operation oper =  kontFormDialog.getCurrentOperation();
+        switch (oper) {
+            case EDIT:
+                syncGridAfterKontModified(kont);
+                Notification.show("Kontrakt " + kont.getCkont() + " uložen"
+                        , 2500, Notification.Position.TOP_CENTER);
+                break;
+            case ADD:
+//                syncGridAfterKontModified(kont);
+                break;
+            case DELETE:
+//                syncGridAfterKontModified(kont);
+                break;
+        }
+
+    }
+
+
+    void syncGridAfterKontModified(Kont modKont) {
+
+//       ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
+
+
+
+//        if (Operation.EDIT == operation) {
+        kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+        kzTreeData.removeItem((KzTreeAware)modKont);
+        kzTreeData.addItem(null, modKont);
+        kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
+//        kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
+//        kzTreeData.addItems((Collection<KzTreeAware>) modKont, KzTreeAware::getNodes);
+
+        inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
+        inMemoryKzTreeProvider.setSortOrder(KzTreeAware::getCkont, SortDirection.DESCENDING);
+//        inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
+        kzTreeGrid.setDataProvider(inMemoryKzTreeProvider);
+        kzTreeGrid.getDataProvider().refreshItem(modKont);
+        kzTreeGrid.getDataProvider().refreshAll();
+
+////        List<KzTreeAware> zaks = kzTreeGrid.getDataProvider()
+//        Stream<KzTreeAware> zakStream = kzTreeGrid.getDataProvider()
+//                .fetchChildren(new HierarchicalQuery(null, modKont));
+//        List<KzTreeAware> zaks = zakStream.collect(Collectors.toList());
+//        ((KzTreeAware)modKont).getNodes() Zaks(zaks);
+//        Stream<KzTreeAware> stream = kzTreeGrid.getDataProvider().fetch(new Query<>(kz -> kz.getItemId().equals(modKont.getItemId())));
+        Stream<KzTreeAware> stream = kzTreeGrid.getDataProvider().fetch(new HierarchicalQuery(null, modKont));
+        Stream<KzTreeAware> childrenStream = kzTreeGrid.getDataProvider().fetchChildren(new HierarchicalQuery(null, modKont));
+
+        List<KzTreeAware> list = stream.collect(Collectors.toList());
+        List<KzTreeAware> childernList = childrenStream.collect(Collectors.toList());
+
+//        kzTreeGrid.getDataProvider().
+//        } else {
+////            if (null == archRadioValue || )
+//            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+//            kzTreeGrid.getDataProvider().refreshAll();
+//
+//        }
+
+
+
+//        Kont savedKont = kontFormDialog.saveKont(kont, operation);
+
+//        if ((Operation.ADD == operation) && (archFilterRadio.getValue().equals(RADIO_KONT_ACTIVE))) {
+//                archFilterRadio.setValue(RADIO_KONT_ARCH);
+//        } else {
+//                reloadTreeProvider(archFilterRadio.getValue());
+//        }
+
+
+        kzTreeGrid.expand(modKont);
+        kzTreeGrid.select(modKont);
+
+    }
+
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
@@ -664,8 +766,8 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
         }
 
         ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
-        inMemoryKzTreeProvider
-                = new TreeDataProvider<KzTreeAware>((new TreeData()).addItems(kzList, kzNodesProvider));
+        kzTreeData = (new TreeData()).addItems(kzList, kzNodesProvider);
+        inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
         inMemoryKzTreeProvider.setSortOrder(KzTreeAware::getCkont, SortDirection.DESCENDING);
 //        inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
         kzTreeGrid.setDataProvider(inMemoryKzTreeProvider);
@@ -703,7 +805,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
             listener = event -> {
                 kontFolderOrig = ((Kont)kz).getFolder();
                 kontFormDialog.openDialog(
-                        (Kont)kz, Operation.EDIT, null, null
+                        (Kont)kz, Operation.EDIT, null
                 );
             };
         } else if (ItemType.ZAK == kz.getTyp() || ItemType.AKV == kz.getTyp()) {
@@ -787,7 +889,8 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
     }
 
 
-    private void saveKontForGrid(Kont kont, Operation operation) {
+
+    protected void saveKontForGrid(Kont kont, Operation operation) {
 
 //        Kont savedKont = kontFormDialog.saveKont(kont, operation);
 //
@@ -839,10 +942,6 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //
 //        Kont savedKont = kontService.saveKont(kont);
 
-        Kont savedKont = kontFormDialog.saveKont(kont, operation);
-
-        Notification.show("Kontrakt " + savedKont.getCkont() + " uložen"
-                , 2500, Notification.Position.TOP_CENTER);
 
 //        if (Operation.EDIT == operation) {
 //            kzTreeGrid.getDataProvider().refreshItem(savedKont);
@@ -853,16 +952,25 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //
 //        }
 
-//        if (Operation.ADD == operation) {
-        if ((Operation.ADD == operation) && (archFilterRadio.getValue().equals(RADIO_KONT_ACTIVE))) {
-                archFilterRadio.setValue(RADIO_KONT_ARCH);
-        } else {
-                reloadTreeProvider(archFilterRadio.getValue());
-        }
 
-        kzTreeGrid.expand(savedKont);
-        kzTreeGrid.select(savedKont);
+
+        Kont savedKont = kontFormDialog.saveKont(kont, operation);
+//
+//        Notification.show("Kontrakt " + savedKont.getCkont() + " uložen"
+//                , 2500, Notification.Position.TOP_CENTER);
+//
+//        if ((Operation.ADD == operation) && (archFilterRadio.getValue().equals(RADIO_KONT_ACTIVE))) {
+//                archFilterRadio.setValue(RADIO_KONT_ARCH);
+//        } else {
+//                reloadTreeProvider(archFilterRadio.getValue());
+//        }
+//
+//        kzTreeGrid.expand(savedKont);
+//        kzTreeGrid.select(savedKont);
+
+
     }
+
 
 
     private void deleteKontForGrid(final Kont kontToDelete) {
@@ -1234,7 +1342,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
                     kont.setMena(Mena.CZK);
                     kont.setDateCreate(LocalDate.now());
 //                    kont.setCkont("01234");
-                    kontFormDialog.openDialog(kont, Operation.ADD, null, null);
+                    kontFormDialog.openDialog(kont, Operation.ADD, null);
         });
         return newKontButton;
     }

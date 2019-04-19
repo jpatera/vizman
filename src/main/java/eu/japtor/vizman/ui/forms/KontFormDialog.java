@@ -5,7 +5,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.*;
@@ -15,14 +14,18 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.bean.EvidKont;
 import eu.japtor.vizman.backend.entity.*;
@@ -33,10 +36,13 @@ import eu.japtor.vizman.fsdataprovider.FilesystemData;
 import eu.japtor.vizman.fsdataprovider.FilesystemDataProvider;
 import eu.japtor.vizman.ui.components.*;
 import org.apache.commons.lang3.StringUtils;
+import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 
 import java.io.File;
+import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,14 +51,20 @@ import java.util.function.Consumer;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLogger {
+public class KontFormDialog <T extends Serializable> extends AbstractKzDialog implements HasLogger {
+//public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLogger {
 //public class KontFormDialog extends AbstractEditorDialog<Kont> implements BeforeEnterObserver {
 
     private final static String ZAK_EDIT_COL_KEY = "zak-edit-col";
+    private final static String DELETE_STR = "Zrušit";
+    private final static String SAVE_STR = "Uložit";
 
 //    final ValueProvider<Zak, String> honorProvider;
 //    final ValueProvider<Zak, String> yearProvider;
-    private final ComponentRenderer<HtmlComponent, Zak> zakHonorarCellRenderer;
+    private final ComponentRenderer<HtmlComponent, Zak> zakHonorarCellRenderer =
+        new ComponentRenderer<>(zak ->
+            VzmFormatUtils.getMoneyComponent(zak.getHonorar())
+    );
 
     private TextField ckontField;
     private TextField rokField;
@@ -93,7 +105,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
     private Button newZakButton;
     private Button newAkvButton;
     private FlexLayout zakGridTitleComponent;
-    private Button zakGridResizeBtn;
+//    private Button zakGridResizeBtn;
     private ComponentRenderer<Component, Zak> zakArchRenderer;
     private ComponentRenderer<HtmlComponent, Zak> zakTextRenderer;
     private ComponentRenderer<Component, Zak> avizoRenderer;
@@ -118,8 +130,42 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
 
 
 
-    public KontFormDialog(BiConsumer<Kont, Operation> kontSaver,
+    private GrammarGender itemGender;
+    private String itemTypeNomS;
+    private String itemTypeGenS;
+    private String itemTypeAccuS;
+
+
+    private HorizontalLayout buttonBar;
+    private Button saveButton;
+    private Button revertButton;
+    private Button closeButton;
+    private Button deleteButton;
+    private HorizontalLayout leftBarPart;
+
+//    private Binder<T> binder = new Binder<>();
+//    private T currentItem;
+    private Binder<Kont> binder = new Binder<>();
+    private Kont currentItem;
+
+    protected Operation currentOperation;
+    private boolean closeAfterSave;
+    private Registration registrationForSave;
+//    private BiConsumer<T, Operation> itemSaver;
+//    private Consumer<T> itemDeleter;
+//    private BiConsumer<Kont, Operation> itemSaver;
+    private Consumer<Kont> newItemSaver;
+    private Consumer<Kont> modItemSaver;
+    private Consumer<Kont> itemDeleter;
+    private Consumer<Kont> formCloser;
+
+
+
+
+    public KontFormDialog(
+//            BiConsumer<Kont, Operation> kontSaver,
                           Consumer<Kont> kontDeleter,
+//                          Consumer<Kont> kontFormCloser,
 //                          BiConsumer<Zak, Operation> zakSaver,
 //                          Consumer<Kont> zakDeleter,
                           KontService kontService,
@@ -129,20 +175,55 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
                           DochsumZakService dochsumZakService,
                           CfgPropsCache cfgPropsCache
     ){
-        super("1300px", "800px", true, true, kontSaver, kontDeleter, false);
+        super("1300px", "800px", true, true);
 
-        this.getElement().getStyle().set("padding", "0");
-        this.getElement().getStyle().set("margin", "0");
+//        this.dialogWidth = "1300px";
+//        this.dialogHeight = "800px";
+//        setWidth(dialogWidth);
+//        setHeight(dialogHeight);
+//        boolean useUpperRightPane = true;
+//        boolean useLowerPane  = true;
+
+//        this.newItemSaver = saveKont();
+//        this.modItemSaver = this::saveKont;
+        this.itemDeleter = kontDeleter;
+//        this.formCloser = kontFormCloser;
+
+        this.closeAfterSave = false;
+
+        this.kontService = kontService;
+        this.zakService = zakService;
+        this.klientService = klientService;
+        this.cfgPropsCache = cfgPropsCache;
+
+        getFormLayout().add(
+                initCkontField()
+                , initRokField()
+//                , initArchCheck()
+                , initTextField()
+//                , initObjednatelField()
+                , initObjednatelCombo()   // Becauise of a bug -> call it in OpenDialog
+                , initInvestorField()
+                , initMenaCombo()
+                , initHonorarField()
+                , initHonorarCistyField()
+        );
+
+        getUpperRightPane().add(
+                initKontDocFolderComponent()
+                , initDocGridBar()
+                , initDocGrid()
+        );
+
+        getLowerPane().add(
+                new Hr()
+                , initZakGridBar()
+                , initZakGrid()
+        );
 
 //        this.getElement().getStyle().set("display", "flex");
 //        getElement().getStyle().set("flex-direction", "column");
 ////        getElement().getStyle().set("flex","auto");
-
-
-        getFormLayout().setResponsiveSteps(
-                new FormLayout.ResponsiveStep("0", 2),
-                new FormLayout.ResponsiveStep("20em", 4)
-        );
 
 
 //        this.getDialogLeftBarPart().add(initKontEvidButton());
@@ -151,12 +232,6 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
 //                kontEvidButton.click();
 //            }
 //        });
-
-        this.kontService = kontService;
-        this.zakService = zakService;
-        this.klientService = klientService;
-        this.cfgPropsCache = cfgPropsCache;
-
 
 //        moneyFormat = DecimalFormat.getInstance();
 //        if (moneyFormat instanceof DecimalFormat) {
@@ -188,10 +263,6 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
 //        honorProvider = (zak) -> VzmFormatUtils.moneyFormat.format(zak.getHonorar());
 //        yearProvider = (zak) -> VzmFormatUtils.yearFormat.format(zak.getRok());
 
-        zakHonorarCellRenderer = new ComponentRenderer<>(zak ->
-                VzmFormatUtils.getMoneyComponent(zak.getHonorar())
-        );
-
 
 //        kontEvidFormDialog = new KontEvidFormDialog(this::saveKontEvid, kontService);
         zakFormDialog = new ZakFormDialog(
@@ -207,54 +278,146 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
 
         confirmDocUnregisterDialog = new ConfirmationDialog<>();
 
-        getFormLayout().add(
-                initCkontField()
-                , initRokField()
-//                , initArchCheck()
-                , initTextField()
-//                , initObjednatelField()
-                , initObjednatelCombo()   // Becauise of a bug -> call it in OpenDialog
-                , initInvestorField()
-                , initMenaCombo()
-                , initHonorarField()
-                , initHonorarCistyField()
-        );
-
-        getUpperGridContainer().add(
-                initKontDocFolderComponent()
-                , initDocGridBar()
-                , initDocGrid()
-        );
-
-        getLowerPane().add(
-                new Hr()
-                , initZakGridBar()
-                , initZakGrid()
-        );
+        activateListeners();
     }
 
 
+    private void activateListeners() {
+        // Must be set only after upper kontFolderField, ckontField and textField are initialized
+        textField.addValueChangeListener(event -> {
+            kontFolderField.setValue(
+                    VzmFileUtils.NormalizeDirnamesAndJoin(ckontField.getValue(), event.getValue())
+            );
+        });
+        textField.setValueChangeMode(ValueChangeMode.EAGER);
+
+        ckontField.addValueChangeListener(event -> {
+            kontFolderField.setValue(
+                    VzmFileUtils.NormalizeDirnamesAndJoin(event.getValue(), textField.getValue())
+            );
+        });
+        ckontField.setValueChangeMode(ValueChangeMode.EAGER);
+    }
+
+
+
+//    protected final T getCurrentItem() {
+    public final Kont getCurrentItem() {
+        return currentItem;
+    }
+
+    public final Operation getCurrentOperation() {
+        return currentOperation;
+    }
+
+
+    /**
+     * Gets the binder.
+     *
+     * @return the binder
+     */
+//    protected final Binder<T> getBinder() {
+    protected final Binder<Kont> getBinder() {
+        return binder;
+    }
+
+
+    @Override
+    public Component initDialogButtonBar() {
+        HorizontalLayout bar = new HorizontalLayout();
+
+        saveButton = new Button("Uložit");
+        saveButton.setAutofocus(true);
+        saveButton.getElement().setAttribute("theme", "primary");
+
+        deleteButton = new Button("Zrušit");
+        deleteButton.getElement().setAttribute("theme", "error");
+        deleteButton.addClickListener(e -> deleteClicked());
+
+        revertButton = new Button("Vrátit změny");
+        revertButton.addClickListener(e -> revertClicked());
+
+        closeButton = new Button("Zavřít");
+        closeButton.addClickListener(e -> close());
+
+        leftBarPart = new HorizontalLayout();
+        leftBarPart.setSpacing(true);
+        leftBarPart.add(
+                saveButton
+                , deleteButton
+                , revertButton
+        );
+
+        HorizontalLayout rightBarPart = new HorizontalLayout();
+        rightBarPart.setSpacing(true);
+        rightBarPart.add(closeButton);
+
+//        buttonBar.getStyle().set("margin-top", "0.2em");
+        bar.setSpacing(false);
+        bar.setPadding(false);
+        bar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        bar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
+
+        bar.add(leftBarPart, rightBarPart);
+        bar.setClassName("buttons");
+//        buttonBar.setSpacing(true);
+
+        return bar;
+    }
+
+    private void deleteClicked() {
+// TODO: to be or not to be?
+//        if (confirmDialog.getElement().getParent() == null) {
+//            getUI().ifPresent(ui -> ui.add(confirmDialog));
+//        }
+        confirmDelete();
+    }
+
+    private void revertClicked() {
+// TODO: to be or not to be?
+//        if (confirmDialog.getElement().getParent() == null) {
+//            getUI().ifPresent(ui -> ui.add(confirmDialog));
+//        }
+        binder.removeBean();
+        binder.readBean(currentItem);
+    }
+
+    public void setItemNames(ItemType itemType) {
+        this.itemGender = ItemNames.getItemGender(itemType);
+        this.itemTypeNomS = ItemNames.getNomS(itemType);
+        this.itemTypeGenS = ItemNames.getGenS(itemType);
+        this.itemTypeAccuS = ItemNames.getAccuS(itemType);
+    }
+
+
+
+
+
     public void openDialog(
-            Kont kont, Operation operation
-            , String titleItemNameText, String titleEndText
+            Kont kont, Operation operation, String titleEndText
     ){
-        setItemNames(kont.getTyp());
+
+        currentOperation = operation;
+        currentItem = kont;
+
+        setDefaultItemNames();  // Set general default names
+        evidKontOrig = new EvidKont(
+                currentItem.getCkont()
+                , currentItem.getText()
+                , currentItem.getFolder()
+        );
+        setControlsForItemAndOperation(currentItem, currentOperation);
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
 //        datZadComp.setLocale(new Locale("cs", "CZ"));
 //        vystupField.setLocale(new Locale("cs", "CZ"));
 
-        evidKontOrig = new EvidKont(
-                kont.getCkont()
-                , kont.getText()
-                , kont.getFolder()
-        );
-
         if (Operation.ADD == operation) {
             kont.setRok(LocalDate.now().getYear());
             kont.setTyp(ItemType.KONT);
         }
+
         this.zakGrid.setItems(kont.getNodes());
         this.docGrid.setItems(kont.getKontDocs());
         this.kontFolderField.setParentFolder(null);
@@ -271,43 +434,128 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
 //        this.objednatelCombo.setItems(listOfKlients);
 
 
-        FlexLayout middleComponent = new FlexLayout();
-        middleComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
-        middleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        middleComponent.add(
+        FlexLayout headerMiddleComponent = new FlexLayout();
+        headerMiddleComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
+        headerMiddleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        headerMiddleComponent.add(
                 initArchCheck()
                 , new Gap("5em")
                 , VzmFormatUtils.buildAvizoComponent(kont.getBeforeTerms(), kont.getAfterTerms(), true)
         );
+        getMiddleComponentBox().removeAll();
+        if (null != headerMiddleComponent) {
+            getMiddleComponentBox().add(headerMiddleComponent);
+        }
 
-        openInternal(kont, operation, titleItemNameText
-                , middleComponent
-                , titleEndText
-        );
+        getHeaderEndComponent().setText(getHeaderEndComponentValue(titleEndText));
+
+        this.open();
+    }
+
+    //    protected void openInternal(T item, final Operation operation
+    protected void setControlsForItemAndOperation(final Kont item, final Operation operation) {
+
+        setItemNames(item.getTyp());
+
+        deleteButton.setText(DELETE_STR + " " + itemTypeAccuS.toLowerCase());
+        saveButton.setText(SAVE_STR + " " + itemTypeAccuS.toLowerCase());
+
+        getMainTitle().setText(operation.getDialogTitle(getItemName(operation), itemGender));
+
+        if (getCurrentItem() instanceof HasItemType) {
+            getHeaderDevider().getStyle().set(
+                    "background-color", VzmFormatUtils.getItemTypeColorBrighter(((HasItemType) item).getTyp()));
+        }
+
+        if (operation == Operation.ADD) {
+            binder.removeBean();
+            binder.readBean(item);
+        } else {
+            binder.removeBean();
+            binder.readBean(item);
+        }
+
+        if (registrationForSave != null) {
+            registrationForSave.remove();
+        }
+        registrationForSave = saveButton.addClickListener(e -> saveClicked(operation));
+//        saveButton.setEnabled(false);
+
+        deleteButton.setEnabled(operation.isDeleteEnabled());
     }
 
 
-    /**
-     * Called by abstract parent dialog from its open(...) method.
-     */
-    protected void openSpecific() {
 
-        // Mandatory, should be first
-//        setItemNames(getCurrentItem().getTyp());
-
-
-        // Set locale here, because when it is set in constructor, it is effective only in first open,
-        // and next openings show date in US format
-//        datZadComp.setLocale(new Locale("cs", "CZ"));
-//        vystupField.setLocale(new Locale("cs", "CZ"));
-
-//        zakGrid.setItems(getCurrentItem().getNodes());
-//        docGrid.setItems(getCurrentItem().getKontDocs());
-//        kontFolderField.setParentFolder(null);
-//        kontFolderText.setText(getCurrentItem().getFolder());
+    public void setDefaultItemNames() {
+        setItemNames(ItemType.UNKNOWN);
     }
 
-    @Override
+    private String getItemName(final Operation operation) {
+        switch (operation) {
+            case ADD : return itemTypeNomS;
+            case EDIT : return itemTypeGenS;
+            case DELETE : return itemTypeAccuS;
+            case FAKTUROVAT: return itemTypeAccuS;
+            case EXPORT : return itemTypeAccuS;
+            default : return itemTypeNomS;
+        }
+    }
+
+    private String getHeaderEndComponentValue(final String titleEndText) {
+        String value = "";
+        if ((null == titleEndText) && (currentItem instanceof HasModifDates)) {
+            if (currentOperation == Operation.ADD) {
+                value = "";
+            } else {
+                LocalDate dateCreate = ((HasModifDates) currentItem).getDateCreate();
+                String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
+                LocalDateTime dateTimeUpdate = ((HasModifDates) currentItem).getDatetimeUpdate();
+                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleModifDateFormatter);
+                value = "[ Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr + " ]";
+            }
+        }
+        return value;
+    }
+
+
+
+
+//    /**
+//     * Called by abstract parent dialog from its open(...) method.
+//     */
+//    protected void openSpecific() {
+//
+//        // Mandatory, should be first
+////        setItemNames(getCurrentItem().getTyp());
+//
+//
+//        // Set locale here, because when it is set in constructor, it is effective only in first open,
+//        // and next openings show date in US format
+////        datZadComp.setLocale(new Locale("cs", "CZ"));
+////        vystupField.setLocale(new Locale("cs", "CZ"));
+//
+////        zakGrid.setItems(getCurrentItem().getNodes());
+////        docGrid.setItems(getCurrentItem().getKontDocs());
+////        kontFolderField.setParentFolder(null);
+////        kontFolderText.setText(getCurrentItem().getFolder());
+//    }
+
+    private void saveClicked(Operation operation) {
+        boolean isValid = binder.writeBeanIfValid(currentItem);
+        if (isValid) {
+//            itemSaver.accept(currentItem, operation);
+//            itemSaver.accept(getCurrentItem(), operation);
+            saveKont(getCurrentItem(), operation);
+            if (closeAfterSave) {
+                close();
+            }
+        } else {
+//            BinderValidationStatus<T> status = binder.validate();
+            BinderValidationStatus<Kont> status = binder.validate();
+        }
+    }
+
+    //    @Override
     protected void confirmDelete() {
 
         String ckDel = String.format("%s", getCurrentItem().getCkont());
@@ -321,16 +569,70 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
             ;
             return;
         }
-        openConfirmDeleteDialog("Zrušení kontraktu"
-                ,"Opravdu zrušit kontrakt " + getCurrentItem().getCkont() + " ?"
-                ,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny."
-        );
+        ConfirmDialog
+                .createQuestion()
+                .withCaption("Zrušení kontraktu")
+//                .withMessage("Opravdu zrušit?")
+                .withMessage("Zrušit kontrakt " + getCurrentItem().getCkont() + " ?")
+//                .with...(,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny.")
+                .withOkButton(() -> {
+                            deleteItemConfirmed(getCurrentItem());
+                        }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
+                )
+                .withCancelButton(ButtonOption.caption("ZPĚT"))
+                .open()
+        ;
+
     }
+
+
+
+    protected final void openConfirmDeleteDialog(String title, String message,
+                                                 String additionalMessage) {
+//        close();
+//        confirmationDialog.open(title, message, additionalMessage, "Zrušit",
+//                true, getCurrentItem(), this::deleteItemConfirmed, this::open);
+
+
+        ConfirmDialog
+                .createQuestion()
+                .withCaption(title)
+                .withMessage("Opravdu zrušit?")
+                .withOkButton(() -> {
+                            deleteItemConfirmed(getCurrentItem());
+                        }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
+                )
+                .withCancelButton(ButtonOption.caption("ZPĚT"))
+                .open()
+        ;
+    }
+
+//    private void deleteItemConfirmed(T item) {
+    private void deleteItemConfirmed(Kont item) {
+        doDelete(item);
+    }
+
+    /**
+     * Removes the {@code item} from the backend and close the dialog.
+     *
+     * @param item
+     *            the item to delete
+     */
+//    protected void doDelete(T item) {
+    protected void doDelete(Kont item) {
+        itemDeleter.accept(item);
+        this.close();
+    }
+
+
+
+
 
     public Kont saveKont(Kont kont, Operation operation) {
 
         try {
-            Kont savedKont = kontService.saveKont(kont);
+            Kont kontSaved = kontService.saveKont(kont);
+            currentItem = kontSaved;
 
             if (Operation.EDIT == operation) {
                 if (null != evidKontOrig.getFolder() && !evidKontOrig.getFolder().equals(kont.getFolder())) {
@@ -385,7 +687,7 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
 
             getLogger().info("{} saved: {} / {} [operation: {}]", getCurrentItem().getTyp().name()
                     , getCurrentItem().getCkont(), getCurrentItem().getCzak(), operation.name());
-            return savedKont;
+            return kontSaved;
 
         } catch(Exception e) {
             getLogger().error("Error when saving {} {} / {} [operation: {}]", getCurrentItem().getTyp().name()
@@ -541,20 +843,13 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
         ckontField.setRequiredIndicatorVisible(true);
         ckontField.setPlaceholder("XXXXX.X-[1|2]");
         ckontField.getStyle()
-                .set("padding-top", "0em");
-
-        ckontField.addValueChangeListener(event -> {
-            kontFolderField.setValue(
-                    VzmFileUtils.NormalizeDirnamesAndJoin(event.getValue(), textField.getValue())
-            );
-        });
-        ckontField.setValueChangeMode(ValueChangeMode.EAGER);
-
+                .set("padding-top", "0em")
+        ;
         getBinder().forField(ckontField)
                 .withValidator(ckont -> {return ckont.matches("^[0-9]{5}\\.[0-9]-[1-2]$"); }
                         , "Je očekáván formát XXXXX.X-[1|2].")
-                .bind(Kont::getCkont, Kont::setCkont);
-
+                .bind(Kont::getCkont, Kont::setCkont)
+        ;
         return ckontField;
     }
 
@@ -639,14 +934,6 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
         textField = new TextField("Text kontraktu");
         textField.setRequiredIndicatorVisible(true);
         textField.getElement().setAttribute("colspan", "4");
-
-        textField.addValueChangeListener(event -> {
-            kontFolderField.setValue(
-                    VzmFileUtils.NormalizeDirnamesAndJoin(ckontField.getValue(), event.getValue())
-            );
-        });
-        textField.setValueChangeMode(ValueChangeMode.EAGER);
-
         getBinder().forField(textField)
                 .withValidator(new StringLengthValidator(
                         "Text kontraktu musí mít 3-127 znaků",
@@ -786,10 +1073,10 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
                                 !VzmFileUtils.kontDocRootExists(cfgPropsCache.getDocRootServer(), folder))
                         ||
                         ((Operation.EDIT == currentOperation) &&
-                                ((folder.equals(evidKontOrig.getFolder())) ||
+                                ((null != folder) && (null != evidKontOrig) && (folder.equals(evidKontOrig.getFolder())) ||
                                         !VzmFileUtils.kontDocRootExists(cfgPropsCache.getDocRootServer(), folder))
                         )
-                    , "Dokumentový adresář kontraktu stejného jména již existuje, změň číslo kontraktu nebo text"
+                    , "Dokumentový adresář kontraktu stejného jména již existuje, změň číslo kontraktu nebo text."
                 )
                 .withValidator(
                     folder ->
@@ -797,11 +1084,11 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
                                 !VzmFileUtils.kontProjRootExists(cfgPropsCache.getProjRootServer(), folder))
                             ||
                             ((Operation.EDIT == currentOperation) &&
-                                    ((folder.equals(evidKontOrig.getFolder())) ||
+                                    ((null != folder) && (null != evidKontOrig) && (folder.equals(evidKontOrig.getFolder())) ||
                                             !VzmFileUtils.kontProjRootExists(cfgPropsCache.getProjRootServer(), folder)
                                     )
                             )
-                    , "Projektový adresář kontraktu stejného jména již existuje, číslo kontraktu nebo text"
+                    , "Projektový adresář kontraktu stejného jména již existuje, číslo kontraktu nebo text."
                 )
 
                 .bind(Kont::getFolder, Kont::setFolder);
@@ -1051,8 +1338,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
     }
 
     private Component initZakGridResizeBtn() {
-        zakGridResizeBtn = new ResizeBtn(getLowerPaneResizeAction(), true);
-        return zakGridResizeBtn;
+        Button resizeBtn = new ResizeBtn(getLowerPaneResizeAction(), true);
+        return resizeBtn;
     }
 
     private Component initZakGridTitle() {

@@ -109,7 +109,7 @@ public class ItemNames {
 
     @Function
     public static GrammarGender getItemGender(ItemType type) {
-        GrammarGender gender = itemGenderMap.get(type);
+        GrammarGender gender = null == type ? itemGenderMap.get(ItemType.UNKNOWN) : itemGenderMap.get(type);
         return null != gender ? gender : itemGenderMap.get(GrammarGender.UNKNOWN);
     }
 
