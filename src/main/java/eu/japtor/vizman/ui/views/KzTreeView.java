@@ -171,11 +171,11 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        });
 
         zakFormDialog = new ZakFormDialog(
-                this::saveZakForGrid, this::deleteZak
+                this::saveZakForGrid, this::deleteZakForGrid
                 , zakService, faktService, dochsumZakService, cfgPropsCache
         );
 //        subFormDialog = new SubFormDialog(
-//                this::saveZakForGrid, this::deleteZak
+//                this::saveZakForGrid, this::deleteZakForGrid
 //                , zakService, faktService, cfgPropsCache
 //        );
 
@@ -1005,12 +1005,12 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        return zakGrid;
 //    }
 
-    private void deleteZak(Zak zak) {
+    private void deleteZakForGrid(Zak zak) {
         String ckzDel = String.format("%s / %d", zak.getCkont(), zak.getCzak());
         try {
-            boolean deleted = zakService.deleteZak(zak);
+            boolean zakWasDeleted = zakService.deleteZak(zak);
 
-            if (!deleted) {
+            if (!zakWasDeleted) {
                 ConfirmDialog
                         .createError()
                         .withCaption("Zrušení zakázky")

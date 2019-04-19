@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.utils;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.html.Div;
@@ -358,7 +359,6 @@ public class VzmFormatUtils {
 //    });
 
     public static HtmlComponent getDecHodComponent(BigDecimal number) {
-//        TextField field = new TextField();
         Div comp = new Div();
         String color = "black";
         if (null != number) {
@@ -367,7 +367,9 @@ public class VzmFormatUtils {
             } else if (number.compareTo(BigDecimal.ZERO) < 0) {
                 color = "crimson";
             }
-            comp.getStyle().set("color", color);
+            comp.getStyle()
+                    .set("color", color)
+            ;
         }
         comp.setText(null == number ? "" : VzmFormatUtils.decHodFormat.format(number));
         return comp;

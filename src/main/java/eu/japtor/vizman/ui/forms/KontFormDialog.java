@@ -445,13 +445,13 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
                 , 2500, Notification.Position.TOP_CENTER);
 
 
-        zakGrid.getDataCommunicator().getKeyMapper().removeAll();
+//        zakGrid.getDataCommunicator().getKeyMapper().removeAll();
         if (Operation.ADD == operation) {
             getCurrentItem().getZaks().add(0, savedZak);
         } else {
-            int itemIndex = getCurrentItem().getZaks().indexOf(savedZak);
-            if (itemIndex != -1) {
-                getCurrentItem().getZaks().set(itemIndex, savedZak);
+            int zakItemIndex = getCurrentItem().getZaks().indexOf(savedZak);
+            if (zakItemIndex != -1) {
+                getCurrentItem().getZaks().set(zakItemIndex, savedZak);
             }
         }
         zakGrid.setItems(getCurrentItem().getZaks());
@@ -476,6 +476,8 @@ public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLog
                         .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
                         .open();
             } else {
+                getCurrentItem().getZaks().removeIf(z -> z.getId().equals(zak.getId()));
+                zakGrid.setItems(getCurrentItem().getZaks());
                 zakGrid.getDataCommunicator().getKeyMapper().removeAll();
                 zakGrid.getDataProvider().refreshAll();
                 getLogger().info(String.format("ZAKAZKA %s deleted", ckzDel));

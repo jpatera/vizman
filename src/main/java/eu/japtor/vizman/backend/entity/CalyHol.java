@@ -9,17 +9,17 @@ import java.time.LocalDate;
 @Table(name = "CALY_HOL")
 public class CalyHol extends AbstractGenIdEntity {
 
-  private Integer calYr;
+  private Integer yr;
   private LocalDate holDate;
   private String holText;
 
 
   public Integer getCalYr() {
-    return calYr;
+    return yr;
   }
 
-  public void setCalYr(Integer calYm) {
-    this.calYr = calYm;
+  public void setYr(Integer yr) {
+    this.yr = yr;
   }
 
   public LocalDate getHolDate() {

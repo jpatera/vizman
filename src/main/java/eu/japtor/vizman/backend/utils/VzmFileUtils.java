@@ -1,8 +1,6 @@
 package eu.japtor.vizman.backend.utils;
 
 import eu.japtor.vizman.app.HasLogger;
-import eu.japtor.vizman.backend.service.CfgPropsCache;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -248,11 +246,38 @@ public class VzmFileUtils implements HasLogger {
                 Files.createDirectories(orgSeznamyPath);
                 Path orgTextyPath = Paths.get(orgPath.toString(), "2_TEXTY_PROJEKTU");
                 Files.createDirectories(orgTextyPath);
-                Path pripominkyPath = Paths.get(orgPath.toString(), "3_PRIPOMINKY");
-                Files.createDirectories(pripominkyPath);
-                Path zaznamyPath = Paths.get(orgPath.toString(), "4_ZAZNAMY");
-                Files.createDirectories(zaznamyPath);
+                Path orgPripominkyPath = Paths.get(orgPath.toString(), "3_PRIPOMINKY");
+                Files.createDirectories(orgPripominkyPath);
+                Path orgZaznamyPath = Paths.get(orgPath.toString(), "4_ZAZNAMY");
+                Files.createDirectories(orgZaznamyPath);
+                Path orgFotoPath = Paths.get(orgPath.toString(), "5_FOTO");
+                Files.createDirectories(orgFotoPath);
+                Path orgAdPath = Paths.get(orgPath.toString(), "6_AD");
+                Files.createDirectories(orgAdPath);
+                Path orgVicepracePath = Paths.get(orgPath.toString(), "7_VICEPRACE");
+                Files.createDirectories(orgVicepracePath);
+                Path orgVtanoviskaPath = Paths.get(orgPath.toString(), "8_STANOVISKA");
+                Files.createDirectories(orgVtanoviskaPath);
 
+                Path podkladyPath = Paths.get(zakProjRootPath.toString(), "PODKLADY");
+                Files.createDirectories(podkladyPath);
+
+                Path podkladyOutPath = Paths.get(zakProjRootPath.toString(), "PODKLADY_OUT");
+                Files.createDirectories(podkladyOutPath);
+
+                Path projektPath = Paths.get(zakProjRootPath.toString(), "PROJEKT");
+                Files.createDirectories(projektPath);
+                Path projStatikaPath = Paths.get(projektPath.toString(), "STATIKA");
+                Files.createDirectories(projStatikaPath);
+                Path projVykresyPath = Paths.get(projektPath.toString(), "VYKRESY");
+                Files.createDirectories(projVykresyPath);
+                Path projVymeryPath = Paths.get(projektPath.toString(), "VYMERY");
+                Files.createDirectories(projVymeryPath);
+
+                Path projektDigital = Paths.get(zakProjRootPath.toString(), "PROJEKT_DIGITAL");
+                Files.createDirectories(projektDigital);
+
+                LOG.info("ZAK-DOC dir structure created for " + kontFolder);
                 return true;
             }
 //        } catch (IOException ioExceptionObj) {

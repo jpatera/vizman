@@ -6,6 +6,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.FooterRow;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
@@ -180,6 +181,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     @Autowired
     public PersonWageRepo personWageRepo;
+
+    @Autowired
+    public CalyHolService calyHolService;
 
 
     public PruhView() {
@@ -502,12 +506,34 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
             return;
         }
         for (int day = 1; day <= 31; day++) {
+//            HeaderRow row  = grid.getHeaderRows().get(0). Cell  g etColumnByKey(keyPrefix + String.valueOf(day));
+//            HeaderRow.HeaderCell cell  = grid.getHeaderRows().get(0). Cell  g etColumnByKey(keyPrefix + String.valueOf(day));
+//            CELL hCol = grid.getHeaderRows().get(0).getCell  g etColumnByKey(keyPrefix + String.valueOf(day));
             Grid.Column col = grid.getColumnByKey(keyPrefix + String.valueOf(day));
-            if (null != col){
-                col.setVisible(day <= daysMax);
+            if (null != col && day <= daysMax){
+                col.setVisible(true);
+
+                boolean isWeekend = false;
+                boolean isHoliday = false;
+                if (null != pruhYm) {
+                    LocalDate date = LocalDate.of(pruhYm.getYear(), pruhYm.getMonth(), day);
+                    isWeekend = (date.getDayOfWeek() == DayOfWeek.SATURDAY) || (date.getDayOfWeek() == DayOfWeek.SUNDAY);
+                    isHoliday = calyHolService.calyHolÈxist(date);
+                }
+                if (isHoliday) {
+                    col.setClassNameGenerator(pruhZak -> "pruh-day-is-holiday");
+                } else if (isWeekend) {
+                    col.setClassNameGenerator(pruhZak -> "pruh-day-is-weekend");
+//                } else {
+//                    col.setClassNameGenerator(pruhZak -> "pruh-day-is-workday");
+                }
             }
         }
     }
+
+//    private String genDayStyleGenerator() {
+//        return "pruh-day-is-weekend";
+//    }
 
 //    private Component initZakGridSumTitle() {
 //        gridZakSumTitle = new Span("Odpracováno z docházky: ");
