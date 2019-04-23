@@ -16,12 +16,9 @@
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
@@ -36,7 +33,7 @@ import eu.japtor.vizman.backend.repository.ZakBasicRepo;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.ReloadButton;
 import eu.japtor.vizman.ui.components.Ribbon;
-import eu.japtor.vizman.ui.components.TitleGrid;
+import eu.japtor.vizman.ui.components.GridTitle;
 import eu.japtor.vizman.ui.components.ZakBasicGrid;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -138,7 +135,7 @@ public class ZakBasicListView extends VerticalLayout {
         titleComponent.setAlignItems(Alignment.CENTER);
         titleComponent.setJustifyContentMode(JustifyContentMode.START);
         titleComponent.add(
-                new TitleGrid(ItemNames.getNomP(ItemType.ZAK))
+                new GridTitle(ItemNames.getNomP(ItemType.ZAK))
                 , new Ribbon()
                 , new ReloadButton(event -> updateViewContent())
         );

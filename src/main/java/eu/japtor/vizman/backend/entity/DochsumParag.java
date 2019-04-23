@@ -35,10 +35,12 @@ public class DochsumParag extends AbstractGenIdEntity {
       super();
   }
 
-  public DochsumParag(Long personId, LocalDate dsDate, Long paragId) {
+  public DochsumParag(Long personId, LocalDate dsDate, Long paragId, BigDecimal dspWorkOff) {
     this.personId = personId;
     this.dsDate = dsDate;
     this.paragId = paragId;
+    this.dspWorkOff = dspWorkOff;
+    this.dsYm = YearMonth.from(dsDate);
   }
 
 

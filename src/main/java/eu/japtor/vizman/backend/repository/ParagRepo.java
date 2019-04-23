@@ -11,6 +11,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public interface ParagRepo extends JpaRepository<Parag, Long> {
 
+    Parag findTop1ByCparag(String cparag);
 //    Klient findTopByName(String name);
 //
 //    List<Klient> findAllByOrderByName();

@@ -235,7 +235,7 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
         Boolean archFilterValue = archFilterField.getValue();
         Integer rokFilterValue = rokFilterField.getValue();
         String kzCisloFilterValue = kzCisloFilterField.getValue();
-        String skupinaFilterValue = (String)skupinaFilterField.getValue();
+        String skupinaFilterValue = skupinaFilterField.getValue();
         String objednatelFilterValue = objednatelFilterField.getValue();
         String kzTextFilterValue = kzTextFilterField.getValue();
 
@@ -264,7 +264,7 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
                             : StringUtils.containsIgnoreCase(sk, skupinaFilterValue)
             );
         }
-        if (null != objednatelFilterValue) {
+        if (StringUtils.isNotEmpty(objednatelFilterValue)) {
             listDataProvider.addFilter(ZakBasic::getObjednatel
                     , obj -> StringUtils.containsIgnoreCase(obj, objednatelFilterValue)
             );

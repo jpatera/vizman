@@ -2,27 +2,17 @@ package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.flow.spring.annotation.SpringComponent;
-import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
 import eu.japtor.vizman.ui.components.*;
 import org.claspina.confirmdialog.ConfirmDialog;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -197,7 +187,7 @@ public class ZakFlatSelectDialog extends Dialog {
         titleComponent.setAlignItems(FlexComponent.Alignment.CENTER);
         titleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
         titleComponent.add(
-                new TitleGrid(ItemNames.getNomP(ItemType.ZAK))
+                new GridTitle(ItemNames.getNomP(ItemType.ZAK))
                 , new Ribbon()
                 , new ReloadButton(event -> updateViewContent())
         );

@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "PARAG")
 public class Parag extends AbstractGenIdEntity {
+    public static final String CPARAG_DOV = "00002";
+    public static final String CPARAG_SVAT = "00005";
+    public static final String CPARAG_NEM = "00006";
+    public static final String CPARAG_VOL = "00008";
 
     @Enumerated(EnumType.STRING)
     @Basic

@@ -4,9 +4,9 @@ import com.vaadin.flow.component.html.H3;
 
 import java.util.Locale;
 
-public class TitleGrid extends H3 {
+public class GridTitle extends H3 {
 
-    public TitleGrid(String titleText) {
+    public GridTitle(String titleText) {
         this.setText(titleText.toUpperCase(Locale.ROOT));
         this.getStyle().set("margin-left", "0.5em");
         this.getStyle().set("margin-right", "0.5em");

@@ -6,12 +6,12 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.FooterRow;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -41,6 +41,8 @@ import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.GridItemRemoveBtn;
+import eu.japtor.vizman.ui.components.ReloadButton;
+import eu.japtor.vizman.ui.components.Ribbon;
 import eu.japtor.vizman.ui.forms.ZakFlatSelectDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
@@ -123,7 +125,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private Button zaksAddButton;
     private Button togglePruhStateButton;
 
-    private HorizontalLayout pruhTitleBar;
+    private HorizontalLayout pruhToolBar;
 
     private Grid<PruhZak> pruhZakGrid;
     private List<PruhZak> pruhZakList = new ArrayList<>();
@@ -206,7 +208,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pruhPanel.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         pruhPanel.setAlignItems(Alignment.STRETCH);
         pruhPanel.setHeight("100%");
-        pruhPanel.add(initPruhTitleBar());
+        pruhPanel.add(initPruhToolBar());
         pruhPanel.add(
                 initZakGridTitleBar()
                 , initZakGrid()
@@ -850,11 +852,11 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //    private ValueProvider<Doch, String> durationValProv =
 //            doch -> null == doch.getDochDur() ? null : formatDuration(doch.getDochDur());
 
-    private Component initPruhTitleBar() {
-        pruhTitleBar = new HorizontalLayout();
-        pruhTitleBar.setWidth("100%");
-        pruhTitleBar.setSpacing(false);
-        pruhTitleBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
+    private Component initPruhToolBar() {
+        pruhToolBar = new HorizontalLayout();
+        pruhToolBar.setWidth("100%");
+        pruhToolBar.setSpacing(false);
+        pruhToolBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         H3 pruhTitle = new H3("PROUŽEK");
         pruhTitle.getStyle()
@@ -862,6 +864,19 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .set("margin-right", "1em")
                 .set("margin-bottom", "0.2em")
         ;
+
+        HorizontalLayout titleComponent = new HorizontalLayout();
+        titleComponent.setMargin(false);
+        titleComponent.setPadding(false);
+        titleComponent.setSpacing(false);
+        titleComponent.setAlignItems(FlexComponent.Alignment.CENTER);
+        titleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+        titleComponent.add(
+                pruhTitle
+                , new Ribbon()
+                , new ReloadButton(event -> updatePruhGrids(pruhPerson, pruhYm))
+        );
+
 
         HorizontalLayout selectorBox = new HorizontalLayout();
         selectorBox.add(
@@ -877,12 +892,12 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 , initZaksAddButton()
         );
 
-        pruhTitleBar.add(
-                pruhTitle
+        pruhToolBar.add(
+                titleComponent
                 , selectorBox
                 , buttonBox
         );
-        return pruhTitleBar;
+        return pruhToolBar;
     }
 
 

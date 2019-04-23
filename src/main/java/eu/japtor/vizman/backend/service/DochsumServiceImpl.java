@@ -26,10 +26,16 @@ public class DochsumServiceImpl implements DochsumService, HasLogger {
     public DochsumZakRepo dochsumZakRepo;
 
     @Autowired
+    public DochsumParagRepo dochsumParagRepo;
+
+    @Autowired
     public PersonWageRepo personWageRepo;
 
     @Autowired
     public ZakRepo zakRepo;
+
+    @Autowired
+    public ParagRepo paragRepo;
 
 
 //    @Autowired
@@ -63,6 +69,9 @@ public class DochsumServiceImpl implements DochsumService, HasLogger {
     public void updateDochsumCloseDoch(final LocalDate dochDate, final Long personId, final Dochsum dochsum) {
         updateDochsum(dochDate, personId, dochsum);
         updateDochsumZakByLekar(dochDate, personId, dochsum.getDsLek());
+        updateDochsumParagByDov(dochDate, personId, dochsum.getDsDov());
+        updateDochsumParagByNem(dochDate, personId, dochsum.getDsNem());
+        updateDochsumParagByVol(dochDate, personId, dochsum.getDsVol());
 //        Doch dochPracLast = dochRepo.findLastZkDochForPersonAndDate(personId, dochDate);
         Doch dochPracLast = dochRepo.findLastPracDochForPersonAndDateNotOa(personId, dochDate);
         if (null != dochPracLast) {
@@ -92,12 +101,92 @@ public class DochsumServiceImpl implements DochsumService, HasLogger {
         }
     }
 
-    private void deleteLekarFromDochsumZak (final LocalDate dsDate, final Long personId) {
+    private void updateDochsumParagByDov(final LocalDate dsDate, final Long personId, BigDecimal durDecDovRounded) {
+        Parag dovParag = paragRepo.findTop1ByCparag(Parag.CPARAG_DOV);
+        DochsumParag dsParagDb = dochsumParagRepo.findTop1ByPersonIdAndDsDateAndParagId(personId, dsDate, dovParag.getId());
+        if (null != dsParagDb) {
+            if ((null == durDecDovRounded) || durDecDovRounded.compareTo(BigDecimal.ZERO) == 0) {
+                dsParagDb.setDspWorkOff(null);
+            } else if (dsParagDb.getDspWorkOff().compareTo(durDecDovRounded) != 0) {
+                dsParagDb.setDspWorkOff(durDecDovRounded);
+            }
+            dochsumParagRepo.save(dsParagDb);
+        } else {
+            if (null != durDecDovRounded && durDecDovRounded.compareTo(BigDecimal.ZERO) != 0) {
+                DochsumParag dsParagNew = new DochsumParag(
+                        personId, dsDate, dovParag.getId(), durDecDovRounded);
+                dochsumParagRepo.save(dsParagNew);
+            }
+        }
+    }
 
+    private void updateDochsumParagByNem(final LocalDate dsDate, final Long personId, BigDecimal durDecNemRounded) {
+        Parag nemParag = paragRepo.findTop1ByCparag(Parag.CPARAG_NEM);
+        DochsumParag dsParagDb = dochsumParagRepo.findTop1ByPersonIdAndDsDateAndParagId(personId, dsDate, nemParag.getId());
+        if (null != dsParagDb) {
+            if ((null == durDecNemRounded) || durDecNemRounded.compareTo(BigDecimal.ZERO) == 0) {
+                dsParagDb.setDspWorkOff(null);
+            } else if (dsParagDb.getDspWorkOff().compareTo(durDecNemRounded) != 0) {
+                dsParagDb.setDspWorkOff(durDecNemRounded);
+            }
+            dochsumParagRepo.save(dsParagDb);
+        } else {
+            if (null != durDecNemRounded && durDecNemRounded.compareTo(BigDecimal.ZERO) != 0) {
+                DochsumParag dsParagNew = new DochsumParag(
+                        personId, dsDate, nemParag.getId(), durDecNemRounded);
+                dochsumParagRepo.save(dsParagNew);
+            }
+        }
+    }
+
+    private void updateDochsumParagByVol(final LocalDate dsDate, final Long personId, BigDecimal durDecVolRounded) {
+        Parag volParag = paragRepo.findTop1ByCparag(Parag.CPARAG_VOL);
+        DochsumParag dsParagDb = dochsumParagRepo.findTop1ByPersonIdAndDsDateAndParagId(personId, dsDate, volParag.getId());
+        if (null != dsParagDb) {
+            if ((null == durDecVolRounded) || durDecVolRounded.compareTo(BigDecimal.ZERO) == 0) {
+                dsParagDb.setDspWorkOff(null);
+            } else if (dsParagDb.getDspWorkOff().compareTo(durDecVolRounded) != 0) {
+                dsParagDb.setDspWorkOff(durDecVolRounded);
+            }
+            dochsumParagRepo.save(dsParagDb);
+        } else {
+            if (null != durDecVolRounded && durDecVolRounded.compareTo(BigDecimal.ZERO) != 0) {
+                DochsumParag dsParagNew = new DochsumParag(
+                        personId, dsDate, volParag.getId(), durDecVolRounded);
+                dochsumParagRepo.save(dsParagNew);
+            }
+        }
+    }
+
+    private void deleteLekarFromDochsumZak (final LocalDate dsDate, final Long personId) {
         Zak lekZak = zakRepo.findTop1ByTyp(ItemType.LEK);
         DochsumZak dsZakDb = dochsumZakRepo.findTop1ByPersonIdAndDsDateAndZakId(personId, dsDate, lekZak.getId());
         if (null != dsZakDb) {
             dochsumZakRepo.delete(dsZakDb);
+        }
+    }
+
+    private void deleteNemocFromDochsumParag (final LocalDate dsDate, final Long personId) {
+        Parag nemParag = paragRepo.findTop1ByCparag(Parag.CPARAG_NEM);
+        DochsumParag dsParagDb = dochsumParagRepo.findTop1ByPersonIdAndDsDateAndParagId(personId, dsDate, nemParag.getId());
+        if (null != dsParagDb) {
+            dochsumParagRepo.delete(dsParagDb);
+        }
+    }
+
+    private void deleteDovolenaFromDochsumParag (final LocalDate dsDate, final Long personId) {
+        Parag dovParag = paragRepo.findTop1ByCparag(Parag.CPARAG_DOV);
+        DochsumParag dsParagDb = dochsumParagRepo.findTop1ByPersonIdAndDsDateAndParagId(personId, dsDate, dovParag.getId());
+        if (null != dsParagDb) {
+            dochsumParagRepo.delete(dsParagDb);
+        }
+    }
+
+    private void deleteVolnoFromDochsumParag (final LocalDate dsDate, final Long personId) {
+        Parag volParag = paragRepo.findTop1ByCparag(Parag.CPARAG_VOL);
+        DochsumParag dsParagDb = dochsumParagRepo.findTop1ByPersonIdAndDsDateAndParagId(personId, dsDate, volParag.getId());
+        if (null != dsParagDb) {
+            dochsumParagRepo.delete(dsParagDb);
         }
     }
 
@@ -106,6 +195,9 @@ public class DochsumServiceImpl implements DochsumService, HasLogger {
     public void  deleteDochsumOpenDoch(final LocalDate dochDate, final Long personId) {
         dochsumRepo.deleteByDsDateAndPersonId(dochDate, personId);
         deleteLekarFromDochsumZak(dochDate, personId);
+        deleteNemocFromDochsumParag(dochDate, personId);
+        deleteDovolenaFromDochsumParag(dochDate, personId);
+        deleteVolnoFromDochsumParag(dochDate, personId);
 
         Doch dochOa = dochRepo.findTop1ByPersonIdAndDochDateAndCinCinKod(personId, dochDate, Cin.CinKod.OA);
         if (null != dochOa) {
