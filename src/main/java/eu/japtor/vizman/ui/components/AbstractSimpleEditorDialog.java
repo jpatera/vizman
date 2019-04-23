@@ -300,9 +300,9 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 //        if (confirmationDialog.getElement().getParent() == null) {
 //            getUI().ifPresent(ui -> ui.add(confirmationDialog));
 //        }
-//        confirmDelete();
+//        confirmAndDelete();
 //    }
 
-//    protected abstract void confirmDelete();
+//    protected abstract void confirmAndDelete();
 
 }

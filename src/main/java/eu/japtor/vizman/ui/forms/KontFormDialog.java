@@ -14,18 +14,15 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.bean.EvidKont;
 import eu.japtor.vizman.backend.entity.*;
@@ -40,24 +37,23 @@ import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 
 import java.io.File;
-import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class KontFormDialog <T extends Serializable> extends AbstractKzDialog implements HasLogger {
+public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger {
 //public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLogger {
 //public class KontFormDialog extends AbstractEditorDialog<Kont> implements BeforeEnterObserver {
 
     private final static String ZAK_EDIT_COL_KEY = "zak-edit-col";
     private final static String DELETE_STR = "Zrušit";
     private final static String SAVE_STR = "Uložit";
+    public static final String DIALOG_WIDTH = "1300px";
+    public static final String DIALOG_HEIGHT = "800px";
 
 //    final ValueProvider<Zak, String> honorProvider;
 //    final ValueProvider<Zak, String> yearProvider;
@@ -78,10 +74,8 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
     private ComboBox<Mena> menaCombo;
     private ComboBox<Klient> objednatelCombo;
 
-//    private String kontFolderOrig;
+    private String kontFolderOrig;
 //    private Kont kontOrig;
-//    private String kontFolderOrig;
-//    private Zak zakOrig;
 //    private String ckontOrig;
 //    private String textOrig;
 //    private String folderOrig;
@@ -117,7 +111,20 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
     private ConfirmationDialog<KontDoc> confirmDocUnregisterDialog;
 //    private final ConfirmationDialog<Zak> confirmZakOpenDialog = new ConfirmationDialog<>();
 
-//    @Autowired
+
+    private HorizontalLayout buttonBar;
+    private Button saveButton;
+    private Button revertButton;
+    private Button saveAndCloseButton;
+    private Button revertAndCloseButton;
+    private Button deleteAndCloseButton;
+    private HorizontalLayout leftBarPart;
+
+    private Binder<Kont> binder = new Binder<>();
+    private Kont currentItem;
+    private Operation currentOperation;
+    private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
+
     private KontService kontService;
     private ZakService zakService;
     private FaktService faktService;
@@ -125,46 +132,21 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
     private List<Klient> listOfKlients;
     private CfgPropsCache cfgPropsCache;
 
-////    private ListDataProvider<Role> allRolesDataProvider;
-//    private Collection<Role> personRoles;
-
-
-
-    private GrammarGender itemGender;
-    private String itemTypeNomS;
-    private String itemTypeGenS;
-    private String itemTypeAccuS;
-
-
-    private HorizontalLayout buttonBar;
-    private Button saveButton;
-    private Button revertButton;
-    private Button closeButton;
-    private Button deleteButton;
-    private HorizontalLayout leftBarPart;
-
-//    private Binder<T> binder = new Binder<>();
-//    private T currentItem;
-    private Binder<Kont> binder = new Binder<>();
-    private Kont currentItem;
-
-    protected Operation currentOperation;
-    private boolean closeAfterSave;
-    private Registration registrationForSave;
+//    private Registration registrationForSave;
 //    private BiConsumer<T, Operation> itemSaver;
 //    private Consumer<T> itemDeleter;
 //    private BiConsumer<Kont, Operation> itemSaver;
-    private Consumer<Kont> newItemSaver;
-    private Consumer<Kont> modItemSaver;
-    private Consumer<Kont> itemDeleter;
-    private Consumer<Kont> formCloser;
 
-
+//    private boolean closeAfterSave;
+//    private Consumer<Kont> newItemSaver;
+//    private Consumer<Kont> modItemSaver;
+//    private Consumer<Kont> itemDeleter;
+//    private Consumer<Kont> formCloser;
 
 
     public KontFormDialog(
 //            BiConsumer<Kont, Operation> kontSaver,
-                          Consumer<Kont> kontDeleter,
+//                          Consumer<Kont> kontDeleter,
 //                          Consumer<Kont> kontFormCloser,
 //                          BiConsumer<Zak, Operation> zakSaver,
 //                          Consumer<Kont> zakDeleter,
@@ -175,7 +157,7 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
                           DochsumZakService dochsumZakService,
                           CfgPropsCache cfgPropsCache
     ){
-        super("1300px", "800px", true, true);
+        super(DIALOG_WIDTH, DIALOG_HEIGHT, true, true);
 
 //        this.dialogWidth = "1300px";
 //        this.dialogHeight = "800px";
@@ -186,10 +168,10 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
 
 //        this.newItemSaver = saveKont();
 //        this.modItemSaver = this::saveKont;
-        this.itemDeleter = kontDeleter;
+//        this.itemDeleter = kontDeleter;
 //        this.formCloser = kontFormCloser;
 
-        this.closeAfterSave = false;
+//        this.closeAfterSave = false;
 
         this.kontService = kontService;
         this.zakService = zakService;
@@ -202,7 +184,7 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
 //                , initArchCheck()
                 , initTextField()
 //                , initObjednatelField()
-                , initObjednatelCombo()   // Becauise of a bug -> call it in OpenDialog
+                , initObjednatelCombo()   // Because of a bug -> call it in OpenDialog
                 , initInvestorField()
                 , initMenaCombo()
                 , initHonorarField()
@@ -264,23 +246,93 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
 //        yearProvider = (zak) -> VzmFormatUtils.yearFormat.format(zak.getRok());
 
 
-//        kontEvidFormDialog = new KontEvidFormDialog(this::saveKontEvid, kontService);
         zakFormDialog = new ZakFormDialog(
-                this::saveZakForForm, this::deleteZakForForm
-                , zakService, faktService, dochsumZakService, cfgPropsCache
+                zakService, faktService, dochsumZakService, cfgPropsCache
         );
-//        subFormDialog = new SubFormDialog(
-//                this::saveZakForForm, this::deleteZakForForm
-//                , zakService, faktService, cfgPropsCache
-//        );
-//        zakFormDialog.getDialogLeftBarPart().add(initKontEvidButton());
-
+        zakFormDialog.addOpenedChangeListener(event -> {
+//            System.out.println("OPEN-CHANGED: " + event.toString());
+            if (!event.isOpened()) {
+                finishZakEdit((ZakFormDialog)event.getSource());
+            }
+        });
+        zakFormDialog.addDialogCloseActionListener(event -> {
+//            System.out.println("DIALOG-CLOSE: " + event.toString());
+            zakFormDialog.close();
+//            finishKontEdit((KontFormDialog)event.getSource());
+        });
 
         confirmDocUnregisterDialog = new ConfirmationDialog<>();
-
         activateListeners();
     }
 
+
+    void finishZakEdit(ZakFormDialog zakFormDialog) {
+        Zak dialogZak = zakFormDialog.getCurrentItem(); // Modified, just added or just deleted
+        Operation oper = zakFormDialog.getCurrentOperation();
+        OperationResult operRes = zakFormDialog.getLastOperationResult();
+        String ckz = String.format("%s / %s", dialogZak.getCkont(), dialogZak.getCzak());
+        if (OperationResult.NO_CHANGE == operRes) {
+            return;
+        }
+        if (OperationResult.ITEM_SAVED == operRes) {
+            Notification.show("Zakázka %s uložena"
+                    , 2500, Notification.Position.TOP_CENTER);
+
+        } else if (OperationResult.ITEM_DELETED == operRes) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Editace zakázky")
+                    .withMessage("Zakázka %s zrušena.")
+                    .open();
+        }
+
+        syncFormGridAfterZakEdit(dialogZak, oper, operRes);
+
+    }
+
+    private void syncFormGridAfterZakEdit(Zak modZak, Operation oper, OperationResult operRes) {
+
+        List<Zak> zaks = getCurrentItem().getZaks();
+
+//        if (Operation.EDIT == oper) {
+//            zaks.removeItem(modZak);
+//            zak.removeItem(modZak);
+//        }
+//
+//        if (OperationResult.ITEM_DELETED != operRes) {
+//            int itemIndex = zaks.indexOf(modZak);
+//            if (itemIndex != -1) {
+//                getCurrentItem().getZaks().set(itemIndex, dialogZak);
+//            }
+//
+
+//        Zak dialogZak = zakFormDialog.getCurrentItem(); // Modified, just added or just deleted
+//        Operation oper = zakFormDialog.getCurrentOperation();
+//        OperationResult operRes = zakFormDialog.getLastOperationResult();
+//        if (OperationResult.NO_CHANGE == operRes) {
+//            return;
+//        }
+//        String ckz = String.format("%s / %s", modZak.getCkont(), modZak.getCzak());
+        if (Operation.ADD == oper) {
+            zaks.add(0, modZak);
+        } else {
+            if (OperationResult.ITEM_SAVED == operRes) {
+                int itemIndex = zaks.indexOf(modZak);
+                if (itemIndex != -1) {
+                    zaks.set(itemIndex, modZak);
+                }
+            } else {    // OperationResult.ITEM_DELETED)
+                int itemIndex = zaks.indexOf(modZak);
+                if (itemIndex != -1) {
+                    zaks.remove(itemIndex);
+                }
+            }
+        }
+        zakGrid.getDataCommunicator().getKeyMapper().removeAll();
+        zakGrid.setItems(zaks);
+        zakGrid.getDataProvider().refreshAll();
+        zakGrid.select(modZak);
+    }
 
     private void activateListeners() {
         // Must be set only after upper kontFolderField, ckontField and textField are initialized
@@ -301,22 +353,17 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
 
 
 
-//    protected final T getCurrentItem() {
+    @Override
     public final Kont getCurrentItem() {
         return currentItem;
     }
 
+    @Override
     public final Operation getCurrentOperation() {
         return currentOperation;
     }
 
 
-    /**
-     * Gets the binder.
-     *
-     * @return the binder
-     */
-//    protected final Binder<T> getBinder() {
     protected final Binder<Kont> getBinder() {
         return binder;
     }
@@ -327,30 +374,39 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
         HorizontalLayout bar = new HorizontalLayout();
 
         saveButton = new Button("Uložit");
-        saveButton.setAutofocus(true);
-        saveButton.getElement().setAttribute("theme", "primary");
+//        saveButton.setAutofocus(true);
+//        saveButton.getElement().setAttribute("theme", "primary");
+        saveButton.addClickListener(e -> saveClicked(false));
 
-        deleteButton = new Button("Zrušit");
-        deleteButton.getElement().setAttribute("theme", "error");
-        deleteButton.addClickListener(e -> deleteClicked());
+        saveAndCloseButton = new Button("Uložit a zavřít");
+        saveAndCloseButton.setAutofocus(true);
+        saveAndCloseButton.getElement().setAttribute("theme", "primary");
+        saveAndCloseButton.addClickListener(e -> saveClicked(true));
+
+        deleteAndCloseButton = new Button("Zrušit");
+        deleteAndCloseButton.getElement().setAttribute("theme", "error");
+        deleteAndCloseButton.addClickListener(e -> deleteClicked());
 
         revertButton = new Button("Vrátit změny");
-        revertButton.addClickListener(e -> revertClicked());
+        revertButton.addClickListener(e -> revertClicked(false));
 
-        closeButton = new Button("Zavřít");
-        closeButton.addClickListener(e -> close());
+        revertAndCloseButton = new Button("Zpět");
+        revertAndCloseButton.addClickListener(e -> revertClicked(true));
 
         leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);
         leftBarPart.add(
-                saveButton
-                , deleteButton
-                , revertButton
+//                saveButton
+                revertButton
+                , deleteAndCloseButton
         );
 
         HorizontalLayout rightBarPart = new HorizontalLayout();
         rightBarPart.setSpacing(true);
-        rightBarPart.add(closeButton);
+        rightBarPart.add(
+                saveAndCloseButton
+                , revertAndCloseButton
+        );
 
 //        buttonBar.getStyle().set("margin-top", "0.2em");
         bar.setSpacing(false);
@@ -365,32 +421,10 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
         return bar;
     }
 
-    private void deleteClicked() {
-// TODO: to be or not to be?
-//        if (confirmDialog.getElement().getParent() == null) {
-//            getUI().ifPresent(ui -> ui.add(confirmDialog));
-//        }
-        confirmDelete();
+
+    public void setDefaultItemNames() {
+        setItemNames(ItemType.UNKNOWN);
     }
-
-    private void revertClicked() {
-// TODO: to be or not to be?
-//        if (confirmDialog.getElement().getParent() == null) {
-//            getUI().ifPresent(ui -> ui.add(confirmDialog));
-//        }
-        binder.removeBean();
-        binder.readBean(currentItem);
-    }
-
-    public void setItemNames(ItemType itemType) {
-        this.itemGender = ItemNames.getItemGender(itemType);
-        this.itemTypeNomS = ItemNames.getNomS(itemType);
-        this.itemTypeGenS = ItemNames.getGenS(itemType);
-        this.itemTypeAccuS = ItemNames.getAccuS(itemType);
-    }
-
-
-
 
 
     public void openDialog(
@@ -413,10 +447,10 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
 //        datZadComp.setLocale(new Locale("cs", "CZ"));
 //        vystupField.setLocale(new Locale("cs", "CZ"));
 
-        if (Operation.ADD == operation) {
-            kont.setRok(LocalDate.now().getYear());
-            kont.setTyp(ItemType.KONT);
-        }
+//        if (Operation.ADD == operation) {
+//            kont.setRok(LocalDate.now().getYear());
+//            kont.setTyp(ItemType.KONT);
+//        }
 
         this.zakGrid.setItems(kont.getNodes());
         this.docGrid.setItems(kont.getKontDocs());
@@ -452,14 +486,10 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
         this.open();
     }
 
-    //    protected void openInternal(T item, final Operation operation
+
     protected void setControlsForItemAndOperation(final Kont item, final Operation operation) {
 
         setItemNames(item.getTyp());
-
-        deleteButton.setText(DELETE_STR + " " + itemTypeAccuS.toLowerCase());
-        saveButton.setText(SAVE_STR + " " + itemTypeAccuS.toLowerCase());
-
         getMainTitle().setText(operation.getDialogTitle(getItemName(operation), itemGender));
 
         if (getCurrentItem() instanceof HasItemType) {
@@ -475,47 +505,33 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
             binder.readBean(item);
         }
 
-        if (registrationForSave != null) {
-            registrationForSave.remove();
-        }
-        registrationForSave = saveButton.addClickListener(e -> saveClicked(operation));
+//        if (registrationForSave != null) {
+//            registrationForSave.remove();
+//        }
+//        registrationForSave = saveButton.addClickListener(e -> saveClicked(operation));
 //        saveButton.setEnabled(false);
 
-        deleteButton.setEnabled(operation.isDeleteEnabled());
+        deleteAndCloseButton.setText(DELETE_STR + " " + getItemName(Operation.DELETE).toLowerCase());
+        deleteAndCloseButton.setEnabled(operation.isDeleteEnabled());
+        saveButton.setText(SAVE_STR + " " + getItemName(Operation.SAVE).toLowerCase());
     }
 
 
-
-    public void setDefaultItemNames() {
-        setItemNames(ItemType.UNKNOWN);
-    }
-
-    private String getItemName(final Operation operation) {
-        switch (operation) {
-            case ADD : return itemTypeNomS;
-            case EDIT : return itemTypeGenS;
-            case DELETE : return itemTypeAccuS;
-            case FAKTUROVAT: return itemTypeAccuS;
-            case EXPORT : return itemTypeAccuS;
-            default : return itemTypeNomS;
-        }
-    }
-
-    private String getHeaderEndComponentValue(final String titleEndText) {
-        String value = "";
-        if ((null == titleEndText) && (currentItem instanceof HasModifDates)) {
-            if (currentOperation == Operation.ADD) {
-                value = "";
-            } else {
-                LocalDate dateCreate = ((HasModifDates) currentItem).getDateCreate();
-                String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
-                LocalDateTime dateTimeUpdate = ((HasModifDates) currentItem).getDatetimeUpdate();
-                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleModifDateFormatter);
-                value = "[ Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr + " ]";
-            }
-        }
-        return value;
-    }
+//    private String getHeaderEndComponentValue(final String titleEndText) {
+//        String value = "";
+//        if ((null == titleEndText) && (currentItem instanceof HasModifDates)) {
+//            if (currentOperation == Operation.ADD) {
+//                value = "";
+//            } else {
+//                LocalDate dateCreate = ((HasModifDates) currentItem).getDateCreate();
+//                String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
+//                LocalDateTime dateTimeUpdate = ((HasModifDates) currentItem).getDatetimeUpdate();
+//                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleModifDateFormatter);
+//                value = "[ Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr + " ]";
+//            }
+//        }
+//        return value;
+//    }
 
 
 
@@ -540,162 +556,179 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
 ////        kontFolderText.setText(getCurrentItem().getFolder());
 //    }
 
-    private void saveClicked(Operation operation) {
-        boolean isValid = binder.writeBeanIfValid(currentItem);
-        if (isValid) {
-//            itemSaver.accept(currentItem, operation);
-//            itemSaver.accept(getCurrentItem(), operation);
-            saveKont(getCurrentItem(), operation);
-            if (closeAfterSave) {
-                close();
-            }
-        } else {
-//            BinderValidationStatus<T> status = binder.validate();
-            BinderValidationStatus<Kont> status = binder.validate();
+
+    private void revertClicked(boolean closeAfterRevert) {
+        binder.removeBean();
+        binder.readBean(currentItem);
+        lastOperationResult = OperationResult.NO_CHANGE;
+        if (closeAfterRevert) {
+            this.close();
         }
     }
 
-    //    @Override
-    protected void confirmDelete() {
 
-        String ckDel = String.format("%s", getCurrentItem().getCkont());
-        long nodesCount = getCurrentItem().getNodes().size();
+    private void deleteClicked() {
+        if (!canDeleteKont(currentItem)) {
+            return;
+        } else {
+            String ckDel = String.format("%s", currentItem.getCkont());
+            try {
+                ConfirmDialog.createQuestion()
+                        .withCaption("Zrušení kontraktu")
+                        .withMessage(String.format("Zrušit kontrakt %s ?", ckDel))
+        //                .with...(,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny.")
+                        .withOkButton(() -> deleteKont(currentItem)
+                                , ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
+                        )
+                        .withCancelButton(ButtonOption.caption("ZPĚT"))
+                        .open()
+                ;
+            } catch (VzmServiceException e) {
+                ConfirmDialog.createError()
+                        .withCaption("Editace kontraktu")
+                        .withMessage("Kontrakt se nepodařilo zrušit")
+                        .open()
+                ;
+            }
+        }
+    }
+
+    private void saveClicked(boolean closeAfterSave) {
+        boolean isValid = binder.writeBeanIfValid(currentItem);
+        if (!isValid) {
+            ConfirmDialog
+                    .createWarning()
+                    .withCaption("Editace kontraktu")
+                    .withMessage("Kontrakt nelze uložit, některá pole nejsou správně vyplněna.")
+                    .open();
+        } else {
+//            itemSaver.accept(currentItem, operation);
+//            itemSaver.accept(getCurrentItem(), operation);
+            try {
+                saveKont(currentItem, currentOperation);
+                if (closeAfterSave) {
+                    this.close();
+                }
+            } catch (VzmServiceException e) {
+                ConfirmDialog.createError()
+                        .withCaption("Editace kontraktu")
+                        .withMessage("Kontrakt se nepodařilo uložit")
+                        .open();
+            }
+        }
+    }
+
+    protected boolean canDeleteKont(final Kont itemToDelete) {
+        String ckDel = String.format("%s", itemToDelete.getCkont());
+        long nodesCount = itemToDelete.getNodes().size();
         if (nodesCount > 0) {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Zrušení kontraktu")
-                    .withMessage("Kontrakt " + getCurrentItem().getCkont() + " nelze zrušit, obsahuje zakázky / akvizice")
+                    .withMessage(String.format("Kontrakt %s nelze zrušit, obsahuje zakázky / akvizice."
+                            , ckDel))
                     .open()
             ;
-            return;
+            return false;
         }
-        ConfirmDialog
-                .createQuestion()
-                .withCaption("Zrušení kontraktu")
-//                .withMessage("Opravdu zrušit?")
-                .withMessage("Zrušit kontrakt " + getCurrentItem().getCkont() + " ?")
-//                .with...(,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny.")
-                .withOkButton(() -> {
-                            deleteItemConfirmed(getCurrentItem());
-                        }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
-                )
-                .withCancelButton(ButtonOption.caption("ZPĚT"))
-                .open()
-        ;
-
+        return true;
     }
 
-
-
-    protected final void openConfirmDeleteDialog(String title, String message,
-                                                 String additionalMessage) {
-//        close();
-//        confirmationDialog.open(title, message, additionalMessage, "Zrušit",
-//                true, getCurrentItem(), this::deleteItemConfirmed, this::open);
-
-
-        ConfirmDialog
-                .createQuestion()
-                .withCaption(title)
-                .withMessage("Opravdu zrušit?")
-                .withOkButton(() -> {
-                            deleteItemConfirmed(getCurrentItem());
-                        }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
-                )
-                .withCancelButton(ButtonOption.caption("ZPĚT"))
-                .open()
-        ;
-    }
-
-//    private void deleteItemConfirmed(T item) {
-    private void deleteItemConfirmed(Kont item) {
-        doDelete(item);
-    }
-
-    /**
-     * Removes the {@code item} from the backend and close the dialog.
-     *
-     * @param item
-     *            the item to delete
-     */
-//    protected void doDelete(T item) {
-    protected void doDelete(Kont item) {
-        itemDeleter.accept(item);
-        this.close();
-    }
-
-
-
-
-
-    public Kont saveKont(Kont kont, Operation operation) {
-
+    protected void deleteKont(Kont itemToDelete) {
         try {
-            Kont kontSaved = kontService.saveKont(kont);
+            kontService.deleteKont(itemToDelete);
+            lastOperationResult = OperationResult.ITEM_DELETED;
+            this.close();
+        } catch (VzmServiceException e) {
+            lastOperationResult = OperationResult.NO_CHANGE;
+            ConfirmDialog
+                    .createWarning()
+                    .withCaption("Zrušení kontraktu.")
+                    .withMessage("Kontrakt " + itemToDelete.getCkont() + " se nepodařilo zrušit.")
+                    .open()
+            ;
+        }
+
+        //            GenericModel bean = myGrid.getSelectedRow();
+        //            ListDataProvider<GenericModel> dataProvider=(ListDataProvider<GenericModel>) myGrid.getDataProvider();
+        //            List<GenericModel> ItemsList=(List<GenericModel>) dataProvider.getItems();
+
+        //            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+        //            kzTreeGrid.getDataProvider().refreshAll();
+        //
+        //            HierarchicalDataProvider dataProvider = kzTreeGrid.getDataProvider();
+        //            List<KzTreeAware> itemsList =(List<KzTreeAware>) dataProvider. getItems();
+        //            int index=itemsList.indexOf(bean);//index of the selected item
+        //            GenericModel newSelectedBean=itemsList.get(index+1);
+        //            dataProvider.getItems().remove(bean);
+        //            dataProvider.refreshAll();
+        //            myGrid.select(newSelectedBean);
+        //            myGrid.scrollTo(index+1);
+
+    }
+
+
+    public Kont saveKont(Kont itemToSave, Operation oper) throws VzmServiceException {
+        try {
+            Kont kontSaved = kontService.saveKont(itemToSave, oper);
             currentItem = kontSaved;
-
-            if (Operation.EDIT == operation) {
-                if (null != evidKontOrig.getFolder() && !evidKontOrig.getFolder().equals(kont.getFolder())) {
-                    ConfirmDialog
-                            .createWarning()
-                            .withCaption("Adresáře kontraktu")
-                            .withMessage("Dokumentové ani projektové adresáře se automaticky nepřejmenovávají.")
-                            .open();
-                }
-
-//            if (!VzmFileUtils.kontDocRootExists(getDocRootServer(), zak.getFolder())) {
-//                new OkDialog().open("Adresáře zakázky"
-//                        , "POZOR, dokumentový ani projektový adresář se automaticky nepřejmenovávají.", "");
-//            }
-//            if (!VzmFileUtils.kontProjRootExists(getProjRootServer(), zak.getFolder())) {
-//                new OkDialog().open("Projektový adresáře zakázky"
-//                        , "POZOR, projektový adresář zakázky nenalezen, měl by se přejmenovat ručně", "");
-
-            } else if (Operation.ADD == operation){
-                if (StringUtils.isBlank(kont.getFolder())) {
-                    ConfirmDialog
-                            .createError()
-                            .withCaption("Adresáře kontraktu")
-                            .withMessage("Složka kontraktu není zadána, nelze vytvořit adresáře")
-                            .open();
-                } else {
-                    boolean kontDocDirsOk = VzmFileUtils.createKontDocDirs(
-                            cfgPropsCache.getDocRootServer(), kont.getFolder());
-                    boolean kontProjDirsOk = VzmFileUtils.createKontProjDirs(
-                            cfgPropsCache.getProjRootServer(), kont.getFolder());
-                    String errMsg = null;
-                    if (!kontDocDirsOk && !kontProjDirsOk) {
-                        errMsg = "Projektové ani dokumentové adresáře se nepodařilo vytvořit";
-                    } else if (!kontDocDirsOk) {
-                        errMsg = "Dokumentové adresáře se nepodařilo vytvořit";
-                    } else if (!kontProjDirsOk) {
-                        errMsg = "Projektové adresáře se nepodařilo vytvořit";
-                    }
-                    if (null != errMsg) {
-                        ConfirmDialog
-                                .createError()
-                                .withCaption("Adresáře kontraktu")
-                                .withMessage(errMsg)
-                                .open();
-                    }
-                    //            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
-                    //            kontProjRootDir.setReadOnly();
-                }
-            } else {
-                getLogger().warn("Saving {}: unknown operation {} appeared", kont.getTyp().name(), operation.name());
+            if (kontDirsToBeCreated(itemToSave, oper)) {
+                createKontDirs(kontSaved);
             }
-
-            getLogger().info("{} saved: {} / {} [operation: {}]", getCurrentItem().getTyp().name()
-                    , getCurrentItem().getCkont(), getCurrentItem().getCzak(), operation.name());
+            lastOperationResult = OperationResult.ITEM_SAVED;
             return kontSaved;
-
-        } catch(Exception e) {
-            getLogger().error("Error when saving {} {} / {} [operation: {}]", getCurrentItem().getTyp().name()
-                    , getCurrentItem().getCkont(), getCurrentItem().getCzak(), operation.name());
-            throw e;
+        } catch(VzmServiceException e) {
+            lastOperationResult = OperationResult.NO_CHANGE;
+            throw(e);
         }
     }
 
+    private boolean kontDirsToBeCreated(final Kont itemToSave, final Operation oper) {
+        return  (Operation.ADD == oper) ||
+                ((Operation.EDIT == oper) && !(itemToSave.getFolder()).equals(evidKontOrig.getFolder()));
+
+//                                ((null != folder) && (null != evidKontOrig) && (folder.equals(evidKontOrig.getFolder())) ||
+//                        !VzmFileUtils.kontDocRootExists(cfgPropsCache.getDocRootServer(), folder))
+    }
+
+    private boolean createKontDirs(final Kont kont) {
+        if (StringUtils.isBlank(kont.getFolder())) {
+            ConfirmDialog
+                    .createError()
+                    .withCaption("Adresáře kontraktu")
+                    .withMessage("Složka kontraktu není zadána, nelze vytvořit adresáře")
+                    .open();
+            return false;
+        }
+
+        boolean kontDocDirsOk = VzmFileUtils.createKontDocDirs(
+                cfgPropsCache.getDocRootServer(), kont.getFolder());
+        boolean kontProjDirsOk = VzmFileUtils.createKontProjDirs(
+                cfgPropsCache.getProjRootServer(), kont.getFolder());
+        String errMsg = null;
+        if (!kontDocDirsOk && !kontProjDirsOk) {
+            errMsg = "Projektové ani dokumentové adresáře se nepodařilo vytvořit";
+        } else if (!kontDocDirsOk) {
+            errMsg = "Dokumentové adresáře se nepodařilo vytvořit";
+        } else if (!kontProjDirsOk) {
+            errMsg = "Projektové adresáře se nepodařilo vytvořit";
+        }
+        if (null == errMsg) {
+            return true;
+        } else {
+            ConfirmDialog
+                    .createWarning()
+                    .withCaption("Adresáře kontraktu")
+                    .withMessage(errMsg)
+                    .open()
+            ;
+            return false;
+        }
+    }
+
+    public OperationResult getLastOperationResult()  {
+        return lastOperationResult;
+    }
 
 //    private void saveKontEvid(EvidKont evidKont, Operation operation) {
 //        getCurrentItem().setCkont(evidKont.getCkont());
@@ -743,8 +776,6 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
 //        new OkDialog().open("Zakázka " + savedZak.getKont().getCkont() + " / " + savedZak.getCzak() + " uložena"
 //                , "", "");
 
-        Notification.show("Zakázka " + savedZak.getKont().getCkont() + " / " + savedZak.getCzak() + " uložena"
-                , 2500, Notification.Position.TOP_CENTER);
 
 
 //        zakGrid.getDataCommunicator().getKeyMapper().removeAll();
@@ -761,6 +792,9 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
         zakGrid.getDataCommunicator().getKeyMapper().removeAll();
         zakGrid.getDataProvider().refreshAll();
         zakGrid.select(savedZak);
+
+        Notification.show("Zakázka " + savedZak.getKont().getCkont() + " / " + savedZak.getCzak() + " uložena"
+                , 2500, Notification.Position.TOP_CENTER);
 
 //        Notification.show(
 //                "Změny zakázky uloženy", 3000, Notification.Position.TOP_CENTER);
@@ -804,39 +838,6 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
         }
     }
 
-
-//    public static class MoneyFormat extends DecimalFormat {
-//
-//        public MoneyFormat (Locale locale) {
-//            super();
-////        moneyFormat = DecimalFormat.getInstance();
-////        if (moneyFormat instanceof DecimalFormat) {
-////            ((DecimalFormat)moneyFormat).setParseBigDecimal(true);
-////        }
-//            NumberFormat numberFormat = NumberFormat.getInstance(locale);
-//
-//            this.setGroupingUsed(true);
-//            this.setMinimumFractionDigits(2);
-//            this.setMaximumFractionDigits(2);
-//        }
-//    }
-
-
-
-//    private void initRoleGrid() {
-////        roleTwinGrid.setId("person-grid");  // .. same ID as is used in shared-styles grid's dom module
-//        roleTwinGrid.addColumn(Role::getName).setHeader("Název").setWidth("3em").setResizable(true);
-//        roleTwinGrid.addColumn(Role::getDescription).setHeader("Popis").setWidth("8em").setResizable(true);
-//    }
-
-//    private void addStatusField() {
-//        statusField.setDataProvider(DataProvider.ofItems(PersonState.values()));
-//        getFormLayout().add(statusField);
-//        getBinder().forField(statusField)
-////                .withConverter(
-////                        new StringToIntegerConverter("Must be a number"))
-//                .bind(Person::getStatus, Person::setStatus);
-//    }
 
     private Component initCkontField() {
         ckontField = new TextField("Číslo kontraktu");
@@ -1067,29 +1068,32 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
 //                                ((Operation.ADD == currentOperation) && StringUtils.isNotBlank(folder))
 //                        , "Složka kontraktu není definována, je třeba zadat číslo a text kontraktu"
 //                )
-                .withValidator(
-                    folder ->
-                        ((Operation.ADD == currentOperation) &&
-                                !VzmFileUtils.kontDocRootExists(cfgPropsCache.getDocRootServer(), folder))
-                        ||
-                        ((Operation.EDIT == currentOperation) &&
-                                ((null != folder) && (null != evidKontOrig) && (folder.equals(evidKontOrig.getFolder())) ||
-                                        !VzmFileUtils.kontDocRootExists(cfgPropsCache.getDocRootServer(), folder))
-                        )
-                    , "Dokumentový adresář kontraktu stejného jména již existuje, změň číslo kontraktu nebo text."
-                )
-                .withValidator(
-                    folder ->
-                        ((Operation.ADD == currentOperation) &&
-                                !VzmFileUtils.kontProjRootExists(cfgPropsCache.getProjRootServer(), folder))
-                            ||
-                            ((Operation.EDIT == currentOperation) &&
-                                    ((null != folder) && (null != evidKontOrig) && (folder.equals(evidKontOrig.getFolder())) ||
-                                            !VzmFileUtils.kontProjRootExists(cfgPropsCache.getProjRootServer(), folder)
-                                    )
-                            )
-                    , "Projektový adresář kontraktu stejného jména již existuje, číslo kontraktu nebo text."
-                )
+
+//                .withValidator(
+//                    folder ->
+//                        ((Operation.ADD == currentOperation) &&
+//                                !VzmFileUtils.kontDocRootExists(cfgPropsCache.getDocRootServer(), folder))
+//                        ||
+//                        ((Operation.EDIT == currentOperation) &&
+////                                ((null != folder) && (null != evidKontOrig) && (folder.equals(evidKontOrig.getFolder())) ||
+//                                ((folder.equals(evidKontOrig.getFolder())) ||
+//                                        !VzmFileUtils.kontDocRootExists(cfgPropsCache.getDocRootServer(), folder))
+//                        )
+//                    , "Dokumentový adresář kontraktu stejného jména již existuje, změň číslo kontraktu nebo text."
+//                )
+//                .withValidator(
+//                    folder ->
+//                        ((Operation.ADD == currentOperation) &&
+//                                !VzmFileUtils.kontProjRootExists(cfgPropsCache.getProjRootServer(), folder))
+//                        ||
+//                        ((Operation.EDIT == currentOperation) &&
+////                                ((null != folder) && (null != evidKontOrig) && (folder.equals(evidKontOrig.getFolder())) ||
+//                                ((folder.equals(evidKontOrig.getFolder())) ||
+//                                        !VzmFileUtils.kontProjRootExists(cfgPropsCache.getProjRootServer(), folder)
+//                                )
+//                        )
+//                    , "Projektový adresář kontraktu stejného jména již existuje, číslo kontraktu nebo text."
+//                )
 
                 .bind(Kont::getFolder, Kont::setFolder);
 
@@ -1354,7 +1358,7 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
     private Component initNewZakButton() {
         newZakButton = new NewItemButton(ItemNames.getNomS(ItemType.ZAK), event ->
                 zakFormDialog.openDialog(new Zak(ItemType.ZAK, getCurrentItem().getNewCzak(), getCurrentItem())
-                , Operation.ADD, null, null)
+                , Operation.ADD, null)
 //                , Operation.ADD, ItemNames.getNomS(ItemType.ZAK), new FlexLayout(), "")
         );
 //                        new Zak(ItemType.ZAK), AbstractEditorDialog.Operation.ADD);
@@ -1362,12 +1366,14 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
     }
 
     private Component initNewAkvButton() {
-        newAkvButton = new NewItemButton(ItemNames.getNomS(ItemType.AKV), event ->
+        newAkvButton = new NewItemButton(ItemNames.getNomS(ItemType.AKV), event -> {
                 zakFormDialog.openDialog(new Zak(ItemType.AKV, getCurrentItem().getNewCzak(), getCurrentItem())
-                , Operation.ADD, null, null)
+                , Operation.ADD, null);
+            }
         );
         return newAkvButton;
     }
+
 
 //    private Component initNewSubButton() {
 //        newSubButton = new NewItemButton(ItemNames.getNomS(ItemType.SUB), event ->
@@ -1528,57 +1534,10 @@ public class KontFormDialog <T extends Serializable> extends AbstractKzDialog im
 //        } else {
             Button btn = new GridItemEditBtn(event -> {
                 zakFormDialog.openDialog(
-                        zak, Operation.EDIT, null, null);
+                        zak, Operation.EDIT, null);
             }, VzmFormatUtils.getItemTypeColorName(zak.getTyp()));
             return btn;
 //        }
     }
-
-
-//    private void openZakForm(Zak zak) {
-//        close();
-//    }
-
-//    private void addTerminField() {
-//
-//        // Nastup field binder:
-//        Binder.Binding<Person, LocalDate> nastupBinder = getBinder().forField(nastupField)
-//                .withValidator(nastupNullCheck(),"Nástup nemuže být prázdný pokud je zadáno ukončení")
-//                .withValidator(nastupBeforeVystupCheck(),"Nástup nemuže následovat po ukončení")
-//                .bind(Person::getNastup, Person::setNastup);
-//
-//        // Vystup field binder:
-//        Binder.Binding<Person, LocalDate> vystupBinder = getBinder().forField(vystupField)
-//                .withValidator(vystupNotNullCheck(), "Ukončení nemůže být zadáno pokud není zadán nástup")
-//                .withValidator(vystupAfterNastupCheck(),"Ukončení nemůže předcházet nástup")
-//                .bind(Person::getVystup, Person::setVystup);
-//
-//        nastupField.addValueChangeListener(event -> vystupBinder.validate());
-//        vystupField.addValueChangeListener(event -> nastupBinder.validate());
-//
-//        // Add fields to the form:
-//        getFormLayout().add(nastupField);
-//        getFormLayout().add(vystupField);
-//    }
-
-//    private SerializablePredicate<LocalDate> nastupNullCheck() {
-//        return nastup -> ((null == vystupField.getValue()) || (null != nastup));
-//    }
-//
-//    private SerializablePredicate<LocalDate> nastupBeforeVystupCheck() {
-//        return nastup ->
-//                (null == vystupField.getValue())
-//                || ((null != nastup) && nastup.isBefore(vystupField.getValue()));
-//    }
-//
-//    private SerializablePredicate<LocalDate> vystupNotNullCheck() {
-//        return vystup -> ((null != nastupField.getValue()) || (null == vystup));
-//    }
-//
-//    private SerializablePredicate<LocalDate> vystupAfterNastupCheck() {
-//        return vystup ->
-//            (null == vystup)
-//            || ((null != nastupField.getValue()) && vystup.isAfter(nastupField.getValue()));
-//    }
 
 }

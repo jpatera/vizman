@@ -122,7 +122,7 @@ public class KlientFormDialog extends AbstractEditorDialog<Klient> {
             );
 //                    "Pokud bude uživatel zrušen, budou zrušena i další s ním související data.");
 //        } else {
-//            doDelete(getCurrentItem());
+//            deleteKont(getCurrentItem());
 //        }
     }
 }

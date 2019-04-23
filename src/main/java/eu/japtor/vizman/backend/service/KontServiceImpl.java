@@ -6,6 +6,7 @@ import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.repository.KontRepo;
 import eu.japtor.vizman.ui.components.OkDialog;
+import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
@@ -92,19 +93,28 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
     @Override
     @Transactional
-    public Kont saveKont(Kont kont) {
-        return kontRepo.save(kont);
+    public Kont saveKont(Kont kont, Operation oper) throws VzmServiceException {
+        try {
+            Kont kontSaved = kontRepo.save(kont);
+            getLogger().info("{} saved: {} [operation: {}]", kontSaved.getTyp().name()
+                    , kontSaved.getCkont(), oper.name());
+            return kontSaved;
+        } catch (Exception e) {
+            String errMsg = "Error while saving {} : {} [operation: {}]";
+            getLogger().error(errMsg, kont.getTyp().name(), kont.getCkont(), oper.name(), e);
+            throw new VzmServiceException(errMsg);
+        }
     }
 
     @Override
-    public boolean deleteKont(Kont kont) {
+    public void deleteKont(Kont kont) throws VzmServiceException {
         try {
             kontRepo.delete(kont);
         } catch (Exception e) {
-            getLogger().error("Error while deleting kontrakt", e);
-            return false;
+            String errMsg = "Error while deleting {} : {}";
+            getLogger().error(errMsg, kont.getTyp().name(), kont.getCkont(), e);
+            throw new VzmServiceException(errMsg);
         }
-        return true;
     }
 
     /**

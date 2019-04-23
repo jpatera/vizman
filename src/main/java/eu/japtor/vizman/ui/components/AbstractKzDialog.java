@@ -12,8 +12,15 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import eu.japtor.vizman.backend.entity.GrammarGender;
+import eu.japtor.vizman.backend.entity.HasModifDates;
+import eu.japtor.vizman.backend.entity.ItemNames;
+import eu.japtor.vizman.backend.entity.ItemType;
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.function.Consumer;
 
 public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
@@ -30,6 +37,11 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
     private VerticalLayout lowerPane;
 //    private VerticalLayout upperGridContainer;
     private Div middleComponentBox;
+
+    protected GrammarGender itemGender;
+    private String itemTypeNomS;
+    private String itemTypeGenS;
+    private String itemTypeAccuS;
 
     private String dialogWidth;
     private String dialogHeight;
@@ -238,6 +250,26 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         return lowerPane;
     }
 
+    public String getHeaderEndComponentValue(final String titleEndText) {
+        String value = "";
+        if ((null == titleEndText) && (getCurrentItem() instanceof HasModifDates)) {
+            if (getCurrentOperation() == Operation.ADD) {
+                value = "";
+            } else {
+                LocalDate dateCreate = ((HasModifDates) getCurrentItem()).getDateCreate();
+                String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
+                LocalDateTime dateTimeUpdate = ((HasModifDates) getCurrentItem()).getDatetimeUpdate();
+                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleModifDateFormatter);
+                value = "[ Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr + " ]";
+            }
+        }
+        return value;
+    }
+
+    public abstract T getCurrentItem();
+
+    public abstract Operation getCurrentOperation();
+
     protected final VerticalLayout getUpperRightPane() {
         return upperRightPane;
     }
@@ -293,4 +325,26 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         return mainTitle;
     }
 
+    protected String getItemName(final Operation operation) {
+        switch (operation) {
+            case ADD : return itemTypeNomS;
+            case EDIT : return itemTypeGenS;
+            case DELETE : return itemTypeAccuS;
+            case SAVE : return itemTypeAccuS;
+            case FAKTUROVAT: return itemTypeAccuS;
+            case EXPORT : return itemTypeAccuS;
+            default : return itemTypeNomS;
+        }
+    }
+
+    protected void setItemNames(ItemType itemType) {
+        this.itemGender = ItemNames.getItemGender(itemType);
+        this.itemTypeNomS = ItemNames.getNomS(itemType);
+        this.itemTypeGenS = ItemNames.getGenS(itemType);
+        this.itemTypeAccuS = ItemNames.getAccuS(itemType);
+    }
+
+    protected void setDefaultItemNames() {
+        setItemNames(ItemType.UNKNOWN);
+    }
 }

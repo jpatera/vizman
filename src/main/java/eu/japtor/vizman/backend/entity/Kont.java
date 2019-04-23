@@ -206,6 +206,7 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
         super();
 //        this.uuid = uuid;
         this.typ = itemType;
+        this.rok = LocalDate.now().getYear();
         this.mena = Mena.CZK;
         this.uuid = UUID.randomUUID();
         // TODO: move it to abstract class and create field/column there
@@ -256,7 +257,7 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     @Transient
     public Integer getLastCzak() {
         return getZaks().stream()
-                .mapToInt(fakt -> fakt.getCzak())
+                .mapToInt(zak -> zak.getCzak())
                 .max().orElse(0);
     }
 

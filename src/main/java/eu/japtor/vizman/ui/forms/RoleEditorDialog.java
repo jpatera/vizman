@@ -159,7 +159,7 @@ public class RoleEditorDialog extends AbstractEditorDialog<Role> {
                     "Opravdu zrušit roli '" + getCurrentItem().getName() + "' ?",
                     "");
 //        } else {
-//            doDelete(getCurrentItem());
+//            deleteKont(getCurrentItem());
 //        }
     }
 }

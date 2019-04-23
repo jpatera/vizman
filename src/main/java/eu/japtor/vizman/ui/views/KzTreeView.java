@@ -28,7 +28,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.treegrid.TreeGrid;
-import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
@@ -37,7 +36,6 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.dom.*;
 import com.vaadin.flow.dom.DomEvent;
-import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -60,8 +58,6 @@ import javax.annotation.PostConstruct;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -163,30 +159,36 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        <vaadin-treeGrid items="[[items]]" id="treeGrid" style="width: 100%;"></vaadin-treeGrid>
     }
 
-    private Consumer<Kont> deleteKontConsumer = kont -> deleteKontForGrid(kont);
-    private BiConsumer<Kont, Operation> saveKontBiConsumer = (kont, oper) ->  saveKontForGrid(kont, oper);
+//    private Consumer<Kont> deleteKontConsumer = kont -> deleteKontForGrid(kont);
+//    private BiConsumer<Kont, Operation> saveKontBiConsumer = (kont, oper) ->  saveKontForGrid(kont, oper);
 
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        // Navigation first goes here, then to the beforeEnter of MainView
+//        System.out.println("###  KzTreeView.beforeEnter");
+    }
 
     @PostConstruct
     public void postInit() {
 
         kontFormDialog = new KontFormDialog(
 //                this::saveKontForGrid, this::deleteKontForGrid
-                deleteKontConsumer
+//                deleteKontConsumer
 //                , closeKontConsumer
-                , kontService, zakService, faktService, klientService, dochsumZakService
+                kontService, zakService, faktService, klientService, dochsumZakService
                 , cfgPropsCache
         );
         kontFormDialog.addOpenedChangeListener(event -> {
-            System.out.println("OPEN-CHANGED: " + event.toString());
+//            System.out.println("OPEN-CHANGED: " + event.toString());
             if (!event.isOpened()) {
-                syncGridAfterFormClosed((KontFormDialog)event.getSource());
+                finishKontEdit((KontFormDialog)event.getSource());
             }
         });
         kontFormDialog.addDialogCloseActionListener(event -> {
-            System.out.println("DIALOG-CLOSE: " + event.toString());
+//            System.out.println("DIALOG-CLOSE: " + event.toString());
             kontFormDialog.close();
-            syncGridAfterFormClosed((KontFormDialog)event.getSource());
+//            finishKontEdit((KontFormDialog)event.getSource());
         });
 //        kontFormDialog.addDialogCloseActionListener(ev -> {
 ////            Notification.show("Close Action Listener");
@@ -194,9 +196,20 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        });
 
         zakFormDialog = new ZakFormDialog(
-                this::saveZakForGrid, this::deleteZakForGrid
-                , zakService, faktService, dochsumZakService, cfgPropsCache
+                zakService, faktService, dochsumZakService, cfgPropsCache
         );
+        zakFormDialog.addOpenedChangeListener(event -> {
+//            System.out.println("OPEN-CHANGED: " + event.toString());
+            if (!event.isOpened()) {
+                finishZakEdit((ZakFormDialog)event.getSource());
+            }
+        });
+        zakFormDialog.addDialogCloseActionListener(event -> {
+//            System.out.println("DIALOG-CLOSE: " + event.toString());
+            zakFormDialog.close();
+//            finishKontEdit((KontFormDialog)event.getSource());
+        });
+
 //        subFormDialog = new SubFormDialog(
 //                this::saveZakForGrid, this::deleteZakForGrid
 //                , zakService, faktService, cfgPropsCache
@@ -214,45 +227,80 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
     }
 
 
-    void syncGridAfterFormClosed(KontFormDialog kontFormDialog) {
-        Kont kont =  kontFormDialog.getCurrentItem();
-        Operation oper =  kontFormDialog.getCurrentOperation();
-        switch (oper) {
-            case EDIT:
-                syncGridAfterKontModified(kont);
-                Notification.show("Kontrakt " + kont.getCkont() + " uložen"
-                        , 2500, Notification.Position.TOP_CENTER);
-                break;
-            case ADD:
-//                syncGridAfterKontModified(kont);
-                break;
-            case DELETE:
-//                syncGridAfterKontModified(kont);
-                break;
+    void finishKontEdit(KontFormDialog kontFormDialog) {
+        Kont dialogKont = kontFormDialog.getCurrentItem(); // Modified, just added or just deleted
+        Operation oper = kontFormDialog.getCurrentOperation();
+        OperationResult operRes = kontFormDialog.getLastOperationResult();
+        if (OperationResult.NO_CHANGE == operRes) {
+            return;
         }
+        if (OperationResult.ITEM_SAVED == operRes) {
+            Notification.show("Kontrakt " + dialogKont.getCkont() + " uložen"
+                    , 2500, Notification.Position.TOP_CENTER);
+
+        } else if (OperationResult.ITEM_DELETED == operRes) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Editace kontraktu")
+                    .withMessage("Kontrakt " + dialogKont.getCkont() + " zrušen.")
+                    .open();
+        }
+
+        syncTreeGridAfterKontEdit(dialogKont, oper, operRes);
 
     }
 
+    void finishZakEdit(ZakFormDialog zakFormDialog) {
+        Zak dialogZak = zakFormDialog.getCurrentItem(); // Modified, just added or just deleted
+        String ckz = String.format("%s / %s", dialogZak.getCkont(), dialogZak.getCzak());
+        Operation oper = zakFormDialog.getCurrentOperation();
+        OperationResult operRes = zakFormDialog.getLastOperationResult();
+        if (OperationResult.NO_CHANGE == operRes) {
+            return;
+        }
+        if (OperationResult.ITEM_SAVED == operRes) {
+            Notification.show(String.format("Zakázka %s uložena", ckz)
+                    , 2500, Notification.Position.TOP_CENTER);
 
-    void syncGridAfterKontModified(Kont modKont) {
+        } else if (OperationResult.ITEM_DELETED == operRes) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Editace zakázky")
+                    .withMessage(String.format("Zakázka %s zrušena.", ckz))
+                    .open();
+        }
 
-//       ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
+        syncTreeGridAfterZakEdit(dialogZak, oper, operRes);
 
+    }
 
+    void syncTreeGridAfterKontEdit(Kont modKont, Operation oper, OperationResult operRes) {
 
-//        if (Operation.EDIT == operation) {
-        kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-        kzTreeData.removeItem((KzTreeAware)modKont);
-        kzTreeData.addItem(null, modKont);
-        kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
+        if (Operation.EDIT == oper) {
+            kzTreeData.removeItem(modKont);
+        }
+        if (OperationResult.ITEM_DELETED != operRes) {
+            kzTreeData.addItem(null, modKont);
+            kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
+        }
+
 //        kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
 //        kzTreeData.addItems((Collection<KzTreeAware>) modKont, KzTreeAware::getNodes);
 
+        kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
         inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
         inMemoryKzTreeProvider.setSortOrder(KzTreeAware::getCkont, SortDirection.DESCENDING);
 //        inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
         kzTreeGrid.setDataProvider(inMemoryKzTreeProvider);
-        kzTreeGrid.getDataProvider().refreshItem(modKont);
+//        kzTreeGrid.getDataProvider().refreshItem(modKont);
+
+        KzTreeAware itemForSelection = (OperationResult.ITEM_DELETED == operRes) ?
+                getNeibourghItemFromTree(modKont) : modKont;
+        if (null != itemForSelection) {
+            kzTreeGrid.expand(itemForSelection);
+            kzTreeGrid.getSelectionModel().select(itemForSelection);
+        }
+
         kzTreeGrid.getDataProvider().refreshAll();
 
 ////        List<KzTreeAware> zaks = kzTreeGrid.getDataProvider()
@@ -261,11 +309,13 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        List<KzTreeAware> zaks = zakStream.collect(Collectors.toList());
 //        ((KzTreeAware)modKont).getNodes() Zaks(zaks);
 //        Stream<KzTreeAware> stream = kzTreeGrid.getDataProvider().fetch(new Query<>(kz -> kz.getItemId().equals(modKont.getItemId())));
-        Stream<KzTreeAware> stream = kzTreeGrid.getDataProvider().fetch(new HierarchicalQuery(null, modKont));
-        Stream<KzTreeAware> childrenStream = kzTreeGrid.getDataProvider().fetchChildren(new HierarchicalQuery(null, modKont));
 
-        List<KzTreeAware> list = stream.collect(Collectors.toList());
-        List<KzTreeAware> childernList = childrenStream.collect(Collectors.toList());
+
+//        Stream<KzTreeAware> stream = kzTreeGrid.getDataProvider().fetch(new HierarchicalQuery(null, modKont));
+//        Stream<KzTreeAware> childrenStream = kzTreeGrid.getDataProvider().fetchChildren(new HierarchicalQuery(null, modKont));
+//
+//        List<KzTreeAware> list = stream.collect(Collectors.toList());
+//        List<KzTreeAware> childrenList = childrenStream.collect(Collectors.toList());
 
 //        kzTreeGrid.getDataProvider().
 //        } else {
@@ -284,19 +334,56 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        } else {
 //                reloadTreeProvider(archFilterRadio.getValue());
 //        }
+    }
 
+    void syncTreeGridAfterZakEdit(Zak modZak, Operation oper, OperationResult operRes) {
 
-        kzTreeGrid.expand(modKont);
-        kzTreeGrid.select(modKont);
+        if (Operation.EDIT == oper) {
+            kzTreeData.removeItem(modZak);
+        }
+        if (OperationResult.ITEM_DELETED != operRes) {
+            kzTreeData.addItem(null, modZak);
+            kzTreeData.addItems(modZak, ((KzTreeAware)modZak).getNodes());
+        }
 
+        kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+        inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
+        inMemoryKzTreeProvider.setSortOrder(KzTreeAware::getCkont, SortDirection.DESCENDING);
+//        inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
+        kzTreeGrid.setDataProvider(inMemoryKzTreeProvider);
+//        kzTreeGrid.getDataProvider().refreshItem(modKont);
+
+        KzTreeAware itemForSelection = (OperationResult.ITEM_DELETED == operRes) ?
+                getNeibourghItemFromTree(modZak.getKont()) : modZak.getKont();
+//                getNeibourghItemFromTree(modZak) : modZak;
+        if (null != itemForSelection) {
+            kzTreeGrid.expand(itemForSelection);
+            kzTreeGrid.getSelectionModel().select(itemForSelection);
+        }
+        kzTreeGrid.getDataProvider().refreshAll();
+    }
+
+    private KzTreeAware getNeibourghItemFromTree(final KzTreeAware item) {
+        int itemIdx = getItemTreeIdx(item);
+//        Stream<KzTreeAware> stream = kzTreeGrid.getDataCommunicator()
+        KzTreeAware newSelectedItem = null;
+        newSelectedItem = kzTreeGrid.getDataCommunicator()
+                .fetchFromProvider(itemIdx + 1, 1)
+                .findFirst().orElse(null);
+//        KzTreeAware newSelectedItem = stream.findFirst().orElse(null);
+        if (null == newSelectedItem) {
+            newSelectedItem = kzTreeGrid.getDataCommunicator()
+                    .fetchFromProvider(itemIdx - 1, 1)
+                    .findFirst().orElse(null);
+        }
+        return newSelectedItem;
+    }
+
+    private int getItemTreeIdx(final KzTreeAware item) {
+        return kzTreeGrid.getDataCommunicator().getIndex(item);
     }
 
 
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        // Navigation first goes here, then to the beforeEnter of MainView
-//        System.out.println("###  KzTreeView.beforeEnter");
-    }
 
 
 //    @DomEvent(value = "keypress", filter = "event.key == 'Enter'")
@@ -807,10 +894,12 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
                 kontFormDialog.openDialog(
                         (Kont)kz, Operation.EDIT, null
                 );
+                kontFormDialog.getLastOperationResult();
+
             };
         } else if (ItemType.ZAK == kz.getTyp() || ItemType.AKV == kz.getTyp()) {
             listener = event -> zakFormDialog.openDialog(
-                    (Zak)kz, Operation.EDIT, null, null
+                    (Zak)kz, Operation.EDIT, null
             );
         }
 
@@ -890,203 +979,120 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 
 
 
-    protected void saveKontForGrid(Kont kont, Operation operation) {
-
-//        Kont savedKont = kontFormDialog.saveKont(kont, operation);
+//    protected void saveKontForGrid(Kont kont, Operation operation) {
 //
-////        event -> {
-////            try {
-////                binder.writeBean(person);
-////                // A real application would also save the updated person
-////                // using the application's backend
-////            } catch (ValidationException e) {
-////                notifyValidationException(e);
-////            }
-//
-//        if (Operation.EDIT == operation && null != kontFolderOrig && !kontFolderOrig.equals(kont.getFolder())) {
-////            if (!VzmFileUtils.renameKontProjRoot(
-////                    getProjRootServer(), kont.getFolder(), kontFolderOrig)) {
-////                new OkDialog().open("Projektový adresář kontraktu"
-////                        , "Adresář se nepodařilo přejmenovat", "");
-////            };
-////            if (!VzmFileUtils.renameKontDocRoot(
-////                    getDocRootServer(), kont.getFolder(), kontFolderOrig)) {
+////        Kont savedKont = kontFormDialog.saveKont(kont, operation);
+////
+//////        event -> {
+//////            try {
+//////                binder.writeBean(person);
+//////                // A real application would also save the updated person
+//////                // using the application's backend
+//////            } catch (ValidationException e) {
+//////                notifyValidationException(e);
+//////            }
+////
+////        if (Operation.EDIT == operation && null != kontFolderOrig && !kontFolderOrig.equals(kont.getFolder())) {
+//////            if (!VzmFileUtils.renameKontProjRoot(
+//////                    getProjRootServer(), kont.getFolder(), kontFolderOrig)) {
+//////                new OkDialog().open("Projektový adresář kontraktu"
+//////                        , "Adresář se nepodařilo přejmenovat", "");
+//////            };
+//////            if (!VzmFileUtils.renameKontDocRoot(
+//////                    getDocRootServer(), kont.getFolder(), kontFolderOrig)) {
+//////                new OkDialog().open("Dokumentový adresář kontraktu"
+//////                        , "Adresář se nepodařilo přejmenovat", "");
+//////            };
+////            if (!VzmFileUtils.kontDocRootExists(getDocRootServer(), kont.getFolder())) {
 ////                new OkDialog().open("Dokumentový adresář kontraktu"
-////                        , "Adresář se nepodařilo přejmenovat", "");
+////                        , "POZOR, dokumentový adresář kontraktu nenalezen, měl by se přejmenovat ručně", "");
+////            }
+////            if (!VzmFileUtils.kontProjRootExists(getProjRootServer(), kont.getFolder())) {
+////                new OkDialog().open("Projektový adresáře kontraktu"
+////                        , "POZOR, projektový adresář kontraktu nenalezen, měl by se přejmenovat ručně", "");
+////            }
+////
+////        } else if (Operation.ADD == operation){
+////            if (!VzmFileUtils.createKontProjDirs(getProjRootServer(), kont.getFolder())) {
+////                new OkDialog().open("Projektové adresáře kontraktu"
+////                        , "Adresářovou strukturu se nepodařilo vytvořit", "");
 ////            };
-//            if (!VzmFileUtils.kontDocRootExists(getDocRootServer(), kont.getFolder())) {
-//                new OkDialog().open("Dokumentový adresář kontraktu"
-//                        , "POZOR, dokumentový adresář kontraktu nenalezen, měl by se přejmenovat ručně", "");
-//            }
-//            if (!VzmFileUtils.kontProjRootExists(getProjRootServer(), kont.getFolder())) {
-//                new OkDialog().open("Projektový adresáře kontraktu"
-//                        , "POZOR, projektový adresář kontraktu nenalezen, měl by se přejmenovat ručně", "");
-//            }
+////            if (!VzmFileUtils.createKontDocDirs(getDocRootServer(), kont.getFolder())) {
+////                new OkDialog().open("Dokumentové adresáře kontraktu"
+////                        , "Adresářovou strukturu se nepodařilo vytvořit", "");
+////            };
+//////            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
+//////            kontProjRootDir.setReadOnly();
+////        } else {
+////            new OkDialog().open("Adresáře zakázky"
+////                    , "NEZNÁMÁ OPERACE", "")
+////            ;
+////        }
+////
+////        Kont savedKont = kontService.saveKont(kont);
 //
-//        } else if (Operation.ADD == operation){
-//            if (!VzmFileUtils.createKontProjDirs(getProjRootServer(), kont.getFolder())) {
-//                new OkDialog().open("Projektové adresáře kontraktu"
-//                        , "Adresářovou strukturu se nepodařilo vytvořit", "");
-//            };
-//            if (!VzmFileUtils.createKontDocDirs(getDocRootServer(), kont.getFolder())) {
-//                new OkDialog().open("Dokumentové adresáře kontraktu"
-//                        , "Adresářovou strukturu se nepodařilo vytvořit", "");
-//            };
-////            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
-////            kontProjRootDir.setReadOnly();
-//        } else {
-//            new OkDialog().open("Adresáře zakázky"
-//                    , "NEZNÁMÁ OPERACE", "")
-//            ;
-//        }
 //
-//        Kont savedKont = kontService.saveKont(kont);
-
-
-//        if (Operation.EDIT == operation) {
-//            kzTreeGrid.getDataProvider().refreshItem(savedKont);
-//        } else {
-////            if (null == archRadioValue || )
-//            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-//            kzTreeGrid.getDataProvider().refreshAll();
+////        if (Operation.EDIT == operation) {
+////            kzTreeGrid.getDataProvider().refreshItem(savedKont);
+////        } else {
+//////            if (null == archRadioValue || )
+////            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+////            kzTreeGrid.getDataProvider().refreshAll();
+////
+////        }
 //
-//        }
-
-
-
-        Kont savedKont = kontFormDialog.saveKont(kont, operation);
 //
-//        Notification.show("Kontrakt " + savedKont.getCkont() + " uložen"
-//                , 2500, Notification.Position.TOP_CENTER);
 //
-//        if ((Operation.ADD == operation) && (archFilterRadio.getValue().equals(RADIO_KONT_ACTIVE))) {
-//                archFilterRadio.setValue(RADIO_KONT_ARCH);
-//        } else {
-//                reloadTreeProvider(archFilterRadio.getValue());
-//        }
+//        Kont savedKont = kontFormDialog.saveKont(kont, operation);
+////
+////        Notification.show("Kontrakt " + savedKont.getCkont() + " uložen"
+////                , 2500, Notification.Position.TOP_CENTER);
+////
+////        if ((Operation.ADD == operation) && (archFilterRadio.getValue().equals(RADIO_KONT_ACTIVE))) {
+////                archFilterRadio.setValue(RADIO_KONT_ARCH);
+////        } else {
+////                reloadTreeProvider(archFilterRadio.getValue());
+////        }
+////
+////        kzTreeGrid.expand(savedKont);
+////        kzTreeGrid.select(savedKont);
 //
-//        kzTreeGrid.expand(savedKont);
-//        kzTreeGrid.select(savedKont);
+//
+//    }
 
-
+    private void refreshTreeAfterEdit(final KzTreeAware neibourghItem) {
+        reloadTreeProvider(archFilterRadio.getValue());
+        kzTreeGrid.getSelectionModel().select(neibourghItem);
     }
-
-
 
     private void deleteKontForGrid(final Kont kontToDelete) {
         int kontDelIdx = kzTreeGrid.getDataCommunicator().getIndex(kontToDelete);
         Stream<KzTreeAware> stream = kzTreeGrid.getDataCommunicator()
                 .fetchFromProvider(kontDelIdx + 1, 1);
-        KzTreeAware newSelectedKont = stream.findFirst().orElse(null);
+        KzTreeAware newSelectedKont = getNeibourghItemFromTree(kontToDelete);
 
         try {
-            boolean kontWasDeleted = kontService.deleteKont(kontToDelete);
-            if (!kontWasDeleted) {
-                ConfirmDialog
-                        .createWarning()
-                        .withCaption("Zrušení kontraktu.")
-                        .withMessage("Kontrakt " + kontToDelete.getCkont() + " se nepodařilo zrušit.")
-                        .open();
-            } else {
+            kontService.deleteKont(kontToDelete);
+            reloadTreeProvider(archFilterRadio.getValue());
+            kzTreeGrid.getSelectionModel().select(newSelectedKont);
 
-    //            GenericModel bean = myGrid.getSelectedRow();
-    //            ListDataProvider<GenericModel> dataProvider=(ListDataProvider<GenericModel>) myGrid.getDataProvider();
-    //            List<GenericModel> ItemsList=(List<GenericModel>) dataProvider.getItems();
-
-    //            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-    //            kzTreeGrid.getDataProvider().refreshAll();
-    //
-    //            HierarchicalDataProvider dataProvider = kzTreeGrid.getDataProvider();
-    //            List<KzTreeAware> itemsList =(List<KzTreeAware>) dataProvider. getItems();
-    //            int index=itemsList.indexOf(bean);//index of the selected item
-    //            GenericModel newSelectedBean=itemsList.get(index+1);
-    //            dataProvider.getItems().remove(bean);
-    //            dataProvider.refreshAll();
-    //            myGrid.select(newSelectedBean);
-    //            myGrid.scrollTo(index+1);
-
-    //            kzTreeGrid.getDataCommunicator().getKeyMapper().remove(kontDel);
-    //            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-    //            kzTreeGrid.getDataProvider().refreshAll();
-
-                reloadTreeProvider(archFilterRadio.getValue());
-                kzTreeGrid.getSelectionModel().select(newSelectedKont);
-
-                ConfirmDialog
-                        .createInfo()
-                        .withCaption("Zrušení kontraktu")
-                        .withMessage("Kontrakt " + kontToDelete.getCkont() + " byl zrušen.")
-                        .open();
-            }
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Zrušení kontraktu")
+                    .withMessage("Kontrakt " + kontToDelete.getCkont() + " byl zrušen.")
+                    .open()
+            ;
 
         } catch(Exception e) {
             getLogger().error("Error when deleting {} {} [operation: {}]", kontToDelete.getTyp().name()
                     , kontToDelete.getCkont(), Operation.DELETE.name());
+            ConfirmDialog
+                    .createError()
+                    .withCaption("Zrušení kontraktu")
+                    .withMessage("Kontrakt " + kontToDelete.getCkont() + " se nepodařilo zrušit.")
+                    .open();
             throw e;
         }
-    }
-
-    private void updateZakGridContent() {
-//        List<Kont> zaks = kontRepo.findAll();
-//        treeGrid.setItems(zaks);
-    }
-
-    private void saveZakForGrid(Zak zak, Operation operation) {
-
-        Zak savedZak = zakFormDialog.saveZak(zak, operation);
-
-////        event -> {
-////            try {
-////                ````````er.writeBean(person);
-////                // A real application would also save the updated person
-////                // using the application's backend
-////            } catch (ValidationException e) {
-////                notifyValidationException(e);
-////            }
-//
-//
-//        if (Operation.EDIT == operation) {
-//            new OkDialog().open("Adresáře zakázky - UPOZORNĚNÍ"
-//                    , "Dokumentový ani projektový adresář se automaticky nepřejmenovávají.", ""
-//            );
-////            if (Operation.EDIT == operation && null != zakFolderOrig && !zakFolderOrig.equals(zak.getFolder())) {
-////            if (!VzmFileUtils.kontDocRootExists(getDocRootServer(), zak.getFolder())) {
-////                new OkDialog().open("Dokumentový adresář zakázky"
-////                        , "POZOR, dokumentový adresář zakázky nenalezen, měl by se přejmenovat ručně", "");
-////            }
-////            if (!VzmFileUtils.kontProjRootExists(getProjRootServer(), zak.getFolder())) {
-////                new OkDialog().open("Projektový adresáře zakázky"
-////                        , "POZOR, projektový adresář zakázky nenalezen, měl by se přejmenovat ručně", "");
-////            }
-////        } else {
-//            // It is not possible to create a new ZAK from KZ tree grid
-//        } else  if (Operation.ADD == operation) {
-//            new OkDialog().open("Dokumentový adresář zakázky"
-//                    , "NEZNÁMÁ OPERACE", ""
-//            );
-//        }
-//
-//        Zak savedZak = zakService.saveZak(zak);
-
-        Notification.show("Zakázka " + savedZak.getKont().getCkont() + "/" + savedZak.getCzak() + " uložena"
-                , 2500, Notification.Position.TOP_CENTER);
-
-        if (Operation.EDIT == operation) {
-            kzTreeGrid.getDataProvider().refreshItem(savedZak);
-//        } else {
-////            if (null == archRadioValue || )
-//            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-//            kzTreeGrid.getTreeData().addItem(savedZak.getKont(), savedZak);
-//            kzTreeGrid.getDataProvider().refreshAll();
-//
-////            if (archFilterRadio.getValue() == RADIO_KONT_ACTIVE) {
-////                archFilterRadio.setValue(RADIO_KONT_ARCH);
-////            } else {
-////                reloadTreeProvider(archFilterRadio.getValue());
-////            }
-        }
-
-        kzTreeGrid.select(savedZak);
     }
 
 

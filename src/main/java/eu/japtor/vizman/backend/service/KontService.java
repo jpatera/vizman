@@ -2,6 +2,7 @@ package eu.japtor.vizman.backend.service;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import eu.japtor.vizman.backend.entity.Kont;
+import eu.japtor.vizman.ui.components.Operation;
 
 import java.util.List;
 
@@ -9,9 +10,9 @@ public interface KontService {
 
     Kont getById(Long id);
 
-    Kont saveKont(Kont kont);
+    Kont saveKont(Kont kont, Operation oper);
 
-    boolean deleteKont(Kont kont);
+    void deleteKont(Kont kont);
 
     Kont getByObjednatel(String objednatel);
 

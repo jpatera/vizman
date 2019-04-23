@@ -311,7 +311,7 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
                     "Opravdu zrušit uživatele “" + getCurrentItem().getUsername() + "“ ?",
                     "Pokud bude uživatel zrušen, budou zrušena i další s ním související data.");
 //        } else {
-//            doDelete(getCurrentItem());
+//            deleteKont(getCurrentItem());
 //        }
     }
 }

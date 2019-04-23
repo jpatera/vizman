@@ -1,11 +1,14 @@
 package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.app.HasLogger;
+import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.repository.ZakRepo;
 import eu.japtor.vizman.ui.components.OkDialog;
+import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -39,16 +42,29 @@ public class ZakServiceImpl implements ZakService, HasLogger {
     }
 
     @Override
-    public Zak saveZak(Zak zak) {
-        return zakRepo.save(zak);
+    @Transactional
+    public Zak saveZak(Zak zak, Operation oper) throws VzmServiceException {
+        try {
+            Zak zakSaved = zakRepo.save(zak);
+            getLogger().info("{} saved: {} / {} [operation: {}]", zakSaved.getTyp().name()
+                    , zakSaved.getCkont(), zakSaved.getCzak(), oper.name());
+
+            return zakSaved;
+        } catch (Exception e) {
+            String errMsg = "Error while saving {} : {} / {} [operation: {}]";
+            getLogger().error(errMsg, zak.getTyp().name(), zak.getCkont(), zak.getCzak(), oper.name(), e);
+            throw new VzmServiceException(errMsg);
+        }
     }
 
     @Override
+    @Transactional
     public boolean deleteZak(Zak zak) {
         try {
             zakRepo.delete(zak);
         } catch (Exception e) {
-            getLogger().error("Error while deleting ZAKAZKA", e);
+            String errMsg = "Error while deleting {} : {} / {}";
+            getLogger().error(errMsg, zak.getTyp().name(), zak.getCkont(), zak.getCzak(), e);
             return false;
         }
         return true;

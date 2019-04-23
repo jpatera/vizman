@@ -4,7 +4,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H4;
@@ -16,44 +15,41 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
+// import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.bean.EvidZak;
 import eu.japtor.vizman.backend.entity.*;
-import eu.japtor.vizman.backend.service.CfgPropsCache;
-import eu.japtor.vizman.backend.service.DochsumZakService;
-import eu.japtor.vizman.backend.service.FaktService;
-import eu.japtor.vizman.backend.service.ZakService;
+import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFileUtils;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.*;
 import org.apache.commons.lang3.StringUtils;
+import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
-import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogger {
+public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     //public class ZakFormDialog extends AbstractEditorDialog<Zak> implements BeforeEnterObserver {
 
     private final static String FAKT_EDIT_COL_KEY = "fakt-edit-col";
     private final static String FAKT_VYSTAV_COL_KEY = "fakt-vystav-col";
     private final static String FAKT_EXPORT_COL_KEY = "fakt-export-col";
+    private final static String DELETE_STR = "Zrušit";
+    private final static String SAVE_STR = "Uložit";
     public static final String DIALOG_WIDTH = "1250px";
     public static final String DIALOG_HEIGHT = "760px";
-
-//    final private ValueProvider<Fakt, String> castkaProvider;
-    final private ComponentRenderer<HtmlComponent, Fakt> faktPlneniCellRenderer;
-    final private ComponentRenderer<HtmlComponent, Fakt> faktCastkaCellRenderer;
-    final private ComponentRenderer<HtmlComponent, Fakt> faktZakladCellRenderer;
 
     private TextField ckontField;
     private TextField czakField;
@@ -66,6 +62,21 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
     private TextField honorarField;
     private TextField honorarCistyField;
     private TextField menaField;
+
+    final private ComponentRenderer<HtmlComponent, Fakt> faktPlneniCellRenderer
+            = new ComponentRenderer<>(fakt ->
+            VzmFormatUtils.getPercentComponent(fakt.getPlneni())
+    );
+
+    final private ComponentRenderer<HtmlComponent, Fakt> faktCastkaCellRenderer
+            = new ComponentRenderer<>(fakt ->
+            VzmFormatUtils.getMoneyComponent(fakt.getCastka())
+    );
+
+    final private ComponentRenderer<HtmlComponent, Fakt> faktZakladCellRenderer =
+            new ComponentRenderer<>(fakt ->
+                    VzmFormatUtils.getMoneyComponent(fakt.getZaklad())
+            );
 
 //    private Kont kontOrig;
 //    private Zak zakOrig;
@@ -97,104 +108,69 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
 //    private ZakEvidFormDialog zakEvidFormDialog;
 //    private final ConfirmationDialog<Fakt> confirmFaktOpenDialog = new ConfirmationDialog<>();
 
-//    @Autowired
+
+    private HorizontalLayout buttonBar;
+    private Button saveButton;
+    private Button revertButton;
+    private Button saveAndCloseButton;
+    private Button revertAndCloseButton;
+    private Button deleteAndCloseButton;
+    private HorizontalLayout leftBarPart;
+
+    private Binder<Zak> binder = new Binder<>();
+    private Zak currentItem;
+    private Operation currentOperation;
+    private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
+
     private ZakService zakService;
     private FaktService faktService;
     private DochsumZakService dochsumZakService;
     private CfgPropsCache cfgPropsCache;
 
 
+//    private Registration registrationForSave;
+
+//    private Consumer<Zak> newItemSaver;
+//    private Consumer<Zak> modItemSaver;
+//    private Consumer<Zak> itemDeleter;
+//    private Consumer<Zak> formCloser;
+
 //    @Override
 //    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
 //
 //    }
 
-    public ZakFormDialog(BiConsumer<Zak, Operation> itemSaver,
-                         Consumer<Zak> itemDeleter,
+    public ZakFormDialog(
+//                         BiConsumer<Zak, Operation> itemSaver,
+//                         Consumer<Zak> zakDeleter,
                          ZakService zakService,
                          FaktService faktService,
                          DochsumZakService dochsumZakService,
                          CfgPropsCache cfgPropsCache
     ){
-        super(DIALOG_WIDTH, DIALOG_HEIGHT, true, true, itemSaver, itemDeleter, false);
-        getFormLayout().setResponsiveSteps(
-                new FormLayout.ResponsiveStep("0", 2),
-                new FormLayout.ResponsiveStep("20em", 4)
-        );
 
+        super(DIALOG_WIDTH, DIALOG_HEIGHT, true, true);
 
-        getDialogLeftBarPart().add(initAkvToZakButton());
-
-//        getDialogLeftBarPart().add(initZakEvidButton());
-//        this.addOpenedChangeListener(event -> {
-//            if (Operation.ADD == currentOperation) {
-//                zakEvidButton.click();
-//            }
-//        });
+//        this.itemDeleter = zakDeleter;
+//        this.closeAfterSave = false;
 
         this.zakService = zakService;
         this.faktService = faktService;
         this.dochsumZakService = dochsumZakService;
         this.cfgPropsCache = cfgPropsCache;
 
-
-//        bigDecimalMoneyConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
-//            @Override
-//            protected java.text.NumberFormat getFormat(Locale locale) {
-//                NumberFormat numberFormat = super.getFormat(locale);
-//                numberFormat.setGroupingUsed(true);
-//                numberFormat.setMinimumFractionDigits(2);
-//                numberFormat.setMaximumFractionDigits(2);
-//                return numberFormat;
-//            }
-//        };
-//
-//        castkaProvider = (fakt) -> VzmFormatUtils.moneyFormat.format(fakt.getCastka());
-
-        faktPlneniCellRenderer = new ComponentRenderer<>(fakt ->
-                VzmFormatUtils.getPercentComponent(fakt.getPlneni())
-        );
-
-        faktCastkaCellRenderer = new ComponentRenderer<>(fakt ->
-                VzmFormatUtils.getMoneyComponent(fakt.getCastka())
-        );
-
-        faktZakladCellRenderer = new ComponentRenderer<>(fakt ->
-                VzmFormatUtils.getMoneyComponent(fakt.getZaklad())
-        );
-
-//        zakEvidFormDialog = new ZakEvidFormDialog(
-//                this::saveZakEvid, zakService
-//        );
-
-        faktFormDialog = new FaktFormDialog(
-                this::saveFaktForForm, this::deleteFaktForForm, faktService
-        );
-
-        subFormDialog = new SubFormDialog(
-                this::saveSubForForm, this::deleteSub
-        );
-
-        confirmDocUnregisterDialog = new ConfirmationDialog<>();
-
         getFormLayout().add(
                 initCkontField()
                 , initCzakField()
                 , initRokField()
                 , initSkupinaField()
-//                , initEvidArchComponent()
-//                new Paragraph(" ")
-//                , initArchCheck()
                 , initTextField()
-//                , initSkupinaField()
-//                , new Paragraph("")
                 , initMenaField()
                 , initHonorarField()
                 , initHonorarCistyField()
         );
 
-//        getUpperGridContainer().add(new Ribbon(Ribbon.Orientation.VERTICAL, "1em"));
-        getUpperGridContainer().add(
+        getUpperRightPane().add(
                 initZakDocFolderComponent()
                 , initDocGridBar()
                 , initDocGrid()
@@ -205,24 +181,131 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
                 , initFaktGridBar()
                 , initFaktGrid()
         );
+
+
+//        zakEvidFormDialog = new ZakEvidFormDialog(
+//                this::saveZakEvid, zakService
+//        );
+
+
+        faktFormDialog = new FaktFormDialog(
+                this::saveFaktForForm, this::deleteFaktForForm, faktService
+        );
+
+        subFormDialog = new SubFormDialog(
+                this::saveSubForForm, this::deleteSub
+        );
+
+        confirmDocUnregisterDialog = new ConfirmationDialog<>();
+        activateListeners();
     }
 
 
-//    public void openDialog(Zak item, final Operation operation
-//                    , String titleItemNameText, Component zakFaktFlags, String titleEndText) {
-//        this.parentKont = parentKont;
-//        openDialog(item, parentKont, operation, titleItemNameText, zakFaktFlags, titleEndText);
-//    }
+    private void activateListeners() {
+        // Must be set only after upper kontFolderField, ckontField and textField are initialized
+        textField.addValueChangeListener(event -> {
+            zakFolderField.setValue(
+                    VzmFileUtils.NormalizeDirnamesAndJoin(czakField.getValue(), event.getValue())
+            );
+        });
+        textField.setValueChangeMode(ValueChangeMode.EAGER);
+    }
+
+    @Override
+    public final Zak getCurrentItem() {
+        return currentItem;
+    }
+
+    @Override
+    public final Operation getCurrentOperation() {
+        return currentOperation;
+    }
+
+
+    protected final Binder<Zak> getBinder() {
+        return binder;
+    }
+
+
+    @Override
+    public Component initDialogButtonBar() {
+        HorizontalLayout bar = new HorizontalLayout();
+
+        saveButton = new Button("Uložit");
+//        saveButton.setAutofocus(true);
+//        saveButton.getElement().setAttribute("theme", "primary");
+        saveButton.addClickListener(e -> saveClicked(false));
+
+        saveAndCloseButton = new Button("Uložit a zavřít");
+        saveAndCloseButton.setAutofocus(true);
+        saveAndCloseButton.getElement().setAttribute("theme", "primary");
+        saveAndCloseButton.addClickListener(e -> saveClicked(true));
+
+        deleteAndCloseButton = new Button("Zrušit");
+        deleteAndCloseButton.getElement().setAttribute("theme", "error");
+        deleteAndCloseButton.addClickListener(e -> deleteClicked());
+
+        revertButton = new Button("Vrátit změny");
+        revertButton.addClickListener(e -> revertClicked(false));
+
+        revertAndCloseButton = new Button("Zpět");
+        revertAndCloseButton.addClickListener(e -> revertClicked(true));
+
+        akvToZakButton = new Button("AKV -> ZAK");
+        akvToZakButton.addClickListener(event -> {
+            getCurrentItem().setTyp(ItemType.ZAK);
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Akvizice -> Zakázka")
+                    .withMessage("Akvizice " + getCurrentItem().getCkont() + " / " + getCurrentItem().getCzak() + " převedena na zakázku.")
+                    .open();
+            saveButton.click();
+        });
+
+        leftBarPart = new HorizontalLayout();
+        leftBarPart.setSpacing(true);
+        leftBarPart.add(
+//                saveButton
+                revertButton
+                , deleteAndCloseButton
+                , akvToZakButton
+        );
+
+        HorizontalLayout rightBarPart = new HorizontalLayout();
+        rightBarPart.setSpacing(true);
+        rightBarPart.add(
+                saveAndCloseButton
+                , revertAndCloseButton
+        );
+
+//        buttonBar.getStyle().set("margin-top", "0.2em");
+        bar.setSpacing(false);
+        bar.setPadding(false);
+        bar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        bar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
+
+        bar.add(leftBarPart, rightBarPart);
+        bar.setClassName("buttons");
+//        buttonBar.setSpacing(true);
+
+        return bar;
+    }
+
+    public void setDefaultItemNames() {
+        setItemNames(ItemType.UNKNOWN);
+    }
+
+
+
 
     public void openDialog(
-            Zak zak, Operation operation
-            , String titleItemNameText, String titleEndText
+            Zak zak, Operation operation, String titleEndText
     ){
-        setItemNames(zak.getTyp());
 
-        honorarField.setReadOnly(ItemType.AKV == zak.getTyp());
-        akvToZakButton.setVisible(ItemType.AKV == zak.getTyp());
+        currentOperation = operation;
+        currentItem = zak;
 
+        setDefaultItemNames();  // Set general default names
         evidZakOrig = new EvidZak(
                 zak.getKontId()
                 , zak.getCzak()
@@ -230,6 +313,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
                 , zak.getFolder()
                 , zak.getKontFolder()
         );
+        setControlsForItemAndOperation(currentItem, currentOperation);
 
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
@@ -237,8 +321,12 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
 //        datZadComp.setLocale(new Locale("cs", "CZ"));
 //        vystupField.setLocale(new Locale("cs", "CZ"));
 
-        this.kontFolder = zak.getKontFolder();
+//        if (Operation.ADD == operation) {
+//            zak.setRok(LocalDate.now().getYear());
+//            zak.setTyp(ItemType.KONT);
+//        }
 
+        this.kontFolder = zak.getKontFolder();
         this.faktGrid.setItems(zak.getFakts());
         this.docGrid.setItems(zak.getZakDocs());
         this.zakFolderField.setParentFolder(kontFolder);
@@ -246,55 +334,175 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
 
         getLowerPane().setVisible(ItemType.SUB != zak.getTyp());
 
-        FlexLayout middleComponent = new FlexLayout();
-        middleComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
-        middleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        middleComponent.add(
+        FlexLayout headerMiddleComponent = new FlexLayout();
+        headerMiddleComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
+        headerMiddleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        headerMiddleComponent.add(
                 initArchCheck()
                 , new Gap("5em")
                 , VzmFormatUtils.buildAvizoComponent(zak.getBeforeTerms(), zak.getAfterTerms(), true)
         );
+        getMiddleComponentBox().removeAll();
+        if (null != headerMiddleComponent) {
+            getMiddleComponentBox().add(headerMiddleComponent);
+        }
 
-        openInternal(zak, operation, titleItemNameText
-                , middleComponent
-                , titleEndText);
+        getHeaderEndComponent().setText(getHeaderEndComponentValue(titleEndText));
+
+        this.open();
     }
 
 
-    /**
-     * Called by abstract parent dialog from its open(...) method.
-     */
-    protected void openSpecific() {
+    protected void setControlsForItemAndOperation(final Zak item, final Operation operation) {
 
-//        // Mandatory, should be first
-////        setItemNames(getCurrentItem().getTyp());
-//
-//        this.zakOrig = getCurrentItem();
-//
-//        // Set locale here, because when it is set in constructor, it is effective only in first open,
-//        // and next openings show date in US format
-////        datZadComp.setLocale(new Locale("cs", "CZ"));
-////        vystupField.setLocale(new Locale("cs", "CZ"));
-//
-//        faktGrid.setItems(getCurrentItem().getFakts());
-//        docGrid.setItems(getCurrentItem().getZakDocs());
+        setItemNames(item.getTyp());
+        getMainTitle().setText(operation.getDialogTitle(getItemName(operation), itemGender));
+
+        if (getCurrentItem() instanceof HasItemType) {
+            getHeaderDevider().getStyle().set(
+                    "background-color", VzmFormatUtils.getItemTypeColorBrighter(((HasItemType) item).getTyp()));
+        }
+
+        if (operation == Operation.ADD) {
+            binder.removeBean();
+            binder.readBean(item);
+        } else {
+            binder.removeBean();
+            binder.readBean(item);
+        }
+
+//        if (registrationForSave != null) {
+//            registrationForSave.remove();
+//        }
+//        registrationForSave = saveButton.addClickListener(e -> saveClicked(operation));
+//        saveButton.setEnabled(false);
+
+        deleteAndCloseButton.setText(DELETE_STR + " " + getItemName(Operation.DELETE).toLowerCase());
+        deleteAndCloseButton.setEnabled(operation.isDeleteEnabled());
+        saveButton.setText(SAVE_STR + " " + getItemName(Operation.SAVE).toLowerCase());
+        honorarField.setReadOnly(ItemType.AKV == item.getTyp());
+        akvToZakButton.setVisible(ItemType.AKV == item.getTyp());
+
     }
 
 
-    public Zak saveZak(Zak zak, Operation operation) {
+    private void revertClicked(boolean closeAfterRevert) {
+        binder.removeBean();
+        binder.readBean(currentItem);
+        lastOperationResult = OperationResult.NO_CHANGE;
+        if (closeAfterRevert) {
+            this.close();
+        }
+    }
+
+    private void deleteClicked() {
+        if (!canDeleteZak(currentItem)) {
+            return;
+        } else {
+            String ckzDel = String.format("%s / %s", currentItem.getCkont(), currentItem.getCzak());
+            try {
+                ConfirmDialog.createQuestion()
+                        .withCaption("Zrušení zakázky")
+                        .withMessage(String.format("Zrušit zakázku %s ?", ckzDel))
+                        //                .with...(,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny.")
+                        .withOkButton(() -> deleteZak(currentItem)
+                                , ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
+                        )
+                        .withCancelButton(ButtonOption.caption("ZPĚT"))
+                        .open()
+                ;
+            } catch (VzmServiceException e) {
+                ConfirmDialog.createError()
+                        .withCaption("Editace zakázky")
+                        .withMessage("Zakázku se nepodařilo zrušit")
+                        .open()
+                ;
+            }
+        }
+    }
+
+
+    private void saveClicked(boolean closeAfterSave) {
+        boolean isValid = binder.writeBeanIfValid(currentItem);
+        if (!isValid) {
+            ConfirmDialog
+                    .createWarning()
+                    .withCaption("Editace zakázky")
+                    .withMessage("Zakázku nelze uložit, některá pole nejsou správně vyplněna.")
+                    .open();
+        } else {
+            try {
+                saveZak(currentItem, currentOperation);
+                if (closeAfterSave) {
+;                    close();
+                }
+            } catch (VzmServiceException e) {
+                ConfirmDialog.createError()
+                        .withCaption("Editace zakázky")
+                        .withMessage("Zakázku se nepodařilo uložit")
+                        .open();
+            }
+        }
+    }
+
+    protected boolean canDeleteZak(final Zak itemToDelete) {
+        String ckzDel = String.format("%s / %s", currentItem.getCkont(), currentItem.getCzak());
+        long nodesCount = itemToDelete.getNodes().size();
+        if (nodesCount > 0) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Zrušení zakázky")
+                    .withMessage(String.format("Zakázku %s nelze zrušit, obsahuje zakázky / akvizice."
+                            , ckzDel))
+                    .open()
+            ;
+            return false;
+        }
+        return true;
+    }
+
+    protected void deleteZak(Zak itemToDelete) {
+        String ckzDel = String.format("%s / %s", currentItem.getCkont(), currentItem.getCzak());
+        try {
+            zakService.deleteZak(itemToDelete);
+            lastOperationResult = OperationResult.ITEM_DELETED;
+            this.close();
+        } catch (VzmServiceException e) {
+            lastOperationResult = OperationResult.NO_CHANGE;
+            ConfirmDialog
+                    .createWarning()
+                    .withCaption("Zrušení zakázky.")
+                    .withMessage(String.format("Zakázku %s se nepodařilo zrušit.", ckzDel))
+                    .open()
+            ;
+        }
+    }
+
+
+    public Zak saveZak(Zak itemToSave, Operation oper) throws VzmServiceException {
 
         try {
-            Zak savedZak = zakService.saveZak(zak);
+            Zak zakSaved = zakService.saveZak(itemToSave, oper);
+            currentItem = zakSaved;
+            if (zakDirsToBeCreated(itemToSave, oper)) {
+                createZakDirs(zakSaved);
+            }
+            lastOperationResult = OperationResult.ITEM_SAVED;
+            return zakSaved;
+        } catch(VzmServiceException e) {
+            lastOperationResult = OperationResult.NO_CHANGE;
+            throw(e);
+        }
 
-            if (Operation.EDIT == operation) {
-                if (null != evidZakOrig.getFolder() && !evidZakOrig.getFolder().equals(zak.getFolder())) {
-                    ConfirmDialog
-                            .createWarning()
-                            .withCaption("Adresáře zakázky")
-                            .withMessage("Dokumentové ani projektové adresáře se automaticky nepřejmenovávají.")
-                            .open();
-                }
-
+//            if (Operation.EDIT == operation) {
+//                if (null != evidZakOrig.getFolder() && !evidZakOrig.getFolder().equals(zak.getFolder())) {
+//                    ConfirmDialog
+//                            .createWarning()
+//                            .withCaption("Adresáře zakázky")
+//                            .withMessage("Dokumentové ani projektové adresáře se automaticky nepřejmenovávají.")
+//                            .open();
+//                }
+//
 //            if (!VzmFileUtils.kontDocRootExists(getDocRootServer(), zak.getFolder())) {
 //                new OkDialog().open("Adresáře zakázky"
 //                        , "POZOR, dokumentový ani projektový adresář se automaticky nepřejmenovávají.", "");
@@ -303,69 +511,171 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
 //                new OkDialog().open("Projektový adresáře zakázky"
 //                        , "POZOR, projektový adresář zakázky nenalezen, měl by se přejmenovat ručně", "");
 
-            } else if (Operation.ADD == operation) {
-                if (StringUtils.isBlank(zak.getKontFolder()) || StringUtils.isBlank(zak.getFolder())) {
-                    if (StringUtils.isBlank(zak.getKontFolder())) {
-                        ConfirmDialog
-                                .createWarning()
-                                .withCaption("Adresáře zakázky")
-                                .withMessage("Složka kontraktu není definována, nelze vytvořit adresáře zakázky")
-                                .open();
-                    } else if(StringUtils.isBlank(zak.getFolder())) {
-                        ConfirmDialog
-                                .createError()
-                                .withCaption("Adresáře zakázky")
-                                .withMessage("Složka zakázky není zadána, nelze vytvořit adresáře")
-                                .open();
-                    }
-                } else {
-                    boolean zakDocDirsOk = VzmFileUtils.createZakDocDirs(
-                            cfgPropsCache.getDocRootServer(), zak.getKontFolder(), zak.getFolder());
-                    boolean zakProjDirsOk = VzmFileUtils.createZakProjDirs(
-                            cfgPropsCache.getProjRootServer(), zak.getKontFolder(), zak.getFolder());
-                    //            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
-                    //            kontProjRootDir.setReadOnly();
-                    String errMsg = null;
-                    if (!zakDocDirsOk && !zakProjDirsOk) {
-                        errMsg = "Projektové ani dokumentové adresáře se nepodařilo vytvořit";
-                    } else if (!zakDocDirsOk) {
-                        errMsg = "Dokumentové adresáře se nepodařilo vytvořit";
-                    } else if (!zakProjDirsOk) {
-                        errMsg = "Projektové adresáře se nepodařilo vytvořit";
-                    }
-                    if (null != errMsg) {
-                        ConfirmDialog
-                                .createError()
-                                .withCaption("Adresáře zakázky")
-                                .withMessage(errMsg)
-                                .open();
-                    }
-                }
-            } else {
-                getLogger().warn("Saving {}: unknown operation {} appeared", zak.getTyp().name(), operation.name());
-            }
+//            if (Operation.ADD == operation) {
+//                if (StringUtils.isBlank(zak.getKontFolder()) || StringUtils.isBlank(zak.getFolder())) {
+//                    if (StringUtils.isBlank(zak.getKontFolder())) {
+//                        ConfirmDialog
+//                                .createWarning()
+//                                .withCaption("Adresáře zakázky")
+//                                .withMessage("Složka kontraktu není definována, nelze vytvořit adresáře zakázky")
+//                                .open();
+//                    } else if(StringUtils.isBlank(zak.getFolder())) {
+//                        ConfirmDialog
+//                                .createError()
+//                                .withCaption("Adresáře zakázky")
+//                                .withMessage("Složka zakázky není zadána, nelze vytvořit adresáře")
+//                                .open();
+//                    }
+//                } else {
+//                    boolean zakDocDirsOk = VzmFileUtils.createZakDocDirs(
+//                            cfgPropsCache.getDocRootServer(), zak.getKontFolder(), zak.getFolder());
+//                    boolean zakProjDirsOk = VzmFileUtils.createZakProjDirs(
+//                            cfgPropsCache.getProjRootServer(), zak.getKontFolder(), zak.getFolder());
+//                    //            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
+//                    //            kontProjRootDir.setReadOnly();
+//                    String errMsg = null;
+//                    if (!zakDocDirsOk && !zakProjDirsOk) {
+//                        errMsg = "Projektové ani dokumentové adresáře se nepodařilo vytvořit";
+//                    } else if (!zakDocDirsOk) {
+//                        errMsg = "Dokumentové adresáře se nepodařilo vytvořit";
+//                    } else if (!zakProjDirsOk) {
+//                        errMsg = "Projektové adresáře se nepodařilo vytvořit";
+//                    }
+//                    if (null != errMsg) {
+//                        ConfirmDialog
+//                                .createError()
+//                                .withCaption("Adresáře zakázky")
+//                                .withMessage(errMsg)
+//                                .open();
+//                    }
+//                }
+//            } else {
+//                getLogger().warn("Saving {}: unknown operation {} appeared", zak.getTyp().name(), operation.name());
+//            }
+//
+//            getLogger().info("{} saved: {} / {} [operation: {}]", getCurrentItem().getTyp().name()
+//                    , getCurrentItem().getCkont(), getCurrentItem().getCzak(), operation.name());
+//            return zakSaved;
+//
+//        } catch(Exception e) {
+//            getLogger().error("Error when saving {} {} / {} [operation: {}]", getCurrentItem().getTyp().name()
+//                    , getCurrentItem().getCkont(), getCurrentItem().getCzak(), operation.name());
+//            throw e;
+//        }
+    }
 
-            getLogger().info("{} saved: {} / {} [operation: {}]", getCurrentItem().getTyp().name()
-                    , getCurrentItem().getCkont(), getCurrentItem().getCzak(), operation.name());
-            return savedZak;
+    private boolean zakDirsToBeCreated(final Zak itemToSave, final Operation oper) {
+        return  (Operation.ADD == oper) ||
+                ((Operation.EDIT == oper) && !(itemToSave.getFolder()).equals(evidZakOrig.getFolder()));
+    }
 
-        } catch(Exception e) {
-            getLogger().error("Error when saving {} {} / {} [operation: {}]", getCurrentItem().getTyp().name()
-                    , getCurrentItem().getCkont(), getCurrentItem().getCzak(), operation.name());
-            throw e;
+    private boolean createZakDirs(final Zak zak) {
+        if (StringUtils.isBlank(zak.getFolder())) {
+            ConfirmDialog
+                    .createError()
+                    .withCaption("Adresáře zaázky")
+                    .withMessage("Složka zakázky není zadána, nelze vytvořit adresáře")
+                    .open();
+            return false;
+        }
+
+        boolean zakDocDirsOk = VzmFileUtils.createZakDocDirs(
+                cfgPropsCache.getDocRootServer(), zak.getKontFolder(), zak.getFolder());
+        boolean zakProjDirsOk = VzmFileUtils.createZakProjDirs(
+                cfgPropsCache.getProjRootServer(), zak.getKontFolder(), zak.getFolder());
+        String errMsg = null;
+        if (!zakDocDirsOk && !zakProjDirsOk) {
+            errMsg = "Projektové ani dokumentové adresáře se nepodařilo vytvořit";
+        } else if (!zakDocDirsOk) {
+            errMsg = "Dokumentové adresáře se nepodařilo vytvořit";
+        } else if (!zakProjDirsOk) {
+            errMsg = "Projektové adresáře se nepodařilo vytvořit";
+        }
+        if (null == errMsg) {
+            return true;
+        } else {
+            ConfirmDialog
+                    .createWarning()
+                    .withCaption("Adresáře zakázky")
+                    .withMessage(errMsg)
+                    .open()
+            ;
+            return false;
         }
     }
 
+    public OperationResult getLastOperationResult()  {
+        return lastOperationResult;
+    }
 
-//    private void saveZakEvid(EvidZak evidZak, Operation operation) {
-//        getCurrentItem().setCzak(evidZak.getCzak());
-//        getCurrentItem().setText(evidZak.getText());
-//        getCurrentItem().setFolder(evidZak.getFolder());
-//        getBinder().readBean(getCurrentItem());
-//        formFieldValuesChanged();
+//    protected void confirmAndDelete() {
 //
-//        Notification.show("Číslo a text zakázky akceptovány", 2500, Notification.Position.TOP_CENTER);
+//        String ckzDel = String.format("%s / %d", getCurrentItem().getCkont(), getCurrentItem().getCzak());
+//        long nodesCount = getCurrentItem().getFakts().size();
+//        if (nodesCount > 0) {
+//            ConfirmDialog
+//                    .createInfo()
+//                    .withCaption("Zrušení zakázky")
+//                    .withMessage(String.format("Zakázku %s nelze zrušit, obsahuje subdodávky / fakturace ."
+//                            , ckzDel))
+//                    .open()
+//            ;
+//            return;
+//        }
+//        Long dochsumZakCount = dochsumZakService.getCountDochsumZak(getCurrentItem().getId());
+//        if (dochsumZakCount > 0) {
+//            List<DochsumZak> lastDochsumZaks = dochsumZakService.fetchLatestDochsumZaks(getCurrentItem().getId());
+////            if (CollectionUtils.isEmpty(lastDochsumZaks)) {
+//            ConfirmDialog
+//                    .createInfo()
+//                    .withCaption("Zrušení zakázky")
+//                    .withMessage(String.format("Zakázku %d nelze zrušit, má %d záznamů na proužcích."
+//                            ,  ckzDel, dochsumZakCount))
+//                    .open()
+//            ;
+////            }
+//            return;
+//        }
+//        ConfirmDialog
+//                .createQuestion()
+//                .withCaption("Zrušení zakázky")
+////                .withMessage("Opravdu zrušit?")
+//                .withMessage(String.format("Zrušit zakázku %s ?", ckzDel))
+////                .with...(,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny.")
+//                .withOkButton(() -> {
+//                            doDelete(getCurrentItem());
+//                        }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
+//                )
+//                .withCancelButton(ButtonOption.caption("ZPĚT"))
+//                .open()
+//        ;
+//
+////        openConfirmDeleteDialog("Zrušení zakázky"
+////                ,String.format("Zrušit zakázku %s / %s ?", getCurrentItem().getCkont())
+////                ,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny."
+////        );
+////        long nodesCount = getCurrentItem().getNodes().size();
+////        if (nodesCount > 0) {
+////            new OkDialog().open(
+////                    "Zrušení zakázky"
+////                    , "Zakázku " + getCurrentItem().getCkont() + " nelze zrušit, obsahuje fakturace"
+////                    , ""
+////            );
+////        } else {
+////            openConfirmDeleteDialog("Zrušit zakázku ?",
+////                    "Opravdu zrušit zakázku “" + getCurrentItem().getCkont() + "“ ?",
+////                    "Pokud bude kontrakt zrušen, budou zrušena i další s ním související data.");
+//////            deleteKont(getCurrentItem());
+////        }
 //    }
+//
+//    protected void doDelete(Zak item) {
+//        itemDeleter.accept(item);
+//        this.close();
+//    }
+
+
+// -----------------------------------------------------
 
     private void saveFaktForForm(Fakt faktToSave, Operation operation) {
 
@@ -476,54 +786,6 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
         faktGrid.getDataProvider().refreshAll();
     }
 
-    @Override
-    protected void confirmDelete() {
-
-//        new OkDialog().open("Zrušení zakázky", "Rušení zakázek není implementováno", "");
-
-        String ckzDel = String.format("%s / %d", getCurrentItem().getCkont(), getCurrentItem().getCzak());
-        long nodesCount = getCurrentItem().getFakts().size();
-        if (nodesCount > 0) {
-            ConfirmDialog
-                    .createInfo()
-                    .withCaption("Zrušení zakázky")
-                    .withMessage(String.format("Zakázku %s nelze zrušit, obsahuje subdodávky / fakturace .", ckzDel))
-                    .open()
-            ;
-            return;
-        }
-        Long dochsumZakCount = dochsumZakService.getCountDochsumZak(getCurrentItem().getId());
-        if (dochsumZakCount > 0) {
-            List<DochsumZak> lastDochsumZaks = dochsumZakService.fetchLatestDochsumZaks(getCurrentItem().getId());
-//            if (CollectionUtils.isEmpty(lastDochsumZaks)) {
-                ConfirmDialog
-                        .createInfo()
-                        .withCaption("Zrušení zakázky")
-                        .withMessage(String.format("Zakázku %d nelze zrušit, má %d záznamů na proužcích."
-                                ,  getCurrentItem().getCzak(), dochsumZakCount))
-                        .open()
-                ;
-//            }
-            return;
-        }
-        openConfirmDeleteDialog("Zrušení zakázky"
-                ,String.format("Opravdu zrušit zakázku %s ?", ckzDel)
-                ,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny."
-        );
-//        long nodesCount = getCurrentItem().getNodes().size();
-//        if (nodesCount > 0) {
-//            new OkDialog().open(
-//                    "Zrušení zakázky"
-//                    , "Zakázku " + getCurrentItem().getCkont() + " nelze zrušit, obsahuje fakturace"
-//                    , ""
-//            );
-//        } else {
-//            openConfirmDeleteDialog("Zrušit zakázku ?",
-//                    "Opravdu zrušit zakázku “" + getCurrentItem().getCkont() + "“ ?",
-//                    "Pokud bude kontrakt zrušen, budou zrušena i další s ním související data.");
-////            doDelete(getCurrentItem());
-//        }
-    }
 
 
 //    private void addStatusField() {
@@ -595,43 +857,43 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
         return rokField;
     }
 
-    private Component initAkvToZakButton() {
-        akvToZakButton = new Button("AKV -> ZAK");
-        akvToZakButton.addClickListener(event -> {
-            getCurrentItem().setTyp(ItemType.ZAK);
-            ConfirmDialog
-                    .createInfo()
-                    .withCaption("Akvizice -> Zakázka")
-                    .withMessage("Akvizice " + getCurrentItem().getCkont() + " / " + getCurrentItem().getCzak() + " převedena na zakázku.")
-                    .open();
-            getSaveButton().click();
-        });
-
+//    private Component initAkvToZakButton() {
+//        akvToZakButton = new Button("AKV -> ZAK");
 //        akvToZakButton.addClickListener(event -> {
-//            EvidZak evidZak = new EvidZak(
-//                    getCurrentItem().getKontId()
-//                    , getCurrentItem().getCzak()
-//                    , getCurrentItem().getText()
-//                    , getCurrentItem().getFolder()
-//                    , getCurrentItem().getKontFolder()
-//            );
-//            zakEvidFormDialog.openDialog(
-//                    evidZak
-//                    , currentOperation
-//                    , getDialogTitle(currentOperation, getCurrentItem().getTyp())
-//                    , cfgPropsCache.getDocRootServer(), cfgPropsCache.getProjRootServer()
-//            );
-//            } else {
-//                zakEvidFormDialog.openDialog(
-//                        evidZak
-//                        , Operation.EDIT
-//                        , getDialogTitle(Operation.EDIT, getCurrentItem().getTyp())
-//                        , getDocRootServer(), getProjRootServer()
-//                );
-//            }
+//            getCurrentItem().setTyp(ItemType.ZAK);
+//            ConfirmDialog
+//                    .createInfo()
+//                    .withCaption("Akvizice -> Zakázka")
+//                    .withMessage("Akvizice " + getCurrentItem().getCkont() + " / " + getCurrentItem().getCzak() + " převedena na zakázku.")
+//                    .open();
+//            getSaveButton().click();
 //        });
-        return akvToZakButton;
-    }
+//
+////        akvToZakButton.addClickListener(event -> {
+////            EvidZak evidZak = new EvidZak(
+////                    getCurrentItem().getKontId()
+////                    , getCurrentItem().getCzak()
+////                    , getCurrentItem().getText()
+////                    , getCurrentItem().getFolder()
+////                    , getCurrentItem().getKontFolder()
+////            );
+////            zakEvidFormDialog.openDialog(
+////                    evidZak
+////                    , currentOperation
+////                    , getDialogTitle(currentOperation, getCurrentItem().getTyp())
+////                    , cfgPropsCache.getDocRootServer(), cfgPropsCache.getProjRootServer()
+////            );
+////            } else {
+////                zakEvidFormDialog.openDialog(
+////                        evidZak
+////                        , Operation.EDIT
+////                        , getDialogTitle(Operation.EDIT, getCurrentItem().getTyp())
+////                        , getDocRootServer(), getProjRootServer()
+////                );
+////            }
+////        });
+//        return akvToZakButton;
+//    }
 
 //    private Component initZakEvidButton() {
 //        zakEvidButton = new Button("Evidence");
@@ -725,12 +987,12 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
         textField.setRequiredIndicatorVisible(true);
         textField.getElement().setAttribute("colspan", "4");
 
-        textField.addValueChangeListener(event -> {
-            zakFolderField.setValue(
-                    VzmFileUtils.NormalizeDirnamesAndJoin(czakField.getValue(), event.getValue())
-            );
-        });
-        textField.setValueChangeMode(ValueChangeMode.EAGER);
+//        textField.addValueChangeListener(event -> {
+//            zakFolderField.setValue(
+//                    VzmFileUtils.NormalizeDirnamesAndJoin(czakField.getValue(), event.getValue())
+//            );
+//        });
+//        textField.setValueChangeMode(ValueChangeMode.EAGER);
 
         getBinder().forField(textField)
                 .withValidator(new StringLengthValidator(
@@ -745,7 +1007,7 @@ public class ZakFormDialog extends AbstractEditorDialog<Zak> implements HasLogge
     private Component initSkupinaField() {
         skupinaField = new TextField("Skupina");
         skupinaField.setWidth("8em");
-        czakField.getStyle()
+        skupinaField.getStyle()
                 .set("padding-top", "0em");
         getBinder().forField(skupinaField)
                 .bind(Zak::getSkupina, Zak::setSkupina);

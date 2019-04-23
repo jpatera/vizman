@@ -11,6 +11,7 @@ public enum Operation {
     ADD("Nový", "Nová", "Nové", "Přidat", "zadat", false),
     EDIT("Editace", "Editace", "Editace", "Změnit", "editovat", true),
     DELETE("Zrušení", "Zrušení", "Zrušení", "Odebrat", "zrušit", true),
+    SAVE("Uložení", "Uložení", "Uložení", "Uložit", "uložit", true),
     FAKTUROVAT("Vystavení", "Vystavení", "Vystavení", "Vystavit", "vystavit", true),
     STORNO("Storno", "Storno", "Storno", "Stornovat", "stornovat", true),
     EXPORT("Export", "Export", "Export", "Exportovat", "exportovat", false),
