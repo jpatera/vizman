@@ -88,7 +88,8 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     @JoinColumn(name = "ID_KONT")
     private Kont kont;
 
-    @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER)
+//    @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = false)
     @OrderBy("cfakt DESC")
     private List<Fakt> fakts = new ArrayList<>();
 
@@ -123,8 +124,6 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
 
     @Transient
     private boolean checked;
-
-
 
     public String getCkontOrig() {
         return ckontOrig;
@@ -330,6 +329,23 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     }
     public void setFakts(List<Fakt> fakts) {
         this.fakts = fakts;
+    }
+
+
+
+    public void addFakt(Fakt fakt) {
+        fakts.add(fakt);
+        fakt.setZak(this);
+    }
+
+    public void addFaktOnTop(Fakt fakt) {
+        fakts.add(0, fakt);
+        fakt.setZak(this);
+    }
+
+    public void removeFakt(Fakt fakt) {
+        fakts.remove(fakt);
+        fakt.setZak(null);
     }
 
 

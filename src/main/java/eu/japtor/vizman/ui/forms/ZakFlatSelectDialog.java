@@ -201,8 +201,8 @@ public class ZakFlatSelectDialog extends Dialog {
     }
 
     private void updateViewContent() {
+        zakGrid.initFilterValues();
         loadGridData();
-        zakGrid.initFilters();
         zakGrid.doFilter();
         zakGrid.getDataProvider().refreshAll();
     }

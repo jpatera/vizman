@@ -3,6 +3,7 @@ package eu.japtor.vizman.backend.service;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.Zak;
+import eu.japtor.vizman.backend.repository.KontRepo;
 import eu.japtor.vizman.backend.repository.ZakRepo;
 import eu.japtor.vizman.ui.components.OkDialog;
 import eu.japtor.vizman.ui.components.Operation;
@@ -17,6 +18,9 @@ import java.util.List;
 public class ZakServiceImpl implements ZakService, HasLogger {
 
     private ZakRepo zakRepo;
+
+    @Autowired
+    public KontRepo kontRepo;
 
     @Autowired
     public ZakServiceImpl(ZakRepo zakRepo) {
@@ -43,31 +47,39 @@ public class ZakServiceImpl implements ZakService, HasLogger {
 
     @Override
     @Transactional
-    public Zak saveZak(Zak zak, Operation oper) throws VzmServiceException {
+    public Zak saveZak(Zak zakToSave, Operation oper) throws VzmServiceException {
+        String kzCis = String.format("%s / %d", zakToSave.getCkont(), zakToSave.getCzak());
         try {
-            Zak zakSaved = zakRepo.save(zak);
-            getLogger().info("{} saved: {} / {} [operation: {}]", zakSaved.getTyp().name()
-                    , zakSaved.getCkont(), zakSaved.getCzak(), oper.name());
-
+            Zak zakSaved = zakRepo.saveAndFlush(zakToSave);
+            getLogger().info("{} saved: {} [operation: {}]"
+                    , zakSaved.getTyp().name(), kzCis, oper.name());
             return zakSaved;
         } catch (Exception e) {
-            String errMsg = "Error while saving {} : {} / {} [operation: {}]";
-            getLogger().error(errMsg, zak.getTyp().name(), zak.getCkont(), zak.getCzak(), oper.name(), e);
+            String errMsg = "Error while saving {} : {} [operation: {}]";
+                getLogger().error(errMsg, zakToSave.getTyp().name(), kzCis, oper.name(), e);
             throw new VzmServiceException(errMsg);
         }
     }
 
+
     @Override
     @Transactional
-    public boolean deleteZak(Zak zak) {
+    public void deleteZak(Zak zakToDel) throws VzmServiceException {
+        String kzCis = String.format("%s / %d", zakToDel.getCkont(), zakToDel.getCzak());
         try {
-            zakRepo.delete(zak);
+            zakToDel.setKont(null);
+            zakRepo.saveAndFlush(zakToDel);
+//            Kont kontToSave = zakToDel.getKont();
+//            kontToSave.removeZak(zakToDel);
+//            kontRepo.saveAndFlush(kontToSave);
+//            zakRepo.delete(zakToDel);
+//            zakRepo.flush();
+            getLogger().info("{} deleted: {}", zakToDel.getTyp().name(), kzCis);
         } catch (Exception e) {
-            String errMsg = "Error while deleting {} : {} / {}";
-            getLogger().error(errMsg, zak.getTyp().name(), zak.getCkont(), zak.getCzak(), e);
-            return false;
+            String errMsg = "Error while deleting {} : {}";
+            getLogger().error(errMsg, zakToDel.getTyp().name(), kzCis, e);
+            throw new VzmServiceException(errMsg);
         }
-        return true;
     }
 
     @Override

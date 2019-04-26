@@ -75,7 +75,8 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     private LocalDateTime datetimeUpdate;
 
     //    @OneToMany(fetch = FetchType.LAZY)
-    @OneToMany(mappedBy = "kont", fetch = FetchType.EAGER)
+//    @OneToMany(mappedBy = "kont", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE} )
+    @OneToMany(mappedBy = "kont", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = false)
     @OrderBy("czak DESC")
     private List<Zak> zaks = new ArrayList<>();
 //    @JoinTable(
@@ -85,7 +86,8 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
 //            inverseJoinColumns = @JoinColumn(
 //                    name = "role_id", referencedColumnName = "id"))
 
-    @OneToMany(mappedBy = "kont")
+//    @OneToMany(mappedBy = "kont")
+    @OneToMany(mappedBy = "kont", cascade = CascadeType.ALL, orphanRemoval = false)
     @LazyCollection(LazyCollectionOption.FALSE)
     private List<KontDoc> kontDocs = new ArrayList<>();
 
@@ -194,6 +196,23 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public void setZaks(List<Zak> zaks) {
         this.zaks = zaks;
     }
+
+
+    public void addZak(Zak zak) {
+        zaks.add(zak);
+        zak.setKont(this);
+    }
+
+    public void addZakOnTop(Zak zak) {
+        zaks.add(0, zak);
+        zak.setKont(this);
+    }
+
+    public void removeZak(Zak zak) {
+        zaks.remove(zak);
+        zak.setKont(null);
+    }
+
 
 // ========================================
 

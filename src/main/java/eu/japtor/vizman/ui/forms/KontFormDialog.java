@@ -23,6 +23,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.bean.EvidKont;
 import eu.japtor.vizman.backend.entity.*;
@@ -37,11 +38,9 @@ import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 
 import java.io.File;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -55,16 +54,16 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     public static final String DIALOG_WIDTH = "1300px";
     public static final String DIALOG_HEIGHT = "800px";
 
-//    final ValueProvider<Zak, String> honorProvider;
+    //    final ValueProvider<Zak, String> honorProvider;
 //    final ValueProvider<Zak, String> yearProvider;
     private final ComponentRenderer<HtmlComponent, Zak> zakHonorarCellRenderer =
-        new ComponentRenderer<>(zak ->
-            VzmFormatUtils.getMoneyComponent(zak.getHonorar())
-    );
+            new ComponentRenderer<>(zak ->
+                    VzmFormatUtils.getMoneyComponent(zak.getHonorar())
+            );
 
     private TextField ckontField;
     private TextField rokField;
-//    private Button kontEvidButton;
+    //    private Button kontEvidButton;
     private Checkbox archCheck;
     private TextField objednatelField;
     private TextField investorField;
@@ -99,24 +98,23 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private Button newZakButton;
     private Button newAkvButton;
     private FlexLayout zakGridTitleComponent;
-//    private Button zakGridResizeBtn;
+    //    private Button zakGridResizeBtn;
     private ComponentRenderer<Component, Zak> zakArchRenderer;
     private ComponentRenderer<HtmlComponent, Zak> zakTextRenderer;
     private ComponentRenderer<Component, Zak> avizoRenderer;
 
     EvidKont evidKontOrig;
-//    private KontEvidFormDialog kontEvidFormDialog;
+    //    private KontEvidFormDialog kontEvidFormDialog;
     private ZakFormDialog zakFormDialog;
-//    private SubFormDialog subFormDialog;
+    //    private SubFormDialog subFormDialog;
     private ConfirmationDialog<KontDoc> confirmDocUnregisterDialog;
 //    private final ConfirmationDialog<Zak> confirmZakOpenDialog = new ConfirmationDialog<>();
 
 
-    private HorizontalLayout buttonBar;
-    private Button saveButton;
+//    private Button saveButton;
     private Button revertButton;
     private Button saveAndCloseButton;
-    private Button revertAndCloseButton;
+//    private Button revertAndCloseButton;
     private Button deleteAndCloseButton;
     private HorizontalLayout leftBarPart;
 
@@ -124,6 +122,10 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private Kont currentItem;
     private Operation currentOperation;
     private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
+
+    private Registration binderChangeListener = null;
+    private Registration textFieldListener = null;
+    private Registration kontFolderFieldListener = null;
 
     private KontService kontService;
     private ZakService zakService;
@@ -150,13 +152,13 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //                          Consumer<Kont> kontFormCloser,
 //                          BiConsumer<Zak, Operation> zakSaver,
 //                          Consumer<Kont> zakDeleter,
-                          KontService kontService,
-                          ZakService zakService,
-                          FaktService faktService,
-                          KlientService klientService,
-                          DochsumZakService dochsumZakService,
-                          CfgPropsCache cfgPropsCache
-    ){
+            KontService kontService,
+            ZakService zakService,
+            FaktService faktService,
+            KlientService klientService,
+            DochsumZakService dochsumZakService,
+            CfgPropsCache cfgPropsCache
+    ) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT, true, true);
 
 //        this.dialogWidth = "1300px";
@@ -177,6 +179,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         this.zakService = zakService;
         this.klientService = klientService;
         this.cfgPropsCache = cfgPropsCache;
+
+//        deactivateListeners();
 
         getFormLayout().add(
                 initCkontField()
@@ -252,7 +256,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         zakFormDialog.addOpenedChangeListener(event -> {
 //            System.out.println("OPEN-CHANGED: " + event.toString());
             if (!event.isOpened()) {
-                finishZakEdit((ZakFormDialog)event.getSource());
+                finishZakEdit((ZakFormDialog) event.getSource());
             }
         });
         zakFormDialog.addDialogCloseActionListener(event -> {
@@ -262,7 +266,135 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         });
 
         confirmDocUnregisterDialog = new ConfirmationDialog<>();
+
+//        activateListeners();
+    }
+
+    public void openDialog(
+            Kont kont, Operation operation, String titleEndText
+    ) {
+
+        currentOperation = operation;
+        currentItem = kont;
+
+        deactivateListeners();
+
+        setDefaultItemNames();  // Set general default names
+        evidKontOrig = new EvidKont(
+                currentItem.getCkont()
+                , currentItem.getText()
+                , currentItem.getFolder()
+        );
+        setControlsForItemAndOperation(currentItem, currentOperation);
+
+        // Set locale here, because when it is set in constructor, it is effective only in first open,
+        // and next openings show date in US format
+//        datZadComp.setLocale(new Locale("cs", "CZ"));
+//        vystupField.setLocale(new Locale("cs", "CZ"));
+
+//        if (Operation.ADD == operation) {
+//            kont.setRok(LocalDate.now().getYear());
+//            kont.setTyp(ItemType.KONT);
+//        }
+
+        this.zakGrid.setItems(kont.getNodes());
+        this.docGrid.setItems(kont.getKontDocs());
+        this.kontFolderField.setParentFolder(null);
+        this.kontFolderField.setItemType(kont.getTyp());
+
+        this.listOfKlients = klientService.fetchAll();
+        // Following series of commands replacing combo box is because of a bug
+        // Initialize $connector if values were not set in ComboBox element prior to page load. #188
+        getFormLayout().remove(objednatelCombo);
+        getFormLayout().addComponentAtIndex(3, initObjednatelCombo());
+        objednatelCombo.setItems(this.listOfKlients);
+
+//        this.objednatelCombo.setItems(new ArrayList<>());
+//        this.objednatelCombo.setItems(listOfKlients);
+
+
+        FlexLayout headerMiddleComponent = new FlexLayout();
+        headerMiddleComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
+        headerMiddleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        headerMiddleComponent.add(
+                initArchCheck()
+                , new Gap("5em")
+                , VzmFormatUtils.buildAvizoComponent(kont.getBeforeTerms(), kont.getAfterTerms(), true)
+        );
+        getMiddleComponentBox().removeAll();
+        if (null != headerMiddleComponent) {
+            getMiddleComponentBox().add(headerMiddleComponent);
+        }
+
+        getHeaderEndComponent().setText(getHeaderEndComponentValue(titleEndText));
+
+        initControlsOperability();
         activateListeners();
+        this.open();
+    }
+
+
+    private void deactivateListeners() {
+        if (null != binderChangeListener) {
+            binderChangeListener.remove();
+        }
+        if (null != textFieldListener) {
+            textFieldListener.remove();
+        }
+        if (null != kontFolderFieldListener) {
+            kontFolderFieldListener.remove();
+        }
+    }
+
+    private void activateListeners() {
+        // kontFolderField, ckontField and textField must be initialized prior calling this method
+        textFieldListener = textField.addValueChangeListener(event -> {
+            kontFolderField.setValue(
+                    VzmFileUtils.NormalizeDirnamesAndJoin(ckontField.getValue(), event.getValue())
+            );
+        });
+        textField.setValueChangeMode(ValueChangeMode.EAGER);
+
+        kontFolderFieldListener = ckontField.addValueChangeListener(event -> {
+            kontFolderField.setValue(
+                    VzmFileUtils.NormalizeDirnamesAndJoin(event.getValue(), textField.getValue())
+            );
+        });
+        ckontField.setValueChangeMode(ValueChangeMode.EAGER);
+
+        binderChangeListener = binder.addValueChangeListener(e -> {
+            adjustControlsOperability(true, binder.isValid());
+        });
+
+//        binder.addStatusChangeListener(event -> {
+//            boolean isValid = event.getBinder().isValid();
+//            boolean hasChanges = event.getBinder().hasChanges();
+//            setControlsForItemAndOperation(currentItem, currentOperation);
+//        });
+    }
+
+    private boolean isDirty() {
+        return binder.hasChanges();
+    }
+
+    private void initControlsOperability() {
+        saveAndCloseButton.setEnabled(false);
+//        saveButton.setEnabled(false);
+        revertButton.setEnabled(false);
+        newAkvButton.setEnabled(true);
+        newZakButton.setEnabled(true);
+        deleteAndCloseButton.setEnabled(canDeleteKont(currentItem));
+    }
+
+    private void adjustControlsOperability(final boolean hasChanges, final boolean isValid) {
+        saveAndCloseButton.setEnabled(hasChanges && isValid);
+//        saveButton.setEnabled(hasChanges && isValid);
+        revertButton.setEnabled(hasChanges);
+        newAkvButton.setEnabled(!hasChanges);
+        newZakButton.setEnabled(!hasChanges);
+//        saveAndCloseButton.setEnabled(!hasChanges ||!isValid);
+//        saveButton.setEnabled(!hasChanges ||!isValid);
+//        revertButton.setEnabled(!hasChanges);
     }
 
 
@@ -314,7 +446,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //        }
 //        String ckz = String.format("%s / %s", modZak.getCkont(), modZak.getCzak());
         if (Operation.ADD == oper) {
-            zaks.add(0, modZak);
+//            zaks.add(0, modZak);
+            currentItem.addZakOnTop(modZak);
         } else {
             if (OperationResult.ITEM_SAVED == operRes) {
                 int itemIndex = zaks.indexOf(modZak);
@@ -322,10 +455,11 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                     zaks.set(itemIndex, modZak);
                 }
             } else {    // OperationResult.ITEM_DELETED)
-                int itemIndex = zaks.indexOf(modZak);
-                if (itemIndex != -1) {
-                    zaks.remove(itemIndex);
-                }
+                currentItem.removeZak(modZak);
+//                int itemIndex = zaks.indexOf(modZak);
+//                if (itemIndex != -1) {
+//                    zaks.remove(itemIndex);
+//                }
             }
         }
         zakGrid.getDataCommunicator().getKeyMapper().removeAll();
@@ -333,25 +467,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         zakGrid.getDataProvider().refreshAll();
         zakGrid.select(modZak);
     }
-
-    private void activateListeners() {
-        // Must be set only after upper kontFolderField, ckontField and textField are initialized
-        textField.addValueChangeListener(event -> {
-            kontFolderField.setValue(
-                    VzmFileUtils.NormalizeDirnamesAndJoin(ckontField.getValue(), event.getValue())
-            );
-        });
-        textField.setValueChangeMode(ValueChangeMode.EAGER);
-
-        ckontField.addValueChangeListener(event -> {
-            kontFolderField.setValue(
-                    VzmFileUtils.NormalizeDirnamesAndJoin(event.getValue(), textField.getValue())
-            );
-        });
-        ckontField.setValueChangeMode(ValueChangeMode.EAGER);
-    }
-
-
 
     @Override
     public final Kont getCurrentItem() {
@@ -373,10 +488,10 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     public Component initDialogButtonBar() {
         HorizontalLayout bar = new HorizontalLayout();
 
-        saveButton = new Button("Uložit");
+//        saveButton = new Button("Uložit");
 //        saveButton.setAutofocus(true);
 //        saveButton.getElement().setAttribute("theme", "primary");
-        saveButton.addClickListener(e -> saveClicked(false));
+//        saveButton.addClickListener(e -> saveClicked(false));
 
         saveAndCloseButton = new Button("Uložit a zavřít");
         saveAndCloseButton.setAutofocus(true);
@@ -390,8 +505,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         revertButton = new Button("Vrátit změny");
         revertButton.addClickListener(e -> revertClicked(false));
 
-        revertAndCloseButton = new Button("Zpět");
-        revertAndCloseButton.addClickListener(e -> revertClicked(true));
+//        revertAndCloseButton = new Button("Zpět");
+//        revertAndCloseButton.addClickListener(e -> revertClicked(true));
 
         leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);
@@ -405,7 +520,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         rightBarPart.setSpacing(true);
         rightBarPart.add(
                 saveAndCloseButton
-                , revertAndCloseButton
+//                , revertAndCloseButton
         );
 
 //        buttonBar.getStyle().set("margin-top", "0.2em");
@@ -427,77 +542,17 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     }
 
 
-    public void openDialog(
-            Kont kont, Operation operation, String titleEndText
-    ){
 
-        currentOperation = operation;
-        currentItem = kont;
-
-        setDefaultItemNames();  // Set general default names
-        evidKontOrig = new EvidKont(
-                currentItem.getCkont()
-                , currentItem.getText()
-                , currentItem.getFolder()
-        );
-        setControlsForItemAndOperation(currentItem, currentOperation);
-
-        // Set locale here, because when it is set in constructor, it is effective only in first open,
-        // and next openings show date in US format
-//        datZadComp.setLocale(new Locale("cs", "CZ"));
-//        vystupField.setLocale(new Locale("cs", "CZ"));
-
-//        if (Operation.ADD == operation) {
-//            kont.setRok(LocalDate.now().getYear());
-//            kont.setTyp(ItemType.KONT);
-//        }
-
-        this.zakGrid.setItems(kont.getNodes());
-        this.docGrid.setItems(kont.getKontDocs());
-        this.kontFolderField.setParentFolder(null);
-        this.kontFolderField.setItemType(kont.getTyp());
-
-        this.listOfKlients = klientService.fetchAll();
-        // Following series of commands replacing combo box is because of a bug
-        // Initialize $connector if values were not set in ComboBox element prior to page load. #188
-        getFormLayout().remove(objednatelCombo);
-        getFormLayout().addComponentAtIndex(3, initObjednatelCombo());
-        objednatelCombo.setItems(this.listOfKlients);
-
-//        this.objednatelCombo.setItems(new ArrayList<>());
-//        this.objednatelCombo.setItems(listOfKlients);
-
-
-        FlexLayout headerMiddleComponent = new FlexLayout();
-        headerMiddleComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
-        headerMiddleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        headerMiddleComponent.add(
-                initArchCheck()
-                , new Gap("5em")
-                , VzmFormatUtils.buildAvizoComponent(kont.getBeforeTerms(), kont.getAfterTerms(), true)
-        );
-        getMiddleComponentBox().removeAll();
-        if (null != headerMiddleComponent) {
-            getMiddleComponentBox().add(headerMiddleComponent);
-        }
-
-        getHeaderEndComponent().setText(getHeaderEndComponentValue(titleEndText));
-
-        this.open();
-    }
-
-
-    protected void setControlsForItemAndOperation(final Kont item, final Operation operation) {
-
+    protected void setControlsForItemAndOperation(final Kont item, final Operation oper) {
         setItemNames(item.getTyp());
-        getMainTitle().setText(operation.getDialogTitle(getItemName(operation), itemGender));
+        getMainTitle().setText(oper.getDialogTitle(getItemName(oper), itemGender));
 
         if (getCurrentItem() instanceof HasItemType) {
             getHeaderDevider().getStyle().set(
                     "background-color", VzmFormatUtils.getItemTypeColorBrighter(((HasItemType) item).getTyp()));
         }
 
-        if (operation == Operation.ADD) {
+        if (oper == Operation.ADD) {
             binder.removeBean();
             binder.readBean(item);
         } else {
@@ -512,9 +567,12 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //        saveButton.setEnabled(false);
 
         deleteAndCloseButton.setText(DELETE_STR + " " + getItemName(Operation.DELETE).toLowerCase());
-        deleteAndCloseButton.setEnabled(operation.isDeleteEnabled());
-        saveButton.setText(SAVE_STR + " " + getItemName(Operation.SAVE).toLowerCase());
+//        saveButton.setText(SAVE_STR + " " + getItemName(Operation.SAVE).toLowerCase());
+
+        deleteAndCloseButton.setEnabled(oper.isDeleteEnabled());
     }
+
+
 
 
 //    private String getHeaderEndComponentValue(final String titleEndText) {
@@ -558,42 +616,89 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 
 
     private void revertClicked(boolean closeAfterRevert) {
-        binder.removeBean();
-        binder.readBean(currentItem);
-        lastOperationResult = OperationResult.NO_CHANGE;
+        revertFormChanges();
         if (closeAfterRevert) {
             this.close();
+        } else {
+            initControlsOperability();
         }
     }
 
+    private void revertFormChanges() {
+        binder.removeBean();
+        binder.readBean(currentItem);
+        lastOperationResult = OperationResult.NO_CHANGE;
+    }
 
     private void deleteClicked() {
         if (!canDeleteKont(currentItem)) {
             return;
-        } else {
-            String ckDel = String.format("%s", currentItem.getCkont());
-            try {
-                ConfirmDialog.createQuestion()
-                        .withCaption("Zrušení kontraktu")
-                        .withMessage(String.format("Zrušit kontrakt %s ?", ckDel))
-        //                .with...(,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny.")
-                        .withOkButton(() -> deleteKont(currentItem)
-                                , ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
-                        )
-                        .withCancelButton(ButtonOption.caption("ZPĚT"))
-                        .open()
-                ;
-            } catch (VzmServiceException e) {
-                ConfirmDialog.createError()
-                        .withCaption("Editace kontraktu")
-                        .withMessage("Kontrakt se nepodařilo zrušit")
-                        .open()
-                ;
-            }
+        }
+        String ckDel = String.format("%s", currentItem.getCkont());
+        revertFormChanges();
+        try {
+            ConfirmDialog.createQuestion()
+                    .withCaption("Zrušení kontraktu")
+                    .withMessage(String.format("Zrušit kontrakt %s ?", ckDel))
+    //                .with...(,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny.")
+                    .withOkButton(() -> deleteKont(currentItem)
+                            , ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
+                    )
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .open()
+            ;
+            this.close();
+        } catch (VzmServiceException e) {
+            showDeleteErrMessage();
         }
     }
 
     private void saveClicked(boolean closeAfterSave) {
+        if (!isKontValid()) {
+            return;
+        }
+        try {
+            saveKont(currentItem, currentOperation);
+            if (closeAfterSave) {
+                this.close();
+            } else {
+                initControlsOperability();
+            }
+        } catch (VzmServiceException e) {
+            showSaveErrMessage();
+        }
+    }
+
+    private boolean saveWithoutClose() {
+        if (!isKontValid()) {
+            return false;
+        }
+        try {
+            saveKont(currentItem, currentOperation);
+            initControlsOperability();
+            return true;
+        } catch (VzmServiceException e) {
+            showSaveErrMessage();
+            return false;
+        }
+    }
+
+    private void showSaveErrMessage() {
+        ConfirmDialog.createError()
+                .withCaption("Editace kontraktu")
+                .withMessage("Kontrakt se nepodařilo uložit.")
+                .open();
+    }
+
+    private void showDeleteErrMessage() {
+        ConfirmDialog.createError()
+                .withCaption("Editace kontraktu")
+                .withMessage("Kontrakt se nepodařilo zrušit")
+                .open()
+        ;
+    }
+
+    private boolean isKontValid() {
         boolean isValid = binder.writeBeanIfValid(currentItem);
         if (!isValid) {
             ConfirmDialog
@@ -601,21 +706,9 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                     .withCaption("Editace kontraktu")
                     .withMessage("Kontrakt nelze uložit, některá pole nejsou správně vyplněna.")
                     .open();
-        } else {
-//            itemSaver.accept(currentItem, operation);
-//            itemSaver.accept(getCurrentItem(), operation);
-            try {
-                saveKont(currentItem, currentOperation);
-                if (closeAfterSave) {
-                    this.close();
-                }
-            } catch (VzmServiceException e) {
-                ConfirmDialog.createError()
-                        .withCaption("Editace kontraktu")
-                        .withMessage("Kontrakt se nepodařilo uložit")
-                        .open();
-            }
+            return false;
         }
+        return true;
     }
 
     protected boolean canDeleteKont(final Kont itemToDelete) {
@@ -634,11 +727,11 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         return true;
     }
 
-    protected void deleteKont(Kont itemToDelete) {
+    protected boolean deleteKont(Kont itemToDelete) {
         try {
             kontService.deleteKont(itemToDelete);
             lastOperationResult = OperationResult.ITEM_DELETED;
-            this.close();
+            return true;
         } catch (VzmServiceException e) {
             lastOperationResult = OperationResult.NO_CHANGE;
             ConfirmDialog
@@ -647,6 +740,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                     .withMessage("Kontrakt " + itemToDelete.getCkont() + " se nepodařilo zrušit.")
                     .open()
             ;
+            return false;
         }
 
         //            GenericModel bean = myGrid.getSelectedRow();
@@ -668,15 +762,27 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     }
 
 
-    public Kont saveKont(Kont itemToSave, Operation oper) throws VzmServiceException {
+    public Kont saveKont(Kont kontToSave, Operation oper) throws VzmServiceException {
         try {
-            Kont kontSaved = kontService.saveKont(itemToSave, oper);
-            currentItem = kontSaved;
-            if (kontDirsToBeCreated(itemToSave, oper)) {
-                createKontDirs(kontSaved);
+            if (StringUtils.isBlank(kontToSave.getFolder())) {
+//                fireEvent(new AbstractField.ComponentValueChangeEvent(
+//                        textField, textField, textField.getValue(), false)
+//                );
+//                fireEvent(new GeneratedVaadinTextField.ChangeEvent(textField, false));
+                String textValue = textField.getValue();
+                textField.clear();
+                textField.setValue(textValue);
+                kontToSave.setFolder(kontFolderField.getValue());
+            }
+
+//            Kont kontSaved = kontService.saveKont(currentItem, oper);
+            kontToSave = kontService.saveKont(kontToSave, oper);
+//            currentItem = kontSaved;
+            if (kontDirsToBeCreated(kontToSave, oper)) {
+                createKontDirs(kontToSave);
             }
             lastOperationResult = OperationResult.ITEM_SAVED;
-            return kontSaved;
+            return kontToSave;
         } catch(VzmServiceException e) {
             lastOperationResult = OperationResult.NO_CHANGE;
             throw(e);
@@ -740,103 +846,103 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //        Notification.show("Číslo a text kontraktu akceptovány", 2500, Notification.Position.TOP_CENTER);
 //    }
 
-    private void saveZakForForm(Zak zak, Operation operation) {
-
-        Zak savedZak = zakFormDialog.saveZak(zak, operation);
-
-//        if (Operation.EDIT == operation && null != zakFolderOrig && !zakFolderOrig.equals(zak.getFolder())) {
-//            if (!VzmFileUtils.kontDocRootExists(getDocRootServer(), zak.getFolder())) {
-//                new OkDialog().open("Adresáře zakázky"
-//                        , "POZOR, dokumentový ani projektový adresář se automaticky nepřejmenovávají.", "");
-//            }
-//            if (!VzmFileUtils.kontProjRootExists(getProjRootServer(), zak.getFolder())) {
-//                new OkDialog().open("Projektový adresáře zakázky"
-//                        , "POZOR, projektový adresář zakázky nenalezen, měl by se přejmenovat ručně", "");
-//            }
-//        } else if (Operation.ADD == operation){
-//            if (!VzmFileUtils.createZakDocDirs(
-//                        cfgPropsCache.getDocRootServer(), zak.getKontFolder(), zak.getFolder())) {
-//                new OkDialog().open("Dokumentové adresáře zakázky"
-//                        , "Adresářovou strukturu se nepodařilo vytvořit", "");
-//            };
-//            if (!VzmFileUtils.createZakProjDirs(
-//                        cfgPropsCache.getProjRootServer(), zak.getKontFolder(), zak.getFolder())) {
-//                new OkDialog().open("Projektové adresáře zakázky"
-//                        , "Adresářovou strukturu se nepodařilo vytvořit", "");
-//            };
-//    //            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
-//    //            kontProjRootDir.setReadOnly();
+//    private void saveZakForForm(Zak zak, Operation operation) {
+//
+//        Zak savedZak = zakFormDialog.saveZak(zak, operation);
+//
+////        if (Operation.EDIT == operation && null != zakFolderOrig && !zakFolderOrig.equals(zak.getFolder())) {
+////            if (!VzmFileUtils.kontDocRootExists(getDocRootServer(), zak.getFolder())) {
+////                new OkDialog().open("Adresáře zakázky"
+////                        , "POZOR, dokumentový ani projektový adresář se automaticky nepřejmenovávají.", "");
+////            }
+////            if (!VzmFileUtils.kontProjRootExists(getProjRootServer(), zak.getFolder())) {
+////                new OkDialog().open("Projektový adresáře zakázky"
+////                        , "POZOR, projektový adresář zakázky nenalezen, měl by se přejmenovat ručně", "");
+////            }
+////        } else if (Operation.ADD == operation){
+////            if (!VzmFileUtils.createZakDocDirs(
+////                        cfgPropsCache.getDocRootServer(), zak.getKontFolder(), zak.getFolder())) {
+////                new OkDialog().open("Dokumentové adresáře zakázky"
+////                        , "Adresářovou strukturu se nepodařilo vytvořit", "");
+////            };
+////            if (!VzmFileUtils.createZakProjDirs(
+////                        cfgPropsCache.getProjRootServer(), zak.getKontFolder(), zak.getFolder())) {
+////                new OkDialog().open("Projektové adresáře zakázky"
+////                        , "Adresářovou strukturu se nepodařilo vytvořit", "");
+////            };
+////    //            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
+////    //            kontProjRootDir.setReadOnly();
+////        } else {
+////            new OkDialog().open("Adresáře zakázky"
+////                    , "NEZNÁMÁ OPERACE", "")
+////            ;
+////        }
+////
+////        Zak savedZak = zakService.saveZak(zak);
+////        new OkDialog().open("Zakázka " + savedZak.getKont().getCkont() + " / " + savedZak.getCzak() + " uložena"
+////                , "", "");
+//
+//
+//
+////        zakGrid.getDataCommunicator().getKeyMapper().removeAll();
+//        if (Operation.ADD == operation) {
+//            getCurrentItem().getZaks().add(0, savedZak);
 //        } else {
-//            new OkDialog().open("Adresáře zakázky"
-//                    , "NEZNÁMÁ OPERACE", "")
+//            int zakItemIndex = getCurrentItem().getZaks().indexOf(savedZak);
+//            if (zakItemIndex != -1) {
+//                getCurrentItem().getZaks().set(zakItemIndex, savedZak);
+//            }
+//        }
+//        zakGrid.setItems(getCurrentItem().getZaks());
+//
+//        zakGrid.getDataCommunicator().getKeyMapper().removeAll();
+//        zakGrid.getDataProvider().refreshAll();
+//        zakGrid.select(savedZak);
+//
+//        Notification.show("Zakázka " + savedZak.getKont().getCkont() + " / " + savedZak.getCzak() + " uložena"
+//                , 2500, Notification.Position.TOP_CENTER);
+//
+////        Notification.show(
+////                "Změny zakázky uloženy", 3000, Notification.Position.TOP_CENTER);
+//    }
+
+//    private void deleteZakForForm(Zak zak) {
+//        String ckzDel = String.format("%s / %d", zak.getCkont(), zak.getCzak());
+//        try {
+//            boolean zakWasDeleted = zakService.deleteZak(zak);
+//
+//            if (!zakWasDeleted) {
+//                ConfirmDialog
+//                        .createError()
+//                        .withCaption("Zrušení zakázky")
+//                        .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
+//                        .open();
+//            } else {
+//                getCurrentItem().getZaks().removeIf(z -> z.getId().equals(zak.getId()));
+//                zakGrid.setItems(getCurrentItem().getZaks());
+//                zakGrid.getDataCommunicator().getKeyMapper().removeAll();
+//                zakGrid.getDataProvider().refreshAll();
+//                getLogger().info(String.format("ZAKAZKA %s deleted", ckzDel));
+//                Notification.show(String.format("Zakázka %s zrušena.", ckzDel)
+//                        , 2500, Notification.Position.TOP_CENTER)
+//                ;
+//                ConfirmDialog
+//                        .createInfo()
+//                        .withCaption("Zrušení zakázky")
+//                        .withMessage(String.format("Zakázka %s byla zrušena.", ckzDel))
+//                        .open()
+//                ;
+//            }
+//        } catch (Exception e) {
+//            getLogger().error(String.format("Error during deletion ZAKAZKA %s / %d", zak.getCkont(), zak.getCzak()), e);
+//            ConfirmDialog
+//                    .createError()
+//                    .withCaption("Zrušení zakázky")
+//                    .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
+//                    .open()
 //            ;
 //        }
-//
-//        Zak savedZak = zakService.saveZak(zak);
-//        new OkDialog().open("Zakázka " + savedZak.getKont().getCkont() + " / " + savedZak.getCzak() + " uložena"
-//                , "", "");
-
-
-
-//        zakGrid.getDataCommunicator().getKeyMapper().removeAll();
-        if (Operation.ADD == operation) {
-            getCurrentItem().getZaks().add(0, savedZak);
-        } else {
-            int zakItemIndex = getCurrentItem().getZaks().indexOf(savedZak);
-            if (zakItemIndex != -1) {
-                getCurrentItem().getZaks().set(zakItemIndex, savedZak);
-            }
-        }
-        zakGrid.setItems(getCurrentItem().getZaks());
-
-        zakGrid.getDataCommunicator().getKeyMapper().removeAll();
-        zakGrid.getDataProvider().refreshAll();
-        zakGrid.select(savedZak);
-
-        Notification.show("Zakázka " + savedZak.getKont().getCkont() + " / " + savedZak.getCzak() + " uložena"
-                , 2500, Notification.Position.TOP_CENTER);
-
-//        Notification.show(
-//                "Změny zakázky uloženy", 3000, Notification.Position.TOP_CENTER);
-    }
-
-    private void deleteZakForForm(Zak zak) {
-        String ckzDel = String.format("%s / %d", zak.getCkont(), zak.getCzak());
-        try {
-            boolean zakWasDeleted = zakService.deleteZak(zak);
-
-            if (!zakWasDeleted) {
-                ConfirmDialog
-                        .createError()
-                        .withCaption("Zrušení zakázky")
-                        .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
-                        .open();
-            } else {
-                getCurrentItem().getZaks().removeIf(z -> z.getId().equals(zak.getId()));
-                zakGrid.setItems(getCurrentItem().getZaks());
-                zakGrid.getDataCommunicator().getKeyMapper().removeAll();
-                zakGrid.getDataProvider().refreshAll();
-                getLogger().info(String.format("ZAKAZKA %s deleted", ckzDel));
-                Notification.show(String.format("Zakázka %s zrušena.", ckzDel)
-                        , 2500, Notification.Position.TOP_CENTER)
-                ;
-                ConfirmDialog
-                        .createInfo()
-                        .withCaption("Zrušení zakázky")
-                        .withMessage(String.format("Zakázka %s byla zrušena.", ckzDel))
-                        .open()
-                ;
-            }
-        } catch (Exception e) {
-            getLogger().error(String.format("Error during deletion ZAKAZKA %s / %d", zak.getCkont(), zak.getCzak()), e);
-            ConfirmDialog
-                    .createError()
-                    .withCaption("Zrušení zakázky")
-                    .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
-                    .open()
-            ;
-        }
-    }
+//    }
 
 
     private Component initCkontField() {
@@ -1356,21 +1462,23 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     }
 
     private Component initNewZakButton() {
-        newZakButton = new NewItemButton(ItemNames.getNomS(ItemType.ZAK), event ->
+        newZakButton = new NewItemButton(ItemNames.getNomS(ItemType.ZAK), event -> {
+            if (saveWithoutClose()) {
                 zakFormDialog.openDialog(new Zak(ItemType.ZAK, getCurrentItem().getNewCzak(), getCurrentItem())
-                , Operation.ADD, null)
+                        , Operation.ADD, null);
 //                , Operation.ADD, ItemNames.getNomS(ItemType.ZAK), new FlexLayout(), "")
-        );
-//                        new Zak(ItemType.ZAK), AbstractEditorDialog.Operation.ADD);
+            }
+        });
         return newZakButton;
     }
 
     private Component initNewAkvButton() {
         newAkvButton = new NewItemButton(ItemNames.getNomS(ItemType.AKV), event -> {
+            if (saveWithoutClose()) {
                 zakFormDialog.openDialog(new Zak(ItemType.AKV, getCurrentItem().getNewCzak(), getCurrentItem())
-                , Operation.ADD, null);
+                        , Operation.ADD, null);
             }
-        );
+        });
         return newAkvButton;
     }
 

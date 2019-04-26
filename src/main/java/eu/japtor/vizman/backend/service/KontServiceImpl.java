@@ -93,26 +93,31 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
     @Override
     @Transactional
-    public Kont saveKont(Kont kont, Operation oper) throws VzmServiceException {
+    public Kont saveKont(Kont kontToSave, Operation oper) throws VzmServiceException {
         try {
-            Kont kontSaved = kontRepo.save(kont);
+//            kontRepo.save(kont);
+//            kontRepo.detachKont(kont);
+//            kontRepo.flush();
+            Kont kontSaved = kontRepo.saveAndFlush(kontToSave);
             getLogger().info("{} saved: {} [operation: {}]", kontSaved.getTyp().name()
                     , kontSaved.getCkont(), oper.name());
             return kontSaved;
         } catch (Exception e) {
             String errMsg = "Error while saving {} : {} [operation: {}]";
-            getLogger().error(errMsg, kont.getTyp().name(), kont.getCkont(), oper.name(), e);
+            getLogger().error(errMsg, kontToSave.getTyp().name(), kontToSave.getCkont(), oper.name(), e);
             throw new VzmServiceException(errMsg);
         }
     }
 
     @Override
-    public void deleteKont(Kont kont) throws VzmServiceException {
+    @Transactional
+    public void deleteKont(Kont kontToDel) throws VzmServiceException {
         try {
-            kontRepo.delete(kont);
+            kontRepo.delete(kontToDel);
+            getLogger().info("{} deleted: {}", kontToDel.getTyp().name(), kontToDel.getCkont());
         } catch (Exception e) {
             String errMsg = "Error while deleting {} : {}";
-            getLogger().error(errMsg, kont.getTyp().name(), kont.getCkont(), e);
+            getLogger().error(errMsg, kontToDel.getTyp().name(), kontToDel.getCkont(), e);
             throw new VzmServiceException(errMsg);
         }
     }

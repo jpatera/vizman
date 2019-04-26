@@ -294,10 +294,13 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
         kzTreeGrid.setDataProvider(inMemoryKzTreeProvider);
 //        kzTreeGrid.getDataProvider().refreshItem(modKont);
 
+        kzTreeGrid.getDataProvider().refreshAll();
+
+//        kzTreeGrid.collapseRecursively(kzTreeGrid.getTreeData().getRootItems(),0);
         KzTreeAware itemForSelection = (OperationResult.ITEM_DELETED == operRes) ?
                 getNeibourghItemFromTree(modKont) : modKont;
         if (null != itemForSelection) {
-            kzTreeGrid.expand(itemForSelection);
+//            kzTreeGrid.expand(itemForSelection);
             kzTreeGrid.getSelectionModel().select(itemForSelection);
         }
 
@@ -342,8 +345,8 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
             kzTreeData.removeItem(modZak);
         }
         if (OperationResult.ITEM_DELETED != operRes) {
-            kzTreeData.addItem(null, modZak);
-            kzTreeData.addItems(modZak, ((KzTreeAware)modZak).getNodes());
+            kzTreeData.addItem(modZak.getKont(), modZak);
+//            kzTreeData.addItems(modZak, ((KzTreeAware)modZak).getNodes());
         }
 
         kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
@@ -352,12 +355,14 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
         kzTreeGrid.setDataProvider(inMemoryKzTreeProvider);
 //        kzTreeGrid.getDataProvider().refreshItem(modKont);
+        kzTreeGrid.getDataProvider().refreshAll();
 
+//        kzTreeGrid.collapseRecursively(kzTreeGrid.getTreeData().getRootItems(),0);
         KzTreeAware itemForSelection = (OperationResult.ITEM_DELETED == operRes) ?
                 getNeibourghItemFromTree(modZak.getKont()) : modZak.getKont();
 //                getNeibourghItemFromTree(modZak) : modZak;
         if (null != itemForSelection) {
-            kzTreeGrid.expand(itemForSelection);
+//            kzTreeGrid.expand(itemForSelection);
             kzTreeGrid.getSelectionModel().select(itemForSelection);
         }
         kzTreeGrid.getDataProvider().refreshAll();
@@ -366,7 +371,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
     private KzTreeAware getNeibourghItemFromTree(final KzTreeAware item) {
         int itemIdx = getItemTreeIdx(item);
 //        Stream<KzTreeAware> stream = kzTreeGrid.getDataCommunicator()
-        KzTreeAware newSelectedItem = null;
+        KzTreeAware newSelectedItem;
         newSelectedItem = kzTreeGrid.getDataCommunicator()
                 .fetchFromProvider(itemIdx + 1, 1)
                 .findFirst().orElse(null);
@@ -1065,35 +1070,35 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
         kzTreeGrid.getSelectionModel().select(neibourghItem);
     }
 
-    private void deleteKontForGrid(final Kont kontToDelete) {
-        int kontDelIdx = kzTreeGrid.getDataCommunicator().getIndex(kontToDelete);
-        Stream<KzTreeAware> stream = kzTreeGrid.getDataCommunicator()
-                .fetchFromProvider(kontDelIdx + 1, 1);
-        KzTreeAware newSelectedKont = getNeibourghItemFromTree(kontToDelete);
-
-        try {
-            kontService.deleteKont(kontToDelete);
-            reloadTreeProvider(archFilterRadio.getValue());
-            kzTreeGrid.getSelectionModel().select(newSelectedKont);
-
-            ConfirmDialog
-                    .createInfo()
-                    .withCaption("Zrušení kontraktu")
-                    .withMessage("Kontrakt " + kontToDelete.getCkont() + " byl zrušen.")
-                    .open()
-            ;
-
-        } catch(Exception e) {
-            getLogger().error("Error when deleting {} {} [operation: {}]", kontToDelete.getTyp().name()
-                    , kontToDelete.getCkont(), Operation.DELETE.name());
-            ConfirmDialog
-                    .createError()
-                    .withCaption("Zrušení kontraktu")
-                    .withMessage("Kontrakt " + kontToDelete.getCkont() + " se nepodařilo zrušit.")
-                    .open();
-            throw e;
-        }
-    }
+//    private void deleteKontForGrid(final Kont kontToDelete) {
+//        int kontDelIdx = kzTreeGrid.getDataCommunicator().getIndex(kontToDelete);
+//        Stream<KzTreeAware> stream = kzTreeGrid.getDataCommunicator()
+//                .fetchFromProvider(kontDelIdx + 1, 1);
+//        KzTreeAware newSelectedKont = getNeibourghItemFromTree(kontToDelete);
+//
+//        try {
+//            kontService.deleteKont(kontToDelete);
+//            reloadTreeProvider(archFilterRadio.getValue());
+//            kzTreeGrid.getSelectionModel().select(newSelectedKont);
+//
+//            ConfirmDialog
+//                    .createInfo()
+//                    .withCaption("Zrušení kontraktu")
+//                    .withMessage("Kontrakt " + kontToDelete.getCkont() + " byl zrušen.")
+//                    .open()
+//            ;
+//
+//        } catch(Exception e) {
+////            getLogger().error("Error when deleting {} {} [operation: {}]", kontToDelete.getTyp().name()
+////                    , kontToDelete.getCkont(), Operation.DELETE.name());
+//            ConfirmDialog
+//                    .createError()
+//                    .withCaption("Zrušení kontraktu")
+//                    .withMessage("Kontrakt " + kontToDelete.getCkont() + " se nepodařilo zrušit.")
+//                    .open();
+//            throw e;
+//        }
+//    }
 
 
 //    private Grid<Zak> initZakGrid() {
@@ -1119,41 +1124,41 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        return zakGrid;
 //    }
 
-    private void deleteZakForGrid(Zak zak) {
-        String ckzDel = String.format("%s / %d", zak.getCkont(), zak.getCzak());
-        try {
-            boolean zakWasDeleted = zakService.deleteZak(zak);
-
-            if (!zakWasDeleted) {
-                ConfirmDialog
-                        .createError()
-                        .withCaption("Zrušení zakázky")
-                        .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
-                        .open();
-            } else {
-                kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-                kzTreeGrid.getDataProvider().refreshAll();
-                getLogger().info(String.format("ZAKAZKA %s deleted", ckzDel));
-                Notification.show(String.format("Zakázka %s zrušena.", ckzDel)
-                        , 2500, Notification.Position.TOP_CENTER)
-                ;
-                ConfirmDialog
-                        .createInfo()
-                        .withCaption("Zrušení zakázky")
-                        .withMessage("Zakázka " + ckzDel + " byla zrušena.")
-                        .open()
-                ;
-            }
-        } catch (Exception e) {
-            getLogger().error(String.format("Error during deletion ZAKAZKA %s / %d", zak.getCkont(), zak.getCzak()), e);
-            ConfirmDialog
-                    .createError()
-                    .withCaption("Zrušení zakázky")
-                    .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
-                    .open()
-            ;
-        }
-    }
+//    private void deleteZakForGrid(Zak zak) {
+//        String ckzDel = String.format("%s / %d", zak.getCkont(), zak.getCzak());
+//        try {
+//            boolean zakWasDeleted = zakService.deleteZak(zak);
+//
+//            if (!zakWasDeleted) {
+//                ConfirmDialog
+//                        .createError()
+//                        .withCaption("Zrušení zakázky")
+//                        .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
+//                        .open();
+//            } else {
+//                kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+//                kzTreeGrid.getDataProvider().refreshAll();
+//                getLogger().info(String.format("ZAKAZKA %s deleted", ckzDel));
+//                Notification.show(String.format("Zakázka %s zrušena.", ckzDel)
+//                        , 2500, Notification.Position.TOP_CENTER)
+//                ;
+//                ConfirmDialog
+//                        .createInfo()
+//                        .withCaption("Zrušení zakázky")
+//                        .withMessage("Zakázka " + ckzDel + " byla zrušena.")
+//                        .open()
+//                ;
+//            }
+//        } catch (Exception e) {
+//            getLogger().error(String.format("Error during deletion ZAKAZKA %s / %d", zak.getCkont(), zak.getCzak()), e);
+//            ConfirmDialog
+//                    .createError()
+//                    .withCaption("Zrušení zakázky")
+//                    .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
+//                    .open()
+//            ;
+//        }
+//    }
 
 
     private Component initKzToolBar() {

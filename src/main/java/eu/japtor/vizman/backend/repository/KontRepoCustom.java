@@ -8,6 +8,8 @@ public interface KontRepoCustom {
 
     String[] getAllObjednatelArray();
 
+    void detachKont(Kont kont);
+
 //    List<Kont> findHavingAllZaksArchived();
 
 //    List<Kont> findHavingSomeZaksActive();

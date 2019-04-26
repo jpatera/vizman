@@ -12,7 +12,7 @@ import javax.persistence.criteria.*;
 import java.util.List;
 
 @Repository
-@Transactional(readOnly = true)
+// @Transactional(readOnly = true)
 public class KontRepoCustomImpl implements KontRepoCustom {
 
     @PersistenceContext
@@ -26,6 +26,11 @@ public class KontRepoCustomImpl implements KontRepoCustom {
         return objednatelList.toArray(objednatelArray);
     }
 
+
+    @Override
+    public void detachKont(Kont kont) {
+        em.detach(kont);
+    }
 //    @Override
 //    @Query("SELECT * FROM kont k WHERE EXISTS (SELECT 1 FROM zak z WHERE k.id = z.id_kont AND z.arch = true)")
 //    public List<Kont> findHavingAllZaksArchived() {

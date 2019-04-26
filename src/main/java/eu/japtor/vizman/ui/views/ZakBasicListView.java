@@ -195,7 +195,7 @@ public class ZakBasicListView extends VerticalLayout {
 
     private void updateViewContent() {
         loadGridData();
-        zakGrid.initFilters();
+        zakGrid.initFilterValues();
         zakGrid.doFilter();
         zakGrid.getDataProvider().refreshAll();
     }

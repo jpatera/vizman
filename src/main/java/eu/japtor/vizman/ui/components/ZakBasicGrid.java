@@ -15,6 +15,7 @@ import com.vaadin.flow.dom.Element;
 import eu.japtor.vizman.backend.entity.*;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ZakBasicGrid extends Grid<ZakBasic> {
@@ -40,6 +41,8 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
     private Boolean initFilterArchValue;
     private boolean archFieldVisible;
     private boolean selectFieldVisible;
+
+    HeaderRow filterRow;
 
     public ZakBasicGrid(boolean selectFieldVisible, boolean archFieldVisible, Boolean initFilterArchValue) {
 
@@ -137,7 +140,7 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
         ;
 
 
-        HeaderRow filterRow = this.appendHeaderRow();
+        filterRow = this.appendHeaderRow();
 
         archFilterField = buildSelectionFilterField();
 //        archFilterField.setItemLabelGenerator(this::archFilterLabelGenerator);
@@ -217,7 +220,7 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
         }
     }
 
-    public void initFilters() {
+    public void initFilterValues() {
         if (null == initFilterArchValue) {
             archFilterField.clear();
         } else {
@@ -298,19 +301,26 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
     });
 
     public void setArchFilterItems(final List<Boolean> archItems) {
-//        archItems.add(0, null);
+        archFilterField = buildSelectionFilterField();
+        filterRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
+                .setComponent(archFilterField);
         archFilterField.setItems(archItems);
     }
 
     public void setRokFilterItems(final List<Integer> rokItems) {
-//        rokItems.add(0, null);
+        rokFilterField = buildSelectionFilterField();
+        filterRow.getCell(this.getColumnByKey(ROK_COL_KEY))
+                .setComponent(rokFilterField);
         rokFilterField.setItems(rokItems);
     }
 
     public void setSkupinaFilterItems(final List<String> skupinaItems) {
-//        skupinaItems.add(0, null);
+        skupinaFilterField = buildSelectionFilterField();
+        filterRow.getCell(this.getColumnByKey(SKUPINA_COL_KEY))
+                .setComponent(skupinaFilterField);
         skupinaFilterField.setItems(skupinaItems);
     }
+
 
 }
 

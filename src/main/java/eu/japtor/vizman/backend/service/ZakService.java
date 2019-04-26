@@ -17,7 +17,7 @@ public interface ZakService {
 
     Zak saveZak(Zak zak, Operation oper);
 
-    boolean deleteZak(Zak zak);
+    void deleteZak(Zak zak);
 
     boolean zakIdExistsInKont(Long kontId, Integer czak);
 
