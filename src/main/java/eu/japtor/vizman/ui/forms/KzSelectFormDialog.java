@@ -21,6 +21,7 @@ import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.ValueProvider;
+import eu.japtor.vizman.backend.entity.ArchIconBox;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.KzTreeAware;
@@ -402,7 +403,7 @@ public class KzSelectFormDialog extends Dialog {
             List<KzTreeAware> childItems = inMemoryKzTreeProvider.getTreeData().getChildren(rootItem);
             for(KzTreeAware child :  childItems) {
                 if (((child.getTyp() == ItemType.ZAK) || (child.getTyp() == ItemType.LEK) || (child.getTyp() == ItemType.REZ))
-                        && !child.getArch() && child.isChecked()) {
+                        && ArchIconBox.ArchState.ARCHIVED != child.getArchState() && child.isChecked()) {
                     kzZakItems.add(child);
                 }
             }

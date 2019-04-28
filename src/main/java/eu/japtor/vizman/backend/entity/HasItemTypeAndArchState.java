@@ -1,6 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
-public interface HasItemTypeAndArch extends HasItemType, HasArch{
+public interface HasItemTypeAndArchState extends HasItemType, HasArchState {
 
     // For rendering ARCH checkbox
 }

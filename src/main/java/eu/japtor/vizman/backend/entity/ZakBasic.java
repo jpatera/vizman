@@ -1,26 +1,16 @@
 package eu.japtor.vizman.backend.entity;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Immutable;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Predicate;
 
 @Immutable
 //@ReadOnly
 @Entity
 @Table(name = "ZAK_BASIC_VIEW")
-public class ZakBasic implements Serializable, HasItemType, HasArch {
+public class ZakBasic implements Serializable, HasItemType, HasArchState {
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -107,6 +97,10 @@ public class ZakBasic implements Serializable, HasItemType, HasArch {
 
     public String getObjednatel() {
         return objednatel;
+    }
+
+    public ArchIconBox.ArchState getArchState() {
+        return arch ? ArchIconBox.ArchState.EMPTY.ARCHIVED : ArchIconBox.ArchState.EMPTY;
     }
 
     public Boolean getArch() {

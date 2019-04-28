@@ -24,15 +24,24 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
     Kont findTopByFolderIgnoreCase(String docdir);
 
-    List<Kont> findAllByOrderByCkontDesc();
+    List<Kont> findAllByOrderByRokDescCkontDesc();
 
-    @Query(value = "SELECT * FROM vizman.kont k WHERE EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = true)",
+    @Query(value = "SELECT * FROM vizman.kont k WHERE (NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)) "
+            + " AND (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont)) "
+            + " ORDER BY ROK DESC, CKONT DESC",
                     nativeQuery = true)
     public List<Kont> findHavingAllZaksArchived();
 
+    @Query(value = "SELECT * FROM vizman.kont k WHERE NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont) "
+            + " ORDER BY ROK DESC, CKONT DESC",
+                    nativeQuery = true)
+    public List<Kont> findHavingNoZaks();
+
 //    @Query(value = "SELECT * FROM vizman.kont k WHERE EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)",
 //                    nativeQuery = true)
-    @Query(value = "SELECT * FROM vizman.kont k WHERE NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = true)",
+    @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)) "
+            + " OR (NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont)) "
+            + " ORDER BY ROK DESC, CKONT DESC",
                     nativeQuery = true)
     public List<Kont> findHavingSomeZaksActive();
 

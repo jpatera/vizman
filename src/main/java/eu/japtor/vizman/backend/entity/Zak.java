@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -18,7 +17,7 @@ import java.util.function.Predicate;
 @Entity
 @Table(name = "ZAK")
 //@SequenceGenerator(initialValue = 1, name = "id_gen", sequenceName = "zak_seq")
-public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArch, HasModifDates {
+public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArchState, HasModifDates {
 
 //    @GeneratedValue(generator = "uuid2")
 //    @GenericGenerator(name = "uuid2", strategy = "uuid2")
@@ -222,23 +221,6 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         this.honorar = honorar;
     }
 
-
-    @Override
-    public Mena getMena() {
-        return null == getKont() ? null : getKont().getMena();
-    }
-
-
-
-
-    public BigDecimal getRozprac() {
-        return rozprac;
-    }
-
-    public void setRozprac(BigDecimal rozprac) {
-        this.rozprac = rozprac;
-    }
-
     public String getTmp() {
         return tmp;
     }
@@ -254,6 +236,63 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     public void setArch(Boolean arch) {
         this.arch = arch;
     }
+
+    @Transient
+    public ArchIconBox.ArchState getArchState() {
+        return (null == arch) || !arch ? ArchIconBox.ArchState.ACTIVE : ArchIconBox.ArchState.ARCHIVED;
+    }
+
+
+    public List<ZakDoc> getZakDocs() {
+        return zakDocs;
+    }
+
+    public List<Fakt> getFakts() {
+        return fakts;
+    }
+
+    public void setFakts(List<Fakt> fakts) {
+        this.fakts = fakts;
+    }
+
+    public void addFakt(Fakt fakt) {
+        fakts.add(fakt);
+        fakt.setZak(this);
+    }
+
+    public void addFaktOnTop(Fakt fakt) {
+        fakts.add(0, fakt);
+        fakt.setZak(this);
+    }
+
+    public void removeFakt(Fakt fakt) {
+        fakts.remove(fakt);
+        fakt.setZak(null);
+    }
+
+
+
+    public Kont getKont() {
+        return kont;
+    }
+
+    public void setKont(Kont kont) {
+        this.kont = kont;
+    }
+
+
+
+
+    public BigDecimal getRozprac() {
+        return rozprac;
+    }
+
+    public void setRozprac(BigDecimal rozprac) {
+        this.rozprac = rozprac;
+    }
+
+
+
 
     public Integer getrZal() {
         return rZal;
@@ -312,41 +351,6 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     }
 
 
-    public Kont getKont() {
-        return kont;
-    }
-
-    public void setKont(Kont kont) {
-        this.kont = kont;
-    }
-
-    public List<ZakDoc> getZakDocs() {
-        return zakDocs;
-    }
-
-    public List<Fakt> getFakts() {
-        return fakts;
-    }
-    public void setFakts(List<Fakt> fakts) {
-        this.fakts = fakts;
-    }
-
-
-
-    public void addFakt(Fakt fakt) {
-        fakts.add(fakt);
-        fakt.setZak(this);
-    }
-
-    public void addFaktOnTop(Fakt fakt) {
-        fakts.add(0, fakt);
-        fakt.setZak(this);
-    }
-
-    public void removeFakt(Fakt fakt) {
-        fakts.remove(fakt);
-        fakt.setZak(null);
-    }
 
 
     @Transient
@@ -380,6 +384,13 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         ;
         String result = builder.toString();
         return StringUtils.isBlank(result) ? null : result;
+    }
+
+
+    @Override
+    @Transient
+    public Mena getMena() {
+        return null == kont ? null : kont.getMena();
     }
 
     @Transient
@@ -454,53 +465,15 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public Zak() {
-        this(ItemType.ZAK, 9999, null);
-    }
-
-    public Zak(ItemType typ, Integer czak, Kont parentKont) {
-        super();
-        this.typ = typ;
-        this.czak = czak;
-        this.rok = LocalDate.now().getYear();
-        this.uuid = UUID.randomUUID();
-        this.honorar = BigDecimal.valueOf(0);
-        this.kont = parentKont;
-        this.arch = false;
-
-        UUID uuid = UUID.randomUUID();
-        String randomUUIDString = uuid.toString();
-    }
-
-// -----------------------------
-
     @Override
     public List<KzTreeAware> getNodes() {
         return new ArrayList();
     }
 
-//    public List<Fakt> getFakts() {
-//        if (null == fakts) {
-//            return Collections.emptyList();
-//        }
-//        return fakts;
-//    }
-
-
-//    @Override
-//    public void setNodes(List<KzTreeAware> nodes) {
-////        return new ArrayList();
-//    }
-
-//    @Override
-//    public void setNodes(Set<? extends KzTreeAware> zaks) {
-//        // Do nothing
-//    }
-
-//    @Override
-//    public String getObjednatel() {
-//        return "";
-//    }
+    public Zak() {
+        super();
+//        this(ItemType.ZAK, 9000, null);
+    }
 
     @Override
     public Klient getKlient() {
@@ -529,6 +502,73 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     public void setChecked(boolean checked) {
         this.checked = checked;
     }
+
+// ========================================
+
+
+    public Zak(ItemType typ, Integer czak, Kont parentKont) {
+        super();
+        this.typ = typ;
+        this.czak = czak;
+        this.rok = LocalDate.now().getYear();
+        this.uuid = UUID.randomUUID();
+        this.honorar = BigDecimal.valueOf(0);
+        this.kont = parentKont;
+        this.arch = false;
+
+//        UUID uuid = UUID.randomUUID();
+//        String randomUUIDString = uuid.toString();
+    }
+
+
+    public void updateBasicData(Zak zak) {
+
+        this.setVersion(zak.getVersion());
+        this.uuid = zak.uuid;
+        this.typ = zak.typ;
+        this.ckontOrig = zak.ckontOrig;
+        this.czak = zak.czak;
+        this.rok = zak.rok;
+        this.arch = zak.arch;
+        this.skupina = zak.skupina;
+        this.text = zak.text;
+        this.folder = zak.folder;
+        this.honorar = zak.honorar;
+//        this.setKontId(zak.getKontId());
+        this.tmp = zak.tmp;
+        this.dateCreate = zak.dateCreate;
+        this.rokmeszad = zak.rokmeszad;
+//        this.dateCreate = kont.dateCreate;
+        this.datetimeUpdate = zak.datetimeUpdate;
+
+//        BigDecimal rozprac;
+    }
+
+
+//    public List<Fakt> getFakts() {
+//        if (null == fakts) {
+//            return Collections.emptyList();
+//        }
+//        return fakts;
+//    }
+
+
+//    @Override
+//    public void setNodes(List<KzTreeAware> nodes) {
+////        return new ArrayList();
+//    }
+
+//    @Override
+//    public void setNodes(Set<? extends KzTreeAware> zaks) {
+//        // Do nothing
+//    }
+
+//    @Override
+//    public String getObjednatel() {
+//        return "";
+//    }
+
+// ========================================
 
     @Override
     public int hashCode() {

@@ -1118,7 +1118,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         editComp.setPreventInvalidInput(true);
         pzBinder.forField(editComp)
                 .withNullRepresentation("")
-                .withConverter(VzmFormatUtils.decHodToStringConverter)
+                .withConverter(VzmFormatUtils.VALIDATED_DEC_HOD_TO_STRING_CONVERTER)
                 .bind(pzHodValProv, pzHodSetter);
         col.setEditorComponent(editComp);
         pzBinder.addStatusChangeListener(event -> {

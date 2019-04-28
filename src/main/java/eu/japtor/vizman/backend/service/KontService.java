@@ -28,6 +28,8 @@ public interface KontService {
 
     List<? super Kont> fetchHavingAllZaksArchived();
 
+    List<? super Kont> fetchHavingNoZaks();
+
     long countAll();
 
     List<Kont> fetchBySearchFilter(String serachString, List<QuerySortOrder> sortOrders);

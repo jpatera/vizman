@@ -15,7 +15,6 @@ import com.vaadin.flow.dom.Element;
 import eu.japtor.vizman.backend.entity.*;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ZakBasicGrid extends Grid<ZakBasic> {
@@ -281,7 +280,7 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
 
     private ComponentRenderer<Component, ZakBasic> archRenderer = new ComponentRenderer<>(zakb -> {
         ArchIconBox archBox = new ArchIconBox();
-        archBox.showIcon(zakb.getTyp(), zakb.getArch());
+        archBox.showIcon(zakb.getTyp(), zakb.getArch() ? ArchIconBox.ArchState.ARCHIVED : ArchIconBox.ArchState.EMPTY);
         return archBox;
     });
 

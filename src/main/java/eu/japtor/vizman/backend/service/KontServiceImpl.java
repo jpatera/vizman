@@ -61,7 +61,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
     @Override
     public List<Kont> fetchAll() {
-        return kontRepo.findAllByOrderByCkontDesc();
+        return kontRepo.findAllByOrderByRokDescCkontDesc();
     }
 
     @Override
@@ -84,6 +84,11 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 //        List<Kont> konts = kontRepo.findAll(predicate, pageable);
 //        List<Kont> konts = productRepository.findAll(predicate, pageable);
 //        return ...;
+    }
+
+    @Override
+    public List<Kont> fetchHavingNoZaks() {
+        return kontRepo.findHavingNoZaks();
     }
 
     @Override

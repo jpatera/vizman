@@ -19,8 +19,8 @@ import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -29,7 +29,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.SortDirection;
-import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -37,10 +36,7 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.dom.*;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import elemental.json.JsonObject;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
@@ -53,13 +49,12 @@ import eu.japtor.vizman.ui.forms.KontFormDialog;
 import eu.japtor.vizman.ui.forms.ZakFormDialog;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static eu.japtor.vizman.app.security.SecurityUtils.isHonorareAccessGranted;
 import static eu.japtor.vizman.app.security.SecurityUtils.isZakFormsAccessGranted;
@@ -75,16 +70,19 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 //        Perm.ZAK_BASIC_READ, Perm.ZAK_BASIC_MODIFY,
         Perm.ZAK_EXT_READ, Perm.ZAK_EXT_MODIFY
 })
-public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, HasLogger {
+//public class KzTreeView extends VerticalLayout implements  AfterNavigationObserver, BeforeEnterObserver, HasLogger {
+public class KzTreeView extends VerticalLayout implements HasLogger {
 
     private static final String RADIO_KONT_ACTIVE = "Aktivní";
-    private static final String RADIO_KONT_ARCH = "Archivované";
-    private static final String RADIO_KONT_ALL = "Všechny";
+    private static final String RADIO_KONT_ARCH = "Archiv";
+    private static final String RADIO_KONT_EMPTY = "Prázdné";
+    private static final String RADIO_KONT_ALL = "Vše";
 
     private static final String CKZ_COL_KEY = "ckz-col";
     private static final String ARCH_COL_KEY = "arch-col";
     private static final String MENA_COL_KEY = "mena-col";
     private static final String HONORAR_COL_KEY = "honorar-col";
+    private static final String HONORAR_CISTY_COL_KEY = "honorar-cisty-col";
     private static final String AVIZO_COL_KEY = "avizo-col";
     private static final String TEXT_COL_KEY = "text-col";
     private static final String OBJEDNATEL_COL_KEY = "objednatel-col";
@@ -92,7 +90,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
     private static final String ROK_COL_KEY = "rok-col";
 
     private Random rand = new Random();
-    private String kontFolderOrig;
+//    private String kontFolderOrig;
 
     private KontFormDialog kontFormDialog;
     private ZakFormDialog zakFormDialog;
@@ -103,12 +101,15 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
     private TreeGrid<KzTreeAware> kzTreeGrid;
     private TreeData<KzTreeAware> kzTreeData;
     private TreeDataProvider<KzTreeAware> inMemoryKzTreeProvider;
+    private Button reloadButton;
     private Button newKontButton;
     private RadioButtonGroup<String> archFilterRadio;
     private ComponentRenderer<HtmlComponent, KzTreeAware> kzTextRenderer;
     private ComponentRenderer<Component, KzTreeAware> avizoRenderer;
 
-    VerticalLayout gridContainer;
+    private List<GridSortOrder<KzTreeAware>> initialSortOrder;
+
+
     HorizontalLayout viewToolBar = new HorizontalLayout();
 //    HorizontalLayout toolBarSearch = new HorizontalLayout();
 
@@ -134,7 +135,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
     private CfgPropsCache cfgPropsCache;
 
 
-//    class KzText extends HtmlComponent implements KeyNotifier {
+    //    class KzText extends HtmlComponent implements KeyNotifier {
     static class KzText extends Paragraph implements KeyNotifier {
         public KzText(String text) {
             super(text);
@@ -163,11 +164,6 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //    private BiConsumer<Kont, Operation> saveKontBiConsumer = (kont, oper) ->  saveKontForGrid(kont, oper);
 
 
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        // Navigation first goes here, then to the beforeEnter of MainView
-//        System.out.println("###  KzTreeView.beforeEnter");
-    }
 
     @PostConstruct
     public void postInit() {
@@ -192,7 +188,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
         });
 //        kontFormDialog.addDialogCloseActionListener(ev -> {
 ////            Notification.show("Close Action Listener");
-//            reloadTreeProvider(archFilterRadio.getValue());
+//            loadTreeData(archFilterRadio.getValue());
 //        });
 
         zakFormDialog = new ZakFormDialog(
@@ -216,95 +212,157 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        );
 
         initKzTextRenderer();
-
-        initZakProvider();
+//        initZakProvider();
         this.add(initGridContainer());
 
-        archFilterRadio.setValue(RADIO_KONT_ACTIVE);    // Triggers an event which will reloadTreeProvider
+//        // Triggers an event which will loadTreeData:
+        archFilterRadio.setValue(RADIO_KONT_ACTIVE);
 
 //        archFilterRadio.getDataProvider().refreshItem();
 //        updateZakGridContent();
     }
 
+//    @Override
+//    public void beforeEnter(BeforeEnterEvent event) {
+//        // Navigation first goes here, then to the beforeEnter of MainView
+////        System.out.println("###  KzTreeView.beforeEnter");
+//        archFilterRadio.setValue(RADIO_KONT_ACTIVE);
+//        reloadButton.click();
+//    }
+//
+//    @Override
+//    public void afterNavigation(AfterNavigationEvent event) {
+//        // Triggers an event which will loadTreeData:
+//        archFilterRadio.setValue(RADIO_KONT_ACTIVE);
+//        reloadButton.click();
+//    }
+//
+//    @Override
+//    protected void onAttach(AttachEvent attachEvent) {
+//        // Triggers an event which will loadTreeData:
+//        archFilterRadio.setValue(RADIO_KONT_ACTIVE);
+//        reloadButton.click();
+//    }
 
-    void finishKontEdit(KontFormDialog kontFormDialog) {
-        Kont dialogKont = kontFormDialog.getCurrentItem(); // Modified, just added or just deleted
+
+    private void finishKontEdit(KontFormDialog kontFormDialog) {
+        Kont kont = kontFormDialog.getCurrentItem(); // Kont modified, just added or just deleted
         Operation oper = kontFormDialog.getCurrentOperation();
         OperationResult operRes = kontFormDialog.getLastOperationResult();
-        if (OperationResult.NO_CHANGE == operRes) {
-            return;
-        }
-        if (OperationResult.ITEM_SAVED == operRes) {
-            Notification.show("Kontrakt " + dialogKont.getCkont() + " uložen"
+        boolean zaksChanged = kontFormDialog.isZaksChanged();
+        KzTreeAware kzItemOrig = kontFormDialog.getKzItemOrig();
+
+        syncTreeGridAfterKontEdit(kont, oper, operRes, zaksChanged, kzItemOrig);
+
+        if (OperationResult.ITEM_SAVED == operRes || zaksChanged) {
+            Notification.show("Kontrakt " + kont.getCkont() + " uložen"
                     , 2500, Notification.Position.TOP_CENTER);
 
         } else if (OperationResult.ITEM_DELETED == operRes) {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Editace kontraktu")
-                    .withMessage("Kontrakt " + dialogKont.getCkont() + " zrušen.")
+                    .withMessage("Kontrakt " + kont.getCkont() + " zrušen.")
                     .open();
         }
-
-        syncTreeGridAfterKontEdit(dialogKont, oper, operRes);
-
     }
 
-    void finishZakEdit(ZakFormDialog zakFormDialog) {
-        Zak dialogZak = zakFormDialog.getCurrentItem(); // Modified, just added or just deleted
-        String ckz = String.format("%s / %s", dialogZak.getCkont(), dialogZak.getCzak());
+    private void finishZakEdit(ZakFormDialog zakFormDialog) {
+        Zak zak = zakFormDialog.getCurrentItem(); // Modified, just added or just deleted
+        String ckz = String.format("%s / %s", zak.getCkont(), zak.getCzak());
         Operation oper = zakFormDialog.getCurrentOperation();
-        OperationResult operRes = zakFormDialog.getLastOperationResult();
-        if (OperationResult.NO_CHANGE == operRes) {
-            return;
-        }
-        if (OperationResult.ITEM_SAVED == operRes) {
+        OperationResult zakOperRes = zakFormDialog.getLastOperationResult();
+        boolean faktsChanged = zakFormDialog.isFaktsChanged();
+        KzTreeAware kzItemOrig = zakFormDialog.getKzItemOrig();
+
+        syncTreeGridAfterZakEdit(zak, oper, zakOperRes, faktsChanged, kzItemOrig);
+
+        if (OperationResult.ITEM_SAVED == zakOperRes || faktsChanged) {
             Notification.show(String.format("Zakázka %s uložena", ckz)
                     , 2500, Notification.Position.TOP_CENTER);
 
-        } else if (OperationResult.ITEM_DELETED == operRes) {
+        } else if (OperationResult.ITEM_DELETED == zakOperRes) {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Editace zakázky")
                     .withMessage(String.format("Zakázka %s zrušena.", ckz))
                     .open();
         }
-
-        syncTreeGridAfterZakEdit(dialogZak, oper, operRes);
-
     }
 
-    void syncTreeGridAfterKontEdit(Kont modKont, Operation oper, OperationResult operRes) {
+    private void syncTreeGridAfterKontEdit(Kont kontAfter, Operation oper
+            , OperationResult operRes, boolean zaksChanged, KzTreeAware kzItemOrig) {
 
-        if (Operation.EDIT == oper) {
-            kzTreeData.removeItem(modKont);
+        if ((OperationResult.NO_CHANGE == operRes) && !zaksChanged) {
+            return;
         }
-        if (OperationResult.ITEM_DELETED != operRes) {
-            kzTreeData.addItem(null, modKont);
-            kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
+
+        List<GridSortOrder<KzTreeAware>> sortOrder = kzTreeGrid.getSortOrder();
+        kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+
+        if (Operation.ADD == oper) {
+            kzTreeData.addItem(null, kontAfter);
+//            kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
+        } else if (Operation.EDIT == oper) {
+            if (OperationResult.ITEM_DELETED == operRes) {
+                kzTreeData.removeItem(kzItemOrig);
+            } else if (zaksChanged || (OperationResult.ITEM_SAVED == operRes)) {
+//                ((Kont)kzItemOrig).updateBasicData(kontAfter);
+                updateViewContent(kontAfter);
+
+// TODO: z neznameho duvodu se v TreeData neupdatuje polozka vyssim VersionId
+//                kzTreeData.removeItem(kzItemOrig);
+//                kzTreeData.addItem(null, kontAfter);
+//                kzTreeData.addItems(kontAfter, ((KzTreeAware)kontAfter).getNodes());
+
+//            } else if ((OperationResult.ITEM_SAVED == operRes)) {
+////                ((Kont)getItemFromTree(kontAfter)).updateBasicData(kontAfter);
+//                ((Kont)kzItemOrig).updateBasicData(kontAfter);
+            }
         }
+
+//        updateViewContent();
+//        populateGridWithData(kzTreeData, sortOrder);
+
+//        if (zaksChanged && OperationResult.ITEM_DELETED != operRes) {
+////            List<KzTreeAware> kontKzs = kzTreeData.getChildren(modKont);
+////            if (null != kontKzs) {
+////                for (KzTreeAware kz : kontKzs) {
+////                    kzTreeData.removeItem(kz);
+////                }
+////            }
+////            kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
+//        }
+
+//        if (zaksChanged || (OperationResult.NO_CHANGE != operRes)) {
+//            // TODO: update ZAK and KONT calculated fields
+////            kzTreeData.getChildren(modKont).clear();
+////            kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
+//        }
 
 //        kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
 //        kzTreeData.addItems((Collection<KzTreeAware>) modKont, KzTreeAware::getNodes);
-
-        kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-        inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
-        inMemoryKzTreeProvider.setSortOrder(KzTreeAware::getCkont, SortDirection.DESCENDING);
-//        inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
-        kzTreeGrid.setDataProvider(inMemoryKzTreeProvider);
-//        kzTreeGrid.getDataProvider().refreshItem(modKont);
-
-        kzTreeGrid.getDataProvider().refreshAll();
-
 //        kzTreeGrid.collapseRecursively(kzTreeGrid.getTreeData().getRootItems(),0);
-        KzTreeAware itemForSelection = (OperationResult.ITEM_DELETED == operRes) ?
-                getNeibourghItemFromTree(modKont) : modKont;
-        if (null != itemForSelection) {
-//            kzTreeGrid.expand(itemForSelection);
-            kzTreeGrid.getSelectionModel().select(itemForSelection);
-        }
 
-        kzTreeGrid.getDataProvider().refreshAll();
+//        KzTreeAware itemForSelection = (OperationResult.ITEM_DELETED == operRes) ?
+//                getNeibourghItemFromTree(kontAfter) : kontAfter;
+//        if (null != itemForSelection) {
+////            kzTreeGrid.expand(itemForSelection);
+//            kzTreeGrid.getSelectionModel().select(itemForSelection);
+//        }
+
+//        if (OperationResult.ITEM_DELETED != operRes) {
+//            KzTreeAware parent = kzTreeData.getParent(kzItemOrig);
+//            if (null == parent) {
+//                kzTreeGrid.expand(kzItemOrig);
+//                kzTreeGrid.getSelectionModel().select(kzItemOrig);
+//            } else {
+//                kzTreeGrid.expand(parent);
+//                kzTreeGrid.getSelectionModel().select(kzItemOrig);
+//            }
+//        }
+
+//        kzTreeGrid.getDataProvider().refreshAll();
 
 ////        List<KzTreeAware> zaks = kzTreeGrid.getDataProvider()
 //        Stream<KzTreeAware> zakStream = kzTreeGrid.getDataProvider()
@@ -335,31 +393,92 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        if ((Operation.ADD == operation) && (archFilterRadio.getValue().equals(RADIO_KONT_ACTIVE))) {
 //                archFilterRadio.setValue(RADIO_KONT_ARCH);
 //        } else {
-//                reloadTreeProvider(archFilterRadio.getValue());
+//                loadTreeData(archFilterRadio.getValue());
 //        }
     }
 
-    void syncTreeGridAfterZakEdit(Zak modZak, Operation oper, OperationResult operRes) {
+    private void syncTreeGridAfterZakEdit(Zak zakAfter, Operation oper
+            , OperationResult operRes, boolean  faktsChanged, KzTreeAware kzItemOrig) {
 
-        if (Operation.EDIT == oper) {
-            kzTreeData.removeItem(modZak);
-        }
-        if (OperationResult.ITEM_DELETED != operRes) {
-            kzTreeData.addItem(modZak.getKont(), modZak);
-//            kzTreeData.addItems(modZak, ((KzTreeAware)modZak).getNodes());
+        if ((OperationResult.NO_CHANGE == operRes) && !faktsChanged) {
+            return;
         }
 
+        List<GridSortOrder<KzTreeAware>> sortOrder = kzTreeGrid.getSortOrder();
         kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-        inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
-        inMemoryKzTreeProvider.setSortOrder(KzTreeAware::getCkont, SortDirection.DESCENDING);
-//        inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
-        kzTreeGrid.setDataProvider(inMemoryKzTreeProvider);
-//        kzTreeGrid.getDataProvider().refreshItem(modKont);
-        kzTreeGrid.getDataProvider().refreshAll();
+
+        if (Operation.ADD == oper) {
+            Kont kontParent = (Kont)getItemFromTree(zakAfter.getKont());
+            if (null == kontParent) {
+                kzTreeData.addItem(null, zakAfter.getKont());
+            }
+            kzTreeData.addItem(zakAfter.getKont(), zakAfter);
+//            kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
+        } else if (Operation.EDIT == oper) {
+            if (OperationResult.ITEM_DELETED == operRes) {
+                kzTreeData.removeItem(zakAfter);
+            } else if (faktsChanged || (OperationResult.ITEM_SAVED == operRes)) {
+                updateViewContent(zakAfter);
+
+                // TODO:
+//                kzTreeData.removeItem(zakAfter);
+//                kzTreeData.addItem(zakAfter.getKont(), zakAfter);
+
+//                ((Zak)kzItemOrig).updateBasicData(zakAfter);
+
+//                kzTreeData.removeItem(zakAfter);
+//                kzTreeData.addItem(null, zakAfter);
+//                kzTreeData.addItems(zakAfter, ((KzTreeAware)zakAfter).getNodes());
+//            } else if ((OperationResult.ITEM_SAVED == operRes)) {
+////                ((Zak)getItemFromTree(zakAfter)).updateBasicData(zakAfter);
+//                ((Zak)kzItemOrig).updateBasicData(zakAfter);
+            }
+        }
+
+//        if (faktsChanged || (OperationResult.NO_CHANGE != operRes)) {
+//            // TODO: update ZAK and KONT calculated fields
+////            kzTreeData.getChildren(modKont).clear();
+////            kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
+//        }
+
+//        updateViewContent();
+//        populateGridWithData(kzTreeData, sortOrder);
+
+
+//        List<GridSortOrder<KzTreeAware>> sortOrder = kzTreeGrid.getSortOrder();
+//        if (Operation.EDIT == oper) {
+//            kzTreeData.removeItem(modZak);
+//        }
+//        if (OperationResult.ITEM_DELETED != operRes) {
+//            kzTreeData.addItem(modZak.getKont(), modZak);
+////            kzTreeData.addItems(modZak, ((KzTreeAware)modZak).getNodes());
+//        }
+//
+//        kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+//
+//        if (faktsChanged || (OperationResult.NO_CHANGE != operRes)) {
+//            // TODO: update ZAK and KONT calculated fields
+////            kzTreeData.getChildren(modKont).clear();
+////            kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
+//        }
+//        populateGridWithData(kzTreeData, sortOrder);
+
+//        inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
+////        inMemoryKzTreeProvider.setSortOrder(KzTreeAware::getCkont, SortDirection.DESCENDING);
+////        inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
+//        kzTreeGrid.setDataProvider(inMemoryKzTreeProvider);
+////        kzTreeGrid.getDataProvider().refreshItem(modKont);
+//
+//        kzTreeGrid.getDataProvider().refreshAll();
+//        if (CollectionUtils.isEmpty(sortOrder)) {
+//            kzTreeGrid.sort(initialSortOrder);
+//        } else  {
+//            kzTreeGrid.sort(sortOrder);
+//        }
 
 //        kzTreeGrid.collapseRecursively(kzTreeGrid.getTreeData().getRootItems(),0);
         KzTreeAware itemForSelection = (OperationResult.ITEM_DELETED == operRes) ?
-                getNeibourghItemFromTree(modZak.getKont()) : modZak.getKont();
+                getNeibourghItemFromTree(zakAfter.getKont()) : zakAfter.getKont();
 //                getNeibourghItemFromTree(modZak) : modZak;
         if (null != itemForSelection) {
 //            kzTreeGrid.expand(itemForSelection);
@@ -368,8 +487,15 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
         kzTreeGrid.getDataProvider().refreshAll();
     }
 
+    private KzTreeAware getItemFromTree(final KzTreeAware item) {
+        int itemIdx = getItemRowIdx(item);
+        return kzTreeGrid.getDataCommunicator()
+                . fetchFromProvider(itemIdx, 1)
+                .findFirst().orElse(null);
+    }
+
     private KzTreeAware getNeibourghItemFromTree(final KzTreeAware item) {
-        int itemIdx = getItemTreeIdx(item);
+        int itemIdx = getItemRowIdx(item);
 //        Stream<KzTreeAware> stream = kzTreeGrid.getDataCommunicator()
         KzTreeAware newSelectedItem;
         newSelectedItem = kzTreeGrid.getDataCommunicator()
@@ -384,7 +510,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
         return newSelectedItem;
     }
 
-    private int getItemTreeIdx(final KzTreeAware item) {
+    private int getItemRowIdx(final KzTreeAware item) {
         return kzTreeGrid.getDataCommunicator().getIndex(item);
     }
 
@@ -484,31 +610,50 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
         return comp;
     });
 
+    private ComponentRenderer<HtmlComponent, KzTreeAware> honorarCistyCellRenderer = new ComponentRenderer<>(kz -> {
+        HtmlComponent comp =  VzmFormatUtils.getMoneyComponent(kz.getHonorarCisty());
+        if (ItemType.KONT == kz.getTyp()) {
+            comp.getStyle()
+                    .set("padding-right", "1em");
+        } else {
+            comp.getStyle()
+                    .set("text-indent", "1em");
+        }
+        return comp;
+    });
+
     private ComponentRenderer<Component, KzTreeAware> kzArchRenderer = new ComponentRenderer<>(kz -> {
-//        this.getElement().setAttribute("theme", "small icon secondary");
-        Icon icoZakArchived = new Icon(VaadinIcon.CHECK);
-        icoZakArchived.setSize("0.8em");
-        icoZakArchived.getStyle()
-                .set("theme", "small icon secondary")
-                .set("padding-left","1em");
-        ;
-//        Icon icoKontActive = new Icon(VaadinIcon.ELLIPSIS_H);
-        Icon icoKontActive = new Icon(VaadinIcon.HAMMER);
-        icoKontActive.setColor("green");
-        icoKontActive.setSize("0.8em");
-        icoKontActive.getStyle()
-                .set("theme", "small icon secondary")
-        ;
-//        Icon icoKontArchived = new Icon(VaadinIcon.CHECK_CIRCLE_O);
-        Icon icoKontArchived = new Icon(VaadinIcon.CHECK_SQUARE_O);
-//        Icon icoKontArchived = new Icon(VaadinIcon.ARCHIVE);
-        icoKontArchived.setSize("1em");
-        icoKontArchived.getStyle()
-                .set("theme", "small icon secondary")
-        ;
-        return ItemType.KONT == kz.getTyp() ?
-                (kz.getArch() ? icoKontArchived : icoKontActive)
-                : kz.getArch() ? icoZakArchived : new Span();
+        ArchIconBox archBox = new ArchIconBox();
+        archBox.showIcon(kz.getTyp(), kz.getArchState());
+//        archBox.showIcon(ItemType.KONT == kz.getTyp() ?
+//                (kz.getArch() ? icoKontArchived : icoKontActive)
+//                : kz.getArch() ? icoZakArchived : new Span();
+        return archBox;
+
+//        //        this.getElement().setAttribute("theme", "small icon secondary");
+//        Icon icoZakArchived = new Icon(VaadinIcon.CHECK);
+//        icoZakArchived.setSize("0.8em");
+//        icoZakArchived.getStyle()
+//                .set("theme", "small icon secondary")
+//                .set("padding-left","1em");
+//        ;
+////        Icon icoKontActive = new Icon(VaadinIcon.ELLIPSIS_H);
+//        Icon icoKontActive = new Icon(VaadinIcon.HAMMER);
+//        icoKontActive.setColor("green");
+//        icoKontActive.setSize("0.8em");
+//        icoKontActive.getStyle()
+//                .set("theme", "small icon secondary")
+//        ;
+////        Icon icoKontArchived = new Icon(VaadinIcon.CHECK_CIRCLE_O);
+//        Icon icoKontArchived = new Icon(VaadinIcon.CHECK_SQUARE_O);
+////        Icon icoKontArchived = new Icon(VaadinIcon.ARCHIVE);
+//        icoKontArchived.setSize("1em");
+//        icoKontArchived.getStyle()
+//                .set("theme", "small icon secondary")
+//        ;
+//        return ItemType.KONT == kz.getTyp() ?
+//                (kz.getArch() ? icoKontArchived : icoKontActive)
+//                : kz.getArch() ? icoZakArchived : new Span();
     });
 
     //    TextField searchField = new TextField("Hledej kontrakty...");
@@ -528,7 +673,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
         gridContainer.getStyle().set("marginTop", "0.5em");
         gridContainer.setAlignItems(Alignment.STRETCH);
 
-        gridContainer.add(initKzToolBar());
+        gridContainer.add(initGridToolBar());
         gridContainer.add(initKzTreeGrid());
 
 //        this.add();
@@ -560,6 +705,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 
         kzTreeGrid.setColumnReorderingAllowed(true);
         kzTreeGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        kzTreeGrid.setMultiSort(true);
 
 //        GridSelectionModel<?> selectionMode = kzTreeGrid.setSelectionMode(Grid.SelectionMode.MULTI);
 //        ((GridMultiSelectionModel<?>) selectionMode).setSelectionColumnFrozen(true);
@@ -642,8 +788,16 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
                 .setKey(SKUPINA_COL_KEY)
         ;
         if (isHonorareAccessGranted()) {
-            kzTreeGrid.addColumn(honorarCellRenderer)
-                    .setHeader("Honorář")
+//            kzTreeGrid.addColumn(honorarCellRenderer)
+//                    .setHeader("Honorář")
+//                    .setFlexGrow(0)
+//                    .setWidth("9em")
+//                    .setResizable(true)
+//                    .setTextAlign(ColumnTextAlign.END)
+//                    .setKey(HONORAR_COL_KEY)
+//            ;
+            kzTreeGrid.addColumn(honorarCistyCellRenderer)
+                    .setHeader("Honorář č.")
                     .setFlexGrow(0)
                     .setWidth("9em")
                     .setResizable(true)
@@ -776,6 +930,13 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        kzTreeGrid.getColumnByKey(TEXT_COL_KEY).setSortable(true);
 
 
+        initialSortOrder = Arrays.asList(
+                new GridSortOrder(
+                        kzTreeGrid.getColumnByKey(ROK_COL_KEY), SortDirection.DESCENDING)
+                , new GridSortOrder(
+                        kzTreeGrid.getColumnByKey(CKZ_COL_KEY), SortDirection.DESCENDING)
+        );
+
 //        ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
 
 //        List<? super Kont> kzList = kontService.fetchAll();
@@ -842,27 +1003,40 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
     }
 
 
-    private void reloadTreeProvider(final String archFilter) {
+    private void loadTreeData(final String archFilter) {
 //        if (null == inMemoryKzTreeProvider) {
 //            return;
 //        }
 //
 //        inMemoryKzTreeProvider.clearFilters();
+
+        List<GridSortOrder<KzTreeAware>> sortOrder = kzTreeGrid.getSortOrder();
+
         List<? super Kont> kzList;
         if (RADIO_KONT_ACTIVE.equals(archFilter)) {
             kzList = kontService.fetchHavingSomeZaksActive();
         } else if (RADIO_KONT_ARCH.equals(archFilter)) {
             kzList = kontService.fetchHavingAllZaksArchived();
+        } else if (RADIO_KONT_EMPTY.equals(archFilter)) {
+            kzList = kontService.fetchHavingNoZaks();
         } else {
             kzList = kontService.fetchAll();
         }
 
         ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
         kzTreeData = (new TreeData()).addItems(kzList, kzNodesProvider);
-        inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
-        inMemoryKzTreeProvider.setSortOrder(KzTreeAware::getCkont, SortDirection.DESCENDING);
-//        inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
+        populateGridWithData(kzTreeData, sortOrder);
+    }
+
+    private void populateGridWithData(TreeData treeData, List<GridSortOrder<KzTreeAware>> sortOrder) {
+        inMemoryKzTreeProvider = new TreeDataProvider<>(treeData);
         kzTreeGrid.setDataProvider(inMemoryKzTreeProvider);
+//        inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
+        if (CollectionUtils.isEmpty(sortOrder)) {
+            kzTreeGrid.sort(initialSortOrder);
+        } else  {
+            kzTreeGrid.sort(sortOrder);
+        }
     }
 
     private void setResizable(Grid.Column column) {
@@ -895,17 +1069,13 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
         ComponentEventListener listener =  null;
         if (ItemType.KONT == kz.getTyp()) {
             listener = event -> {
-                kontFolderOrig = ((Kont)kz).getFolder();
-                kontFormDialog.openDialog(
-                        (Kont)kz, Operation.EDIT, null
-                );
-                kontFormDialog.getLastOperationResult();
+//                kontFolderOrig = ((Kont)kz).getFolder();
+                kontFormDialog.openDialog((Kont)kz, Operation.EDIT);
+//                kontFormDialog.getLastOperationResult();
 
             };
         } else if (ItemType.ZAK == kz.getTyp() || ItemType.AKV == kz.getTyp()) {
-            listener = event -> zakFormDialog.openDialog(
-                    (Zak)kz, Operation.EDIT, null
-            );
+            listener = event -> zakFormDialog.openDialog((Zak)kz, Operation.EDIT);
         }
 
         Button btn = new GridItemEditBtn(listener, VzmFormatUtils.getItemTypeColorName(kz.getTyp()));
@@ -928,7 +1098,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //            return service.findAll(offset, limit, sortOrder).stream(); }, () -> service.count() );
 //    }
 
-    private void initZakProvider() {
+//    private void initZakProvider() {
 //        DataProvider<Kont, String> kontDataProvider = DataProvider.fromFilteringCallbacks(
 //                query -> {
 //                    query.getOffset();
@@ -980,7 +1150,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        personEditForm = new PersonEditorDialog(
 //                this::savePerson, this::deletePerson, personService, roleService.fetchAllRoles(), passwordEncoder);
 
-    }
+//    }
 
 
 
@@ -1056,7 +1226,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 ////        if ((Operation.ADD == operation) && (archFilterRadio.getValue().equals(RADIO_KONT_ACTIVE))) {
 ////                archFilterRadio.setValue(RADIO_KONT_ARCH);
 ////        } else {
-////                reloadTreeProvider(archFilterRadio.getValue());
+////                loadTreeData(archFilterRadio.getValue());
 ////        }
 ////
 ////        kzTreeGrid.expand(savedKont);
@@ -1065,10 +1235,10 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //
 //    }
 
-    private void refreshTreeAfterEdit(final KzTreeAware neibourghItem) {
-        reloadTreeProvider(archFilterRadio.getValue());
-        kzTreeGrid.getSelectionModel().select(neibourghItem);
-    }
+//    private void refreshTreeAfterEdit(final KzTreeAware neibourghItem) {
+//        loadTreeData(archFilterRadio.getValue());
+//        kzTreeGrid.getSelectionModel().select(neibourghItem);
+//    }
 
 //    private void deleteKontForGrid(final Kont kontToDelete) {
 //        int kontDelIdx = kzTreeGrid.getDataCommunicator().getIndex(kontToDelete);
@@ -1078,7 +1248,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //
 //        try {
 //            kontService.deleteKont(kontToDelete);
-//            reloadTreeProvider(archFilterRadio.getValue());
+//            loadTreeData(archFilterRadio.getValue());
 //            kzTreeGrid.getSelectionModel().select(newSelectedKont);
 //
 //            ConfirmDialog
@@ -1161,7 +1331,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //    }
 
 
-    private Component initKzToolBar() {
+    private Component initGridToolBar() {
 
 //        kzToolBar = new HorizontalLayout();
 //        FlexLayout kzToolBar;
@@ -1181,24 +1351,11 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
         Span archFilterLabel = new Span("Kontrakty:");
 
         archFilterRadio = new RadioButtonGroup<>();
-        archFilterRadio.setItems(RADIO_KONT_ACTIVE, RADIO_KONT_ARCH, RADIO_KONT_ALL);
+        archFilterRadio.setItems(RADIO_KONT_ACTIVE, RADIO_KONT_ARCH, RADIO_KONT_EMPTY, RADIO_KONT_ALL);
 //        buttonShowArchive.addValueChangeListener(event -> setArchiveFilter(event));
         archFilterRadio.getStyle().set("alignItems", "center");
         archFilterRadio.getStyle().set("theme", "small");
-        archFilterRadio.addValueChangeListener(event -> {
-                reloadTreeProvider(event.getValue());
-
-//                if (RADIO_KONT_ALL.equals(event.getValue())) {
-//                    inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
-//                } else if (RADIO_KONT_ARCH.equals(event.getValue())) {
-//                    inMemoryKzTreeProvider.setFilter(kz -> !kz.getArch());
-//                } else {
-//                    inMemoryKzTreeProvider.clearFilters();
-//                }
-////                inMemoryKzTreeProvider.filteringByPrefix(kz -> kz.getText());
-                inMemoryKzTreeProvider.refreshAll();
-            }
-        );
+        archFilterRadio.addValueChangeListener(event -> updateViewContent());
 
 //        FlexLayout archFilterComponent = new FlexLayout();
         HorizontalLayout archFilterComponent = new HorizontalLayout();
@@ -1211,15 +1368,28 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
 //        archFilterComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         archFilterComponent.add(archFilterLabel, archFilterRadio);
 
-        H3 mainTitle = new H3("KONTRAKTY / ZAKÁZKY");
-        mainTitle.getStyle().set("margin-top", "0.2em");
+//        H3 mainTitle = new H3("KONTRAKTY / ZAKÁZKY");
+//        mainTitle.getStyle().set("margin-top", "0.2em");
 
-//        mainTitle.getElement().getStyle().set("fontSize", "1,7em").set("fontWeight", "bold");
+        HorizontalLayout titleComponent = new HorizontalLayout();
+        titleComponent.setMargin(false);
+        titleComponent.setPadding(false);
+        titleComponent.setSpacing(false);
+        titleComponent.setAlignItems(Alignment.CENTER);
+        titleComponent.setJustifyContentMode(JustifyContentMode.START);
+        titleComponent.add(
+                new GridTitle("KONTRAKTY / ZAKÁZKY")
+                , new Ribbon()
+                , initReloadButton()
+        );
 
-//        Ribbon ribbonExp = new Ribbon();
-//        kzToolBar.add(expandAllBtn, collapseAllBtn, archiveFilterRadio);
-//        kzToolBar.add(mainTitle, ribbonExp, archFilterLabel, archFilterRadio, initNewKontButton());
-        kzToolBar.add(mainTitle, new Ribbon(), archFilterComponent, new Ribbon(), initNewKontButton());
+        kzToolBar.add(
+                titleComponent
+                , new Ribbon()
+                , archFilterComponent
+                , new Ribbon()
+                , initNewKontButton()
+        );
 //        kzToolBar.expand(ribbonExp);
 
 
@@ -1308,41 +1478,70 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
         return kzToolBar;
     }
 
-    //    private void initViewToolBar(final Button reloadViewButton, final Button newItemButto)
-    private Component initViewToolBar() {
-        // Build view toolbar
-        viewToolBar.setWidth("100%");
-        viewToolBar.setPadding(true);
-        viewToolBar.getStyle()
-                .set("padding-bottom","5px");
-
-        Span viewTitle = new Span(TITLE_KZ_TREE.toUpperCase());
-        viewTitle.getStyle()
-                .set("font-size","var(--lumo-font-size-l)")
-                .set("font-weight","600")
-                .set("padding-right","0.75em");
-
-//        searchField = new SearchField(
-////                "Hledej uživatele...", event ->
-////                "Hledej uživatele...", event -> updateZakGridContent()
-//                "Hledej uživatele...",
-//                event -> ((ConfigurableFilterDataProvider) treeGrid.getDataProvider()).setFilter(event.getValue())
-//        );        toolBarSearch.add(viewTitle, searchField);
-
-//        HorizontalLayout searchToolBar = new HorizontalLayout(viewTitle, searchField);
-//        searchToolBar.setDefaultVerticalComponentAlignment(Alignment.CENTER);
-
-//        HorizontalLayout kzToolBar = new HorizontalLayout(reloadViewButton);
-//        kzToolBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-//
-//        HorizontalLayout toolBarItem = new HorizontalLayout(newItemButton);
-//        toolBarItem.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
-
-//        kzToolBar.add(searchToolBar, kzToolBar, ribbon, toolBarItem);
-        Ribbon ribbon = new Ribbon("3em");
-        viewToolBar.expand(ribbon);
-        return viewToolBar;
+    Component initReloadButton() {
+        reloadButton = new ReloadButton(event -> updateViewContent());
+        return reloadButton;
     }
+
+    private void updateViewContent(final KzTreeAware itemToSelect) {
+        updateViewContent();
+        kzTreeGrid.getSelectionModel().select(itemToSelect);
+    }
+
+    private void updateViewContent() {
+        updateViewContent(archFilterRadio.getValue());
+    }
+
+    private void updateViewContent(String archFilter) {
+        loadTreeData(archFilter);
+        inMemoryKzTreeProvider.refreshAll();
+
+//        KzTreeAware itemForSelection = kzTreeData.getRootItems().get(0);
+//        if (null != itemForSelection) {
+//            kzTreeGrid.getSelectionModel().select(itemForSelection);
+//        }
+
+//        kzTreeGrid.initFilterValues();
+//        kzTreeGrid.doFilter();
+//        kzTreeGrid.getDataProvider().refreshAll();
+    }
+
+
+//    //    private void initViewToolBar(final Button reloadViewButton, final Button newItemButto)
+//    private Component initViewToolBar() {
+//        // Build view toolbar
+//        viewToolBar.setWidth("100%");
+//        viewToolBar.setPadding(true);
+//        viewToolBar.getStyle()
+//                .set("padding-bottom","5px");
+//
+//        Span viewTitle = new Span(TITLE_KZ_TREE.toUpperCase());
+//        viewTitle.getStyle()
+//                .set("font-size","var(--lumo-font-size-l)")
+//                .set("font-weight","600")
+//                .set("padding-right","0.75em");
+//
+////        searchField = new SearchField(
+//////                "Hledej uživatele...", event ->
+//////                "Hledej uživatele...", event -> updateZakGridContent()
+////                "Hledej uživatele...",
+////                event -> ((ConfigurableFilterDataProvider) treeGrid.getDataProvider()).setFilter(event.getValue())
+////        );        toolBarSearch.add(viewTitle, searchField);
+//
+////        HorizontalLayout searchToolBar = new HorizontalLayout(viewTitle, searchField);
+////        searchToolBar.setDefaultVerticalComponentAlignment(Alignment.CENTER);
+//
+////        HorizontalLayout kzToolBar = new HorizontalLayout(reloadViewButton);
+////        kzToolBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+////
+////        HorizontalLayout toolBarItem = new HorizontalLayout(newItemButton);
+////        toolBarItem.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+//
+////        kzToolBar.add(searchToolBar, kzToolBar, ribbon, toolBarItem);
+//        Ribbon ribbon = new Ribbon("3em");
+//        viewToolBar.expand(ribbon);
+//        return viewToolBar;
+//    }
 
     private Component initNewKontButton() {
         newKontButton = new NewItemButton("Kontrakt"
@@ -1353,7 +1552,7 @@ public class KzTreeView extends VerticalLayout implements BeforeEnterObserver, H
                     kont.setMena(Mena.CZK);
                     kont.setDateCreate(LocalDate.now());
 //                    kont.setCkont("01234");
-                    kontFormDialog.openDialog(kont, Operation.ADD, null);
+                    kontFormDialog.openDialog(kont, Operation.ADD);
         });
         return newKontButton;
     }

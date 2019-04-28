@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,7 +16,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "KONT")
 //@SequenceGenerator(initialValue = 1, name = "id_gen", sequenceName = "kont_seq")
-public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArch, HasModifDates {
+public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArchState, HasModifDates {
 
 //    public static final GrammarGender GENDER = GrammarGender.MASCULINE;
 //    public static final String NOMINATIVE_SINGULAR = "Kontrakt";
@@ -214,35 +213,15 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     }
 
 
-// ========================================
-
-
-    public Kont() {
-        super();
-    }
-
-    public Kont(final ItemType itemType) {
-        super();
-//        this.uuid = uuid;
-        this.typ = itemType;
-        this.rok = LocalDate.now().getYear();
-        this.mena = Mena.CZK;
-        this.uuid = UUID.randomUUID();
-        // TODO: move it to abstract class and create field/column there
-        // Use it in hash
-//        UUID uuid = UUID.randomUUID();
-//        String randomUUIDString = uuid.toString();
-    }
-
-
     @Transient
     @Override
-    public Boolean getArch() {
+    public ArchIconBox.ArchState getArchState() {
         if ((null == getZaks()) || (getZaks().size() == 0)) {
-            return false;
+            return ArchIconBox.ArchState.EMPTY;
+        } else if (getZaks().stream().allMatch(zak -> zak.getArch())) {
+            return ArchIconBox.ArchState.ARCHIVED;
         } else {
-            return getZaks().stream()
-                    .allMatch(zak -> zak.getArch());
+            return ArchIconBox.ArchState.ACTIVE;
         }
     }
 
@@ -318,8 +297,6 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
         this.checked = checked;
     }
 
-
-
     @Transient
     @Override
     public List<Zak> getNodes() {
@@ -330,7 +307,44 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
 //        return new ArrayList();
     }
 
+// ========================================
 
+    public Kont() {
+        super();
+    }
+
+    public Kont(final ItemType itemType) {
+        super();
+//        this.uuid = uuid;
+        this.typ = itemType;
+        this.rok = LocalDate.now().getYear();
+        this.mena = Mena.CZK;
+        this.uuid = UUID.randomUUID();
+        // TODO: move it to abstract class and create field/column there
+        // Use it in hash
+//        UUID uuid = UUID.randomUUID();
+//        String randomUUIDString = uuid.toString();
+    }
+
+    public void updateBasicData(Kont kont) {
+
+        this.setVersion(kont.getVersion());
+        this.uuid = kont.uuid;
+        this.typ = kont.typ;
+        this.ckont = kont.ckont;
+        this.rok = kont.rok;
+//        this.arch = kont.arch;
+        this.investor = kont.investor;
+        this.objednatel = kont.objednatel;
+        this.mena = kont.mena;
+        this.text = kont.text;
+        this.folder = kont.folder;
+        this.klient = kont.klient;
+//        this.dateCreate = kont.dateCreate;
+        this.datetimeUpdate = kont.datetimeUpdate;
+
+//        BigDecimal rozprac;
+    }
 
 //    @Override
 //    public void setNodes(List<KzTreeAware> subNodes) {
@@ -342,7 +356,7 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
 //        this.zaks = nodes;
 //    }
 
-
+// ========================================
 
     @Override
     public int hashCode() {
@@ -363,4 +377,9 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
 //			return super.equals(other);
 //		}
     }
+
+//    @Override
+//    public Boolean getArch() {
+//        return null;
+//    }
 }

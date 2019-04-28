@@ -1,19 +1,20 @@
 package eu.japtor.vizman.backend.entity;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasComponents;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 public class ArchIconBox extends FlexLayout {
 
+    private Icon icoKontEmpty;
     private Icon icoKontArchived;
     private Icon icoKontActive;
     private Icon icoZakArchived;
+
+
+    public enum ArchState {
+        EMPTY, ACTIVE, ARCHIVED
+    }
 
 //    static {
 //        icoKontActive = VaadinIcon.HAMMER.create();
@@ -44,6 +45,14 @@ public class ArchIconBox extends FlexLayout {
 //        box.setVerticalComponentAlignment(Alignment.END);
 //        box.getStyle()
 //                .set("margin-top", "0.7em");
+
+        icoKontEmpty = VaadinIcon.CIRCLE_THIN.create();
+        icoKontEmpty.setColor("peru");
+        icoKontEmpty.setSize("0.8em");
+        icoKontEmpty.getStyle()
+                .set("theme", "small icon secondary")
+        ;
+
         icoKontActive = VaadinIcon.HAMMER.create();
         icoKontActive.setColor("green");
         icoKontActive.setSize("0.8em");
@@ -65,25 +74,29 @@ public class ArchIconBox extends FlexLayout {
         ;
 
         this.add(
-                icoKontActive
+                icoKontEmpty
+                , icoKontActive
                 ,icoKontArchived
                 ,icoZakArchived
         );
     }
 
-    public void showIcon(final ItemType itemType, final boolean archived) {
+    public void showIcon(final ItemType itemType, final ArchState archState) {
+        icoKontEmpty.setVisible(false);
         icoKontArchived.setVisible(false);
         icoKontActive.setVisible(false);
         icoZakArchived.setVisible(false);
 
         if (ItemType.KONT == itemType) {
-            if (archived) {
+            if (ArchState.EMPTY == archState) {
+                icoKontEmpty.setVisible(true);
+            }  else if (ArchState.ARCHIVED == archState) {
                 icoKontArchived.setVisible(true);
             } else {
                 icoKontActive.setVisible(true);
             }
         } else {
-            if (archived) {
+            if (ArchState.ARCHIVED == archState) {
                 icoZakArchived.setVisible(true);
             }
         }

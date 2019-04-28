@@ -1,12 +1,10 @@
 package eu.japtor.vizman.backend.utils;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
@@ -41,7 +39,7 @@ public class VzmFormatUtils {
     public static final StringToBigDecimalConverter bigDecimalMoneyConverter;
     public static final StringToBigDecimalConverter bigDecimalPercentConverter;
 //    public static final StringToBigDecimalConverter integerYearConverter;
-    public static final DecHodToStringConverter decHodToStringConverter;
+    public static final ValidatedDecHodToStringConverter VALIDATED_DEC_HOD_TO_STRING_CONVERTER;
 
     public final static DateTimeFormatter shortTimeFormatter = DateTimeFormatter.ofPattern("H:mm");
     public final static DateTimeFormatter basicDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -70,7 +68,7 @@ public class VzmFormatUtils {
                 return numberFormat;
             }
         };
-        decHodToStringConverter = new DecHodToStringConverter("Špatný formát čísla");
+        VALIDATED_DEC_HOD_TO_STRING_CONVERTER = new ValidatedDecHodToStringConverter("Špatný formát čísla");
 
 //        integerYearConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
 //            @Override
@@ -138,13 +136,12 @@ public class VzmFormatUtils {
     }
 
 
-    public static class IntegerYearConverter implements Converter<String, Integer>, HasLogger {
+    public static class ValidatedIntegerYearConverter implements Converter<String, Integer>, HasLogger {
 
-        private String errorMessage;
+        private String errorMessage = "Neplatný formát roku";
 
-        public IntegerYearConverter(String errorMessage) {
-            this.errorMessage = errorMessage;
-        }
+//        public ValidatedIntegerYearConverter() {
+//        }
 
         @Override
         public Result<Integer> convertToModel(String s, ValueContext valueContext) {
@@ -155,6 +152,8 @@ public class VzmFormatUtils {
                 }
                 return Result.ok(Integer.valueOf(s));
             } catch (NumberFormatException e) {
+                return Result.error(errorMessage);
+            } catch (Exception e) {
                 getLogger().error(e.getMessage(), e);
                 return Result.error(errorMessage);
             }
@@ -166,11 +165,11 @@ public class VzmFormatUtils {
         }
     }
 
-    public static class DecHodToStringConverter implements Converter<String, BigDecimal>, HasLogger {
+    public static class ValidatedDecHodToStringConverter implements Converter<String, BigDecimal>, HasLogger {
 
         private String errorMessage;
 
-        public DecHodToStringConverter(String errorMessage) {
+        public ValidatedDecHodToStringConverter(String errorMessage) {
             this.errorMessage = errorMessage;
         }
 
@@ -194,6 +193,8 @@ public class VzmFormatUtils {
                 }
                 return Result.ok(decHod);
             } catch (NumberFormatException | ParseException e) {
+                return Result.error(errorMessage);
+            } catch (Exception e) {
                 getLogger().error(e.getMessage(), e);
                 return Result.error(errorMessage);
             }
@@ -223,6 +224,8 @@ public class VzmFormatUtils {
             try {
                 return Result.ok(LocalDateTime.parse(str, shortTimeFormatter));
             } catch (NumberFormatException e) {
+                return Result.error(errorMessage);
+            } catch (Exception e) {
                 getLogger().error(e.getMessage(), e);
                 return Result.error(errorMessage);
             }
