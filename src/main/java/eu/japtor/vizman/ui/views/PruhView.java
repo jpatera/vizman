@@ -526,8 +526,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     col.setClassNameGenerator(pruhZak -> "pruh-day-is-holiday");
                 } else if (isWeekend) {
                     col.setClassNameGenerator(pruhZak -> "pruh-day-is-weekend");
-//                } else {
-//                    col.setClassNameGenerator(pruhZak -> "pruh-day-is-workday");
+                } else {
+                    col.setClassNameGenerator(pruhZak -> "pruh-day-is-workday");
                 }
             }
         }

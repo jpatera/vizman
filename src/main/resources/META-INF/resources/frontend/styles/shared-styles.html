@@ -274,32 +274,41 @@
                     padding-left: 0.2em;
                 }
             </style>
-            <style>
-                :host(.vizman-pruh-grid) th[part~="header-cell"].pruh-day-is-weekend {
-                    /*background-color: palegoldenrod;*/
-                    background-color: salmon;
-                    height: 2em;
-                    min-height: 2em;
-                    padding-left: 0.2em;
-                }
-            </style>
+            <!--<style>-->
+                <!--:host(.vizman-pruh-grid) th[part~="header-cell"].pruh-day-is-weekend {-->
+                    <!--/*background-color: palegoldenrod;*/-->
+                    <!--background-color: salmon;-->
+                    <!--height: 2em;-->
+                    <!--min-height: 2em;-->
+                    <!--padding-left: 0.2em;-->
+                <!--}-->
+            <!--</style>-->
             <style>
                 [part~="cell"].pruh-day-is-weekend {
-                    background: #ffede6;
+                    background-color: #ffede6;
                 }
-                .minor {
-                    color: lightsalmon;
-                    font-weight: bold;
-                }
+                /*.minor {*/
+                    /*color: lightsalmon;*/
+                    /*font-weight: bold;*/
+                /*}*/
             </style>
             <style>
                 [part~="cell"].pruh-day-is-holiday {
-                    background: #f7e6ff;
+                    background-color: #f7e6ff;
                 }
-                .minor {
-                    color: lightsalmon;
-                    font-weight: bold;
+                /*.minor {*/
+                    /*color: lightsalmon;*/
+                    /*font-weight: bold;*/
+                /*}*/
+            </style>
+            <style>
+                [part~="cell"].pruh-day-is-workday {
+                    background-color: var(--lumo-base-color);
                 }
+                /*.minor {*/
+                    /*color: lightsalmon;*/
+                    /*font-weight: bold;*/
+                /*}*/
             </style>
 
             <style>

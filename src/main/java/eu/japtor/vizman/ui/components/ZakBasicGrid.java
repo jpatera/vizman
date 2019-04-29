@@ -15,7 +15,9 @@ import com.vaadin.flow.dom.Element;
 import eu.japtor.vizman.backend.entity.*;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ZakBasicGrid extends Grid<ZakBasic> {
 
@@ -122,7 +124,7 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
                 .setSortable(true)
                 .setKey(OBJEDNATEL_COL_KEY)
         ;
-        this.addColumn(checkBoxRenderer)
+        this.addColumn(selectFieldRenderer)
                 .setHeader(("Výběr"))
                 .setFlexGrow(0)
                 .setWidth("4.5em")
@@ -219,8 +221,28 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
         }
     }
 
+    public void populateGridDataAndRebuildFilterFields(List<ZakBasic> zakBasicList) {
+        this.setItems(zakBasicList);
+        this.setRokFilterItems(zakBasicList.stream()
+                .filter(z -> null != z.getRok())
+                .map(ZakBasic::getRok)
+                .distinct().collect(Collectors.toCollection(LinkedList::new))
+        );
+        this.setSkupinaFilterItems(zakBasicList.stream()
+                .map(ZakBasic::getSkupina)
+                .filter(s -> null != s)
+                .distinct().collect(Collectors.toCollection(LinkedList::new))
+        );
+        this.setArchFilterItems(zakBasicList.stream()
+                .map(ZakBasic::getArch)
+                .filter(a -> null != a)
+                .distinct().collect(Collectors.toCollection(LinkedList::new))
+        );
+    }
+
     public void initFilterValues() {
-        if (null == initFilterArchValue) {
+        ((ListDataProvider<ZakBasic>) this.getDataProvider()).clearFilters();
+        if (null == this.initFilterArchValue) {
             archFilterField.clear();
         } else {
             archFilterField.setValue(this.initFilterArchValue);
@@ -230,19 +252,18 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
         kzCisloFilterField.clear();
         kzTextFilterField.clear();
         objednatelFilterField.clear();
-        ((ListDataProvider<ZakBasic>) this.getDataProvider()).clearFilters();
     }
 
     public void doFilter() {
+        ListDataProvider<ZakBasic> listDataProvider = ((ListDataProvider<ZakBasic>) this.getDataProvider());
+        listDataProvider.clearFilters();
+
         Boolean archFilterValue = archFilterField.getValue();
         Integer rokFilterValue = rokFilterField.getValue();
         String kzCisloFilterValue = kzCisloFilterField.getValue();
         String skupinaFilterValue = skupinaFilterField.getValue();
         String objednatelFilterValue = objednatelFilterField.getValue();
         String kzTextFilterValue = kzTextFilterField.getValue();
-
-        ListDataProvider<ZakBasic> listDataProvider = ((ListDataProvider<ZakBasic>) this.getDataProvider());
-        listDataProvider.clearFilters();
 
         if (null != archFilterValue) {
             listDataProvider.addFilter(ZakBasic::getArch
@@ -284,18 +305,19 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
         return archBox;
     });
 
-    private ComponentRenderer<Component, ZakBasic> checkBoxRenderer = new ComponentRenderer<>(zakb -> {
+    private ComponentRenderer<Component, ZakBasic> selectFieldRenderer = new ComponentRenderer<>(zakb -> {
         Checkbox zakSelectBox = new Checkbox();
         zakSelectBox.addValueChangeListener(event -> {
             zakb.setChecked(event.getValue());
         });
-        if ((ItemType.ZAK == zakb.getTyp()) || (ItemType.REZ == zakb.getTyp()) || (ItemType.LEK == zakb.getTyp())) {
+//        if ((ItemType.ZAK == zakb.getTyp()) || (ItemType.REZ == zakb.getTyp()) || (ItemType.LEK == zakb.getTyp())) {
+        if ((ItemType.ZAK == zakb.getTyp()) || (ItemType.REZ == zakb.getTyp())) {
             zakSelectBox.addValueChangeListener(event -> {
                 zakb.setChecked(event.getValue());
             });
             return zakSelectBox;
         } else {
-            return new Span("");
+            return new Span(zakb.getTyp().name());
         }
     });
 
@@ -319,7 +341,5 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
                 .setComponent(skupinaFilterField);
         skupinaFilterField.setItems(skupinaItems);
     }
-
-
 }
 

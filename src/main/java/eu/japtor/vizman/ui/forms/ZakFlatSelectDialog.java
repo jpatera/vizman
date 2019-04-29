@@ -59,20 +59,12 @@ public class ZakFlatSelectDialog extends Dialog {
         buttonBar = new HorizontalLayout();
         cancelButton = new Button("Zpět");
         cancelButton.addClickListener(e -> close());
-//        cancelButton.setAutofocus(true);
 
         selectButton = new Button("Uložit");
         selectButton.getElement().setAttribute("theme", "primary");
         // TODO: Disable when opened, enabled when item selected
 //        selectButton.setEnabled(false);
 
-//        HorizontalLayout leftBarPart = new HorizontalLayout();
-//        leftBarPart.setSpacing(true);
-//        leftBarPart.add(selectButton);
-//
-//        HorizontalLayout rightBarPart = new HorizontalLayout();
-//        rightBarPart.setSpacing(true);
-//        rightBarPart.add(cancelButton);
 
         HorizontalLayout leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);
@@ -84,9 +76,7 @@ public class ZakFlatSelectDialog extends Dialog {
         HorizontalLayout rightBarPart = new HorizontalLayout();
         rightBarPart.setSpacing(true);
 
-//        buttonBar.getStyle().set("margin-top", "0.2em");
         buttonBar.setSpacing(false);
-//        buttonBar.setSpacing(true);
         buttonBar.setPadding(false);
         buttonBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         buttonBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
@@ -131,20 +121,6 @@ public class ZakFlatSelectDialog extends Dialog {
         mainPanel.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.STRETCH);
         mainPanel.setPadding(false);
         mainPanel.setMargin(false);
-
-        mainPanel.setAlignItems(FlexComponent.Alignment.STRETCH);
-//        mainPanel.add(initDialogTitle(), new Hr());
-//        mainPanel.add(new Paragraph());
-//        mainPanel.add(buttonBar);
-
-//        this.setWidth("100%");
-//        this.setWidth("90vw");
-//        this.setHeight("90vh");
-
-//        <vaadin-vertical-layout style="width: 100%; height: 100%;" theme="padding">
-//        <vaadin-text-field style="width: 100%;" placeholder="ID" id="idSearchTextField"></vaadin-text-field>
-//        <vaadin-treeGrid items="[[items]]" id="treeGrid" style="width: 100%;"></vaadin-treeGrid>
-
         mainPanel.add(
                 initGridContainer()
                 , initDialogButtonBar()
@@ -201,31 +177,32 @@ public class ZakFlatSelectDialog extends Dialog {
     }
 
     private void updateViewContent() {
+        zakList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDesc();
+        zakGrid.populateGridDataAndRebuildFilterFields(zakList);
         zakGrid.initFilterValues();
-        loadGridData();
         zakGrid.doFilter();
         zakGrid.getDataProvider().refreshAll();
     }
 
-    private void loadGridData() {
-        zakList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDesc();
-        zakGrid.setItems(zakList);
-        zakGrid.setRokFilterItems(zakList.stream()
-                .filter(z -> null != z.getRok())
-                .map(ZakBasic::getRok)
-                .distinct().collect(Collectors.toCollection(LinkedList::new))
-        );
-        zakGrid.setSkupinaFilterItems(zakList.stream()
-                .map(ZakBasic::getSkupina)
-                .filter(s -> null != s)
-                .distinct().collect(Collectors.toCollection(LinkedList::new))
-        );
-        zakGrid.setArchFilterItems(zakList.stream()
-                .map(ZakBasic::getArch)
-                .filter(a -> null != a)
-                .distinct().collect(Collectors.toCollection(LinkedList::new))
-        );
-    }
+//    private void loadGridDataAndRebuildFilterFields() {
+//        zakList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDesc();
+//        zakGrid.setItems(zakList);
+//        zakGrid.setRokFilterItems(zakList.stream()
+//                .filter(z -> null != z.getRok())
+//                .map(ZakBasic::getRok)
+//                .distinct().collect(Collectors.toCollection(LinkedList::new))
+//        );
+//        zakGrid.setSkupinaFilterItems(zakList.stream()
+//                .map(ZakBasic::getSkupina)
+//                .filter(s -> null != s)
+//                .distinct().collect(Collectors.toCollection(LinkedList::new))
+//        );
+//        zakGrid.setArchFilterItems(zakList.stream()
+//                .map(ZakBasic::getArch)
+//                .filter(a -> null != a)
+//                .distinct().collect(Collectors.toCollection(LinkedList::new))
+//        );
+//    }
 
 
 //    private void reloadDataProvider() {
@@ -251,13 +228,6 @@ public class ZakFlatSelectDialog extends Dialog {
     }
 
     private void saveClicked() {
-
-//        ConfirmDialog.createInfo()
-//                .withCaption("VÝBĚR ZAKÁZEK")
-//                .withMessage("Comming soon...")
-//        ;
-//        return;
-
         List<ZakBasic> zakBasicItems = new ArrayList<>();
         for(ZakBasic zakb :  zakList) {
             if (((zakb.getTyp() == ItemType.ZAK) || (zakb.getTyp() == ItemType.LEK) || (zakb.getTyp() == ItemType.REZ))
@@ -273,10 +243,8 @@ public class ZakFlatSelectDialog extends Dialog {
                     .open()
             ;
         } else {
-//            inMemoryKzTreeProvider.refreshAll();
             zakBasicSelector.accept(zakBasicItems);
             close();
         }
     }
-
 }

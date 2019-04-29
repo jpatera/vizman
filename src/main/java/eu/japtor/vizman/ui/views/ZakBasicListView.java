@@ -83,7 +83,7 @@ public class ZakBasicListView extends VerticalLayout {
 
     @PostConstruct
     public void postInit() {
-        updateViewContent();
+        loadInitialViewContent();
         // TODO: inital sort order markers
         //        zakGrid.sort(initialSortOrder);
         //        UI.getCurrent().getPage().executeJavaScript("document.querySelectorAll(\"vaadin-grid-sorter\")[1].click()");
@@ -106,28 +106,6 @@ public class ZakBasicListView extends VerticalLayout {
         gridToolBar.setAlignItems(Alignment.END);
         gridToolBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-//        Span archFilterLabel = new Span("Zakázky:");
-//        HorizontalLayout archFilterComponent = new HorizontalLayout();
-//        archFilterComponent.setMargin(false);
-//        archFilterComponent.setPadding(false);
-//        archFilterComponent.setAlignItems(Alignment.CENTER);
-//        archFilterComponent.setJustifyContentMode(JustifyContentMode.END);
-//        archFilterComponent.add(
-//                archFilterLabel
-//                , initArchFilterRadion()
-//        );
-
-//        Icon reloadIcon = VaadinIcon.REFRESH.create();
-//        reloadIcon.getStyle()
-//                .set("theme", "small")
-//        ;
-//        Button reloadButton = new ReloadButton(event -> updateViewContent());
-//        reloadButton.setIcon(reloadIcon);
-//        reloadButton.getStyle()
-//                .set("theme", "icon")
-//        ;
-//        reloadButton.addClickListener(event -> updateViewContent());
-
         HorizontalLayout titleComponent = new HorizontalLayout();
         titleComponent.setMargin(false);
         titleComponent.setPadding(false);
@@ -137,7 +115,7 @@ public class ZakBasicListView extends VerticalLayout {
         titleComponent.add(
                 new GridTitle(ItemNames.getNomP(ItemType.ZAK))
                 , new Ribbon()
-                , new ReloadButton(event -> updateViewContent())
+                , new ReloadButton(event -> loadInitialViewContent())
         );
 
         gridToolBar.add(
@@ -149,18 +127,17 @@ public class ZakBasicListView extends VerticalLayout {
         return gridToolBar;
     }
 
-    private Component initArchFilterRadion() {
+    private Component initArchFilterRadio() {
         archFilterRadio = new RadioButtonGroup<>();
         archFilterRadio.setItems(RADIO_KONT_ACTIVE, RADIO_KONT_ARCH, RADIO_KONT_ALL);
 //        buttonShowArchive.addValueChangeListener(event -> setArchiveFilter(event));
         archFilterRadio.getStyle().set("alignItems", "center");
         archFilterRadio.getStyle().set("theme", "small");
-        archFilterRadio.addValueChangeListener(event -> updateViewContent());
+        archFilterRadio.addValueChangeListener(event -> loadInitialViewContent());
         return archFilterRadio;
     }
 
     private Component initGridContainer() {
-
         VerticalLayout gridContainer = new VerticalLayout();
         gridContainer.setClassName("view-container");
         gridContainer.getStyle().set("marginTop", "0.5em");
@@ -193,15 +170,14 @@ public class ZakBasicListView extends VerticalLayout {
 //        }
 //    }
 
-    private void updateViewContent() {
-        loadGridData();
+    private void loadInitialViewContent() {
+        loadGridDataAndRebuildFilterFields();
         zakGrid.initFilterValues();
         zakGrid.doFilter();
         zakGrid.getDataProvider().refreshAll();
     }
 
-//    private void loadGridData(final String archFlag, Integer year) {
-    private void loadGridData() {
+    private void loadGridDataAndRebuildFilterFields() {
         zakList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDesc();
         zakGrid.setItems(zakList);
         zakGrid.setRokFilterItems(zakList.stream()
