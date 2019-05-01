@@ -1,6 +1,7 @@
 package eu.japtor.vizman.ui.components;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -8,14 +9,14 @@ import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.BinderValidationStatus;
+import com.vaadin.flow.data.binder.*;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 
 import java.io.Serializable;
 import java.util.function.BiConsumer;
+
 
 public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends Dialog {
 
@@ -25,14 +26,10 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
     private final H6 titleEnd = new H6();
     private Button saveButton;
     private Button cancelButton;
-//    private final Button saveButton = new Button("Uložit");
-//    private final Button cancelButton = new Button("Zpět");
-//    private final Button deleteButton = new Button("Zrušit " + getNounForTitle(isItemMale) );
     private Registration registrationForSave;
 
     private final FormLayout formLayout = new FormLayout();
     HorizontalLayout upperPane = new HorizontalLayout();
-//    HorizontalLayout lowerPane = new HorizontalLayout();
     HorizontalLayout buttonBar = new HorizontalLayout();
     VerticalLayout dialogPane = new VerticalLayout();
 
@@ -48,14 +45,6 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
     private String itemTypeGenS;
     private String itemTypeAccuS;
     private BiConsumer<T, Operation> itemSaver;
-
-
-//    Map<GrammarShapes, String> itemNameMap;
-
-
-//    protected AbstractSimpleEditorDialog(Consumer<T> itemSaver) {
-//        this(false, false, itemSaver);
-//    }
 
     /**
      * Constructs a new instance.
@@ -101,10 +90,6 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
         titleMain.getStyle().set("marginTop", "0.2em");
         titleLayout.setSpacing(false);
         titleLayout.setPadding(false);
-//        titleLayout.getStyle()
-////                    .set("background-color", color)
-////                    .set("theme", "icon small")
-//            .set("margin", "0");
         titleLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         titleLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
         titleLayout.add(titleMain, titleMiddle, titleEnd);
@@ -114,10 +99,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
     private void initFormLayout() {
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("25em", 2));
-//        Div div = new Div(formLayout);
-//        div.addClassName("has-padding");
         formLayout.addClassName("has-padding");
-//        add(div);
     }
 
     public void onValueChange(boolean isDirty) {
@@ -132,6 +114,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 
         saveButton = new Button("Uložit");
         saveButton.getElement().setAttribute("theme", "primary");
+        saveButton.addClickShortcut(Key.ENTER);
 //        saveButton.setEnabled(false);
 
         HorizontalLayout leftBarPart = new HorizontalLayout();
@@ -252,7 +235,6 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
         }
         registrationForSave = saveButton.addClickListener(e -> saveClicked(operation));
         saveButton.setText("Uložit " + itemTypeAccuS.toLowerCase());
-//        saveButton.setEnabled(false);
 
         this.open();
     }
@@ -272,37 +254,33 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
         return itemTypeGenS;
     }
 
-//    private String buildDialogTitle(final Operation operation) {
-//        switch (operation) {
-//            case ADD :
-//        }
-//
-//        return (currentOperation.getTitleOperName(itemGender))
-//                + " " + (operation == Operation.ADD ? itemTypeNomS.toLowerCase() : itemTypeAccuS.toLowerCase());
-//    }
-
     private void saveClicked(Operation operation) {
-        boolean isValid = binder.writeBeanIfValid(currentItem);
-        if (isValid) {
+        revalidateFields();
+        if (binder.isValid()) {
+            try {
+                binder.writeBean(currentItem);
+            } catch (ValidationException e) {
+                e.printStackTrace();
+            }
             itemSaver.accept(currentItem, operation);
             close();
-        } else {
-            BinderValidationStatus<T> status = binder.validate();
         }
+    }
+
+    private boolean revalidateFields() {
+        // This command shows warnings in UI:
+        BinderValidationStatus status = binder.validate();
+        return !status.hasErrors();
+//        if (status.hasErrors()) {
+//            BindingValidationStatus<String> st = ((BindingValidationStatus) status.getFieldValidationErrors().get(0));
+//            Notification.show(st.getMessage().orElse("Pole nejsou správně vyplněna")
+//                    , 2000, Notification.Position.MIDDLE);
+//            return false;
+//        }
+//        return true;
     }
 
     public Operation getOperation() {
         return operation;
     }
-
-
-//    private void deleteClicked() {
-//        if (confirmationDialog.getElement().getParent() == null) {
-//            getUI().ifPresent(ui -> ui.add(confirmationDialog));
-//        }
-//        confirmAndDelete();
-//    }
-
-//    protected abstract void confirmAndDelete();
-
 }

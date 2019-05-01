@@ -284,6 +284,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         listOfKlients = klientService.fetchAll();
 //        // Following series of commands replacing combo box is because of a bug
 //        // Initialize $connector if values were not set in ComboBox element prior to page load. #188
+        binder.removeBinding(objednatelCombo);
         getFormLayout().remove(objednatelCombo);
         getFormLayout().addComponentAtIndex(3, initObjednatelCombo());
         objednatelCombo.setItems(this.listOfKlients);

@@ -111,6 +111,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private  Icon pruhStateIconUnlocked;
     private  Icon pruhStateIconLocked;
+    private  Icon pruhStateIconNone;
 
     private ZakFlatSelectDialog zakSelectDialog;
     private static final Locale czLocale = new Locale("cs", "CZ");
@@ -665,7 +666,12 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pruhStateIconLocked.getStyle().set("margin-right", "1em");
         pruhStateIconLocked.setVisible(false);
 
-        box.add(pruhStateIconLocked, pruhStateIconUnlocked);
+        pruhStateIconNone = VaadinIcon.LOCK.create();
+        pruhStateIconNone.setColor("grey");
+        pruhStateIconNone.getStyle().set("margin-right", "0.3em");
+        pruhStateIconNone.setVisible(false);
+
+        box.add(pruhStateIconLocked, pruhStateIconUnlocked, pruhStateIconNone);
         return box;
     }
 
@@ -807,6 +813,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        pruhStateIconUnlocked.setVisible(togglePruhStateButton.getText().equals(LOCK_PRUH_BUTTON_TEXT));
         pruhStateIconLocked.setVisible(true);
         pruhStateIconUnlocked.setVisible(false);
+        pruhStateIconNone.setVisible(false);
         togglePruhStateButton.setText(UNLOCK_PRUH_BUTTON_TEXT);
         saveEditButton.setEnabled(false);
         cancelEditButton.setEnabled(false);
@@ -821,6 +828,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private void setPruhControlsUnlocked() {
         pruhStateIconLocked.setVisible(false);
         pruhStateIconUnlocked.setVisible(true);
+        pruhStateIconNone.setVisible(false);
         togglePruhStateButton.setText(LOCK_PRUH_BUTTON_TEXT);
         saveEditButton.setEnabled(true);
         cancelEditButton.setEnabled(true);
@@ -834,6 +842,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private void setPruhControlsUnknown() {
         pruhStateIconLocked.setVisible(false);
         pruhStateIconUnlocked.setVisible(false);
+        pruhStateIconNone.setVisible(true);
         togglePruhStateButton.setText(UNLOCK_PRUH_BUTTON_TEXT);
         saveEditButton.setEnabled(false);
         cancelEditButton.setEnabled(false);
@@ -860,9 +869,10 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
         H3 pruhTitle = new H3("PROUŽEK");
         pruhTitle.getStyle()
-                .set("margin-top", "0.5em")
-                .set("margin-right", "1em")
-                .set("margin-bottom", "0.2em")
+//                .set("margin-left", "0")
+  //              .set("margin-right", "1em")
+                .set("margin-top", "0.4em")
+                .set("margin-bottom", "0.4em")
         ;
 
         HorizontalLayout titleComponent = new HorizontalLayout();
