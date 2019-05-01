@@ -12,6 +12,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -70,7 +71,9 @@ import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_PRUH;
 @UIScope
 public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterListener {
 
-    private static final String COL_WIDTH = "2.4em";
+    private static final String PZ_SUM_COL_KEY = "pz-sum-kol";
+    private static final String HOD_COL_WIDTH = "2.4em";
+    private static final String SUM_COL_WIDTH = "3em";
     private static final String PRUH_HOD_REGEX = "^(-?\\d{1,2}([.|,][0|5]?){0,1})$";
     private static final Pattern pruhHodPatern = Pattern.compile(PRUH_HOD_REGEX);
         // Matcher m = pruhHodPatern.matcher("aaaaab");
@@ -85,7 +88,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //    public static final String DS_KEY_PREF = "ds";
     public static final String DP_KEY_PREF = "dp";
     private static final String ZAK_TEXT_COL_KEY = "zak-text-col";
-
+    private static final String ZAK_TEXT_SUM = "Odpracováno z docházky";
     String LOCK_PRUH_BUTTON_TEXT = "Uzavřít proužek";
     String UNLOCK_PRUH_BUTTON_TEXT = "Otevřít proužek";
 
@@ -98,9 +101,12 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private List<Person> pruhPersonList;
     private Person pruhPerson;
     private ComboBox<Person> pruhPersonSelector;
+    Paragraph monthHourFondComponent;
+    BigDecimal monthHourFond;
 
-//    private List<Calym> pruhCalymList;
-    private List<YearMonth> pruhCalymList;
+//    private List<Calym> calymYmList;
+    private List<YearMonth> calymYmList;
+    private List<Calym> calymList;
 //    private Calym pruhYm;
     private YearMonth pruhYm;
     private int pruhDayMax;
@@ -131,6 +137,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private Grid<PruhZak> pruhZakGrid;
     private List<PruhZak> pruhZakList = new ArrayList<>();
     Registration zakGridEditRegistration = null;
+    Paragraph sumTextComponent;
 
     private PruhSum pruhSum;
     private FooterRow sumHodsFooterRow;
@@ -199,11 +206,11 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        this.setWidth("1200px");
         this.setWidth("100%");
         this.setPadding(false);
-
         // TODO:
         //        this.setMaxHeight("700px");
-
         this.setAlignSelf(Alignment.CENTER);
+
+        sumTextComponent = buildSumTextComponent();
 
         VerticalLayout pruhPanel = new VerticalLayout();
         pruhPanel.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
@@ -242,9 +249,14 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     public void init() {
 //        !SecurityUtils.isAccessGranted(event.getNavigationTarget())
         authUsername = SecurityUtils.getUsername();
-//        pruhYm = YearMonth.now();
         initPruhData();
         zakSelectDialog = new ZakFlatSelectDialog(this::addZaksToGrid, zakBasicRepo);
+    }
+
+    private Paragraph buildSumTextComponent() {
+        Paragraph textComp = new Paragraph();
+        textComp.getStyle().set("text-align", ColumnTextAlign.START.toString());
+        return textComp;
     }
 
     private void addZaksToGrid(final List<ZakBasic> zakBasicList) {
@@ -351,6 +363,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .orElse(null);
         pruhYmSelector.setValue(pruhYmByToday);
 
+        monthHourFond = getFondFromCalymList(pruhYmByToday);
+
         updatePruhGrids(pruhPerson, pruhYm);
     }
 
@@ -362,12 +376,22 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //                .findFirst().orElse(null);
     }
 
-//    private  Optional<Calym> getYmFromCalymListByYm(final YearMonth ym) {
     private  Optional<YearMonth> getYmFromCalymListByYm(final YearMonth ym) {
-        return pruhCalymList.stream()
+        return calymYmList.stream()
                 .filter(pruhYm -> pruhYm.equals(ym))
                 .findFirst();
 //                .findFirst().orElse(null);
+    }
+
+    private  BigDecimal getFondFromCalymList(final YearMonth ym) {
+        if (null == calymList) {
+            return null;
+        } else {
+            return calymList.stream()
+                    .filter(calym -> calym.getYm().equals(ym))
+                    .map(calym -> calym.getMonthFondHours())
+                    .findFirst().orElse(null);
+        }
     }
 
     private void loadPersonDataFromDb() {
@@ -377,16 +401,21 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private void loadCalymDataFromDb() {
-        pruhCalymList = calymRepo.findAll(Sort.by(Sort.Direction.DESC, Calym.SORT_PROP_YM)).stream()
+        calymYmList = calymRepo.findAll(Sort.by(Sort.Direction.DESC, Calym.SORT_PROP_YM)).stream()
                 .map(Calym::getYm)
                 .collect(Collectors.toList())
         ;
         pruhYmSelector.setValue(null);
-        pruhYmSelector.setItems(pruhCalymList);
+        pruhYmSelector.setItems(calymYmList);
+
+        calymList = calymRepo.findAll(Sort.by(Sort.Direction.DESC, Calym.SORT_PROP_YM));
     }
 
 //    private void updatePruhGrids(final Person person, final Calym calym) {
     private void updatePruhGrids(final Person pruhPerson, final YearMonth ym) {
+
+        monthHourFond = getFondFromCalymList(ym);
+        monthHourFondComponent.setText(null == monthHourFond ? "" : VzmFormatUtils.decHodFormat.format(monthHourFond));
 
         Long pruhPersonId = null == pruhPerson ? null : pruhPerson.getId();
 //        YearMonth ym = null == calym ? null : calym.getYm();
@@ -459,6 +488,15 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private void setPruhSumHods() {
+//        sumTextComponent.setText(String.format("%s  [ Fond: %s ]", ZAK_TEXT_SUM, monthHourFond));
+
+//        sumTextComponent.setText(String.format("%s", ZAK_TEXT_SUM));
+//        sumHodsFooterRow.getCell(pruhZakGrid.getColumnByKey(ZAK_TEXT_COL_KEY))
+//                .setComponent(sumTextComponent);
+
+        sumHodsFooterRow.getCell(pruhZakGrid.getColumnByKey(DZ_KEY_PREF + String.valueOf(0)))
+                .setText(getSumHodString(0));
+
         for (int day = 1; day <= 31; day++) {
             Grid.Column col = pruhZakGrid.getColumnByKey(DZ_KEY_PREF + String.valueOf(day));
             if (null != col) {
@@ -481,7 +519,6 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         }
         pruhParagGrid.setItems(pruhParagList);
         setDayColumnsVisibility(pruhParagGrid, pruhDayMax, DP_KEY_PREF);
-
     }
 
 //    private void loadPruhSumDataFromDb(Long personId, YearMonth ym) {
@@ -508,6 +545,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         if (null == grid) {
             return;
         }
+        grid.getColumnByKey(keyPrefix +  String.valueOf(0))
+                .setClassNameGenerator(pruhZak -> "pruh-day-is-sum");
+
         for (int day = 1; day <= 31; day++) {
 //            HeaderRow row  = grid.getHeaderRows().get(0). Cell  g etColumnByKey(keyPrefix + String.valueOf(day));
 //            HeaderRow.HeaderCell cell  = grid.getHeaderRows().get(0). Cell  g etColumnByKey(keyPrefix + String.valueOf(day));
@@ -525,6 +565,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 }
                 if (isHoliday) {
                     col.setClassNameGenerator(pruhZak -> "pruh-day-is-holiday");
+                    // sumHodsFooterRow.getCell(col).set...
                 } else if (isWeekend) {
                     col.setClassNameGenerator(pruhZak -> "pruh-day-is-weekend");
                 } else {
@@ -565,16 +606,47 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private Component initZakGridButtonBar() {
+        FlexLayout fondBox = new FlexLayout();
+        fondBox.setMinWidth("20em");
+        fondBox.add(
+                new Paragraph("Pracovní fond (hod/měs) : ")
+                , new Ribbon()
+                , initMonthFondComponent()
+        );
+
+        FlexLayout buttonBox = new FlexLayout();
+        buttonBox.add(
+                initSaveEditButton()
+                , new Gap()
+                , initCancelEditButton()
+        );
+
+        FlexLayout fakeBox = new FlexLayout();
+        fakeBox.setMinWidth("20em");
+        fakeBox.add(
+                new Paragraph("")
+        );
+
         gridZakButtonBar = new HorizontalLayout();
-        gridZakButtonBar.setJustifyContentMode(JustifyContentMode.CENTER);
+        gridZakButtonBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
         gridZakButtonBar.setWidthFull();
+        gridZakButtonBar.setSpacing(false);
         gridZakButtonBar.getStyle()
                 .set("margin-top", "0.5em");
         gridZakButtonBar.add(
-                initSaveEditButton()
-                , new Gap()
-                , initCancelEditButton());
+                fondBox
+                , buttonBox
+                , fakeBox
+//                initSaveEditButton()
+//                , new Gap()
+//                , initCancelEditButton()
+        );
         return gridZakButtonBar;
+    }
+
+    private Component initMonthFondComponent() {
+        monthHourFondComponent = new Paragraph();
+        return monthHourFondComponent;
     }
 
     private Component initGridParagTitleBar() {
@@ -959,6 +1031,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         ;
         Paragraph sumHodsTextComp = new Paragraph("Odpracováno z docházky");
         sumHodsTextComp.getStyle().set("text-align", ColumnTextAlign.START.toString());
+
+
+        sumHodsTextComp.setText(ZAK_TEXT_SUM);
         sumHodsFooterRow.getCell(pruhZakGrid.getColumnByKey(ZAK_TEXT_COL_KEY))
                 .setComponent(sumHodsTextComp)
 //                .setText("Odpracováno z docházky")
@@ -988,6 +1063,12 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //            field.focus();
         });
 
+        // Pruh zak sum column:
+        addZakDaySumColumn(
+                0
+                , pz -> pz.getHod(0)
+        );
+
         for (int i = 1; i <= 31; i++) {
             int ii = i;
             addZakDayColumn(
@@ -997,7 +1078,6 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     , pz -> pz.getHod(ii)
                     , (pz, hod) -> pz.setHod(ii, hod)
             );
-
         }
 
         return pruhZakGrid;
@@ -1053,6 +1133,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //                .setResizable(false)
 //        ;
 
+        addParagDaySumColumn(0, pp -> pp.getHod(0));
+
         for (int i = 1; i <= 31; i++) {
             int ii = i;
             addParagDayColumn(ii, pp -> pp.getHod(ii));
@@ -1062,20 +1144,38 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
 
+
+    private void addZakDaySumColumn(
+            int day
+            , ValueProvider<PruhZak, BigDecimal> pzHodValProv
+    ){
+        Grid.Column<PruhZak> sumCol = pruhZakGrid.addColumn(
+                new ComponentRenderer<>(pruhZak ->
+                        VzmFormatUtils.getDecHodComponent(pzHodValProv.apply(pruhZak)))
+        );
+
+        sumCol.setHeader("SUM")
+                .setWidth(SUM_COL_WIDTH)
+                .setFlexGrow(0)
+                .setKey(DZ_KEY_PREF + String.valueOf(day))
+                .setResizable(false)
+        ;
+    }
+
     private void addZakDayColumn(
             int day
             , Binder<PruhZak> pzBinder
             , Editor<PruhZak> pzEditor
             , ValueProvider<PruhZak, BigDecimal> pzHodValProv
-            , Setter<PruhZak, BigDecimal> pzHodSetter)
-    {
+            , Setter<PruhZak, BigDecimal> pzHodSetter
+    ){
         Grid.Column<PruhZak> col = pruhZakGrid.addColumn(
                 new ComponentRenderer<>(pruhZak ->
                         VzmFormatUtils.getDecHodComponent(pzHodValProv.apply(pruhZak)))
         );
 
         col.setHeader(Integer.valueOf(day).toString())
-            .setWidth(COL_WIDTH)
+            .setWidth(HOD_COL_WIDTH)
 //            .setTextAlign(ColumnTextAlign.END)
             .setFlexGrow(0)
             .setKey(DZ_KEY_PREF + String.valueOf(day))
@@ -1100,8 +1200,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                             , StringUtils.isBlank(event.getValue()) ?
                                     null : new BigDecimal(event.getValue().replaceAll(",", ".")));
                     pzBinder.writeBean(pzEditor.getItem());
-//                    col.setFooter(buildDayHodSumComp(getDayZakMissing(getDayZakHodSum(day), getDaySumHodSum(day))));
-//                    BigDecimal missingHods = getDayZakMissing(getDayZakHodSum(day), getDaySumHodSum(day));
+//                    col.setFooter(buildDayHodSumComp(getDayZakMissingHods(getDayZakHodSum(day), getDaySumHodSum(day))));
+//                    BigDecimal missingHods = getDayZakMissingHods(getDayZakHodSum(day), getDaySumHodSum(day));
                     missingHodsFooterRow.getCell(col)
                             .setText(getMissingHodString(day));
 
@@ -1117,7 +1217,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         editComp.getStyle()
                 .set("margin", "0")
                 .set("padding", "0")
-//                .set("width", COL_WIDTH)
+//                .set("width", HOD_COL_WIDTH)
                 .set("width", "3.5em")
                 .set("font-size", "var(--lumo-font-size-s)")
                 .set("height", "1.8m")
@@ -1141,23 +1241,24 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private BigDecimal getMissingHodSum() {
         BigDecimal missingHodSum = BigDecimal.ZERO;
         for (int day = 1; day <= pruhDayMax; day++) {
-            missingHodSum = missingHodSum.add(getDayZakMissing(getDayZakHodSum(day), getDaySumHodSum(day)));
+            missingHodSum = missingHodSum.add(getDayZakMissingHods(getDayZakHodSum(day), getDaySumHodSum(day)));
         }
         return missingHodSum;
     }
 
     private String getMissingHodString(int day) {
-        BigDecimal missingHods = getDayZakMissing(getDayZakHodSum(day), getDaySumHodSum(day));
+        BigDecimal missingHods = getDayZakMissingHods(getDayZakHodSum(day), getDaySumHodSum(day));
         return (null == missingHods || missingHods.compareTo(BigDecimal.ZERO) == 0) ?
                 "" : VzmFormatUtils.decHodFormat.format(missingHods);
     }
 
     private String getSumHodString(int day) {
         BigDecimal sumHods = getDaySumHodSum(day);
-        return null == sumHods ? "" : VzmFormatUtils.decHodFormat.format(sumHods);
+        return (null == sumHods || sumHods.compareTo(BigDecimal.ZERO) == 0) ?
+                "" : VzmFormatUtils.decHodFormat.format(sumHods);
     }
 
-    private BigDecimal getDayZakMissing(final BigDecimal zakHodSum, final BigDecimal sumHodSum) {
+    private BigDecimal getDayZakMissingHods(final BigDecimal zakHodSum, final BigDecimal sumHodSum) {
         BigDecimal zakHodMissing = BigDecimal.ZERO;
         if (null == sumHodSum) {
             if (null != zakHodSum) {
@@ -1195,13 +1296,15 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
 
     private void addParagDayColumn(
-            int day, ValueProvider<PruhParag, BigDecimal> ppHodValProv)
-    {
-        Grid.Column<PruhParag> col = pruhParagGrid.addColumn( new ComponentRenderer<>(pruhParag ->
-                VzmFormatUtils.getDecHodComponent(ppHodValProv.apply(pruhParag))));
-//                StringToBigDecimalConverter(valProv));
+            int day
+            , ValueProvider<PruhParag, BigDecimal> ppHodValProv
+    ){
+        Grid.Column<PruhParag> col = pruhParagGrid.addColumn(
+                new ComponentRenderer<>(pruhParag ->
+                        VzmFormatUtils.getDecHodComponent(ppHodValProv.apply(pruhParag)))
+        );
         col.setHeader(String.valueOf(day))
-                .setWidth(COL_WIDTH)
+                .setWidth(HOD_COL_WIDTH)
 //                .setTextAlign(ColumnTextAlign.END)
                 .setFlexGrow(0)
                 .setKey(DP_KEY_PREF + String.valueOf(day))
@@ -1211,6 +1314,23 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         col.getElement().setProperty("margin", "0");
         col.getElement().setAttribute("margin", "0");
     }
+
+    private void addParagDaySumColumn(
+            int day
+            , ValueProvider<PruhParag, BigDecimal> pzHodValProv
+    ){
+        Grid.Column<PruhParag> sumCol = pruhParagGrid.addColumn(
+                new ComponentRenderer<>(pruhParag ->
+                        VzmFormatUtils.getDecHodComponent(pzHodValProv.apply(pruhParag)))
+        );
+        sumCol.setHeader("SUM")
+                .setWidth(SUM_COL_WIDTH)
+                .setFlexGrow(0)
+                .setKey(DP_KEY_PREF + String.valueOf(day))
+                .setResizable(false)
+        ;
+    }
+
 
     private Component buildPruhZakRemoveBtn(PruhZak pruhZak) {
         if (pruhZak.isLekarZak()) {
@@ -1279,12 +1399,22 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     pzak.setHod(dayOm, dsZak.getDszWorkPruh());
                 }
             }
+            pzak.setHod(0, getPruZakSum(pzak));
             pzak.setTmp("TMP");
             pruhZaks.add(pzak);
         }
         return pruhZaks;
     }
 
+    private BigDecimal getPruZakSum(PruhZak pruhZak) {
+        BigDecimal pzSum = BigDecimal.ZERO;
+        for (int i = 1; i <= 31; i++) {
+            if (null != pruhZak.getHod(i)) {
+                pzSum = pzSum.add(pruhZak.getHod(i));
+            }
+        }
+        return BigDecimal.ZERO.compareTo(pzSum) == 0 ? null : pzSum;
+    }
 
 //    private List<Long> getDsZakIdsToDelete(List<PruhZak> pruhZaks) {
 //        List<DochsumZak> dsZaksDb = dochsumZakService.fetchDochsumZaksForPersonAndYm(pruhPerson.getId(), pruhYm);
@@ -1353,10 +1483,17 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        List<PruhSum> pruhSums = new ArrayList();
 //        for (Parag parag : parags) {
             PruhSum pruhSum = new PruhSum("Odpracováno z docházky");
+            BigDecimal monthSum = BigDecimal.ZERO;
             for (Dochsum dsSum : dsSums) {
                 int dayOm = dsSum.getDsDate().getDayOfMonth();
-                pruhSum.setHod(dayOm, dsSum.getDsWorkPruh());
+                BigDecimal daySum = dsSum.getDsWorkPruh();
+                pruhSum.setHod(dayOm, daySum);
+                if (null != daySum) {
+                    monthSum = monthSum.add(daySum);
+                }
             }
+            pruhSum.setHod(0, monthSum);
+
 //            pruhSums.add(psum);
 //        }
         return pruhSum;

@@ -8,6 +8,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.FaktService;
@@ -39,6 +40,7 @@ public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
     private DatePicker dateDuzpField;
     private DatePicker dateFakturovanoField;
     private TextField dateTimeExportField;
+    private TextField faktCisloField;
     private TextField textField;
 
     private Button fakturovatButton;
@@ -84,7 +86,8 @@ public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
                 , initCastkaField()
                 , initZakladField()
                 , initDateFakturovanoField()
-                , initDateTimeExportField()
+                , initFaktCisloField()
+//                , initDateTimeExportField()
         );
     }
 
@@ -349,6 +352,19 @@ public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
 //                .withConverter(new LocalDateToDateConverter())
                 .bind(Fakt::getDateTimeExportStr, null);
         return dateTimeExportField;
+    }
+
+    private Component initFaktCisloField() {
+        faktCisloField = new TextField("Číslo faktury");
+                faktCisloField.setReadOnly(true);
+        getBinder().forField(faktCisloField)
+                .withValidator(new StringLengthValidator(
+                        "Číslo faktury muže mít max. 16 znaků",
+                        0, 16)
+                )
+                .bind(Fakt::getFaktCislo, Fakt::setFaktCislo)
+        ;
+        return faktCisloField;
     }
 
     @Override

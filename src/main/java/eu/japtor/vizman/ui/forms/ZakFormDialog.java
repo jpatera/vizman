@@ -45,6 +45,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private final static String FAKT_EDIT_COL_KEY = "fakt-edit-col";
     private final static String FAKT_VYSTAV_COL_KEY = "fakt-vystav-col";
     private final static String FAKT_EXPORT_COL_KEY = "fakt-export-col";
+    private final static String FAKT_CISLO_COL_KEY = "fakt-cislo-col";
     private final static String DELETE_STR = "Zrušit";
     private final static String SAVE_STR = "Uložit";
     public static final String DIALOG_WIDTH = "1250px";
@@ -53,6 +54,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private TextField ckontField;
     private TextField czakField;
     private TextField rokField;
+    private TextField poznamkaField;
 //    private Button zakEvidButton;
     private Button akvToZakButton;
     private Checkbox archCheckBox;
@@ -168,6 +170,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 , initRokField()
                 , initSkupinaField()
                 , initTextField()
+                , initPoznamkaField()
                 , initMenaField()
                 , initHonorarField()
                 , initHonorarCistyField()
@@ -1106,6 +1109,18 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         return textField;
     }
 
+    private Component initPoznamkaField() {
+        poznamkaField = new TextField("Poznámka");
+        poznamkaField.getElement().setAttribute("colspan", "4");
+        getBinder().forField(poznamkaField)
+                .withValidator(new StringLengthValidator(
+                        "Poznámka může mít max. 127 znaků",
+                        0, 127)
+                )
+                .bind(Zak::getPoznamka, Zak::setPoznamka);
+        return poznamkaField;
+    }
+
     private Component initSkupinaField() {
         skupinaField = new TextField("Skupina");
         skupinaField.setWidth("8em");
@@ -1430,10 +1445,15 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 .setFlexGrow(0)
                 .setKey(FAKT_EXPORT_COL_KEY)
         ;
-        faktGrid.addColumn(Fakt::getDateTimeExport)
-                .setHeader("Exportováno")
+        faktGrid.addColumn(Fakt::getFaktCislo)
+                .setHeader("Číslo faktury")
                 .setFlexGrow(0)
+                .setKey(FAKT_CISLO_COL_KEY)
         ;
+//        faktGrid.addColumn(Fakt::getDateTimeExport)
+//                .setHeader("Exportováno")
+//                .setFlexGrow(0)
+//        ;
 
         return faktGrid;
     }

@@ -82,6 +82,10 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     @Column(name = "DATETIME_UPDATE")
     private LocalDateTime datetimeUpdate;
 
+    @Basic
+    @Column(name = "POZNAMKA")
+    private String poznamka;
+
     // TODO: try LAZY - for better performance in TreeGrid ?
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_KONT")
@@ -181,22 +185,6 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         this.rokmeszad = rokmeszad;
     }
 
-    public LocalDate getDateCreate() {
-        return dateCreate;
-    }
-
-    public void setDateCreate(LocalDate dateCreate) {
-        this.dateCreate = dateCreate;
-    }
-
-    public LocalDateTime getDatetimeUpdate() {
-        return datetimeUpdate;
-    }
-
-    public void setDatetimeUpdate(LocalDateTime datetimeUpdate) {
-        this.datetimeUpdate = datetimeUpdate;
-    }
-
     public String getText() {
         return text;
     }
@@ -237,11 +225,34 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         this.arch = arch;
     }
 
+    public LocalDate getDateCreate() {
+        return dateCreate;
+    }
+
+    public void setDateCreate(LocalDate dateCreate) {
+        this.dateCreate = dateCreate;
+    }
+
+    public LocalDateTime getDatetimeUpdate() {
+        return datetimeUpdate;
+    }
+
+    public void setDatetimeUpdate(LocalDateTime datetimeUpdate) {
+        this.datetimeUpdate = datetimeUpdate;
+    }
+
+    public String getPoznamka() {
+        return poznamka;
+    }
+
+    public void setPoznamka(String poznamka) {
+        this.poznamka = poznamka;
+    }
+
     @Transient
     public ArchIconBox.ArchState getArchState() {
         return (null == arch) || !arch ? ArchIconBox.ArchState.ACTIVE : ArchIconBox.ArchState.ARCHIVED;
     }
-
 
     public List<ZakDoc> getZakDocs() {
         return zakDocs;
@@ -270,8 +281,6 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         fakt.setZak(null);
     }
 
-
-
     public Kont getKont() {
         return kont;
     }
@@ -290,9 +299,6 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     public void setRozprac(BigDecimal rozprac) {
         this.rozprac = rozprac;
     }
-
-
-
 
     public Integer getrZal() {
         return rZal;
@@ -349,8 +355,6 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     public void setRm(BigDecimal rm) {
         this.rm = rm;
     }
-
-
 
 
     @Transient
