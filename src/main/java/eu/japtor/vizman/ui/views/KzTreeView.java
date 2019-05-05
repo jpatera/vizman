@@ -188,7 +188,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         });
 //        kontFormDialog.addDialogCloseActionListener(ev -> {
 ////            Notification.show("Close Action Listener");
-//            loadTreeData(archFilterRadio.getValue());
+//            loadKzTreeData(archFilterRadio.getValue());
 //        });
 
         zakFormDialog = new ZakFormDialog(
@@ -215,7 +215,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        initZakProvider();
         this.add(initGridContainer());
 
-//        // Triggers an event which will loadTreeData:
+//        // Triggers an event which will loadKzTreeData:
         archFilterRadio.setValue(RADIO_KONT_ACTIVE);
 
 //        archFilterRadio.getDataProvider().refreshItem();
@@ -232,14 +232,14 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //
 //    @Override
 //    public void afterNavigation(AfterNavigationEvent event) {
-//        // Triggers an event which will loadTreeData:
+//        // Triggers an event which will loadKzTreeData:
 //        archFilterRadio.setValue(RADIO_KONT_ACTIVE);
 //        reloadButton.click();
 //    }
 //
 //    @Override
 //    protected void onAttach(AttachEvent attachEvent) {
-//        // Triggers an event which will loadTreeData:
+//        // Triggers an event which will loadKzTreeData:
 //        archFilterRadio.setValue(RADIO_KONT_ACTIVE);
 //        reloadButton.click();
 //    }
@@ -249,12 +249,13 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         Kont kont = kontFormDialog.getCurrentItem(); // Kont modified, just added or just deleted
         Operation oper = kontFormDialog.getCurrentOperation();
         OperationResult operRes = kontFormDialog.getLastOperationResult();
-        boolean zaksChanged = kontFormDialog.isZaksChanged();
-        KzTreeAware kzItemOrig = kontFormDialog.getKzItemOrig();
+        boolean kontZaksChanged = kontFormDialog.isKontZaksChanged();
+        boolean kontFaktsChanged = kontFormDialog.isKontFaktsChanged();
+        Kont kontOrig = kontFormDialog.getKontItemOrig();
 
-        syncTreeGridAfterKontEdit(kont, oper, operRes, zaksChanged, kzItemOrig);
+        syncTreeGridAfterKontEdit(kont, kontOrig, oper, operRes, kontZaksChanged, kontFaktsChanged);
 
-        if (OperationResult.ITEM_SAVED == operRes || zaksChanged) {
+        if (OperationResult.ITEM_SAVED == operRes || kontZaksChanged) {
             Notification.show("Kontrakt " + kont.getCkont() + " uložen"
                     , 2500, Notification.Position.TOP_CENTER);
 
@@ -273,9 +274,10 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         Operation oper = zakFormDialog.getCurrentOperation();
         OperationResult zakOperRes = zakFormDialog.getLastOperationResult();
         boolean faktsChanged = zakFormDialog.isFaktsChanged();
-        KzTreeAware kzItemOrig = zakFormDialog.getKzItemOrig();
+//        KzTreeAware kzItemOrig = zakFormDialog.getZakItemOrig();
+        Zak zakOrig = zakFormDialog.getZakItemOrig();
 
-        syncTreeGridAfterZakEdit(zak, oper, zakOperRes, faktsChanged, kzItemOrig);
+        syncTreeGridAfterZakEdit(zak, zakOrig, oper, zakOperRes, faktsChanged);
 
         if (OperationResult.ITEM_SAVED == zakOperRes || faktsChanged) {
             Notification.show(String.format("Zakázka %s uložena", ckz)
@@ -290,25 +292,54 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         }
     }
 
-    private void syncTreeGridAfterKontEdit(Kont kontAfter, Operation oper
-            , OperationResult operRes, boolean zaksChanged, KzTreeAware kzItemOrig) {
+    private void syncTreeGridAfterKontEdit(Kont kontAfter, Kont kontOrig, Operation kontOper
+            , OperationResult kontOperRes, boolean kontZaksChanged, boolean kontFaktsChanged) {
 
-        if ((OperationResult.NO_CHANGE == operRes) && !zaksChanged) {
+        if ((OperationResult.NO_CHANGE == kontOperRes) && !kontZaksChanged && !kontFaktsChanged) {
             return;
         }
 
-        List<GridSortOrder<KzTreeAware>> sortOrder = kzTreeGrid.getSortOrder();
-        kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
 
-        if (Operation.ADD == oper) {
-            kzTreeData.addItem(null, kontAfter);
-//            kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
-        } else if (Operation.EDIT == oper) {
-            if (OperationResult.ITEM_DELETED == operRes) {
-                kzTreeData.removeItem(kzItemOrig);
-            } else if (zaksChanged || (OperationResult.ITEM_SAVED == operRes)) {
-//                ((Kont)kzItemOrig).updateBasicData(kontAfter);
-                updateViewContent(kontAfter);
+        KzTreeAware kontToSelect = OperationResult.ITEM_DELETED == kontOperRes ?
+                getNeighborItemFromTree(kontOrig) : kontAfter;
+
+        kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+        Kont kontToSync = kontService.getById(kontOrig.getId());
+        kzTreeData.removeItem(kontToSync);
+        if (null == getItemFromTree(kontToSync)) {
+            kzTreeData.addItem(null, kontToSync);
+        }
+        if (!CollectionUtils.isEmpty(kontToSync.getZaks())) {
+            kzTreeData.addItems(kontToSync, ((KzTreeAware)kontToSync).getNodes());
+        }
+
+        refreshTreeGrid(kontToSelect);
+
+
+
+//
+//
+//        kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+//        KzTreeAware itemToSelect = kontAfter;
+//
+//        if (Operation.ADD == kontOper) {
+//            kzTreeData.addItem(null, kontAfter);
+//            kzTreeData.addItems(kontAfter, ((KzTreeAware)kontAfter).getNodes());
+//        } else if (Operation.EDIT == kontOper) {
+//            if (OperationResult.ITEM_DELETED == kontOperRes) {
+//                itemToSelect = getNeighborItemFromTree(kzItemOrig);
+//                kzTreeData.removeItem(kzItemOrig);
+//            } else if (OperationResult.ITEM_SAVED == kontOperRes || kontZaksChanged || kontFaktsChanged) {
+//                kzTreeData.removeItem(kzItemOrig);
+//                kzTreeData.addItem(null, kontAfter);
+//                kzTreeData.addItems(kontAfter, ((KzTreeAware)kontAfter).getNodes());
+////                ((Kont)kzItemOrig).updateBasicData(kontAfter);
+//            }
+//        }
+//
+//        refreshTreeGrid(itemToSelect);
+
+//        updateViewContent(kontAfter);
 
 // TODO: z neznameho duvodu se v TreeData neupdatuje polozka vyssim VersionId
 //                kzTreeData.removeItem(kzItemOrig);
@@ -318,13 +349,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //            } else if ((OperationResult.ITEM_SAVED == operRes)) {
 ////                ((Kont)getItemFromTree(kontAfter)).updateBasicData(kontAfter);
 //                ((Kont)kzItemOrig).updateBasicData(kontAfter);
-            }
-        }
-
-//        updateViewContent();
-//        populateGridWithData(kzTreeData, sortOrder);
 
 //        if (zaksChanged && OperationResult.ITEM_DELETED != operRes) {
+////            kzTreeData.getChildren(modKont).clear();
 ////            List<KzTreeAware> kontKzs = kzTreeData.getChildren(modKont);
 ////            if (null != kontKzs) {
 ////                for (KzTreeAware kz : kontKzs) {
@@ -334,18 +361,10 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 ////            kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
 //        }
 
-//        if (zaksChanged || (OperationResult.NO_CHANGE != operRes)) {
-//            // TODO: update ZAK and KONT calculated fields
-////            kzTreeData.getChildren(modKont).clear();
-////            kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
-//        }
-
-//        kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
-//        kzTreeData.addItems((Collection<KzTreeAware>) modKont, KzTreeAware::getNodes);
 //        kzTreeGrid.collapseRecursively(kzTreeGrid.getTreeData().getRootItems(),0);
 
 //        KzTreeAware itemForSelection = (OperationResult.ITEM_DELETED == operRes) ?
-//                getNeibourghItemFromTree(kontAfter) : kontAfter;
+//                getNeighborItemFromTree(kontAfter) : kontAfter;
 //        if (null != itemForSelection) {
 ////            kzTreeGrid.expand(itemForSelection);
 //            kzTreeGrid.getSelectionModel().select(itemForSelection);
@@ -393,47 +412,74 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        if ((Operation.ADD == operation) && (archFilterRadio.getValue().equals(RADIO_KONT_ACTIVE))) {
 //                archFilterRadio.setValue(RADIO_KONT_ARCH);
 //        } else {
-//                loadTreeData(archFilterRadio.getValue());
+//                loadKzTreeData(archFilterRadio.getValue());
 //        }
     }
 
-    private void syncTreeGridAfterZakEdit(Zak zakAfter, Operation oper
-            , OperationResult operRes, boolean  faktsChanged, KzTreeAware kzItemOrig) {
-
-        if ((OperationResult.NO_CHANGE == operRes) && !faktsChanged) {
+    private void syncTreeGridAfterZakEdit(
+//            Zak zakAfter, KzTreeAware kzItemOrig, Operation zakOper
+            Zak zakAfter, Zak zakOrig, Operation zakOper
+            , OperationResult zakOperRes, boolean kontFaktsChanged
+    ){
+        if ((OperationResult.NO_CHANGE == zakOperRes) && !kontFaktsChanged) {
             return;
         }
 
-        List<GridSortOrder<KzTreeAware>> sortOrder = kzTreeGrid.getSortOrder();
+        KzTreeAware zakItemToSelect = OperationResult.ITEM_DELETED == zakOperRes ?
+                getNeighborItemFromTree(zakOrig) : zakAfter;
+
         kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-
-        if (Operation.ADD == oper) {
-            Kont kontParent = (Kont)getItemFromTree(zakAfter.getKont());
-            if (null == kontParent) {
-                kzTreeData.addItem(null, zakAfter.getKont());
-            }
-            kzTreeData.addItem(zakAfter.getKont(), zakAfter);
-//            kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
-        } else if (Operation.EDIT == oper) {
-            if (OperationResult.ITEM_DELETED == operRes) {
-                kzTreeData.removeItem(zakAfter);
-            } else if (faktsChanged || (OperationResult.ITEM_SAVED == operRes)) {
-                updateViewContent(zakAfter);
-
-                // TODO:
-//                kzTreeData.removeItem(zakAfter);
-//                kzTreeData.addItem(zakAfter.getKont(), zakAfter);
-
-//                ((Zak)kzItemOrig).updateBasicData(zakAfter);
-
-//                kzTreeData.removeItem(zakAfter);
-//                kzTreeData.addItem(null, zakAfter);
-//                kzTreeData.addItems(zakAfter, ((KzTreeAware)zakAfter).getNodes());
-//            } else if ((OperationResult.ITEM_SAVED == operRes)) {
-////                ((Zak)getItemFromTree(zakAfter)).updateBasicData(zakAfter);
-//                ((Zak)kzItemOrig).updateBasicData(zakAfter);
-            }
+        Kont kontAfter = kontService.getById(zakOrig.getKontId());
+        kzTreeData.removeItem(kontAfter);
+        if (null == getItemFromTree(kontAfter)) {
+            kzTreeData.addItem(null, kontAfter);
         }
+        if (!CollectionUtils.isEmpty(kontAfter.getZaks())) {
+            kzTreeData.addItems(kontAfter, ((KzTreeAware)kontAfter).getNodes());
+        }
+
+        refreshTreeGrid(zakItemToSelect);
+
+
+//        if (Operation.ADD == zakOper) {
+////            Kont treeKontParent = (Kont)getItemFromTree(zakAfter.getKont());
+////            KzTreeAware treeKontParent = getItemFromTree(zakAfter.getKont());
+//            if (null == getItemFromTree(zakAfter.getKont())) {
+//                kzTreeData.addItem(null, zakAfter.getKont());
+//            }
+//            kzTreeData.addItem(zakAfter.getKont(), zakAfter);
+//        } else if (Operation.EDIT == zakOper) {
+//            if (OperationResult.ITEM_DELETED == zakOperRes) {
+//                zakItemToSelect = getNeighborItemFromTree(zakOrig);
+//                KzTreeAware kzKontParent = kzTreeData.getParent(zakAfter);
+////                Kont kontParent = zakAfter.getKont();
+////                kontParent.removeZak(zakOrig);
+////                kzTreeData.removeItem(kzItemOrig);
+////                kzTreeData.removeItem(zakAfter);
+//                kzTreeData.removeItem(kzKontParent);
+//                if (null == getItemFromTree(kzKontParent)) {
+//                    kzTreeData.addItem(null, kontToSyncWith);
+//                }
+//                if (!CollectionUtils.isEmpty(kontToSyncWith.getNodes())) {
+//                    kzTreeData.addItems(kontToSyncWith, ((KzTreeAware)kontToSyncWith).getNodes());
+//                }
+////                kzTreeData.addItem(zakOrig.getKont(), zakAfter);
+//            } else if (OperationResult.ITEM_SAVED == zakOperRes || kontFaktsChanged) {
+////                kzTreeData.removeItem(kzItemOrig);
+//                Kont kontParent = zakAfter.getKont();
+//                kzTreeData.removeItem(kontParent);
+//                if (null == getItemFromTree(kontParent)) {
+//                    kzTreeData.addItem(null, kontParent);
+//                }
+//                if (!CollectionUtils.isEmpty(kontParent.getZaks())) {
+//                    kzTreeData.addItems(kontParent, ((KzTreeAware)kontParent).getNodes());
+//                }
+////                ((Kont)kzItemOrig).updateBasicData(zakAfter.getKont());
+//            }
+//        }
+
+
+//        updateViewContent(zakAfter);
 
 //        if (faktsChanged || (OperationResult.NO_CHANGE != operRes)) {
 //            // TODO: update ZAK and KONT calculated fields
@@ -442,7 +488,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        }
 
 //        updateViewContent();
-//        populateGridWithData(kzTreeData, sortOrder);
+//        assignDataProviderToGridAndSort(kzTreeData, sortOrder);
 
 
 //        List<GridSortOrder<KzTreeAware>> sortOrder = kzTreeGrid.getSortOrder();
@@ -461,7 +507,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 ////            kzTreeData.getChildren(modKont).clear();
 ////            kzTreeData.addItems(modKont, ((KzTreeAware)modKont).getNodes());
 //        }
-//        populateGridWithData(kzTreeData, sortOrder);
+//        assignDataProviderToGridAndSort(kzTreeData, sortOrder);
 
 //        inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
 ////        inMemoryKzTreeProvider.setSortOrder(KzTreeAware::getCkont, SortDirection.DESCENDING);
@@ -477,26 +523,33 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        }
 
 //        kzTreeGrid.collapseRecursively(kzTreeGrid.getTreeData().getRootItems(),0);
-        KzTreeAware itemForSelection = (OperationResult.ITEM_DELETED == operRes) ?
-                getNeibourghItemFromTree(zakAfter.getKont()) : zakAfter.getKont();
-//                getNeibourghItemFromTree(modZak) : modZak;
-        if (null != itemForSelection) {
-//            kzTreeGrid.expand(itemForSelection);
-            kzTreeGrid.getSelectionModel().select(itemForSelection);
-        }
-        kzTreeGrid.getDataProvider().refreshAll();
+//        KzTreeAware itemForSelection = (OperationResult.ITEM_DELETED == zakOperRes) ?
+//                getNeighborItemFromTree(zakAfter.getKont()) : zakAfter.getKont();
+////                getNeighborItemFromTree(modZak) : modZak;
+//        if (null != itemForSelection) {
+////            kzTreeGrid.expand(itemForSelection);
+//            kzTreeGrid.getSelectionModel().select(itemForSelection);
+//        }
+//        kzTreeGrid.getDataProvider().refreshAll();
     }
 
     private KzTreeAware getItemFromTree(final KzTreeAware item) {
-        int itemIdx = getItemRowIdx(item);
+        Integer itemIdx = getItemRowIdx(item);
+        if (null == itemIdx) {
+            return null;
+        }
+
         return kzTreeGrid.getDataCommunicator()
-                . fetchFromProvider(itemIdx, 1)
+                .fetchFromProvider(itemIdx, 1)
                 .findFirst().orElse(null);
     }
 
-    private KzTreeAware getNeibourghItemFromTree(final KzTreeAware item) {
-        int itemIdx = getItemRowIdx(item);
-//        Stream<KzTreeAware> stream = kzTreeGrid.getDataCommunicator()
+    private KzTreeAware getNeighborItemFromTree(final KzTreeAware item) {
+        Integer itemIdx = getItemRowIdx(item);
+        if (null == itemIdx) {
+            return null;
+        }
+
         KzTreeAware newSelectedItem;
         newSelectedItem = kzTreeGrid.getDataCommunicator()
                 .fetchFromProvider(itemIdx + 1, 1)
@@ -510,7 +563,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         return newSelectedItem;
     }
 
-    private int getItemRowIdx(final KzTreeAware item) {
+    private Integer getItemRowIdx(final KzTreeAware item) {
         return kzTreeGrid.getDataCommunicator().getIndex(item);
     }
 
@@ -1003,14 +1056,13 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     }
 
 
-    private void loadTreeData(final String archFilter) {
+//    private void loadKzTreeData(final String archFilter) {
+    private TreeData<KzTreeAware> loadKzTreeData(final String archFilter) {
 //        if (null == inMemoryKzTreeProvider) {
 //            return;
 //        }
 //
 //        inMemoryKzTreeProvider.clearFilters();
-
-        List<GridSortOrder<KzTreeAware>> sortOrder = kzTreeGrid.getSortOrder();
 
         List<? super Kont> kzList;
         if (RADIO_KONT_ACTIVE.equals(archFilter)) {
@@ -1024,18 +1076,18 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         }
 
         ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
-        kzTreeData = (new TreeData()).addItems(kzList, kzNodesProvider);
-        populateGridWithData(kzTreeData, sortOrder);
+//        kzTreeData = (new TreeData()).addItems(kzList, kzNodesProvider);
+        return (new TreeData()).addItems(kzList, kzNodesProvider);
     }
 
-    private void populateGridWithData(TreeData treeData, List<GridSortOrder<KzTreeAware>> sortOrder) {
-        inMemoryKzTreeProvider = new TreeDataProvider<>(treeData);
-        kzTreeGrid.setDataProvider(inMemoryKzTreeProvider);
+    private void assignDataProviderToGridAndSort(TreeDataProvider<KzTreeAware> kzTreeDataProvider) {
+        List<GridSortOrder<KzTreeAware>> sortOrderOrig = kzTreeGrid.getSortOrder();
+        kzTreeGrid.setDataProvider(kzTreeDataProvider);
 //        inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
-        if (CollectionUtils.isEmpty(sortOrder)) {
+        if (CollectionUtils.isEmpty(sortOrderOrig)) {
             kzTreeGrid.sort(initialSortOrder);
         } else  {
-            kzTreeGrid.sort(sortOrder);
+            kzTreeGrid.sort(sortOrderOrig);
         }
     }
 
@@ -1226,7 +1278,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 ////        if ((Operation.ADD == operation) && (archFilterRadio.getValue().equals(RADIO_KONT_ACTIVE))) {
 ////                archFilterRadio.setValue(RADIO_KONT_ARCH);
 ////        } else {
-////                loadTreeData(archFilterRadio.getValue());
+////                loadKzTreeData(archFilterRadio.getValue());
 ////        }
 ////
 ////        kzTreeGrid.expand(savedKont);
@@ -1236,7 +1288,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //    }
 
 //    private void refreshTreeAfterEdit(final KzTreeAware neibourghItem) {
-//        loadTreeData(archFilterRadio.getValue());
+//        loadKzTreeData(archFilterRadio.getValue());
 //        kzTreeGrid.getSelectionModel().select(neibourghItem);
 //    }
 
@@ -1244,11 +1296,11 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        int kontDelIdx = kzTreeGrid.getDataCommunicator().getIndex(kontToDelete);
 //        Stream<KzTreeAware> stream = kzTreeGrid.getDataCommunicator()
 //                .fetchFromProvider(kontDelIdx + 1, 1);
-//        KzTreeAware newSelectedKont = getNeibourghItemFromTree(kontToDelete);
+//        KzTreeAware newSelectedKont = getNeighborItemFromTree(kontToDelete);
 //
 //        try {
 //            kontService.deleteKont(kontToDelete);
-//            loadTreeData(archFilterRadio.getValue());
+//            loadKzTreeData(archFilterRadio.getValue());
 //            kzTreeGrid.getSelectionModel().select(newSelectedKont);
 //
 //            ConfirmDialog
@@ -1483,18 +1535,55 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         return reloadButton;
     }
 
-    private void updateViewContent(final KzTreeAware itemToSelect) {
-        updateViewContent();
-        kzTreeGrid.getSelectionModel().select(itemToSelect);
+    /**
+     * Refreshes tree grid without reloading data from DB
+     */
+    private void refreshTreeGrid() {
+        refreshTreeGrid(null);
+    }
+
+    /**
+     * Refreshes tree grid without reloading data from DB
+     */
+    private void refreshTreeGrid(final KzTreeAware itemToSelect) {
+
+//        inMemoryKzTreeProvider = new TreeDataProvider<>(treeData);
+        kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
+//        inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
+        inMemoryKzTreeProvider.refreshAll();
+        List<GridSortOrder<KzTreeAware>> sortOrder = kzTreeGrid.getSortOrder();
+//        kzTreeGrid.setDataProvider(inMemoryKzTreeProvider);
+
+        if (CollectionUtils.isEmpty(sortOrder)) {
+            kzTreeGrid.sort(initialSortOrder);
+        } else  {
+            kzTreeGrid.sort(sortOrder);
+        }
+
+        kzTreeGrid.deselectAll();
+        if (null != itemToSelect) {
+            kzTreeGrid.select(itemToSelect);
+        }
     }
 
     private void updateViewContent() {
-        updateViewContent(archFilterRadio.getValue());
+        updateViewContent(null);
     }
 
-    private void updateViewContent(String archFilter) {
-        loadTreeData(archFilter);
+    private void updateViewContent(final KzTreeAware itemToSelect) {
+        kzTreeData = loadKzTreeData(archFilterRadio.getValue());
+        inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
+        assignDataProviderToGridAndSort(inMemoryKzTreeProvider);
         inMemoryKzTreeProvider.refreshAll();
+        if (null != itemToSelect) {
+            kzTreeGrid.getSelectionModel().select(itemToSelect);
+        }
+    }
+
+
+//    private void updateViewContent(String archFilter) {
+//        loadKzTreeData(archFilter);
+//        inMemoryKzTreeProvider.refreshAll();
 
 //        KzTreeAware itemForSelection = kzTreeData.getRootItems().get(0);
 //        if (null != itemForSelection) {
@@ -1504,7 +1593,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        kzTreeGrid.initFilterValues();
 //        kzTreeGrid.doFilter();
 //        kzTreeGrid.getDataProvider().refreshAll();
-    }
+//    }
 
 
 //    //    private void initViewToolBar(final Button reloadViewButton, final Button newItemButto)

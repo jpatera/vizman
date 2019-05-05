@@ -36,7 +36,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
     @Override
     public Kont getById(Long id) {
-        return kontRepo.getOne(id);
+        return kontRepo.findById(id).orElse(null);
     }
 
     @Override
@@ -103,7 +103,8 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 //            kontRepo.save(kont);
 //            kontRepo.detachKont(kont);
 //            kontRepo.flush();
-            Kont kontSaved = kontRepo.saveAndFlush(kontToSave);
+//            Kont kontSaved = kontRepo.saveAndFlush(kontToSave);
+            Kont kontSaved = kontRepo.save(kontToSave);
             getLogger().info("{} saved: {} [operation: {}]", kontSaved.getTyp().name()
                     , kontSaved.getCkont(), oper.name());
             return kontSaved;
@@ -117,12 +118,14 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     @Override
     @Transactional
     public void deleteKont(Kont kontToDel) throws VzmServiceException {
+        String kontEvidCis = String.format("%s", kontToDel.getCkont());
         try {
             kontRepo.delete(kontToDel);
-            getLogger().info("{} deleted: {}", kontToDel.getTyp().name(), kontToDel.getCkont());
+//            kontRepo.flush();
+            getLogger().info("{} deleted: {}", kontToDel.getTyp().name(), kontEvidCis);
         } catch (Exception e) {
             String errMsg = "Error while deleting {} : {}";
-            getLogger().error(errMsg, kontToDel.getTyp().name(), kontToDel.getCkont(), e);
+            getLogger().error(errMsg, kontToDel.getTyp().name(), kontEvidCis, e);
             throw new VzmServiceException(errMsg);
         }
     }

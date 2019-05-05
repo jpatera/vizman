@@ -18,6 +18,7 @@ public class FaktServiceImpl implements FaktService, HasLogger {
 
     private FaktRepo faktRepo;
 
+
     @Autowired
     public FaktServiceImpl(FaktRepo faktRepo) {
         super();
@@ -44,13 +45,13 @@ public class FaktServiceImpl implements FaktService, HasLogger {
     @Override
     @Transactional
     public boolean deleteFakt(Fakt faktToDel) {
-        String kzfCis = String.format("%s / %d / %d", faktToDel.getCkont(), faktToDel.getCzak(), faktToDel.getCfakt());
+        String faktEvidCis = String.format("%s / %d / %d", faktToDel.getCkont(), faktToDel.getCzak(), faktToDel.getCfakt());
         try {
-            faktRepo.delete(faktToDel);
-            getLogger().info("{} deleted: {}", faktToDel.getTyp().name(), kzfCis);
+            faktRepo.deleteById(faktToDel.getId());
+            getLogger().info("{} deleted: {}", faktToDel.getTyp().name(), faktEvidCis);
         } catch (Exception e) {
             String errMsg = "Error while deleting {} : {}";
-            getLogger().error(errMsg, faktToDel.getTyp().name(), kzfCis, e);
+            getLogger().error(errMsg, faktToDel.getTyp().name(), faktEvidCis, e);
 //            throw new VzmServiceException(errMsg);
             return false;
         }
@@ -59,7 +60,7 @@ public class FaktServiceImpl implements FaktService, HasLogger {
 
     @Override
     public Fakt getFakt(Long id) {
-        return faktRepo.getOne(id);
+        return faktRepo.findById(id).orElse(null);
 //      Or...:  return zakRepo.findById();
     }
 

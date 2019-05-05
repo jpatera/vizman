@@ -105,9 +105,6 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
     private FaktFormDialog faktFormDialog;
     private SubFormDialog subFormDialog;
-    private final ConfirmationDialog<ZakDoc> confirmDocUnregisterDialog;
-//    private ZakEvidFormDialog zakEvidFormDialog;
-//    private final ConfirmationDialog<Fakt> confirmFaktOpenDialog = new ConfirmationDialog<>();
 
 
 //    private Button saveButton;
@@ -119,7 +116,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
     private Binder<Zak> binder = new Binder<>();
     private Zak currentItem;
-    private KzTreeAware kzItemOrig;
+    private Zak zakItemOrig;
     private Operation currentOperation;
     private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
     private boolean faktsChanged = false;
@@ -198,10 +195,10 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 this::saveFaktForForm, this::deleteFaktForForm, faktService
         );
         subFormDialog = new SubFormDialog(
-                this::saveSubForForm, this::deleteSub
+                this::saveSubForForm, this::deleteSubForForm
         );
 
-        confirmDocUnregisterDialog = new ConfirmationDialog<>();
+//        confirmDocUnregisterDialog = new ConfirmationDialog<>();
     }
 
 
@@ -210,7 +207,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         this.currentOperation = operation;
         this.currentItem = zak;
         this.faktsChanged = false;
-        this.kzItemOrig = zak;
+        this.zakItemOrig = zak;
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -238,6 +235,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         binder.removeBean();
         binder.readBean(zakItem);
 
+        this.faktGrid.deselectAll();
         this.faktGrid.setItems(zakItem.getFakts());
         this.docGrid.setItems(zakItem.getZakDocs());
         this.kontFolder = zakItem.getKontFolder();
@@ -246,8 +244,8 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
         getLowerPane().setVisible(ItemType.SUB != zakItem.getTyp());
 
-        initHeaderMiddleComponent(zakItem);
-        getHeaderEndComponent().setText(getHeaderEndComponentValue(null));
+        refreshHeaderMiddleBox(zakItem);
+        getHeaderEndBox().setText(getHeaderEndComponentValue(null));
 
         initControlsForItemAndOperation(zakItem, zakOperation);
         initControlsOperability();
@@ -256,7 +254,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     }
 
 
-    private void initHeaderMiddleComponent(Zak zakItem) {
+    private void refreshHeaderMiddleBox(Zak zakItem) {
         FlexLayout headerMiddleComponent = new FlexLayout();
         headerMiddleComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
         headerMiddleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
@@ -265,18 +263,26 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 , new Gap("5em")
                 , VzmFormatUtils.buildAvizoComponent(zakItem.getBeforeTerms(), zakItem.getAfterTerms(), true)
         );
-        getMiddleComponentBox().removeAll();
+        getHeaderMiddleBox().removeAll();
         if (null != headerMiddleComponent) {
-            getMiddleComponentBox().add(headerMiddleComponent);
+            getHeaderMiddleBox().add(headerMiddleComponent);
         }
     }
 
     private void deactivateListeners() {
         if (null != binderChangeListener) {
-            binderChangeListener.remove();
+            try {
+                binderChangeListener.remove();
+            } catch (Exception e)  {
+                // do nothing
+            }
         }
         if ((null != textFieldListener)) {
-            textFieldListener.remove();
+            try {
+                textFieldListener.remove();
+            } catch (Exception e)  {
+                // do nothing
+            }
         }
     }
 
@@ -412,13 +418,22 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private void revertClicked(boolean closeAfterRevert) {
         revertFormChanges();
         if (closeAfterRevert) {
-            this.close();
+            closeDialog();
         } else {
             initControlsOperability();
         }
     }
 
     private void revertFormChanges() {
+//        if (null == currentItem) {
+//            ConfirmDialog
+//                    .createError()
+//                    .withCaption("CHYBA OPERACE")
+//                    .withMessage(String.format("Problém při načítání původních dat"))
+//                    .withOkButton()
+//                    .open();
+//            closeDialog();
+//        }
         binder.removeBean();
         binder.readBean(currentItem);
         lastOperationResult = OperationResult.NO_CHANGE;
@@ -430,25 +445,26 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Zrušení zakázky")
-                    .withMessage(String.format("Zakázku %s nelze zrušit, obsahuje zakázky / akvizice."
-                            , ckzDel))
+                    .withMessage(String.format("Zakázku %s nelze zrušit, obsahuje zakázky / akvizice.", ckzDel))
                     .open()
             ;
             return;
         }
-        revertFormChanges();
         try {
+            revertFormChanges();
             ConfirmDialog.createQuestion()
                     .withCaption("Zrušení zakázky")
                     .withMessage(String.format("Zrušit zakázku %s ?", ckzDel))
                     //                .with...(,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny.")
-                    .withOkButton(() -> deleteZak(currentItem)
-                            , ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
+                    .withOkButton(() -> {
+                            if (deleteZak(currentItem)) {
+                                closeDialog();
+                            }
+                        }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
                     )
                     .withCancelButton(ButtonOption.caption("ZPĚT"))
                     .open()
             ;
-            this.close();
         } catch (VzmServiceException e) {
             showDeleteErrMessage();
         }
@@ -460,9 +476,9 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             return;
         }
         try {
-            saveZak(currentItem, currentOperation);
+            currentItem = saveZak(currentItem);
             if (closeAfterSave) {
-                this.close();
+                closeDialog();
             } else {
                 initZakDataAndControls(currentItem, currentOperation);
             }
@@ -476,15 +492,24 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             return false;
         }
         try {
-            saveZak(currentItem, currentOperation);
-            binder.removeBean();
-            binder.readBean(currentItem);
-            initControlsOperability();
+            currentItem = saveZak(currentItem);
+            if (Operation.ADD ==  currentOperation) {
+                currentOperation = Operation.EDIT;
+            }
+            initZakDataAndControls(currentItem, currentOperation);
+//            binder.removeBean();
+//            binder.readBean(currentItem);
+//            initControlsOperability();
             return true;
         } catch (VzmServiceException e) {
             showSaveErrMessage();
             return false;
         }
+    }
+
+    private void closeDialog() {
+        faktGrid.deselectAll(); // ..otherwise during next openDialog "$0.connector..." error appears
+        this.close();
     }
 
     private void showSaveErrMessage() {
@@ -522,12 +547,13 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
     protected boolean deleteZak(Zak itemToDelete) {
         String ckzDel = String.format("%s / %s", currentItem.getCkont(), currentItem.getCzak());
+        OperationResult lastOperResOrig = lastOperationResult;
         try {
             zakService.deleteZak(itemToDelete);
             lastOperationResult = OperationResult.ITEM_DELETED;
             return true;
         } catch (VzmServiceException e) {
-            lastOperationResult = OperationResult.NO_CHANGE;
+            this.lastOperationResult = lastOperResOrig;
             ConfirmDialog
                     .createWarning()
                     .withCaption("Zrušení zakázky.")
@@ -539,7 +565,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     }
 
 
-    public Zak saveZak(Zak zakToSave, Operation oper) throws VzmServiceException {
+    public Zak saveZak(Zak zakToSave) throws VzmServiceException {
 
         try {
             if (!StringUtils.isBlank(zakToSave.getKontFolder())) {
@@ -550,10 +576,10 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //                textField.setValue(textValue);
                 }
             }
-            currentItem = zakService.saveZak(zakToSave, oper);
+            currentItem = zakService.saveZak(zakToSave, currentOperation);
 //            zakToSave = zakService.saveZak(zakToSave, oper);
 //            currentItem = zakSaved;
-            if (zakDirsToBeCreated(currentItem, oper)) {
+            if (zakDirsToBeCreated(currentItem, currentOperation)) {
                 createZakDirs(currentItem);
             }
             lastOperationResult = OperationResult.ITEM_SAVED;
@@ -682,8 +708,8 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         return faktsChanged;
     }
 
-    public KzTreeAware getKzItemOrig()  {
-        return kzItemOrig;
+    public Zak getZakItemOrig()  {
+        return zakItemOrig;
     }
 
 //    protected void confirmAndDelete() {
@@ -749,7 +775,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //
 //    protected void doDelete(Zak item) {
 //        itemDeleter.accept(item);
-//        this.close();
+//        closeDialog();
 //    }
 
 
@@ -772,13 +798,17 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 }
             }
 
-            binder.removeBean();
-            binder.readBean(currentItem);
-
             faktGrid.getDataCommunicator().getKeyMapper().removeAll();
             faktGrid.setItems(fakts);
             faktGrid.getDataProvider().refreshAll();
             faktGrid.select(savedFakt);
+
+            // TODO:
+            //            if (faktsChanged || (OperationResult.NO_CHANGE != faktOperRes)) {
+            binder.removeBean();
+            binder.readBean(currentItem);
+//            }
+
             Notification.show("Záznam fakturace uložen", 2000, Notification.Position.TOP_CENTER);
 
         } catch(Exception e) {
@@ -789,26 +819,6 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
     }
 
-    private void deleteFaktForForm(Fakt faktToDelete) {
-        boolean isDeleted = faktService.deleteFakt(faktToDelete);
-        if (!isDeleted) {
-            ConfirmDialog
-                    .createWarning()
-                    .withCaption("Zrušení fakturačního záznamu.")
-                    .withMessage("Fakturační záznam " + faktToDelete.getZakEvid() + " se nepodařilo zrušit.")
-                    .open();
-        } else {
-//            getCurrentItem().getFakts().remove(faktToDelete);
-            getCurrentItem().removeFakt(faktToDelete);
-            ConfirmDialog
-                    .createInfo()
-                    .withCaption("Zrušení fakturačního záznamu.")
-                    .withMessage("Fakturační záznam " + faktToDelete.getZakEvid() + " zrušen.")
-                    .open();
-        }
-        reloadFaktGridData();
-    }
-
     private void saveSubForForm(Fakt faktToSave, Operation operation) {
         try {
             Fakt savedFakt = faktService.saveFakt(faktToSave, operation);
@@ -816,20 +826,23 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             if (Operation.ADD == operation) {
 //                fakts.add(0, savedFakt);
                 getCurrentItem().addFaktOnTop(savedFakt);
+                faktsChanged = true;
             } else {
                 int itemIndex = fakts.indexOf(savedFakt);
                 if (itemIndex != -1) {
                     fakts.set(itemIndex, savedFakt);
+                    faktsChanged = true;
                 }
             }
-
-            binder.removeBean();
-            binder.readBean(currentItem);
 
             faktGrid.getDataCommunicator().getKeyMapper().removeAll();
             faktGrid.setItems(fakts);
             faktGrid.getDataProvider().refreshAll();
             faktGrid.select(savedFakt);
+
+            binder.removeBean();
+            binder.readBean(currentItem);
+
             Notification.show("Subdodávka uložena", 2000, Notification.Position.TOP_CENTER);
 
         } catch(Exception e) {
@@ -839,31 +852,60 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         }
     }
 
-    private void deleteSub(Fakt subToDelete) {
+
+
+    private void deleteFaktForForm(Fakt faktToDelete) {
+
+        String faktEvid = faktToDelete.getFaktEvid();
+
+        boolean isDeleted = faktService.deleteFakt(faktToDelete);
+        if (!isDeleted) {
+            ConfirmDialog
+                    .createWarning()
+                    .withCaption("Zrušení fakturačního záznamu.")
+                    .withMessage("Fakturační záznam " + faktEvid + " se nepodařilo zrušit.")
+                    .open();
+        } else {
+//            getCurrentItem().getFakts().remove(faktToDelete);
+            getCurrentItem().removeFakt(faktToDelete);
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Zrušení fakturačního záznamu.")
+                    .withMessage("Fakturační záznam " + faktEvid + " zrušen.")
+                    .open();
+        }
+        reloadFaktGridData();
+    }
+
+    private void deleteSubForForm(Fakt subToDelete) {
 //        Fakt subDel = subToDelete;
 //        int kontDelIdx = faktGrid.getDataCommunicator().getIndex(kontDel);
 //        Stream<KzTreeAware> stream = kzTreeGrid.getDataCommunicator()
 //                .fetchFromProvider(kontDelIdx + 1, 1);
 //        KzTreeAware newSelectedKont = stream.findFirst().orElse(null);
 
+        String subEvid = subToDelete.getFaktEvid();
+
         boolean isDeleted = faktService.deleteFakt(subToDelete);
         if (!isDeleted) {
             ConfirmDialog
                     .createWarning()
                     .withCaption("Zrušení subdodávky.")
-                    .withMessage("Subdodávku " + subToDelete.getZakEvid() + " se nepodařilo zrušit.")
+                    .withMessage("Subdodávku " + subEvid + " se nepodařilo zrušit.")
                     .open();
         } else {
             getCurrentItem().removeFakt(subToDelete);
             ConfirmDialog
                     .createInfo()
                     .withCaption("Zrušení subdodávky.")
-                    .withMessage("Subdodávka " + subToDelete.getZakEvid() + " zrušena.")
+                    .withMessage("Subdodávka " + subEvid + " zrušena.")
                     .open();
 
         }
         reloadFaktGridData();
     }
+
+
 
     private void reloadFaktGridData() {
         faktGrid.getDataCommunicator().getKeyMapper().removeAll();
@@ -905,7 +947,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 if (saveWithoutClose()) {
                     ConfirmDialog
                             .createInfo()
-                            .withCaption("Akvizice -> Zakázka")
+                            .withCaption("AKV -> ZAK")
                             .withMessage("Akvizice " + currentItem.getCkont() + " / " + currentItem.getCzak() + " převedena na zakázku.")
                             .open();
                 }
@@ -1118,6 +1160,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                         0, 127)
                 )
                 .bind(Zak::getPoznamka, Zak::setPoznamka);
+        poznamkaField.setValueChangeMode(ValueChangeMode.EAGER);
         return poznamkaField;
     }
 
@@ -1283,17 +1326,25 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         return docGrid;
     }
 
-    private Component buildDocRemoveButton(ZakDoc kontDoc) {
+    private Component buildDocRemoveButton(ZakDoc zakDoc) {
         return new GridItemOpenBtn(event -> {
-            close();
-            confirmDocUnregisterDialog.open("Zrušit registraci dokumentu ?",
-                    "", "", "Zrušit",
-                    true, kontDoc, this::removeDocRegistration, this::open);
+//            close();
+            ConfirmDialog.createQuestion()
+                    .withCaption("REGISTRACE DOKUMENTU")
+                    .withMessage("Zrušit registraci dokumentu?")
+                    .withYesButton(() -> {
+                        removeDocRegistration(zakDoc);
+                    }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT"))
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .open();
+//            confirmDocUnregisterDialog.open("Zrušit registraci dokumentu ?",
+//                    "", "", "Zrušit",
+//                    true, kontDoc, this::removeDocRegistration, this::open);
         });
     }
 
     private void removeDocRegistration(ZakDoc zakDoc) {
-        close();
+//        closeDialog();
     }
 
 
@@ -1480,7 +1531,6 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         boolean isFakturovano = fakt.isFakturovano();
         if (ItemType.FAKT == fakt.getTyp()) {
             Button fakStornoBtn = new GridFakturovatBtn(event -> {
-                //                this.close();
                 if (isFakturovano) {
                     faktFormDialog.openDialog(
                             fakt, getCurrentItem(), Operation.STORNO

@@ -92,7 +92,7 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     private Kont kont;
 
 //    @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER)
-    @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER, orphanRemoval = false)
     @OrderBy("cfakt DESC")
     private List<Fakt> fakts = new ArrayList<>();
 

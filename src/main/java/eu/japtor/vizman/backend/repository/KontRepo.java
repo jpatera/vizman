@@ -14,6 +14,8 @@ import java.util.function.Predicate;
 
 public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
+//    Kont findById(Long id);
+
 //   Kont findTopByObjednatel(String objednatel);
 
     Kont findTopByObjednatelIgnoreCase(String objednatel);

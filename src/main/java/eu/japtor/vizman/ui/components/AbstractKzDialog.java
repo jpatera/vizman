@@ -36,7 +36,7 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
     private HorizontalLayout upperPane;
     private VerticalLayout lowerPane;
 //    private VerticalLayout upperGridContainer;
-    private Div middleComponentBox;
+    private Div headerMiddleBox;
 
     protected GrammarGender itemGender;
     private String itemTypeNomS;
@@ -48,10 +48,10 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
     private String dialogMinWidth;
     private String dialogMinHeight;
 
-    private FlexLayout headerLeftComponent;
+    private FlexLayout headerLeftBox;
     private Button mainResizeBtn;
     private H3 mainTitle;
-    private H5 headerEndComponent;
+    private H5 headerEndBox;
 
 
     public AbstractKzDialog(
@@ -114,8 +114,8 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
                 , dialogContent
         );
 
-        dialogMinHeight = headerLeftComponent.getHeight();
-        dialogMinWidth = headerLeftComponent.getHeight();
+        dialogMinHeight = headerLeftBox.getHeight();
+        dialogMinWidth = headerLeftBox.getHeight();
 
         this.add(dialogCanvas);
     }
@@ -151,34 +151,34 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         dialogHeader.setAlignItems(FlexComponent.Alignment.BASELINE);
         dialogHeader.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         dialogHeader.add(
-                initHeaderLeftComponent()
-                , initMiddleComponentBox()
-                , initHeaderEndComponent()
+                initHeaderLeftBox()
+                , initHeaderMiddleBox()
+                , initHeaderEndBox()
         );
         return dialogHeader;
     }
 
 
-    private Component initHeaderEndComponent() {
-        headerEndComponent = new H5();
-        headerEndComponent.getStyle()
+    private Component initHeaderEndBox() {
+        headerEndBox = new H5();
+        headerEndBox.getStyle()
                 .set("margin-right","1.2em")
         ;
-        return headerEndComponent;
+        return headerEndBox;
     }
 
-    protected HtmlContainer getHeaderEndComponent() {
-        return headerEndComponent;
+    protected HtmlContainer getHeaderEndBox() {
+        return headerEndBox;
     }
 
 
-    private Component initMiddleComponentBox() {
-        middleComponentBox = new Div();
-        return middleComponentBox;
+    private Component initHeaderMiddleBox() {
+        headerMiddleBox = new Div();
+        return headerMiddleBox;
     }
 
-    protected Div getMiddleComponentBox() {
-        return middleComponentBox;
+    protected Div getHeaderMiddleBox() {
+        return headerMiddleBox;
     }
 
 
@@ -292,13 +292,13 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         return headerDevider;
     }
 
-    private Component initHeaderLeftComponent() {
-        headerLeftComponent = new FlexLayout(
+    private Component initHeaderLeftBox() {
+        headerLeftBox = new FlexLayout(
                 initDialogResizeBtn()
                 , initDialogTitle()
         );
-        headerLeftComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
-        return headerLeftComponent;
+        headerLeftBox.setAlignItems(FlexComponent.Alignment.BASELINE);
+        return headerLeftBox;
     }
 
     private Button initDialogResizeBtn() {
@@ -309,8 +309,8 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
     public Consumer<Boolean> getDialogResizeAction() {
         return isExpanded -> {
             dialogContent.setVisible(!isExpanded);
-            headerEndComponent.setVisible(!isExpanded);
-            middleComponentBox.setVisible(!isExpanded);
+            headerEndBox.setVisible(!isExpanded);
+            headerMiddleBox.setVisible(!isExpanded);
             this.setHeight(isExpanded ? dialogMinHeight : dialogHeight);
             this.setWidth(isExpanded ? dialogMinWidth : dialogWidth);
         };

@@ -110,6 +110,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 
         cancelButton = new Button("Zpět");
         cancelButton.setAutofocus(true);
+        // TODO: closeDialog?
         cancelButton.addClickListener(e -> close());
 
         saveButton = new Button("Uložit");

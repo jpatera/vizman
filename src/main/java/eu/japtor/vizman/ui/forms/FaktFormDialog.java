@@ -162,6 +162,7 @@ public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
         plneniField.setReadOnly(isFakturovano);
         dateDuzpField.setReadOnly(isFakturovano);
         dateFakturovanoField.setReadOnly(!isFakturovano);
+        faktCisloField.setReadOnly(!isFakturovano);
         fakturovatButton.setEnabled(!isFakturovano);
         stornoButton.setEnabled(isFakturovano);
 //        getSaveButton().setEnabled(!isFakturovano);
@@ -356,7 +357,7 @@ public class FaktFormDialog extends AbstractEditorDialog<Fakt> {
 
     private Component initFaktCisloField() {
         faktCisloField = new TextField("Číslo faktury");
-                faktCisloField.setReadOnly(true);
+        faktCisloField.setReadOnly(false);
         getBinder().forField(faktCisloField)
                 .withValidator(new StringLengthValidator(
                         "Číslo faktury muže mít max. 16 znaků",

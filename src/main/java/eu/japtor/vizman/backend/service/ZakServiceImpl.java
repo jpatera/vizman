@@ -50,7 +50,10 @@ public class ZakServiceImpl implements ZakService, HasLogger {
     public Zak saveZak(Zak zakToSave, Operation oper) throws VzmServiceException {
         String kzCis = String.format("%s / %d", zakToSave.getCkont(), zakToSave.getCzak());
         try {
-            Zak zakSaved = zakRepo.saveAndFlush(zakToSave);
+//            kontRepo.flush();
+//            zakRepo.flush();
+//            Zak zakSaved = zakRepo.saveAndFlush(zakToSave);
+            Zak zakSaved = zakRepo.save(zakToSave);
             getLogger().info("{} saved: {} [operation: {}]"
                     , zakSaved.getTyp().name(), kzCis, oper.name());
             return zakSaved;
@@ -65,19 +68,33 @@ public class ZakServiceImpl implements ZakService, HasLogger {
     @Override
     @Transactional
     public void deleteZak(Zak zakToDel) throws VzmServiceException {
-        String kzCis = String.format("%s / %d", zakToDel.getCkont(), zakToDel.getCzak());
+        String zakEvidCis = String.format("%s / %d", zakToDel.getCkont(), zakToDel.getCzak());
         try {
-            zakToDel.setKont(null);
-            zakRepo.saveAndFlush(zakToDel);
+//            zakToDel.setKont(null);
+//            zakToDel = zakRepo.saveAndFlush(zakToDel);
+//            zakToDel = zakRepo.save(zakToDel);
+//            Kont kontWithDeleted = zakToDel.getKont();
+
+            zakRepo.delete(zakToDel);
+//            Kont kontWithoutDeleted = kontRepo.findById(zakToDel.getKontId()).orElse(null);
+
+//            if (null != kontWithDeleted) {
+//                kontToSave.removeZak(zakToDel);
+//                kontWithDeleted.removeZak(zakToDel);
+//                kontWithDeleted.removeZak(zakToDel);
+//            }
+//            Kont  kontx = kontRepo.save(kontWithDeleted);
+//            zakRepo.flush();
+//            kontRepo.flush();
 //            Kont kontToSave = zakToDel.getKont();
 //            kontToSave.removeZak(zakToDel);
 //            kontRepo.saveAndFlush(kontToSave);
 //            zakRepo.delete(zakToDel);
 //            zakRepo.flush();
-            getLogger().info("{} deleted: {}", zakToDel.getTyp().name(), kzCis);
+            getLogger().info("{} deleted: {}", zakToDel.getTyp().name(), zakEvidCis);
         } catch (Exception e) {
             String errMsg = "Error while deleting {} : {}";
-            getLogger().error(errMsg, zakToDel.getTyp().name(), kzCis, e);
+            getLogger().error(errMsg, zakToDel.getTyp().name(), zakEvidCis, e);
             throw new VzmServiceException(errMsg);
         }
     }
