@@ -271,14 +271,12 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
             }
 
             recToClose = null;
-//            recToClose = getLastZkDochRec();
-//            if (recToClose != null) {
-//                recToClose.setToTime(dochManual.getFromTime());
-//                recToClose.setToModifDatetime(modifStamp);
-//                recToClose.setToManual(!dochManual.getFromTime().equals(dochManual.getFromTimeOrig()));
-//            }
+
         } else if (Operation.STAMP_PRICH_MAN == operation) {
             recToClose = getLastZkDochRec();
+            if ((recToClose != null) && (recToClose.getToTime() != null)) {
+                recToClose = null;  // Posledni zaznam je odchod z prace
+            }
             LocalTime  manualFromTime = dochManual.getFromTime();
             LocalDateTime manualFromDateTime = LocalDateTime.of(dochDate, dochManual.getFromTime());
 
@@ -316,7 +314,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
             }
 
         } else if ((Operation.STAMP_ODCH_MAN == operation) || (Operation.STAMP_ODCH_MAN_LAST == operation)) {
-            // In dochManual is inside rec to be closed:
+            // dochManual contains in-rec to be closed:
             recToOpen = null;
             if (Operation.STAMP_ODCH_MAN == operation){
                 recToOpen = new Doch(
@@ -338,18 +336,15 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 ;
                 return;
             }
+//            if ((recToClose != null) && (recToClose.getToTime() == null)) {
+//                recToClose = null;
+//            }
             LocalTime manualFromTime = dochManual.getFromTime();
             LocalDateTime manualFromDateTime = LocalDateTime.of(dochDate, dochManual.getFromTime());
             LocalTime manualToTime = null;
             LocalDateTime manualToDateTime = null;
             if (Operation.STAMP_ODCH_MAN_LAST == operation) {
                 manualToTime = dochManual.getToTime();
-                manualToDateTime = LocalDateTime.of(dochDate, dochManual.getToTime());
-            } else {
-
-            }
-
-            if (Operation.STAMP_ODCH_MAN_LAST == operation) {
                 if (null != recToClose && manualToTime.compareTo(recToClose.getFromTime() ) < 0) {
                     ConfirmDialog.createInfo()
                             .withCaption(DOCH_CONFIRM_TITLE)
@@ -798,7 +793,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 LocalDateTime currentDateTime = LocalDateTime.now(minuteClock);
                 Cin.CinKod prichodWhereKod = Cin.CinKod.P;
                 resetOdchodRadio();
-                stampPrichodAndNewInsideRec(currentDateTime, prichodWhereKod);
+                stampPrichodAndNewInRec(currentDateTime, prichodWhereKod);
         });
         return prichodBtn;
     }
@@ -810,7 +805,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 LocalDateTime currentDateTime = LocalDateTime.now(minuteClock);
                 Cin.CinKod prichodWhereKod = Cin.CinKod.P;
                 resetOdchodRadio();
-                stampPrichodAltAndNewInsideRec(currentDateTime, prichodWhereKod);
+                stampPrichodAltAndNewInRec(currentDateTime, prichodWhereKod);
         });
         return prichodAltBtn;
     }
@@ -848,11 +843,11 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
             Cin.CinKod odchodWhereKod = odchodRadio.getValue().getCinKod();
             resetOdchodRadio();
             if (Cin.CinKod.PM == odchodWhereKod) {
-                stampOdchodAltAndNewOutsideRec(currentDateTime, odchodWhereKod, "Odchod pracovně", false, false);
+                stampOdchodAltAndNewOutRec(currentDateTime, odchodWhereKod, "Odchod pracovně", false, false);
             } else if (Cin.CinKod.KP == odchodWhereKod || Cin.CinKod.XD == odchodWhereKod) {
                 stampOdchod(currentDateTime);
             } else {
-                stampOdchodAndNewOutsideRec(currentDateTime, odchodWhereKod);
+                stampOdchodAndNewOutRec(currentDateTime, odchodWhereKod);
             }
         });
         odchodButton.setEnabled(false);
@@ -879,9 +874,9 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
             if (Cin.CinKod.KP == odchodWhereKod || Cin.CinKod.XD == odchodWhereKod) {
                 stampOdchodAlt(currentDateTime);
             } else if (Cin.CinKod.PM == odchodWhereKod) {
-                stampOdchodAltAndNewOutsideRec(currentDateTime, odchodWhereKod, "Odchod pracovně jiný čas", true, false);
+                stampOdchodAltAndNewOutRec(currentDateTime, odchodWhereKod, "Odchod pracovně jiný čas", true, false);
             } else {
-                stampOdchodAltAndNewOutsideRec(currentDateTime, odchodWhereKod, "Odchod jiný čas", true, false);
+                stampOdchodAltAndNewOutRec(currentDateTime, odchodWhereKod, "Odchod jiný čas", true, false);
             }
 
         });
@@ -1904,35 +1899,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     }
 
 
-//    private void XXstampPrichod(final LocalDateTime currentDateTime) {
-//        if (!canStampPrichod()) {
-//            return;
-//        }
-//        Doch firstDochPrich = new Doch(
-//                dochDate
-//                , dochPerson
-//                , cinRepo.findByCinKod(Cin.CinKod.P)
-//                , currentDateTime.toLocalTime()
-//                , currentDateTime
-//                , false
-//                , null
-//        );
-//        pruhZakList.add(0, dochService.openFirstRec(firstDochPrich));
-//        updateUpperDochGridPane(dochPerson, dochDate);
-//        pruhZakGrid.getDataProvider().refreshAll();
-//    }
-
-//    private void stampPrichodAndNew(final LocalDateTime dochStamp) {
-//        if (!canStampPrichod()) {
-//            return;
-//        }
-//        Doch newDochPrich = new Doch(cinRepo.findByCinKod(Cin.CinKod.P), dochPerson, dochDate, dochStamp);
-//        pruhZakList.add(0, dochService.closePrevZkDochAndOpenNew(newDochPrich));
-//        updateUpperDochGridPane(dochPerson, dochDate);
-//        pruhZakGrid.getDataProvider().refreshAll();
-//    }
-
-    private void stampPrichodAndNewInsideRec(
+    private void stampPrichodAndNewInRec(
             final LocalDateTime currentDateTime
             , final Cin.CinKod prichodWhereKod
     ) {
@@ -1940,7 +1907,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
             return;
         }
 
-        Doch newInsideRec = new Doch(
+        Doch newInRec = new Doch(
                 dochDate
                 , dochPerson
                 , cinRepo.findByCinKod(prichodWhereKod)
@@ -1952,23 +1919,21 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
         Doch recToClose = getLastZkDochRec();
         if (null == recToClose) {
-            dochService.openFirstRec(newInsideRec);
+            dochService.openFirstRec(newInRec);
         } else {
-            recToClose.setToTime(currentDateTime.toLocalTime());
-            recToClose.setToModifDatetime(currentDateTime);
-            dochService.closeRecAndOpenNew(recToClose, newInsideRec);
+            if (null != recToClose.getToTime()) {
+                recToClose = null;
+            } else {
+                recToClose.setToTime(currentDateTime.toLocalTime());
+                recToClose.setToModifDatetime(currentDateTime);
+            }
+            dochService.closeRecAndOpenNew(recToClose, newInRec);
         }
         updateUpperDochGridPane(dochPerson, dochDate);
         upperDochGrid.getDataProvider().refreshAll();
-
-//        pruhZakList.add(0, dochService.closePrevZkDochAndOpenNew(newDochPrich));
-//        stampDochManualFromDialog(newInsideRec, Operation.STAMP_PRICH);
-//        dochService.closePrevZkDochAndOpenNew(newDochPrich);
-//        updateUpperDochGridPane(dochPerson, dochDate);
-//        pruhZakGrid.getDataProvider().refreshAll();
     }
 
-    private void stampPrichodAltAndNewInsideRec(
+    private void stampPrichodAltAndNewInRec(
             final LocalDateTime stampDateTime
             , final Cin.CinKod prichodWhereKod
     ) {
@@ -2014,10 +1979,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     }
 
     private void stampSingleObedAuto(Duration durObedAuto) {
-//        if (!canStampStandaloneRec()) {
-//            return;
-//        }
-
         Doch singleRec = Doch.createSingleFixed (
                 dochDate
                 , dochPerson
@@ -2034,9 +1995,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
 
     private void stampDovolenaHalf(final LocalDateTime currentDateTime, Cin.CinKod cinKod) {
-//        if (!checkDochContainsRec(", nelze provést požadovanou akci.")) {
-//            return;
-//        }
         Doch standaloneRec = new Doch(
                 dochDate
                 , dochPerson
@@ -2131,11 +2089,11 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         }
     }
 
-    private void stampOdchodAndNewOutsideRec(final LocalDateTime currentDateTime, Cin.CinKod odchodWhereKod) {
+    private void stampOdchodAndNewOutRec(final LocalDateTime currentDateTime, Cin.CinKod odchodWhereKod) {
         if (!canStampOdchod()) {
             return;
         }
-        Doch newOutsideRec = new Doch(
+        Doch newOutRec = new Doch(
                 dochDate
                 , dochPerson
                 , cinRepo.findByCinKod(odchodWhereKod)
@@ -2145,18 +2103,18 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 , null
         );
 
-        Doch lastInsideRec = getLastZkDochRec();
-        if (null != lastInsideRec) {
-            lastInsideRec.setToTime(currentDateTime.toLocalTime());
-            lastInsideRec.setToModifDatetime(currentDateTime);
-            dochService.closeRecAndOpenNew(lastInsideRec, newOutsideRec);
+        Doch lastInRec = getLastZkDochRec();
+        if (null != lastInRec) {
+            lastInRec.setToTime(currentDateTime.toLocalTime());
+            lastInRec.setToModifDatetime(currentDateTime);
+            dochService.closeRecAndOpenNew(lastInRec, newOutRec);
         }
 
         updateUpperDochGridPane(dochPerson, dochDate);
         upperDochGrid.getDataProvider().refreshAll();
     }
 
-    private void stampOdchodAltAndNewOutsideRec(
+    private void stampOdchodAltAndNewOutRec(
             final LocalDateTime currentDateTime
             , Cin.CinKod odchodWhereKod
             , String dialogTitle
