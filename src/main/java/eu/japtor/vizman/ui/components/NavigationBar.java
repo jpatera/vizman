@@ -76,17 +76,24 @@ public class NavigationBar extends Div implements RouterLayout {
         kzTreeLink.add(ICON_KONT_TREE, new Text(TITLE_KZ_TREE));
         kzTreeLink.addClassName("main-layout__nav-item");
 
-        RouterLink zakEvalListLink = new RouterLink(null, ZakEvalListView.class);
-        Icon ICON_ZAK_EVAL = new Icon (VaadinIcon.LIST);
-        ICON_ZAK_EVAL.setColor("red");
-        zakEvalListLink.add(ICON_ZAK_EVAL, new Text(TITLE_ZAK_EVAL));
-        zakEvalListLink.addClassName("main-layout__nav-item");
+        RouterLink cfgLink = new RouterLink(null, CfgTabsView.class);
+        Icon ICON_CFG = new Icon (VaadinIcon.COG);
+//        Icon ICON_CFG = new Icon (VaadinIcon.TOOLS);
+        ICON_CFG.setColor("coral");
+        cfgLink.add(ICON_CFG, new Text(TITLE_CFG));
+        cfgLink.addClassName("main-layout__nav-item");
 
-        RouterLink kontListLink = new RouterLink(null, KontListView.class);
-        Icon ICON_KONT_LIST = new Icon (VaadinIcon.LIST);
-        ICON_KONT_LIST.setColor("orange");
-        kontListLink.add(ICON_KONT_LIST, new Text(TITLE_KONT_LIST));
-        kontListLink.addClassName("main-layout__nav-item");
+//        RouterLink zakEvalListLink = new RouterLink(null, ZakEvalListView.class);
+//        Icon ICON_ZAK_EVAL = new Icon (VaadinIcon.LIST);
+//        ICON_ZAK_EVAL.setColor("red");
+//        zakEvalListLink.add(ICON_ZAK_EVAL, new Text(TITLE_ZAK_EVAL));
+//        zakEvalListLink.addClassName("main-layout__nav-item");
+//
+//        RouterLink kontListLink = new RouterLink(null, KontListView.class);
+//        Icon ICON_KONT_LIST = new Icon (VaadinIcon.LIST);
+//        ICON_KONT_LIST.setColor("orange");
+//        kontListLink.add(ICON_KONT_LIST, new Text(TITLE_KONT_LIST));
+//        kontListLink.addClassName("main-layout__nav-item");
 
 
 //        RouterLink personLink = new RouterLink(null, PersonListView.class);
@@ -95,12 +102,11 @@ public class NavigationBar extends Div implements RouterLayout {
 //        personLink.add(ICON_PERSON, new Text(TITLE_PERSON));
 //        personLink.addClassName("main-layout__nav-item");
 
-        RouterLink cfgLink = new RouterLink(null, CfgTabsView.class);
-        Icon ICON_CFG = new Icon (VaadinIcon.COG);
-//        Icon ICON_CFG = new Icon (VaadinIcon.TOOLS);
-        ICON_CFG.setColor("coral");
-        cfgLink.add(ICON_CFG, new Text(TITLE_CFG));
-        cfgLink.addClassName("main-layout__nav-item");
+        RouterLink toolsLink = new RouterLink(null, ToolsTabsView.class);
+        Icon ICON_TOOLS = VaadinIcon.TOOLS.create();
+        ICON_CFG.setColor("black");
+        toolsLink.add(ICON_TOOLS, new Text(TITLE_TOOLS));
+        toolsLink.addClassName("main-layout__nav-item");
 
 //        Element logoutLink = ElementFactory.createRouterLink("logout", "LOGOUT_CTX");
 //        RouterLink logoutLink = new RouterLink(null, Nav.class);
@@ -133,7 +139,11 @@ public class NavigationBar extends Div implements RouterLayout {
             middleNaviBar.add(kzTreeLink);
         }
 
+
         HorizontalLayout rightNaviBar = new HorizontalLayout();
+        if (SecurityUtils.isAccessGranted(ToolsTabsView.class)) {
+            rightNaviBar.add(toolsLink);
+        }
         if (SecurityUtils.isAccessGranted(CfgTabsView.class)) {
             rightNaviBar.add(cfgLink);
         }

@@ -213,7 +213,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
         initKzTextRenderer();
 //        initZakProvider();
-        this.add(initGridContainer());
+        this.add(buildGridContainer());
 
 //        // Triggers an event which will loadKzTreeData:
         archFilterRadio.setValue(RADIO_KONT_ACTIVE);
@@ -305,7 +305,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
         kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
         Kont kontToSync = kontService.getById(kontOrig.getId());
-        kzTreeData.removeItem(kontToSync);
+        if (Operation.ADD != kontOper) {
+            kzTreeData.removeItem(kontToSync);
+        }
         if (null == getItemFromTree(kontToSync)) {
             kzTreeData.addItem(null, kontToSync);
         }
@@ -719,18 +721,14 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
 
 
-    private Component initGridContainer() {
-
+    private Component buildGridContainer() {
         VerticalLayout gridContainer = new VerticalLayout();
         gridContainer.setClassName("view-container");
         gridContainer.getStyle().set("marginTop", "0.5em");
         gridContainer.setAlignItems(Alignment.STRETCH);
 
-        gridContainer.add(initGridToolBar());
+        gridContainer.add(buildGridToolBar());
         gridContainer.add(initKzTreeGrid());
-
-//        this.add();
-//        this.add(gridContainer);
         return gridContainer;
     }
 
@@ -1383,7 +1381,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //    }
 
 
-    private Component initGridToolBar() {
+    private Component buildGridToolBar() {
 
 //        kzToolBar = new HorizontalLayout();
 //        FlexLayout kzToolBar;

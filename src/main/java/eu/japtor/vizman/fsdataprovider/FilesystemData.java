@@ -85,7 +85,7 @@ public class FilesystemData extends TreeData<File> {
 
     /**
      * Helper method used internally for fetching files lazily from
-     * FilesystemDataProvider
+     * FileSystemDataProvider
      *
      * @param item The folder
      * @return List of files in the folder

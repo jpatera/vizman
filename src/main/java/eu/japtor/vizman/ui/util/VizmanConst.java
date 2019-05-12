@@ -74,6 +74,11 @@ public class VizmanConst {
 	public static final String TAG_ROLE = "role-list-view";
 	public static final String ROUTE_ROLE = "role";
 
+	public static final String TITLE_TOOLS = "Nástroje";
+	public static final String PAGE_TITLE_TOOLS = PAGE_TITLE_BASE + " - " + TITLE_TOOLS;
+	public static final String TAG_TOOLS = "tools-tabs-view";
+	public static final String ROUTE_TOOLS = "tools";
+
 	public static final String TITLE_CFG = "Konfigurace";
 	public static final String PAGE_TITLE_CFG = PAGE_TITLE_BASE + " - " + TITLE_CFG;
 	public static final String TAG_CFG = "cfg-tabs-view";

@@ -6,12 +6,10 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import eu.japtor.vizman.backend.bean.EvidKont;
-import eu.japtor.vizman.backend.bean.EvidZak;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.utils.VzmFileUtils;
 import eu.japtor.vizman.ui.components.AbstractSimpleEditorDialog;
 import eu.japtor.vizman.ui.components.Operation;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.function.BiConsumer;
 

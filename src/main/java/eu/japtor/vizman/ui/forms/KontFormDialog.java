@@ -7,6 +7,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -20,6 +21,8 @@ import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.provider.hierarchy.TreeData;
+import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
@@ -36,6 +39,7 @@ import eu.japtor.vizman.ui.components.*;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
+import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -98,7 +102,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 
     private FlexLayout kontDocFolderComponent;
     private KzFolderField kontFolderField;
-    private Grid<KontDoc> docGrid;
+//    private Grid<KontDoc> docGrid;
+    private TreeGrid<File> docGrid;
     private Button registerDocButton;
 
     private Grid<Zak> zakGrid;
@@ -326,8 +331,14 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         binder.readBean(kontItem);
 
         this.zakGrid.deselectAll();
-        this.zakGrid.setItems(kontItem.getNodes());
-        this.docGrid.setItems(kontItem.getKontDocs());
+        this.zakGrid.setItems(kontItem.getZaks());
+//        this.docGrid.setItems(kontItem.getKontDocs());
+//        this.docGrid.setDataProvider(Items(VzmFileUtils.getExpectedKontDocDirTree(cfgPropsCache.getDocRootServer()), kontItem);
+
+        if  (Operation.ADD != currentOperation) {
+            updateKontDocViewContent(null);
+        }
+
         this.kontFolderField.setParentFolder(null);
         this.kontFolderField.setItemType(kontItem.getTyp());
 
@@ -1493,7 +1504,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     }
 
     private Component initDocGrid() {
-        docGrid = new Grid<>();
+        docGrid = new TreeGrid<>();
 //        docGrid.setWidth( "100%" );
 //        docGrid.setHeight( null );
         docGrid.setHeight("4em");
@@ -1507,13 +1518,44 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //        docGrid.setHeight("12em");
 
 
-        docGrid.addColumn(KontDoc::getFilename).setHeader("Soubor");
-        docGrid.addColumn(KontDoc::getNote).setHeader("Poznámka");
+//        docGrid.addColumn(KontDoc::getFilename).setHeader("Soubor");
+//        docGrid.addColumn(KontDoc::getNote).setHeader("Poznámka");
+////        docGrid.addColumn("Honorář CZK");
+//        docGrid.addColumn(KontDoc::getDateCreate).setHeader("Registrováno");
+//        docGrid.addColumn(new ComponentRenderer<>(this::buildDocRemoveButton))
+//                .setFlexGrow(0);
+
+        docGrid.addHierarchyColumn(File::getName).setHeader("Adresář/Soubor");
+//        docGrid.addColumn(KontDoc::getNote).setHeader("Poznámka");
 //        docGrid.addColumn("Honorář CZK");
-        docGrid.addColumn(KontDoc::getDateCreate).setHeader("Registrováno");
-        docGrid.addColumn(new ComponentRenderer<>(this::buildDocRemoveButton))
-                .setFlexGrow(0);
+//        docGrid.addColumn(File::getDate...).setHeader("Poslední změna");
+//        docGrid.addColumn(new ComponentRenderer<>(this::buildDocRemoveButton))
+//                .setFlexGrow(0);
         return docGrid;
+    }
+
+
+    private List<GridSortOrder<File>> initialSortOrder;
+
+    private void updateKontDocViewContent(final File itemToSelect) {
+//        kontDocTreeData = loadKzTreeData(archFilterRadio.getValue());
+        TreeData<File> kontDocTreeData = VzmFileUtils.getExpectedKontDocDirTree(cfgPropsCache.getDocRootServer(), currentItem);
+        TreeDataProvider<File> kontDocTreeDataProvider = new TreeDataProvider(kontDocTreeData);
+        assignDataProviderToGridAndSort(kontDocTreeDataProvider);
+        kontDocTreeDataProvider.refreshAll();
+        if (null != itemToSelect) {
+            docGrid.getSelectionModel().select(itemToSelect);
+        }
+    }
+
+    private void assignDataProviderToGridAndSort(TreeDataProvider<File> kontDocTreeDataProvider) {
+        List<GridSortOrder<File>> sortOrderOrig = docGrid.getSortOrder();
+        docGrid.setDataProvider(kontDocTreeDataProvider);
+        if (CollectionUtils.isEmpty(sortOrderOrig)) {
+            docGrid.sort(initialSortOrder);
+        } else  {
+            docGrid.sort(sortOrderOrig);
+        }
     }
 
     private Component buildDocRemoveButton(KontDoc kontDoc) {

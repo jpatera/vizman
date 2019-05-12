@@ -58,6 +58,9 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
 //    private final Grid<Person> grid = new Grid<>();
 
     private PersonEditorDialog personEditForm;
+    private FullCalendar cal = FullCalendarBuilder.create().build();
+    private VerticalLayout curr = new VerticalLayout();
+
 
     @Autowired
     PersonListView personListView;
@@ -73,14 +76,6 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
 
     @Autowired
     CfgPropsForm appCfgForm;
-
-//    @Autowired
-//    public CfgTabsView() {
-////	public ProductsView(CrudEntityPresenter<Product> presenter) {
-//    }
-
-    private FullCalendar cal = FullCalendarBuilder.create().build();
-    private VerticalLayout curr = new VerticalLayout();
 
 
     @PostConstruct
