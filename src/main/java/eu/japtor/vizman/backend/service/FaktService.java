@@ -12,7 +12,7 @@ public interface FaktService {
 
     boolean deleteFakt(Fakt fakt);
 
-    Fakt getFakt(Long id);
+//    Fakt fetchOne(Long id);
 
     List<Fakt> fetchAll();
 

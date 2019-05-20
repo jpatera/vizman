@@ -10,6 +10,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
@@ -17,6 +18,8 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 //    Kont findById(Long id);
 
 //   Kont findTopByObjednatel(String objednatel);
+
+    Kont findTopById(Long id);
 
     Kont findTopByObjednatelIgnoreCase(String objednatel);
 

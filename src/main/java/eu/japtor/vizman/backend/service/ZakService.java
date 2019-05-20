@@ -9,23 +9,24 @@ import java.util.List;
 
 public interface ZakService {
 
-    Integer getNewCfakt(Zak zak);
-
-    Integer getNewCfakt(Long zakId);
-
-    BigDecimal getSumPlneni(Long faktId);
-
     Zak saveZak(Zak zak, Operation oper);
 
     void deleteZak(Zak zak);
 
-    boolean zakIdExistsInKont(Long kontId, Integer czak);
-
-    Zak getById(Long id);
+    Zak fetchOne(Long id);
 
     List<Zak> fetchAll();
 
     List<Zak> fetchByIds(List<Long> ids);
 
     long countAll();
+
+    BigDecimal getSumPlneni(Long faktId);
+
+    Integer getNewCfakt(Zak zak);
+
+    Integer getNewCfakt(Long zakId);
+
+    boolean zakIdExistsInKont(Long kontId, Integer czak);
+
 }

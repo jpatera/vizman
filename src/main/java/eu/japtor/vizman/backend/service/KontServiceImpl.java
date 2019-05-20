@@ -35,27 +35,28 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
-    public Kont getById(Long id) {
-        return kontRepo.findById(id).orElse(null);
+    public Kont fetchOne(Long id) {
+//        return kontRepo.findById(id).orElse(null);
+        return kontRepo.findTopById(id);
     }
 
     @Override
-    public Kont getByCkont(String ckont) {
+    public Kont fetchByCkont(String ckont) {
         return kontRepo.findTopByCkontIgnoreCase(ckont);
     }
 
     @Override
-    public Kont getByText(String text) {
+    public Kont fetchByText(String text) {
         return kontRepo.findTopByTextIgnoreCase(text);
     }
 
     @Override
-    public Kont getByFolder(String folder) {
+    public Kont fetchByFolder(String folder) {
         return kontRepo.findTopByFolderIgnoreCase(folder);
     }
 
     @Override
-    public Kont getByObjednatel(String objednatel) {
+    public Kont fetchByObjednatel(String objednatel) {
         return kontRepo.findTopByObjednatelIgnoreCase(objednatel);
     }
 

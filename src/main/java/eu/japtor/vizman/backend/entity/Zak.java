@@ -92,7 +92,7 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     private Kont kont;
 
 //    @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER)
-    @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER, orphanRemoval = false)
+    @OneToMany(mappedBy = "zak", fetch = FetchType.EAGER, cascade = CascadeType.REFRESH, orphanRemoval = false)
     @OrderBy("cfakt DESC")
     private List<Fakt> fakts = new ArrayList<>();
 
@@ -443,7 +443,8 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     @Transient
     public BigDecimal getHonorarCisty() {
         return
-            getHonorarNotNull().add(
+//            getHonorarNotNull().add(
+            getHonorarHrubyNotNull().add(
                 fakts.stream()
                     .filter(fakt -> fakt.getTyp() == ItemType.SUB)
                     .map(fakt -> fakt.getCastka())
@@ -452,8 +453,26 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     }
 
     @Transient
+    public BigDecimal getHonorarHruby() {
+        return
+//                BigDecimal.ZERO.add(
+                fakts.stream()
+                    .filter(fakt -> fakt.getTyp() == ItemType.FAKT)
+                    .map(fakt -> null == fakt.getCastka() ? BigDecimal.ZERO : fakt.getCastka())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add)
+//            )
+        ;
+    }
+
+    @Transient
     public BigDecimal getHonorarNotNull() {
         return null == honorar ? BigDecimal.ZERO : honorar;
+    }
+
+    @Transient
+    public BigDecimal getHonorarHrubyNotNull() {
+        BigDecimal honorarHruby = getHonorarHruby();
+        return null == honorarHruby ? BigDecimal.ZERO : honorarHruby;
     }
 
 

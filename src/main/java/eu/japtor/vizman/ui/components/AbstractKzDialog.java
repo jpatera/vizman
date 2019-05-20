@@ -31,12 +31,12 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
     private Component buttonBar;
     private HorizontalLayout dialogHeader;
     private HtmlComponent headerDevider;
+
     private VerticalLayout upperLeftPane;
     private VerticalLayout upperRightPane;
     private HorizontalLayout upperPane;
     private VerticalLayout lowerPane;
 //    private VerticalLayout upperGridContainer;
-    private Div headerMiddleBox;
 
     protected GrammarGender itemGender;
     private String itemTypeNomS;
@@ -48,10 +48,11 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
     private String dialogMinWidth;
     private String dialogMinHeight;
 
-    private FlexLayout headerLeftBox;
     private Button mainResizeBtn;
+    private FlexLayout headerLeftBox;
     private H3 mainTitle;
     private H5 headerEndBox;
+    private Div headerMiddleBox;
 
 
     public AbstractKzDialog(
@@ -69,7 +70,7 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         this.setCloseOnEsc(true);
         this.setCloseOnOutsideClick(false);
 
-        formLayout = initFormLayout();
+        formLayout = buildFormLayout();
         buttonBar = initDialogButtonBar();
 
         upperLeftPane = initUpperLeftPane();
@@ -182,10 +183,10 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
     }
 
 
-    private FormLayout initFormLayout() {
+    private FormLayout buildFormLayout() {
         FormLayout layout = new FormLayout();
-        layout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("25em", 2));
+//        layout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
+//                new FormLayout.ResponsiveStep("25em", 2));
 //        Div div = new Div(formLayout);
 //        div.addClassName("has-padding");
         layout.addClassName("has-padding");
@@ -194,7 +195,6 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
                 new FormLayout.ResponsiveStep("0", 2),
                 new FormLayout.ResponsiveStep("20em", 4)
         );
-
         return layout;
     }
 

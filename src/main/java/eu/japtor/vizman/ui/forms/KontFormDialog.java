@@ -70,6 +70,10 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
             new ComponentRenderer<>(zak ->
                     VzmFormatUtils.getMoneyComponent(zak.getHonorarCisty())
             );
+    private final ComponentRenderer<HtmlComponent, Zak> zakHonorarHrubyCellRenderer =
+            new ComponentRenderer<>(zak ->
+                    VzmFormatUtils.getMoneyComponent(zak.getHonorarHruby())
+            );
 
     private TextField ckontField;
     private TextField rokField;
@@ -79,7 +83,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private TextField investorField;
     private TextField textField;
     private TextField honorarField;
-    private TextField honorarCistyField;
+    private TextField honorarHrubyFieldCalc;
+    private TextField honorarCistyFieldCalc;
     private ComboBox<Mena> menaCombo;
     private ComboBox<Klient> objednatelCombo;
     private ArchIconBox archIconBox;
@@ -136,7 +141,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private Operation currentOperation;
     private OperationResult lastOperationResult = NO_CHANGE;
     private boolean kontZaksChanged = false;
-    private boolean kontFaktsChanged = false;
+    private boolean kontZaksFaktsChanged = false;
 
     private Registration binderChangeListener = null;
     private Registration textFieldListener = null;
@@ -205,7 +210,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                 , initObjednatelCombo()   // Because of a bug -> call it in OpenDialog
                 , initInvestorField()
                 , initMenaCombo()
-                , initHonorarField()
+//                , initHonorarField()
+                , initHonorarHrubyField()
                 , initHonorarCistyField()
         );
 
@@ -335,7 +341,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //        this.docGrid.setItems(kontItem.getKontDocs());
 //        this.docGrid.setDataProvider(Items(VzmFileUtils.getExpectedKontDocDirTree(cfgPropsCache.getDocRootServer()), kontItem);
 
-        if  (Operation.ADD != currentOperation) {
+        if  (Operation.ADD != kontOperation) {
             updateKontDocViewContent(null);
         }
 
@@ -346,7 +352,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         getHeaderEndBox().setText(getHeaderEndComponentValue(null));
 
         initControlsForItemAndOperation(kontItem, kontOperation);
-        initControlsOperability(kontOperation, kontItem);
+        initControlsOperability();
 
         activateListeners();
     }
@@ -430,13 +436,13 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         return binder.hasChanges();
     }
 
-    private void initControlsOperability(final Operation kontOperation, final Kont  kontItem) {
+    private void initControlsOperability() {
         saveAndCloseButton.setEnabled(false);
 //        saveButton.setEnabled(false);
         revertButton.setEnabled(false);
         newAkvButton.setEnabled(true);
         newZakButton.setEnabled(true);
-        deleteAndCloseButton.setEnabled(kontOperation.isDeleteEnabled() && canDeleteKont(kontItem));
+        deleteAndCloseButton.setEnabled(currentOperation.isDeleteEnabled() && canDeleteKont(currentItem));
     }
 
     private void adjustControlsOperability(final boolean hasChanges, final boolean isValid) {
@@ -456,15 +462,16 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         String ckz = String.format("%s / %s", zakAfter.getCkont(), zakAfter.getCzak());
         Operation zakOper = zakFormDialog.getCurrentOperation();
         OperationResult zakOperRes = zakFormDialog.getLastOperationResult();
-        boolean lastZakFaktsChanged = (zakFormDialog.isFaktsChanged());
+
+        boolean lastZakFaktsChanged = (zakFormDialog.isZakFaktsChanged());
         if (OperationResult.NO_CHANGE != zakOperRes) {
             kontZaksChanged = true;
         }
         if (lastZakFaktsChanged) {
-            kontFaktsChanged = true;
+            kontZaksFaktsChanged = true;
             kontZaksChanged = true;
         }
-        Zak zakItemOrig = zakFormDialog.getZakItemOrig();
+        Zak zakItemOrig = zakFormDialog.getOrigItem();
 
         syncFormGridAfterZakEdit(zakAfter, zakOper, zakOperRes, lastZakFaktsChanged, zakItemOrig);
 
@@ -485,9 +492,9 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     }
 
     private void syncFormGridAfterZakEdit(Zak zakAfter, Operation zakOper
-            , OperationResult zakOperRes, boolean latZakFaktsChanged, Zak zakItemOrig) {
+            , OperationResult zakOperRes, boolean lastZakFaktsChanged, Zak zakItemOrig) {
 
-        if ((NO_CHANGE == zakOperRes) && !latZakFaktsChanged) {
+        if ((NO_CHANGE == zakOperRes) && !lastZakFaktsChanged) {
             return;
         }
 
@@ -511,14 +518,13 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //        if (OperationResult.NO_CHANGE == operRes) {
 //            return;
 //        }
-//        String ckz = String.format("%s / %s", modZak.getCkont(), modZak.getCzak());
+
         if (Operation.ADD == zakOper) {
-//            zaks.add(0, modZak);
             currentItem.addZakOnTop(zakAfter);
         } else if (Operation.EDIT == zakOper) {
             if (OperationResult.ITEM_DELETED == zakOperRes) {
                 currentItem.removeZak(zakItemOrig);
-            } else if (latZakFaktsChanged || (OperationResult.ITEM_SAVED == zakOperRes)) {
+            } else if (lastZakFaktsChanged || (OperationResult.ITEM_SAVED == zakOperRes)) {
                 int itemIndex = getCurrentItem().getZaks().indexOf(zakItemOrig);
                 if (itemIndex != -1) {
                     getCurrentItem().getZaks().set(itemIndex, zakAfter);
@@ -529,12 +535,13 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //                }
             }
         }
+        currentItem = kontService.fetchOne(currentItem.getId());
         zakGrid.getDataCommunicator().getKeyMapper().removeAll();
         zakGrid.setItems(getCurrentItem().getZaks());
         zakGrid.getDataProvider().refreshAll();
         zakGrid.select(zakAfter);
 
-        if ( (NO_CHANGE != zakOperRes) || latZakFaktsChanged) {
+        if ( (NO_CHANGE != zakOperRes) || lastZakFaktsChanged) {
             // TODO: update KONT calculated fields
             binder.removeBean();
             binder.readBean(currentItem);
@@ -673,7 +680,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         if (closeAfterRevert) {
             closeDialog();
         } else {
-            initControlsOperability(currentOperation, currentItem);
+            initControlsOperability();
         }
     }
 
@@ -903,8 +910,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         return kontZaksChanged;
     }
 
-    public boolean isKontFaktsChanged()  {
-        return kontFaktsChanged;
+    public boolean isKontZaksFaktsChanged()  {
+        return kontZaksFaktsChanged;
     }
 
     public Kont getKontItemOrig()  {
@@ -923,7 +930,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 
 //    private void saveZakForForm(Zak zak, Operation operation) {
 //
-//        Zak savedZak = zakFormDialog.saveZak(zak, operation);
+//        Zak savedZak = zakFormDialog.saveFakt(zak, operation);
 //
 ////        if (Operation.EDIT == operation && null != zakFolderOrig && !zakFolderOrig.equals(zak.getFolder())) {
 ////            if (!VzmFileUtils.kontDocRootExists(getDocRootServer(), zak.getFolder())) {
@@ -953,7 +960,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 ////            ;
 ////        }
 ////
-////        Zak savedZak = zakService.saveZak(zak);
+////        Zak savedZak = zakService.saveFakt(zak);
 ////        new OkDialog().open("Zakázka " + savedZak.getKont().getCkont() + " / " + savedZak.getCzak() + " uložena"
 ////                , "", "");
 //
@@ -1164,7 +1171,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 ////                        3, null))
 ////                .withValidator(
 ////                        objednatel -> (currentOperation != Operation.ADD) ?
-////                            true : kontService.getByObjednatel(objednatel) == null,
+////                            true : kontService.fetchByObjednatel(objednatel) == null,
 ////                        "Uživatel s tímto jménem již existuje, zvol jiné jméno")
 //                .bind(Kont::getObjednatel, Kont::setObjednatel);
 //        objednatelField.setValueChangeMode(ValueChangeMode.EAGER);
@@ -1241,13 +1248,23 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     }
 
     private Component initHonorarCistyField() {
-        honorarCistyField = new TextField("Honorář čistý");
-        honorarCistyField.setReadOnly(true);
-        honorarCistyField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
-        getBinder().forField(honorarCistyField)
+        honorarCistyFieldCalc = new TextField("Honorář čistý");
+        honorarCistyFieldCalc.setReadOnly(true);
+        honorarCistyFieldCalc.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        getBinder().forField(honorarCistyFieldCalc)
                 .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
                 .bind(Kont::getHonorarCisty, null);
-        return honorarCistyField;
+        return honorarCistyFieldCalc;
+    }
+
+    private Component initHonorarHrubyField() {
+        honorarHrubyFieldCalc = new TextField("Honorář hrubý");
+        honorarHrubyFieldCalc.setReadOnly(true);
+        honorarHrubyFieldCalc.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        getBinder().forField(honorarHrubyFieldCalc)
+                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
+                .bind(Kont::getHonorarHruby, null);
+        return honorarHrubyFieldCalc;
     }
 
     // ------------------------------------------

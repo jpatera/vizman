@@ -147,7 +147,7 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
 //                )
 //                .withValidator(ckont ->
 ////                        ((Operation.ADD == getOperation()) &&
-//                                (kontService.getByCkont(ckont) == null)
+//                                (kontService.fetchByCkont(ckont) == null)
 ////                        )
 //                        , "Toto číslo kontraktu již existuje, zvol jiné"
 //                )
@@ -166,11 +166,11 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
                         , "Neplatný formát. Je očekáváno [XXXXX.X-1|2].")
                 .withValidator(ckont ->
                         ((Operation.EDIT == getOperation())
-                                && (ckont.equals(ckontOrig) || (kontService.getByCkont(ckont) == null))
+                                && (ckont.equals(ckontOrig) || (kontService.fetchByCkont(ckont) == null))
                         )
                         ||
                         ((Operation.ADD == getOperation())
-                                && (kontService.getByCkont(ckont) == null)
+                                && (kontService.fetchByCkont(ckont) == null)
                         )
                         , "Toto číslo kontraktu již existuje, zvol jiné"
                 )
@@ -207,12 +207,12 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
 //                    )
 ////                    .withValidator(ckont ->
 ////                                    ((Operation.ADD == getOperation())
-////                                            && (kontService.getByCkont(ckont) == null)
+////                                            && (kontService.fetchByCkont(ckont) == null)
 ////                                    )
 ////                                            ||
 ////                                            ((Operation.EDIT == getOperation())
 ////                                                    && ((ckont.equals(ckontOrig))
-////                                                    || (kontService.getByCkont(ckont) == null)
+////                                                    || (kontService.fetchByCkont(ckont) == null)
 ////                                            )
 ////                                            )
 ////                            , "Toto číslo kontraktu již existuje, zvol jiné"
@@ -245,7 +245,7 @@ public class KontEvidFormDialog extends AbstractSimpleEditorDialog<EvidKont> {
 //                        "Text kontraktu musí mít alespoň jeden znak",
 //                        1, null))
 //                .withValidator(
-//                        text -> kontService.getByText(text) == null,
+//                        text -> kontService.fetchByText(text) == null,
 //                        "Kontrakt se stejným textem již existuje, zadej jiný text")
                 .bind(EvidKont::getText, EvidKont::setText);
         return textField;

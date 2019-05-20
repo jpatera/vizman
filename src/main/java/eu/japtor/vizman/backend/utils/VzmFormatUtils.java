@@ -57,6 +57,16 @@ public class VzmFormatUtils {
                 numberFormat.setMaximumFractionDigits(2);
                 return numberFormat;
             }
+            @Override
+            public Result<BigDecimal> convertToModel(String value, ValueContext context) {
+                if (null == value) {
+                    return Result.ok(null);
+//                    return BigDecimal.ZERO;
+                }
+                value = value.replaceAll("\\s+","");
+                return super.convertToNumber(value, context)
+                        .map(number -> (BigDecimal) number);
+            }
         };
         bigDecimalPercentConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
             @Override
@@ -66,6 +76,15 @@ public class VzmFormatUtils {
                 numberFormat.setMinimumFractionDigits(1);
                 numberFormat.setMaximumFractionDigits(1);
                 return numberFormat;
+            }
+            @Override
+            public Result<BigDecimal> convertToModel(String value, ValueContext context) {
+                if (null == value) {
+                    return Result.ok(null);
+                }
+                value = value.replaceAll("\\s+","");
+                return super.convertToNumber(value, context)
+                        .map(number -> (BigDecimal) number);
             }
         };
         VALIDATED_DEC_HOD_TO_STRING_CONVERTER = new ValidatedDecHodToStringConverter("Špatný formát čísla");
@@ -192,6 +211,56 @@ public class VzmFormatUtils {
                     return Result.error(errorMessage + " (číslo musí být v rozmezí -1000000 až +1000000)");
                 }
                 return Result.ok(decHod);
+            } catch (NumberFormatException | ParseException e) {
+                return Result.error(errorMessage);
+            } catch (Exception e) {
+                getLogger().error(e.getMessage(), e);
+                return Result.error(errorMessage);
+            }
+        }
+
+        @Override
+        public String convertToPresentation(BigDecimal decHod, ValueContext valueContext) {
+            return null == decHod ? "" : decHodFormat.format(decHod);
+        }
+    }
+
+    public static class BigDecimalMoneyPercentConverter implements Converter<String, BigDecimal>, HasLogger {
+
+        private String errorMessage;
+        private BigDecimal percentBasis;
+
+        public BigDecimalMoneyPercentConverter(String errorMessage, BigDecimal percentBasis) {
+            this.errorMessage = errorMessage;
+        }
+
+        @Override
+        public Result<BigDecimal> convertToModel(String s, ValueContext valueContext) {
+            try {
+                if (StringUtils.isBlank(s)) {
+                    return Result.ok(null);
+                }
+
+//                NumberFormat numberFormat = super.getFormat(locale);
+                NumberFormat numberFormat = NumberFormat.getInstance();
+                numberFormat.setGroupingUsed(true);
+                numberFormat.setMinimumFractionDigits(2);
+                numberFormat.setMaximumFractionDigits(2);
+
+                BigDecimal money = null;
+                if (s.endsWith("%")) {
+                    String percStr = s.replace("%", "");
+                    BigDecimal perc = (BigDecimal) numberFormat.parse(percStr);
+                    money = percentBasis.multiply(percentBasis);
+                } else {
+                    money = (BigDecimal) numberFormat.parse(s);
+                }
+
+//                if (money.compareTo(BigDecimal.valueOf(-1000000)) < 0
+//                        || money.compareTo(BigDecimal.valueOf(1000000)) > 0) {
+//                    return Result.error(errorMessage + " (číslo musí být v rozmezí -1000000 až +1000000)");
+//                }
+                return Result.ok(money);
             } catch (NumberFormatException | ParseException e) {
                 return Result.error(errorMessage);
             } catch (Exception e) {

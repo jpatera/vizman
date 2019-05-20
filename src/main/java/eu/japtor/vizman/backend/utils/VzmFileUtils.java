@@ -232,10 +232,13 @@ public class VzmFileUtils implements HasLogger {
             // TODO: set some flag
         }
 
-        File docRootDir = new File(docRoot);
-        File kontDocDir = new File(getExpectedPath(docRootDir, expFolder).toUri());
-//        expectedTree.addItem(null, kontDocDir);
-        addExpectedKontSubDirs(expectedTree, kontDocDir, kont);
+//        File docRootDir = new File(docRoot);
+
+// FIXME
+//        File kontDocDir = new File(getExpectedPath(docRootDir, expFolder).toUri());
+
+////        expectedTree.addItem(null, kontDocDir);
+//        addExpectedKontSubDirs(expectedTree, kontDocDir, kont);
 
         return expectedTree;
     }

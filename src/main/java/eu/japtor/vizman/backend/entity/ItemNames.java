@@ -72,14 +72,14 @@ public class ItemNames {
         itemGenderMap.put(ItemType.REZ, GrammarGender.FEMININE);
 
         Map<GrammarShapes, String>itemFaktNameMap = new HashMap<>();
-        itemFaktNameMap.put(GrammarShapes.NOM_S, "Fakturační záznam");
-        itemFaktNameMap.put(GrammarShapes.NOM_P, "Fakturační záznamy");
-        itemFaktNameMap.put(GrammarShapes.GEN_S, "Fakturačního záznamu");
-        itemFaktNameMap.put(GrammarShapes.GEN_P, "Fakturačních záznamů");
-        itemFaktNameMap.put(GrammarShapes.ACCU_S, "Fakturační záznam");
-        itemFaktNameMap.put(GrammarShapes.ACCU_P, "Fakturační záznamy");
+        itemFaktNameMap.put(GrammarShapes.NOM_S, "Dílčí plnění");
+        itemFaktNameMap.put(GrammarShapes.NOM_P, "Dílčí plnění");
+        itemFaktNameMap.put(GrammarShapes.GEN_S, "Dílčího plnění");
+        itemFaktNameMap.put(GrammarShapes.GEN_P, "Dílčích plnění");
+        itemFaktNameMap.put(GrammarShapes.ACCU_S, "Dílčí plnění");
+        itemFaktNameMap.put(GrammarShapes.ACCU_P, "Dílčí plnění");
         itemNameMaps.put(ItemType.FAKT, itemFaktNameMap);
-        itemGenderMap.put(ItemType.FAKT, GrammarGender.MASCULINE);
+        itemGenderMap.put(ItemType.FAKT, GrammarGender.NEUTER);
 
         Map<GrammarShapes, String>itemKlientNameMap = new HashMap<>();
         itemKlientNameMap.put(GrammarShapes.NOM_S, "Klient");

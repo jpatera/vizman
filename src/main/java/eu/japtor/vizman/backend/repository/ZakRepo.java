@@ -14,6 +14,8 @@ public interface ZakRepo extends JpaRepository<Zak, Long>, ZakRepoCustom {
 
 //    Zak findTopByCkontIgnoreCaseAndCzak(String ckont, Integer czak);
 
+    Zak findTopById(Long id);
+
     Zak findTopByTextIgnoreCase(String text);
 
     Zak findTop1ByTyp(ItemType itemType);

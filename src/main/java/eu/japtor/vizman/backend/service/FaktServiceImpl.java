@@ -58,11 +58,11 @@ public class FaktServiceImpl implements FaktService, HasLogger {
         return true;
     }
 
-    @Override
-    public Fakt getFakt(Long id) {
-        return faktRepo.findById(id).orElse(null);
-//      Or...:  return zakRepo.findById();
-    }
+//    @Override
+//    public Fakt fetchOne(Long id) {
+//        return faktRepo.findTopById(id).orElse(null);
+////      Or...:  return zakRepo.findById();
+//    }
 
     @Override
     public List<Fakt> fetchAll() {

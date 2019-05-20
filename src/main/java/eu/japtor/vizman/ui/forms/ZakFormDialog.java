@@ -37,6 +37,8 @@ import org.claspina.confirmdialog.ConfirmDialog;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static eu.japtor.vizman.ui.components.OperationResult.NO_CHANGE;
+
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
@@ -62,6 +64,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private TextField skupinaField;
     private TextField honorarField;
     private TextField honorarCistyField;
+    private TextField honorarHrubyField;
     private TextField menaField;
 
     final private ComponentRenderer<HtmlComponent, Fakt> faktPlneniCellRenderer
@@ -93,7 +96,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private FlexLayout zakDocFolderComponent;
 //    private Paragraph zakFolderField;
     private KzFolderField zakFolderField;
-    private Button openDocDirBtn;
+//    private Button openDocDirBtn;
     private Button registerDocButton;
 
 
@@ -116,10 +119,11 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
     private Binder<Zak> binder = new Binder<>();
     private Zak currentItem;
-    private Zak zakItemOrig;
+    private Zak origItem;
     private Operation currentOperation;
     private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
-    private boolean faktsChanged = false;
+    private boolean zakFaktsChanged = false;
+//    private boolean zakFaktsChanged = false;
 
     private Registration binderChangeListener = null;
     private Registration textFieldListener = null;
@@ -169,7 +173,8 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 , initTextField()
                 , initPoznamkaField()
                 , initMenaField()
-                , initHonorarField()
+//                , initHonorarField()
+                , initHonorarHrubyField()
                 , initHonorarCistyField()
                 , initAkvToZakButton()
         );
@@ -187,27 +192,34 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 , initFaktGrid()
         );
 
-//        zakEvidFormDialog = new ZakEvidFormDialog(
-//                this::saveZakEvid, zakService
-//        );
-
-        faktFormDialog = new FaktFormDialog(
-                this::saveFaktForForm, this::deleteFaktForForm, faktService
-        );
-        subFormDialog = new SubFormDialog(
-                this::saveSubForForm, this::deleteSubForForm
-        );
-
-//        confirmDocUnregisterDialog = new ConfirmationDialog<>();
+        faktFormDialog = new FaktFormDialog(faktService);
+        faktFormDialog.addOpenedChangeListener(event -> {
+            if (!event.isOpened()) {
+                finishFaktEdit((FaktFormDialog) event.getSource());
+            }
+        });
+        subFormDialog = new SubFormDialog(faktService);
+        subFormDialog.addOpenedChangeListener(event -> {
+            if (!event.isOpened()) {
+                finishSubEdit((SubFormDialog) event.getSource());
+            }
+        });
     }
 
 
     public void openDialog(Zak zak, Operation operation) {
 
+//        Notification.show(String.format("FAKT položek: %d", zak.getFakts().size())
+//                , 2500, Notification.Position.TOP_CENTER);
+
         this.currentOperation = operation;
-        this.currentItem = zak;
-        this.faktsChanged = false;
-        this.zakItemOrig = zak;
+//        if (Operation.ADD == operation) {
+            this.currentItem = zak;
+//        } else {
+//            this.currentItem = zakService.fetchOne(zak.getId());
+//        }
+        this.zakFaktsChanged = false;
+        this.origItem = zak;
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -225,11 +237,11 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
         setDefaultItemNames();  // Set general default names
         evidZakOrig = new EvidZak(
-                currentItem.getKontId()
-                , currentItem.getCzak()
-                , currentItem.getText()
-                , currentItem.getFolder()
-                , currentItem.getKontFolder()
+                zakItem.getKontId()
+                , zakItem.getCzak()
+                , zakItem.getText()
+                , zakItem.getFolder()
+                , zakItem.getKontFolder()
         );
 
         binder.removeBean();
@@ -237,6 +249,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
         this.faktGrid.deselectAll();
         this.faktGrid.setItems(zakItem.getFakts());
+
         this.docGrid.setItems(zakItem.getZakDocs());
         this.kontFolder = zakItem.getKontFolder();
         this.zakFolderField.setParentFolder(kontFolder);
@@ -326,6 +339,133 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //        revertButton.setEnabled(!hasChanges);
     }
 
+//    void finishZakEdit(ZakFormDialog zakFormDialog) {
+//        Zak zakAfter = zakFormDialog.getCurrentItem(); // Modified, just added or just deleted
+//        String ckz = String.format("%s / %s", zakAfter.getCkont(), zakAfter.getCzak());
+//        Operation zakOper = zakFormDialog.getCurrentOperation();
+//        OperationResult zakOperRes = zakFormDialog.getLastOperationResult();
+//        boolean lastZakFaktsChanged = (zakFormDialog.isZakFaktsChanged());
+//        if (OperationResult.NO_CHANGE != zakOperRes) {
+//            kontZaksChanged = true;
+//        }
+//        if (lastZakFaktsChanged) {
+//            kontFaktsChanged = true;
+//            kontZaksChanged = true;
+//        }
+//        Zak zakItemOrig = zakFormDialog.getOrigItem();
+//
+//        syncFormGridAfterZakEdit(zakAfter, zakOper, zakOperRes, lastZakFaktsChanged, zakItemOrig);
+//
+////        if (OperationResult.NO_CHANGE == zakOperRes) {
+////            return;
+////        }
+//        if (OperationResult.ITEM_SAVED == zakOperRes || lastZakFaktsChanged) {
+//            Notification.show(String.format("Zakázka %s uložena", ckz)
+//                    , 2500, Notification.Position.TOP_CENTER);
+//
+//        } else if (OperationResult.ITEM_DELETED == zakOperRes) {
+//            ConfirmDialog
+//                    .createInfo()
+//                    .withCaption("Editace zakázky")
+//                    .withMessage(String.format("Zakázka %s zrušena.", ckz))
+//                    .open();
+//        }
+//    }
+
+
+    void finishFaktEdit(FaktFormDialog faktFormDialog) {
+        Fakt faktAfter = faktFormDialog.getCurrentItem(); // Modified, just added or just deleted
+        String ckzf = String.format("%s / %s / %s", faktAfter.getCkont(), faktAfter.getCzak(), faktAfter.getCfakt());
+        Operation faktOper = faktFormDialog.getCurrentOperation();
+        OperationResult faktOperRes = faktFormDialog.getLastOperationResult();
+
+        if (OperationResult.NO_CHANGE != faktOperRes) {
+            zakFaktsChanged = true;
+        }
+        Fakt faktItemOrig = faktFormDialog.getOrigItem();
+
+        syncFormGridAfterFaktEdit(faktAfter, faktOper, faktOperRes, faktItemOrig);
+
+        if (OperationResult.ITEM_SAVED == faktOperRes) {
+            Notification.show(String.format("Plnění %s uloženo", ckzf)
+                    , 2500, Notification.Position.TOP_CENTER);
+
+        } else if (OperationResult.ITEM_DELETED == faktOperRes) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Editace plnění")
+                    .withMessage(String.format("Plnění %s zrušeno.", ckzf))
+                    .open();
+        }
+    }
+
+
+    void finishSubEdit(SubFormDialog subFormDialog) {
+        Fakt faktAfter = subFormDialog.getCurrentItem(); // ...modified, just added or just deleted
+        String ckzf = String.format("%s / %s / %s", faktAfter.getCkont(), faktAfter.getCzak(), faktAfter.getCfakt());
+        Operation faktOper = subFormDialog.getCurrentOperation();
+        OperationResult faktOperRes = subFormDialog.getLastOperationResult();
+
+        if (OperationResult.NO_CHANGE != faktOperRes) {
+            zakFaktsChanged = true;
+        }
+        Fakt faktItemOrig = subFormDialog.getOrigItem();
+
+        syncFormGridAfterFaktEdit(faktAfter, faktOper, faktOperRes, faktItemOrig);
+
+        if (OperationResult.ITEM_SAVED == faktOperRes) {
+            Notification.show(String.format("Subdodávka %s uložena", ckzf)
+                    , 2500, Notification.Position.TOP_CENTER);
+
+        } else if (OperationResult.ITEM_DELETED == faktOperRes) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Editace subdodávky")
+                    .withMessage(String.format("Subdodávka %s zrušena.", ckzf))
+                    .open();
+        }
+    }
+
+
+    private void syncFormGridAfterFaktEdit(Fakt faktAfter, Operation faktOper
+            , OperationResult faktOperRes, Fakt faktItemOrig) {
+
+        if (NO_CHANGE == faktOperRes) {
+            return;
+        }
+
+//        if (Operation.ADD == faktOper) {
+//            currentItem.addFaktOnTop(faktAfter);
+//        } else if (Operation.EDIT == faktOper) {
+//            if (OperationResult.ITEM_DELETED == faktOperRes) {
+//                currentItem.removeFakt(faktItemOrig);
+//            } else if (OperationResult.ITEM_SAVED == faktOperRes) {
+//                int itemIndex = currentItem.getFakts().indexOf(faktItemOrig);
+//                if (itemIndex != -1) {
+//                    currentItem.getFakts().set(itemIndex, faktAfter);
+//                }
+//            }
+//        }
+        currentItem = zakService.fetchOne(currentItem.getId());
+        faktGrid.getDataCommunicator().getKeyMapper().removeAll();
+        faktGrid.setItems(currentItem.getFakts());
+        faktGrid.getDataProvider().refreshAll();
+        faktGrid.select(faktAfter);
+
+        if (NO_CHANGE != faktOperRes) {
+            // TODO: update ZAK calculated fields
+            binder.removeBean();
+            binder.readBean(currentItem);
+            refreshControls(currentItem, currentOperation);
+        }
+    }
+
+    private void refreshControls(Zak zakItem, final Operation zakOperation) {
+        deactivateListeners();
+        refreshHeaderMiddleBox(zakItem);
+        getHeaderEndBox().setText(getHeaderEndComponentValue(null));
+        activateListeners();
+    }
 
     @Override
     public final Zak getCurrentItem() {
@@ -407,10 +547,11 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
         if (getCurrentItem() instanceof HasItemType) {
             getHeaderDevider().getStyle().set(
-                    "background-color", VzmFormatUtils.getItemTypeColorBrighter(((HasItemType) item).getTyp()));
+                    "background-color", VzmFormatUtils.getItemTypeColorBrighter((item).getTyp()));
         }
         deleteAndCloseButton.setText(DELETE_STR + " " + getItemName(Operation.DELETE).toLowerCase());
-        honorarField.setReadOnly(ItemType.AKV == item.getTyp());
+//        honorarField.setReadOnly(ItemType.AKV == item.getTyp());
+        honorarHrubyField.setReadOnly(true);
         akvToZakButton.setVisible(ItemType.AKV == item.getTyp());
     }
 
@@ -542,7 +683,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
 
     protected boolean canDeleteZak(final Zak itemToDelete) {
-        return itemToDelete.getNodes().size() == 0;
+        return itemToDelete.getFakts().size() == 0;
     }
 
     protected boolean deleteZak(Zak itemToDelete) {
@@ -577,7 +718,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 }
             }
             currentItem = zakService.saveZak(zakToSave, currentOperation);
-//            zakToSave = zakService.saveZak(zakToSave, oper);
+//            zakToSave = zakService.saveFakt(zakToSave, oper);
 //            currentItem = zakSaved;
             if (zakDirsToBeCreated(currentItem, currentOperation)) {
                 createZakDirs(currentItem);
@@ -704,80 +845,13 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         return lastOperationResult;
     }
 
-    public boolean isFaktsChanged()  {
-        return faktsChanged;
+    public boolean isZakFaktsChanged()  {
+        return zakFaktsChanged;
     }
 
-    public Zak getZakItemOrig()  {
-        return zakItemOrig;
+    public Zak getOrigItem()  {
+        return origItem;
     }
-
-//    protected void confirmAndDelete() {
-//
-//        String ckzDel = String.format("%s / %d", getCurrentItem().getCkont(), getCurrentItem().getCzak());
-//        long nodesCount = getCurrentItem().getFakts().size();
-//        if (nodesCount > 0) {
-//            ConfirmDialog
-//                    .createInfo()
-//                    .withCaption("Zrušení zakázky")
-//                    .withMessage(String.format("Zakázku %s nelze zrušit, obsahuje subdodávky / fakturace ."
-//                            , ckzDel))
-//                    .open()
-//            ;
-//            return;
-//        }
-//        Long dochsumZakCount = dochsumZakService.getCountDochsumZak(getCurrentItem().getId());
-//        if (dochsumZakCount > 0) {
-//            List<DochsumZak> lastDochsumZaks = dochsumZakService.fetchLatestDochsumZaks(getCurrentItem().getId());
-////            if (CollectionUtils.isEmpty(lastDochsumZaks)) {
-//            ConfirmDialog
-//                    .createInfo()
-//                    .withCaption("Zrušení zakázky")
-//                    .withMessage(String.format("Zakázku %d nelze zrušit, má %d záznamů na proužcích."
-//                            ,  ckzDel, dochsumZakCount))
-//                    .open()
-//            ;
-////            }
-//            return;
-//        }
-//        ConfirmDialog
-//                .createQuestion()
-//                .withCaption("Zrušení zakázky")
-////                .withMessage("Opravdu zrušit?")
-//                .withMessage(String.format("Zrušit zakázku %s ?", ckzDel))
-////                .with...(,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny.")
-//                .withOkButton(() -> {
-//                            doDelete(getCurrentItem());
-//                        }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
-//                )
-//                .withCancelButton(ButtonOption.caption("ZPĚT"))
-//                .open()
-//        ;
-//
-////        openConfirmDeleteDialog("Zrušení zakázky"
-////                ,String.format("Zrušit zakázku %s / %s ?", getCurrentItem().getCkont())
-////                ,"Poznámka: Projektové a dokumentové adresáře včetně souborů zůstanou nezměněny."
-////        );
-////        long nodesCount = getCurrentItem().getNodes().size();
-////        if (nodesCount > 0) {
-////            new OkDialog().open(
-////                    "Zrušení zakázky"
-////                    , "Zakázku " + getCurrentItem().getCkont() + " nelze zrušit, obsahuje fakturace"
-////                    , ""
-////            );
-////        } else {
-////            openConfirmDeleteDialog("Zrušit zakázku ?",
-////                    "Opravdu zrušit zakázku “" + getCurrentItem().getCkont() + "“ ?",
-////                    "Pokud bude kontrakt zrušen, budou zrušena i další s ním související data.");
-//////            deleteKont(getCurrentItem());
-////        }
-//    }
-//
-//    protected void doDelete(Zak item) {
-//        itemDeleter.accept(item);
-//        closeDialog();
-//    }
-
 
 // -----------------------------------------------------
 
@@ -789,12 +863,12 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             if (Operation.ADD == operation) {
 //                fakts.add(0, savedFakt);
                 getCurrentItem().addFaktOnTop(savedFakt);
-                faktsChanged = true;
+                zakFaktsChanged = true;
             } else {
                 int itemIndex = fakts.indexOf(savedFakt);
                 if (itemIndex != -1) {
                     fakts.set(itemIndex, savedFakt);
-                    faktsChanged = true;
+                    zakFaktsChanged = true;
                 }
             }
 
@@ -804,7 +878,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             faktGrid.select(savedFakt);
 
             // TODO:
-            //            if (faktsChanged || (OperationResult.NO_CHANGE != faktOperRes)) {
+            //            if (zakFaktsChanged || (OperationResult.NO_CHANGE != faktOperRes)) {
             binder.removeBean();
             binder.readBean(currentItem);
 //            }
@@ -826,12 +900,12 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             if (Operation.ADD == operation) {
 //                fakts.add(0, savedFakt);
                 getCurrentItem().addFaktOnTop(savedFakt);
-                faktsChanged = true;
+                zakFaktsChanged = true;
             } else {
                 int itemIndex = fakts.indexOf(savedFakt);
                 if (itemIndex != -1) {
                     fakts.set(itemIndex, savedFakt);
-                    faktsChanged = true;
+                    zakFaktsChanged = true;
                 }
             }
 
@@ -934,7 +1008,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 ////                        3, null))
 ////                .withValidator(
 ////                        objednatel -> (currentOperation != Operation.ADD) ?
-////                            true : kontService.getByObjednatel(objednatel) == null,
+////                            true : kontService.fetchByObjednatel(objednatel) == null,
 ////                        "Uživatel s tímto jménem již existuje, zvol jiné jméno")
 //                .bind(Zak::getObjednatel, Zak::setObjednatel);
 //    }
@@ -1219,6 +1293,25 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         return honorarCistyField;
     }
 
+    private Component initHonorarHrubyField() {
+        honorarHrubyField = new TextField("Honorář hrubý");
+//        honorarHrubyField.setReadOnly(true);
+        honorarHrubyField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        honorarHrubyField.getStyle()
+                .set("font-weight", "bold");
+        getBinder().forField(honorarHrubyField)
+//                .asRequired("Honorář nesmí být prázdný")
+//                .withValidator(new StringLengthValidator(
+//                        "Honorář nesmí být prázdný",
+//                        1, null))
+                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
+//                .withValidator(honorar -> null != honorar && honorar.compareTo(BigDecimal.ZERO) >= 0
+//                        , "Honorář nesmí být záporný")
+                .bind(Zak::getHonorarHruby, null);
+        honorarHrubyField.setValueChangeMode(ValueChangeMode.EAGER);
+        return honorarHrubyField;
+    }
+
     // ----------------------------------------------
 
 
@@ -1380,7 +1473,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //            faktFormDialog.open(fakt, Operation.ADD, "Fakturace");
             if (saveWithoutClose()) {
                 faktFormDialog.openDialog(new Fakt(ItemType.FAKT, getCurrentItem().getNewCfakt(), getCurrentItem())
-                        , getCurrentItem(), Operation.ADD, null, null, null);
+                        , Operation.ADD);
             }
         });
         return newFaktButton;
@@ -1392,7 +1485,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //            faktFormDialog.open(fakt, Operation.ADD, "Fakturace");
             if (saveWithoutClose()) {
                 subFormDialog.openDialog(new Fakt(ItemType.SUB, getCurrentItem().getNewCfakt(), getCurrentItem())
-                        , getCurrentItem(), Operation.ADD, null, null, null);
+                        , Operation.ADD);
             }
         });
         return newSubButton;
@@ -1442,7 +1535,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 .setResizable(true)
         ;
         faktGrid.addColumn(Fakt::getCfakt)
-                .setHeader("ČF/ČS")
+                .setHeader("Č. pol.")
                 .setWidth("3.5em")
                 .setFlexGrow(0)
         ;
@@ -1452,13 +1545,12 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 .setFlexGrow(0)
                 .setKey(FAKT_EDIT_COL_KEY)
         ;
-        faktGrid.addColumn(faktPlneniCellRenderer)
-                .setHeader("Plnění [%]")
-                .setWidth("5em")
-                .setTextAlign(ColumnTextAlign.END)
-                .setFlexGrow(0)
-        ;
-//        faktGrid.addColumn(Fakt::getDateDuzp)
+//        faktGrid.addColumn(faktPlneniCellRenderer)
+//                .setHeader("Plnění [%]")
+//                .setWidth("5em")
+//                .setTextAlign(ColumnTextAlign.END)
+//                .setFlexGrow(0)
+//        ;
         faktGrid.addColumn(new ComponentRenderer<>(VzmFormatUtils::getDuzpComponent))
                 .setHeader("DUZP")
                 .setFlexGrow(0)
@@ -1467,12 +1559,12 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 .setHeader("Text")
                 .setFlexGrow(1)
         ;
-        faktGrid.addColumn(new ComponentRenderer<>(this::buildFakStornoBtn))
-                .setHeader("Fakt!")
-                .setWidth("3em")
-                .setFlexGrow(0)
-                .setKey(FAKT_VYSTAV_COL_KEY)
-        ;
+//        faktGrid.addColumn(new ComponentRenderer<>(this::buildFakStornoBtn))
+//                .setHeader("Fakt!")
+//                .setWidth("3em")
+//                .setFlexGrow(0)
+//                .setKey(FAKT_VYSTAV_COL_KEY)
+//        ;
         faktGrid.addColumn(faktCastkaCellRenderer)
                 .setHeader("Částka")
                 .setResizable(true)
@@ -1491,11 +1583,11 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //                .setWidth("10em")
 //                .setFlexGrow(0)
 //        ;
-        faktGrid.addColumn(new ComponentRenderer<>(this::buildExportBackBtn))
-                .setHeader("Exp!")
-                .setFlexGrow(0)
-                .setKey(FAKT_EXPORT_COL_KEY)
-        ;
+//        faktGrid.addColumn(new ComponentRenderer<>(this::buildExportBackBtn))
+//                .setHeader("Exp!")
+//                .setFlexGrow(0)
+//                .setKey(FAKT_EXPORT_COL_KEY)
+//        ;
         faktGrid.addColumn(Fakt::getFaktCislo)
                 .setHeader("Číslo faktury")
                 .setFlexGrow(0)
@@ -1512,16 +1604,12 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private Component buildFaktEditBtn(Fakt fakt) {
         if (ItemType.FAKT == fakt.getTyp()) {
             Button faktEditBtn = new GridItemEditBtn(event ->
-                    faktFormDialog.openDialog(fakt, getCurrentItem()
-                            , Operation.EDIT, null, null, null
-                    )
+                    faktFormDialog.openDialog(fakt, Operation.EDIT)
                     , VzmFormatUtils.getItemTypeColorName(fakt.getTyp()));
             return faktEditBtn;
         } else {
             Button subEditBtn = new GridItemEditBtn(event ->
-                    subFormDialog.openDialog(fakt, getCurrentItem()
-                            , Operation.EDIT, null, null, null
-                    )
+                    subFormDialog.openDialog(fakt, Operation.EDIT)
                     , VzmFormatUtils.getItemTypeColorName(fakt.getTyp()));
             return subEditBtn;
         }
@@ -1532,10 +1620,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         if (ItemType.FAKT == fakt.getTyp()) {
             Button fakStornoBtn = new GridFakturovatBtn(event -> {
                 if (isFakturovano) {
-                    faktFormDialog.openDialog(
-                            fakt, getCurrentItem(), Operation.STORNO
-                            , null, null, null
-                    );
+                    faktFormDialog.openDialog(fakt, Operation.STORNO);
                 } else {
                     if (null == fakt.getPlneni() || fakt.getPlneni().compareTo(BigDecimal.ZERO) <= 0) {
                         ConfirmDialog.createInfo()
@@ -1549,10 +1634,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                                 .open();
 
                     } else {
-                        faktFormDialog.openDialog(
-                                fakt, getCurrentItem(), Operation.FAKTUROVAT
-                                , null, null, null
-                        );
+                        faktFormDialog.openDialog(fakt, Operation.FAKTUROVAT);
                     }
                 }
             }, isFakturovano);
@@ -1569,10 +1651,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             Button exportBackBtn = new GridFaktExportBtn(event -> {
                 //            Fakt fakt = new Fakt(ItemType.FAKT, getCurrentItem().getNewCfakt(), getCurrentItem());
                 //            faktFormDialog.open(fakt, Operation.ADD, "Fakturace");
-                faktFormDialog.openDialog(
-                        fakt, getCurrentItem(), Operation.EXPORT
-                        , null, new FlexLayout(), null
-                );
+                faktFormDialog.openDialog(fakt, Operation.EXPORT);
             });
             exportBackBtn.setEnabled(false);
             return exportBackBtn;
@@ -1580,48 +1659,4 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             return new Span();
         }
     }
-
-//    private void addTerminField() {
-//
-//        // Nastup field binder:
-//        Binder.Binding<Person, LocalDate> nastupBinder = getBinder().forField(nastupField)
-//                .withValidator(nastupNullCheck(),"Nástup nemuže být prázdný pokud je zadáno ukončení")
-//                .withValidator(nastupBeforeVystupCheck(),"Nástup nemuže následovat po ukončení")
-//                .bind(Person::getNastup, Person::setNastup);
-//
-//        // Vystup field binder:
-//        Binder.Binding<Person, LocalDate> vystupBinder = getBinder().forField(vystupField)
-//                .withValidator(vystupNotNullCheck(), "Ukončení nemůže být zadáno pokud není zadán nástup")
-//                .withValidator(vystupAfterNastupCheck(),"Ukončení nemůže předcházet nástup")
-//                .bind(Person::getVystup, Person::setVystup);
-//
-//        nastupField.addValueChangeListener(event -> vystupBinder.validate());
-//        vystupField.addValueChangeListener(event -> nastupBinder.validate());
-//
-//        // Add fields to the form:
-//        getFormLayout().add(nastupField);
-//        getFormLayout().add(vystupField);
-//    }
-
-//    private SerializablePredicate<LocalDate> nastupNullCheck() {
-//        return nastup -> ((null == vystupField.getValue()) || (null != nastup));
-//    }
-//
-//    private SerializablePredicate<LocalDate> nastupBeforeVystupCheck() {
-//        return nastup ->
-//                (null == vystupField.getValue())
-//                || ((null != nastup) && nastup.isBefore(vystupField.getValue()));
-//    }
-//
-//    private SerializablePredicate<LocalDate> vystupNotNullCheck() {
-//        return vystup -> ((null != nastupField.getValue()) || (null == vystup));
-//    }
-//
-//    private SerializablePredicate<LocalDate> vystupAfterNastupCheck() {
-//        return vystup ->
-//            (null == vystup)
-//            || ((null != nastupField.getValue()) && vystup.isAfter(nastupField.getValue()));
-//    }
-
-
 }

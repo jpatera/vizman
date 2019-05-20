@@ -70,27 +70,7 @@ public class ZakServiceImpl implements ZakService, HasLogger {
     public void deleteZak(Zak zakToDel) throws VzmServiceException {
         String zakEvidCis = String.format("%s / %d", zakToDel.getCkont(), zakToDel.getCzak());
         try {
-//            zakToDel.setKont(null);
-//            zakToDel = zakRepo.saveAndFlush(zakToDel);
-//            zakToDel = zakRepo.save(zakToDel);
-//            Kont kontWithDeleted = zakToDel.getKont();
-
             zakRepo.delete(zakToDel);
-//            Kont kontWithoutDeleted = kontRepo.findById(zakToDel.getKontId()).orElse(null);
-
-//            if (null != kontWithDeleted) {
-//                kontToSave.removeZak(zakToDel);
-//                kontWithDeleted.removeZak(zakToDel);
-//                kontWithDeleted.removeZak(zakToDel);
-//            }
-//            Kont  kontx = kontRepo.save(kontWithDeleted);
-//            zakRepo.flush();
-//            kontRepo.flush();
-//            Kont kontToSave = zakToDel.getKont();
-//            kontToSave.removeZak(zakToDel);
-//            kontRepo.saveAndFlush(kontToSave);
-//            zakRepo.delete(zakToDel);
-//            zakRepo.flush();
             getLogger().info("{} deleted: {}", zakToDel.getTyp().name(), zakEvidCis);
         } catch (Exception e) {
             String errMsg = "Error while deleting {} : {}";
@@ -100,8 +80,10 @@ public class ZakServiceImpl implements ZakService, HasLogger {
     }
 
     @Override
-    public Zak getById(Long id) {
-        return zakRepo.getOne(id);
+    public Zak fetchOne(Long id) {
+        return zakRepo.findTopById(id);
+//        return zakRepo.getOne(id);
+//        return zakRepo.getOne(id);
 //      Or...:  return zakRepo.findById();
     }
 

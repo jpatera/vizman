@@ -8,19 +8,19 @@ import java.util.List;
 
 public interface KontService {
 
-    Kont getById(Long id);
-
     Kont saveKont(Kont kont, Operation oper);
 
     void deleteKont(Kont kont);
 
-    Kont getByObjednatel(String objednatel);
+    Kont fetchOne(Long id);
 
-    Kont getByCkont(String ckont);
+    Kont fetchByObjednatel(String objednatel);
 
-    Kont getByText(String text);
+    Kont fetchByCkont(String ckont);
 
-    Kont getByFolder(String folder);
+    Kont fetchByText(String text);
+
+    Kont fetchByFolder(String folder);
 
     List<? super Kont> fetchAll();
 

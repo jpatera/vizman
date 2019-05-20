@@ -17,11 +17,4 @@ public class FaktRepoCustomImpl implements FaktRepoCustom {
     @PersistenceContext
     EntityManager em;
 
-//    @Autowired
-//    FaktRepo faktRepo;
-
-//    @Override
-//    public Zak getZakOfFakt(Long faktId) {
-//        return faktRepo.getOne(faktId).getById();
-//    }
 }
