@@ -5,7 +5,6 @@ import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.repository.KontRepo;
-import eu.japtor.vizman.ui.components.OkDialog;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.ExampleMatcher;
@@ -66,6 +65,12 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
+    public List<? super Kont> fetchByRok(final Integer rok) {
+//        return kontRepo.findByArchTrueOrderByCkontDesc();
+        return kontRepo.findAllByRokOrderByCkontDesc(rok);
+    }
+
+    @Override
     public List<Kont> fetchHavingSomeZaksActive() {
 //        return kontRepo.findByArchTrueOrderByCkontDesc();
         return kontRepo.findHavingSomeZaksActive();
@@ -90,6 +95,11 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     @Override
     public List<Kont> fetchHavingNoZaks() {
         return kontRepo.findHavingNoZaks();
+    }
+
+    @Override
+    public List<Integer> fetchKontRoks() {
+        return kontRepo.findKontRoks();
     }
 
     @Override

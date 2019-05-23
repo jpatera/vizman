@@ -31,6 +31,12 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
     List<Kont> findAllByOrderByRokDescCkontDesc();
 
+    List<Kont> findAllByRokOrderByCkontDesc(Integer rok);
+
+    @Query(value = "SELECT distinct rok FROM vizman.kont ORDER BY ROK DESC",
+            nativeQuery = true)
+    List<Integer> findKontRoks();
+
     @Query(value = "SELECT * FROM vizman.kont k WHERE (NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)) "
             + " AND (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont)) "
             + " ORDER BY ROK DESC, CKONT DESC",

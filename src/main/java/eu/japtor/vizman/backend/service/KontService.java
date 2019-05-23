@@ -24,11 +24,15 @@ public interface KontService {
 
     List<? super Kont> fetchAll();
 
+    List<? super Kont> fetchByRok(Integer rok);
+
     List<? super Kont> fetchHavingSomeZaksActive();
 
     List<? super Kont> fetchHavingAllZaksArchived();
 
     List<? super Kont> fetchHavingNoZaks();
+
+    List<Integer> fetchKontRoks();
 
     long countAll();
 

@@ -27,6 +27,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
@@ -106,6 +107,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private RadioButtonGroup<String> archFilterRadio;
     private ComponentRenderer<HtmlComponent, KzTreeAware> kzTextRenderer;
     private ComponentRenderer<Component, KzTreeAware> avizoRenderer;
+    Select<Integer> rokFilterField;
 
     private List<GridSortOrder<KzTreeAware>> initialSortOrder;
 
@@ -140,6 +142,15 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         public KzText(String text) {
             super(text);
         }
+    }
+
+
+    private <T> Select buildSelectionFilterField() {
+        Select <T> selectFilterField = new Select<>();
+        selectFilterField.setSizeFull();
+        selectFilterField.setEmptySelectionCaption("Vše");
+        selectFilterField.setEmptySelectionAllowed(true);
+        return selectFilterField;
     }
 
     public KzTreeView() {
@@ -939,26 +950,24 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     }
 
 
-//    private void loadKzTreeData(final String archFilter) {
-    private TreeData<KzTreeAware> loadKzTreeData(final String archFilter) {
-//        if (null == inMemoryKzTreeProvider) {
-//            return;
-//        }
-//
-//        inMemoryKzTreeProvider.clearFilters();
-
+    private TreeData<KzTreeAware> loadKzTreeData(final Integer rokFilterValue, final String archFilterValue) {
         List<? super Kont> kzList;
-        if (RADIO_KONT_ACTIVE.equals(archFilter)) {
-            kzList = kontService.fetchHavingSomeZaksActive();
-        } else if (RADIO_KONT_ARCH.equals(archFilter)) {
-            kzList = kontService.fetchHavingAllZaksArchived();
-        } else if (RADIO_KONT_EMPTY.equals(archFilter)) {
-            kzList = kontService.fetchHavingNoZaks();
+        if (null != rokFilterValue) {
+            kzList = kontService.fetchByRok(rokFilterValue);
         } else {
-            kzList = kontService.fetchAll();
+            if (RADIO_KONT_ACTIVE.equals(archFilterValue)) {
+                kzList = kontService.fetchHavingSomeZaksActive();
+            } else if (RADIO_KONT_ARCH.equals(archFilterValue)) {
+                kzList = kontService.fetchHavingAllZaksArchived();
+            } else if (RADIO_KONT_EMPTY.equals(archFilterValue)) {
+                kzList = kontService.fetchHavingNoZaks();
+            } else {
+                kzList = kontService.fetchAll();
+            }
         }
 
-        ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
+
+            ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
 //        kzTreeData = (new TreeData()).addItems(kzList, kzNodesProvider);
         return (new TreeData()).addItems(kzList, kzNodesProvider);
     }
@@ -1305,14 +1314,38 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         Button collapseAllBtn = new Button("Sbalit vše", VaadinIcon.CHEVRON_UP.create()
                 , e -> kzTreeGrid.collapseRecursively(kzTreeGrid.getTreeData().getRootItems(),2));
 
-        Span archFilterLabel = new Span("Kontrakty:");
+        Span rokFilterLabel = new Span("Rok:");
+        rokFilterField = buildSelectionFilterField();
+        rokFilterField.setItems(kontService.fetchKontRoks());
+        rokFilterField.addValueChangeListener(event -> {
+            if (event.isFromClient()) {
+                archFilterRadio.clear();
+            }
+            updateViewContent();
+        });
 
+        HorizontalLayout rokFilterComponent = new HorizontalLayout();
+        rokFilterComponent.setMargin(false);
+        rokFilterComponent.setPadding(false);
+        rokFilterComponent.setAlignItems(Alignment.CENTER);
+        rokFilterComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+        rokFilterComponent.add(
+                rokFilterLabel
+                , rokFilterField
+        );
+
+        Span archFilterLabel = new Span("Kontrakty:");
         archFilterRadio = new RadioButtonGroup<>();
         archFilterRadio.setItems(RADIO_KONT_ACTIVE, RADIO_KONT_ARCH, RADIO_KONT_EMPTY, RADIO_KONT_ALL);
 //        buttonShowArchive.addValueChangeListener(event -> setArchiveFilter(event));
         archFilterRadio.getStyle().set("alignItems", "center");
         archFilterRadio.getStyle().set("theme", "small");
-        archFilterRadio.addValueChangeListener(event -> updateViewContent());
+        archFilterRadio.addValueChangeListener(event -> {
+            if (event.isFromClient()) {
+                rokFilterField.clear();
+            }
+            updateViewContent();
+        });
 
 //        FlexLayout archFilterComponent = new FlexLayout();
         HorizontalLayout archFilterComponent = new HorizontalLayout();
@@ -1323,7 +1356,10 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        archFilterComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
 //        archFilterComponent.setWidth("100%");
 //        archFilterComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        archFilterComponent.add(archFilterLabel, archFilterRadio);
+        archFilterComponent.add(
+                archFilterLabel
+                , archFilterRadio
+        );
 
 //        H3 mainTitle = new H3("KONTRAKTY / ZAKÁZKY");
 //        mainTitle.getStyle().set("margin-top", "0.2em");
@@ -1342,6 +1378,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
         kzToolBar.add(
                 titleComponent
+                , new Ribbon()
+                , rokFilterComponent
                 , new Ribbon()
                 , archFilterComponent
                 , new Ribbon()
@@ -1480,7 +1518,10 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     }
 
     private void updateViewContent(final KzTreeAware itemToSelect) {
-        kzTreeData = loadKzTreeData(archFilterRadio.getValue());
+        Integer rok = rokFilterField.getValue();
+        String arch = archFilterRadio.getValue();
+        kzTreeData = loadKzTreeData(rok, arch);
+
         inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
         assignDataProviderToGridAndSort(inMemoryKzTreeProvider);
         inMemoryKzTreeProvider.refreshAll();
