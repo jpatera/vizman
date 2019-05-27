@@ -3,12 +3,14 @@ package eu.japtor.vizman.backend.utils;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
+import com.vaadin.flow.function.ValueProvider;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Fakt;
 import eu.japtor.vizman.backend.entity.ItemType;
@@ -36,70 +38,16 @@ public class VzmFormatUtils {
     public static final NumberFormat decHodFormat = getDecHodFormat(Locale.getDefault());
 //    public final static NumberFormat moneyFormat = new MoneyFormat();
 //    public final static NumberFormat yearFormat = new YearFormat();
-    public static final StringToBigDecimalConverter bigDecimalMoneyConverter;
-    public static final StringToBigDecimalConverter bigDecimalPercentConverter;
+//    public static final StringToBigDecimalConverter bigDecimalMoneyConverter;
+//    public static final StringToBigDecimalConverter bigDecimalPercentConverter;
 //    public static final StringToBigDecimalConverter integerYearConverter;
-    public static final ValidatedDecHodToStringConverter VALIDATED_DEC_HOD_TO_STRING_CONVERTER;
+//    public static final ValidatedDecHodToStringConverter VALIDATED_DEC_HOD_TO_STRING_CONVERTER;
 
     public final static DateTimeFormatter shortTimeFormatter = DateTimeFormatter.ofPattern("H:mm");
     public final static DateTimeFormatter basicDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public final static DateTimeFormatter basicDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 //    public final static DateTimeFormatter titleModifDateFormatter = DateTimeFormatter.ofPattern("EEEE yyyy-MM-dd HH:mm");
     public final static DateTimeFormatter titleModifDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
-    static {
-        bigDecimalMoneyConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
-            @Override
-            protected java.text.NumberFormat getFormat(Locale locale) {
-                NumberFormat numberFormat = super.getFormat(locale);
-                numberFormat.setGroupingUsed(true);
-                numberFormat.setMinimumFractionDigits(2);
-                numberFormat.setMaximumFractionDigits(2);
-                return numberFormat;
-            }
-            @Override
-            public Result<BigDecimal> convertToModel(String value, ValueContext context) {
-                if (null == value) {
-                    return Result.ok(null);
-//                    return BigDecimal.ZERO;
-                }
-                value = value.replaceAll("\\s+","");
-                return super.convertToNumber(value, context)
-                        .map(number -> (BigDecimal) number);
-            }
-        };
-        bigDecimalPercentConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
-            @Override
-            protected java.text.NumberFormat getFormat(Locale locale) {
-                NumberFormat numberFormat = super.getFormat(locale);
-                numberFormat.setGroupingUsed(false);
-                numberFormat.setMinimumFractionDigits(1);
-                numberFormat.setMaximumFractionDigits(1);
-                return numberFormat;
-            }
-            @Override
-            public Result<BigDecimal> convertToModel(String value, ValueContext context) {
-                if (null == value) {
-                    return Result.ok(null);
-                }
-                value = value.replaceAll("\\s+","");
-                return super.convertToNumber(value, context)
-                        .map(number -> (BigDecimal) number);
-            }
-        };
-        VALIDATED_DEC_HOD_TO_STRING_CONVERTER = new ValidatedDecHodToStringConverter("Špatný formát čísla");
-
-//        integerYearConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
-//            @Override
-//            protected java.text.NumberFormat getFormat(Locale locale) {
-//                NumberFormat numberFormat = super.getFormat(locale);
-//                numberFormat.setGroupingUsed(true);
-//                numberFormat.setMinimumFractionDigits(2);
-//                numberFormat.setMaximumFractionDigits(2);
-//                return numberFormat;
-//            }
-//        };
-    }
 
     private static Map<String, Color> nameToColorMap;
 
@@ -125,6 +73,104 @@ public class VzmFormatUtils {
 //        this.getStyle().set("background-color", "LightYellow");
 //        this.getStyle().set("background-color", "#fefefd");
     }
+
+
+    public static final ValueProvider<VzmFileUtils.VzmFile, String> vzmFileIconStyleProvider = file -> {
+        String iconStyle;
+        if (file.isVzmControledDir()) {
+            iconStyle = "padding-left: 1em; width: 0.8em; height: 0.8em; color: "
+                    + (file.exists() ? "MediumSeaGreen;" : "Red;");
+        } else {
+            iconStyle = "padding-left: 1em; width: 0.8em; height: 0.8em; color: "
+                    + (file.isFile() ? "Grey;" : "DarkMagenta;");
+        }
+        return iconStyle;
+    };
+
+    public static final ValueProvider<VzmFileUtils.VzmFile, String> vzmFileIconNameProvider = file -> {
+        String iconName;
+        Icon icon;
+        if (file.isVzmControledDir()) {
+//            icon = VaadinIcon.FOLDER_O.create();
+//            iconName = VaadinIcon.FOLDER_O.create().toString();
+            if (file.exists()) {
+                    iconName = "vaadin:folder";
+            } else {
+                iconName = "vaadin:folder-remove";
+            }
+        } else {
+//            iconName = VaadinIcon.FILE_O.create().toString();
+            if (!file.exists()) {
+                iconName = "vaadin:question-circle-o";
+            } else {
+                if (file.isDirectory()) {
+                    iconName = "vaadin:folder-o";
+                }  else {
+                    iconName = "vaadin:file";
+                }
+            }
+        }
+        return iconName;
+    };
+
+    public static final StringToBigDecimalConverter bigDecimalMoneyConverter =
+        new StringToBigDecimalConverter("Špatný formát čísla") {
+            @Override
+            protected java.text.NumberFormat getFormat(Locale locale) {
+                NumberFormat numberFormat = super.getFormat(locale);
+                numberFormat.setGroupingUsed(true);
+                numberFormat.setMinimumFractionDigits(2);
+                numberFormat.setMaximumFractionDigits(2);
+                return numberFormat;
+            }
+            @Override
+            public Result<BigDecimal> convertToModel(String value, ValueContext context) {
+                if (null == value) {
+                    return Result.ok(null);
+//                    return BigDecimal.ZERO;
+                }
+                value = value.replaceAll("\\s+","");
+                return super.convertToNumber(value, context)
+                        .map(number -> (BigDecimal) number);
+            }
+        };
+
+    public static final StringToBigDecimalConverter bigDecimalPercentConverter =
+        new StringToBigDecimalConverter("Špatný formát čísla") {
+            @Override
+            protected java.text.NumberFormat getFormat(Locale locale) {
+                NumberFormat numberFormat = super.getFormat(locale);
+                numberFormat.setGroupingUsed(false);
+                numberFormat.setMinimumFractionDigits(1);
+                numberFormat.setMaximumFractionDigits(1);
+                return numberFormat;
+            }
+            @Override
+            public Result<BigDecimal> convertToModel(String value, ValueContext context) {
+                if (null == value) {
+                    return Result.ok(null);
+                }
+                value = value.replaceAll("\\s+","");
+                return super.convertToNumber(value, context)
+                        .map(number -> (BigDecimal) number);
+            }
+        };
+
+    public static final ValidatedDecHodToStringConverter VALIDATED_DEC_HOD_TO_STRING_CONVERTER =
+        new ValidatedDecHodToStringConverter("Špatný formát čísla");
+
+//        integerYearConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
+//            @Override
+//            protected java.text.NumberFormat getFormat(Locale locale) {
+//                NumberFormat numberFormat = super.getFormat(locale);
+//                numberFormat.setGroupingUsed(true);
+//                numberFormat.setMinimumFractionDigits(2);
+//                numberFormat.setMaximumFractionDigits(2);
+//                return numberFormat;
+//            }
+//        };
+//    }
+
 
     public static String getItemTypeColorName(ItemType itemType) {
         String colorName = "black";

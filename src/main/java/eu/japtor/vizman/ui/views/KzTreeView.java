@@ -258,19 +258,19 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
     private void finishKontEdit(KontFormDialog kontFormDialog) {
         Kont kontAfter = kontFormDialog.getCurrentItem(); // Kont modified, just added or just deleted
-        Operation oper = kontFormDialog.getCurrentOperation();
-        OperationResult operRes = kontFormDialog.getLastOperationResult();
+        Operation kontOper = kontFormDialog.getCurrentOperation();
+        OperationResult kontOperRes = kontFormDialog.getLastOperationResult();
         boolean kontZaksChanged = kontFormDialog.isKontZaksChanged();
         boolean kontZaksFaktsChanged = kontFormDialog.isKontZaksFaktsChanged();
         Kont kontOrig = kontFormDialog.getKontItemOrig();
 
-        syncTreeGridAfterKontEdit(kontOrig, oper, operRes, kontZaksChanged, kontZaksFaktsChanged);
+        syncTreeGridAfterKontEdit(kontOrig, kontOper, kontOperRes, kontZaksChanged, kontZaksFaktsChanged);
 
-        if (OperationResult.ITEM_SAVED == operRes || kontZaksChanged) {
+        if (OperationResult.ITEM_SAVED == kontOperRes || kontZaksChanged) {
             Notification.show("Kontrakt " + kontAfter.getCkont() + " uložen"
                     , 2500, Notification.Position.TOP_CENTER);
 
-        } else if (OperationResult.ITEM_DELETED == operRes) {
+        } else if (OperationResult.ITEM_DELETED == kontOperRes) {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Editace kontraktu")
@@ -326,11 +326,13 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         if (Operation.ADD != kontOper) {
             kzTreeData.removeItem(kontOrig);
         }
-        if (null == getItemFromTree(kontToSync)) {
-            kzTreeData.addItem(null, kontToSync);
-        }
-        if (!CollectionUtils.isEmpty(kontToSync.getZaks())) {
-            kzTreeData.addItems(kontToSync, ((KzTreeAware)kontToSync).getNodes());
+        if (Operation.DELETE != kontOper && null != kontToSync) {
+            if (null == getItemFromTree(kontToSync)) {
+                kzTreeData.addItem(null, kontToSync);
+            }
+            if (!CollectionUtils.isEmpty(kontToSync.getZaks())) {
+                kzTreeData.addItems(kontToSync, ((KzTreeAware)kontToSync).getNodes());
+            }
         }
 
         kzTreeGrid.getDataCommunicator().reset();

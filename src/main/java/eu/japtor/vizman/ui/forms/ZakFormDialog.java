@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
@@ -16,9 +17,12 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.GeneratedVaadinTextField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
+import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 // import com.vaadin.flow.shared.Registration;
@@ -33,10 +37,16 @@ import eu.japtor.vizman.ui.components.*;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
+import org.springframework.util.CollectionUtils;
 
+import java.io.File;
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.util.List;
 
+import static eu.japtor.vizman.backend.utils.VzmFileUtils.*;
+import static eu.japtor.vizman.backend.utils.VzmFormatUtils.vzmFileIconNameProvider;
+import static eu.japtor.vizman.backend.utils.VzmFormatUtils.vzmFileIconStyleProvider;
 import static eu.japtor.vizman.ui.components.OperationResult.NO_CHANGE;
 
 //@SpringComponent
@@ -87,18 +97,11 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private String kontFolder;
     EvidZak evidZakOrig;
 
-    //    private Span datZadComp = new Span("Datum zadání");
-//    private Checkbox archiveCheckbox; // = new DatePicker("Nástup");
-
-    private Grid<ZakDoc> docGrid;
-//    private HorizontalLayout zakDocFolderComponent;
-//    private FormLayout.FormItem zakDocFolderComponent;
     private FlexLayout zakDocFolderComponent;
-//    private Paragraph zakFolderField;
     private KzFolderField zakFolderField;
-//    private Button openDocDirBtn;
+    private TreeGrid<VzmFileUtils.VzmFile> zakDocGrid;
     private Button registerDocButton;
-
+    private List<GridSortOrder<VzmFileUtils.VzmFile>> initialZakDocSortOrder;
 
     private Grid<Fakt> faktGrid;
     private Button newFaktButton;
@@ -250,7 +253,11 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         this.faktGrid.deselectAll();
         this.faktGrid.setItems(zakItem.getFakts());
 
-        this.docGrid.setItems(zakItem.getZakDocs());
+//        this.zakDocGrid.setItems(zakItem.getZakDocs());
+        if  (Operation.ADD != zakOperation) {
+            updateZakDocViewContent(null);
+        }
+
         this.kontFolder = zakItem.getKontFolder();
         this.zakFolderField.setParentFolder(kontFolder);
         this.zakFolderField.setItemType(zakItem.getTyp());
@@ -650,6 +657,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
     private void closeDialog() {
         faktGrid.deselectAll(); // ..otherwise during next openDialog "$0.connector..." error appears
+        zakDocGrid.deselectAll(); // ..otherwise during next openDialog "$0.connector..." error appears
         this.close();
     }
 
@@ -1401,22 +1409,72 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     }
 
     private Component initDocGrid() {
-        docGrid = new Grid<>();
-//        docGrid.setWidth( "100%" );
-//        docGrid.setHeight( null );
-        docGrid.setHeight("3em");
-        docGrid.setColumnReorderingAllowed(true);
-        docGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        docGrid.setId("zak-doc-grid");
-        docGrid.setClassName("vizman-simple-grid");
+        zakDocGrid = new TreeGrid<>();
+        zakDocGrid.setHeight("3em");
+        zakDocGrid.setColumnReorderingAllowed(false);
+        zakDocGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        zakDocGrid.setId("zak-doc-grid");
+        zakDocGrid.setClassName("vizman-simple-grid");
 
-        docGrid.addColumn(ZakDoc::getFilename).setHeader("Soubor");
-        docGrid.addColumn(ZakDoc::getNote).setHeader("Poznámka");
-//        docGrid.addColumn("Honorář CZK");
-        docGrid.addColumn(ZakDoc::getDateCreate).setHeader("Registrováno");
-        docGrid.addColumn(new ComponentRenderer<>(this::buildDocRemoveButton))
-                .setFlexGrow(0);
-        return docGrid;
+//        zakDocGrid.addColumn(ZakDoc::getFilename).setHeader("Soubor");
+//        zakDocGrid.addColumn(ZakDoc::getNote).setHeader("Poznámka");
+////        zakDocGrid.addColumn("Honorář CZK");
+//        zakDocGrid.addColumn(ZakDoc::getDateCreate).setHeader("Registrováno");
+//        zakDocGrid.addColumn(new ComponentRenderer<>(this::buildDocRemoveButton))
+//                .setFlexGrow(0);
+
+        Grid.Column hCol = zakDocGrid.addColumn(fileIconTextRenderer);
+        hCol.setHeader("Název")
+                .setFlexGrow(1)
+                .setWidth("30em")
+                .setKey("zak-doc-file-name")
+                .setResizable(true)
+        ;
+
+        return zakDocGrid;
+    }
+
+    TemplateRenderer fileIconTextRenderer = TemplateRenderer.<VzmFileUtils.VzmFile> of("<vaadin-grid-tree-toggle "
+            + "leaf='[[item.leaf]]' expanded='{{expanded}}' level='[[level]]'>"
+            + "<iron-icon style=\"[[item.icon-style]]\" icon=\"[[item.icon-name]]\"></iron-icon>&nbsp;&nbsp;"
+            + "[[item.name]]"
+            + "</vaadin-grid-tree-toggle>")
+            .withProperty("leaf", file -> !zakDocGrid.getDataCommunicator().hasChildren(file))
+            .withProperty("icon-name", file -> String.valueOf(vzmFileIconNameProvider.apply(file)))
+            .withProperty("icon-style", file -> String.valueOf(vzmFileIconStyleProvider.apply(file)))
+            .withProperty("name", file -> file.getName())
+        ;
+
+    private void updateZakDocViewContent(final VzmFileUtils.VzmFile itemToSelect) {
+        zakDocGrid.deselectAll();
+        Path kontDocRootPath = getKontDocRootPath(cfgPropsCache.getDocRootServer(), currentItem.getKontFolder());
+        TreeData<VzmFileUtils.VzmFile> zakDocTreeData
+                = VzmFileUtils.getExpectedZakDocDirTree(kontDocRootPath.toString(), currentItem);
+
+        Path zakDocRootPath = getZakDocRootPath(cfgPropsCache.getDocRootServer(), currentItem.getKontFolder(), currentItem.getFolder());
+        File zakDocRootDir = new File(zakDocRootPath.toString());
+        addFilesToExpectedVzmTreeData(zakDocTreeData, zakDocRootDir.listFiles(), null);
+
+        addNotExpectedKontSubDirs(zakDocTreeData
+                , new VzmFileUtils.VzmFile(zakDocRootPath, true)
+        );
+        addNotExpectedKontSubDirs(zakDocTreeData, new VzmFileUtils.VzmFile(getExpectedZakFolder(currentItem), true));
+
+        assignDataProviderToGridAndSort(zakDocTreeData);
+        zakDocGrid.getDataProvider().refreshAll();
+//        if (null != itemToSelect) {
+//            kontDocGrid.getSelectionModel().select(itemToSelect);
+//        }
+    }
+
+    private void assignDataProviderToGridAndSort(TreeData<VzmFileUtils.VzmFile> kontDocTreeData) {
+        List<GridSortOrder<VzmFileUtils.VzmFile>> sortOrderOrig = zakDocGrid.getSortOrder();
+        zakDocGrid.setTreeData(kontDocTreeData);
+        if (CollectionUtils.isEmpty(sortOrderOrig)) {
+            zakDocGrid.sort(initialZakDocSortOrder);
+        } else  {
+            zakDocGrid.sort(sortOrderOrig);
+        }
     }
 
     private Component buildDocRemoveButton(ZakDoc zakDoc) {

@@ -11,6 +11,7 @@ import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -164,7 +165,7 @@ public class VzmFileUtils implements HasLogger {
             return false;
         }
         try {
-            Path kontDirProjRootPath = getKontDocRootPath(projRoot, kontFolderNew);
+            Path kontDirProjRootPath = getKontProjRootPath(projRoot, kontFolderNew);
             if (!kontDirProjRootPath.toFile().exists()) {
                 Files.createDirectories(kontDirProjRootPath);
                 return true;
@@ -192,7 +193,7 @@ public class VzmFileUtils implements HasLogger {
         );
     }
 
-    public static Path getExpectedPath(File parentDir, String childFolder) {
+    public static Path getFolderPath(File parentDir, String childFolder) {
         return Paths.get(
                 null == parentDir ? "" : parentDir.toString()
                 , null == childFolder ? "" : childFolder
@@ -220,57 +221,180 @@ public class VzmFileUtils implements HasLogger {
 
 
 
+    public static class VzmFile extends File {
+        private boolean vzmControledDir;
 
+        public VzmFile (final String pathName, final boolean vzmControledDir) {
+            super(pathName);
+            this.vzmControledDir = vzmControledDir;
+        }
 
-    public static TreeData<File> getExpectedKontDocDirTree(final String docRoot, final Kont kont) {
+//        public VzmFile (final URI uri, final boolean vzmControledDir) {
+//            super(uri);
+//            this.vzmControledDir = vzmControledDir;
+//        }
+
+        public VzmFile (final Path path, final boolean vzmControledDir) {
+            this(path.toString(), vzmControledDir);
+//            this(path.Uri(), vzmControledDir);
+        }
+
+        public boolean isVzmControledDir() {
+            return vzmControledDir;
+        }
+    }
+
+    public static TreeData<VzmFile> getExpectedKontDocDirTree(final String docRoot, final Kont kont) {
         Assert.notNull(kont, "CHYBA při generování adresářů: nedefinovaný kontrakt.");
 
         TreeData expectedTree = new TreeData<>();
+        String expectedKontFolder = getExpectedKontFolder(kont);
+        VzmFile docRootDir = new VzmFile(docRoot, true);
+//        VzmFile kontDocDir = new VzmFile(getFolderPath(docRootDir, expectedKontFolder).toUri(), true);
+        VzmFile kontDocDir = new VzmFile(getFolderPath(docRootDir, expectedKontFolder).toString(), true);
 
-        String expFolder = NormalizeDirnamesAndJoin(kont.getCkont(), kont.getText());
-        if (expFolder.equals(kont.getFolder())) {
-            // TODO: set some flag
-        }
-
-//        File docRootDir = new File(docRoot);
-
-// FIXME
-//        File kontDocDir = new File(getExpectedPath(docRootDir, expFolder).toUri());
-
-////        expectedTree.addItem(null, kontDocDir);
-//        addExpectedKontSubDirs(expectedTree, kontDocDir, kont);
+        addExpectedKontDocSubDirs(expectedTree, kontDocDir, true);
+        addExpectedKontZakSubDirs(expectedTree, kontDocDir, kont);
 
         return expectedTree;
     }
 
-    public static void addExpectedKontSubDirs(TreeData<File> treeData, final File kontDocDir, final Kont kont) {
+    public static TreeData<VzmFile> getExpectedZakDocDirTree(final String kontDocRoot, final Zak zak) {
+        Assert.notNull(zak, "CHYBA při generování adresářů: nedefinovaná zakázka.");
 
-        List<File> kontDocSubDirs = new ArrayList<>();
-        kontDocSubDirs.add(new File(getExpectedPath(null, KONT_SOD_FOLDER).toUri()));
-        treeData.addItems(null, kontDocSubDirs);
+        TreeData expectedTree = new TreeData<>();
+//        String kontDocRootDir = NormalizeDirnamesAndJoin(docRoot, getExpectedKontFolder(zak.getKont()));
 
-        List<File> zakDocDirs = new ArrayList<>();
+        File kontDocRootDir = new File(kontDocRoot);
+        String expectedZakFolder = getExpectedZakFolder(zak);
+//        VzmFile zakDocDir = new VzmFile(getFolderPath(kontDocRootDir, expectedZakFolder).toUri(), true);
+        VzmFile zakDocDir = new VzmFile(getFolderPath(kontDocRootDir, expectedZakFolder).toString(), true);
+
+        addExpectedZakDocSubDirs(expectedTree, zakDocDir, true);
+        return expectedTree;
+    }
+
+    public static String getExpectedKontFolder(final Kont kont) {
+        return NormalizeDirnamesAndJoin(kont.getCkont(), kont.getText());
+    }
+
+    public static String getExpectedZakFolder(final Zak zak) {
+        return NormalizeDirnamesAndJoin(zak.getCzak().toString(), zak.getText());
+    }
+
+    public static void addExpectedKontDocSubDirs(TreeData<VzmFile> kontDocTreeData, final VzmFile kontDocDir, boolean asRootItems) {
+        List<VzmFile> kontDocRootSubDirs = new ArrayList<>();
+//        kontDocRootSubDirs.add(new VzmFile(getFolderPath(kontDocDir, KONT_SOD_FOLDER).toUri(), true));
+        kontDocRootSubDirs.add(new VzmFile(getFolderPath(kontDocDir, KONT_SOD_FOLDER).toString(), true));
+        kontDocTreeData.addItems(asRootItems ? null : kontDocDir, kontDocRootSubDirs);
+    }
+
+    public static void addNotExpectedKontSubDirs(TreeData<VzmFile> kontDocTreeData, final VzmFile kontDocDir) {
+        if (null == kontDocDir || !kontDocDir.exists()) {
+             return;
+        }
+        try {
+            Files.newDirectoryStream(kontDocDir.toPath()).forEach(realKontSubPath -> {
+                if (kontDocTreeData.getChildren(null).stream().noneMatch(
+                        treeKontSub -> treeKontSub.getName().equals(realKontSubPath.getFileName().toString()))) {
+                    kontDocTreeData.addItem(null, new VzmFile(getFolderPath(kontDocDir, realKontSubPath.getFileName().toString()), false));
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void addExpectedKontZakSubDirs(TreeData<VzmFile> kontDocTreeData, final VzmFile kontDocDir, final Kont kont) {
+        List<VzmFile> zakDocDirs = new ArrayList<>();
         kont.getZaks().forEach(zak -> {
             String expZakFolder = NormalizeDirnamesAndJoin(zak.getCzak().toString(), zak.getText());
-            if (expZakFolder.equals(zak.getFolder())) {
-                // TODO: set some flag
-            }
-            File zakDocDir = new File(getExpectedPath(kontDocDir, expZakFolder).toUri());
-//            treeData.addItem(kontDocDir, zakDocDir);
-            treeData.addItem(null, zakDocDir);
-            addExpectedZakSubDirs(treeData, zakDocDir, zak);
-            zakDocDirs.add(new File(getExpectedPath(kontDocDir, expZakFolder).toUri()));
+//            VzmFile zakDocDir = new VzmFile(getFolderPath(kontDocDir, expZakFolder).toUri(), true);
+            VzmFile zakDocDir = new VzmFile(getFolderPath(kontDocDir, expZakFolder).toString(), true);
+            kontDocTreeData.addItem(null, zakDocDir);
+            addExpectedZakDocSubDirs(kontDocTreeData, zakDocDir, false);
+//            zakDocDirs.add(new VzmFile(getFolderPath(kontDocDir, expZakFolder).toUri(), true));
+            zakDocDirs.add(new VzmFile(getFolderPath(kontDocDir, expZakFolder).toString(), true));
         });
     }
 
-    public static void addExpectedZakSubDirs(TreeData<File> treeData, final File zakDocDir, Zak zak) {
-
-        List<File> zakDocSubDirs = new ArrayList<>();
-
-        zakDocSubDirs.add(new File(getExpectedPath(zakDocDir, ZAK_DOPISY_FOLDER).toUri()));
-        zakDocSubDirs.add(new File(getExpectedPath(zakDocDir, ZAK_FAKTURY_FOLDER).toUri()));
-        treeData.addItems(zakDocDir, zakDocSubDirs);
+    public static void addExpectedZakDocSubDirs(TreeData<VzmFile> treeData, final VzmFile zakDocDir, boolean asRootItems) {
+        List<VzmFile> zakDocSubDirs = new ArrayList<>();
+//        zakDocSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_DOPISY_FOLDER).toUri(), true));
+//        zakDocSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_FAKTURY_FOLDER).toUri(), true));
+        zakDocSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_DOPISY_FOLDER).toString(), true));
+        zakDocSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_FAKTURY_FOLDER).toString(), true));
+        treeData.addItems(asRootItems ? null : zakDocDir, zakDocSubDirs);
     }
+
+//    public static void addExpectedZakDocRootSubDirs(TreeData<VzmFile> zakDocTreeData, final VzmFile zakDocDir) {
+//        List<VzmFile> zakDocRootSubDirs = new ArrayList<>();
+////        zakDocRootSubDirs.add(new VzmFile(getFolderPath(zakDocDir, KONT_SOD_FOLDER).toUri(), true));
+//        zakDocRootSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_DOPISY_FOLDER).toUri(), true));
+//        zakDocRootSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_FAKTURY_FOLDER).toUri(), true));
+//        zakDocTreeData.addItems(null, zakDocRootSubDirs);
+//    }
+
+
+    //    public static void addFilesToExpectedVzmTreeData(TreeData<VzmFile> expectedTreeData, VzmFile parent) {
+    public static void addFilesToExpectedVzmTreeData(
+            TreeData<VzmFile> expectedTreeData, File[] filesToBeScanned, VzmFile scannedDirsVzmParent) {
+//    public static void addFilesToExpectedVzmTreeData(
+//            TreeData<VzmFile> expectedTreeData, List<VzmFile> expectedVzmDirs, VzmFile parent) {
+
+//        if (null != parent && !expectedTreeData.contains(parent)) {
+//            return;
+//        }
+        if (null == filesToBeScanned || filesToBeScanned.length == 0) {
+            return;
+        }
+
+//        List<VzmFile> expectedVzmDirs = expectedTreeData.getChildren(parent);
+        for (File fileScanned : filesToBeScanned) {
+//            VzmFile vzmFileScanned = new VzmFile(fileScanned.toURI(), false);
+            VzmFile vzmFileScanned = new VzmFile(fileScanned.toString(), false);
+
+//            if (!expectedTreeData.contains(expectedDir)) {
+//                continue;
+//            }
+
+            if (!expectedTreeData.contains(vzmFileScanned)) {
+                expectedTreeData.addItem(scannedDirsVzmParent, vzmFileScanned);
+            }
+            if (vzmFileScanned.isFile()) {
+                continue;
+            } else if (vzmFileScanned.isDirectory()) {
+                if (vzmFileScanned.exists()) {
+                    File[] dirContent = vzmFileScanned.listFiles();
+                    addFilesToExpectedVzmTreeData(
+                            expectedTreeData, dirContent, vzmFileScanned
+                    );
+                }
+//                    for (File file : dirContent) {
+//                        if (file.isFile()) {
+//                            expectedTreeData.addItem(
+//                                    scannedDirsVzmParent, new VzmFile(file.toPath(), false));
+//                        } else {
+//    //                        VzmFile vzmFile = new VzmFile(file.toPath(), true);
+//    //                        if (expectedTreeData.contains(expectedVzmDir)) {
+//                            VzmFile nextDir = new VzmFile(file.toPath(), false);
+//                            if (!expectedTreeData.contains(nextDir)) {
+//                                expectedTreeData.addItem(
+//                                        expectedVzmDir, new VzmFile(nextDir.toPath(), false)
+//                                );
+//                                addFilesToExpectedVzmTreeData(
+//                                        expectedTreeData, nextDir.listFiles(), expectedVzmDir
+//    //                                    expectedTreeData, expectedTreeData.getChildren(expectedVzmDir), expectedVzmDir
+//                                );
+//    //                        }
+//                        }
+//                    }
+//                }
+            }
+        }
+    }
+
+
 // --------------------------------------------------
 
 

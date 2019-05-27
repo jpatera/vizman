@@ -29,7 +29,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -39,8 +38,8 @@ import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.bean.FileSystemDataProvider;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
+import eu.japtor.vizman.backend.utils.VzmFileUtils;
 import eu.japtor.vizman.ui.components.*;
-import eu.japtor.vizman.ui.forms.PersonEditorDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -48,7 +47,8 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.util.Date;
 
-import static eu.japtor.vizman.ui.util.VizmanConst.TITLE_PERSON;
+import static eu.japtor.vizman.backend.utils.VzmFormatUtils.vzmFileIconNameProvider;
+import static eu.japtor.vizman.backend.utils.VzmFormatUtils.vzmFileIconStyleProvider;
 
 //@Route(value = ROUTE_PERSON, layout = MainView.class)
 //@PageTitle(PAGE_TITLE_PERSON)
@@ -267,27 +267,52 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
 //        //                    + Jsoup.clean(file.getName(), Whitelist.simpleText());
 //    });
 
-    private ValueProvider<File, Icon> fileIconProvider = file -> {
-        Icon icon;
-        if (file.isDirectory()) {
-            icon = VaadinIcon.FOLDER_O.create();
-        } else {
-            icon = VaadinIcon.FILE_O.create();
-        }
-        return icon;
-    };
+//    private static ValueProvider<File, String> vzmFileIconNameProvider = file -> {
+//        String iconName;
+//        Icon icon;
+//        if (file.isDirectory()) {
+////            icon = VaadinIcon.FOLDER_O.create();
+////            iconName = VaadinIcon.FOLDER_O.create().toString();
+//            iconName = "vaadin:folder-o";
+//        } else {
+////            iconName = VaadinIcon.FILE_O.create().toString();
+//            iconName = "vaadin:file-o";
+//        }
+//        return iconName;
+//    };
+//
+//    private static ValueProvider<File, String> vzmFileIconStyleProvider = file -> {
+//        String iconStyle;
+//        Icon icon;
+//        if (file.isDirectory()) {
+////            icon = VaadinIcon.FOLDER_O.create();
+////            iconName = VaadinIcon.FOLDER_O.create().toString();
+//            iconStyle = "padding-left: 1em; width: 0.8em; height: 0.8em; color: red;";
+//        } else {
+////            iconName = VaadinIcon.FILE_O.create().toString();
+//            iconStyle = "padding-left: 1em; width: 0.8em; height: 0.8em; color: red;";
+//        }
+//        return iconStyle;
+//    };
 
-    TemplateRenderer fileIconTextRenderer = TemplateRenderer.<File> of("<vaadin-grid-tree-toggle "
+    TemplateRenderer fileIconTextRenderer = TemplateRenderer.<VzmFileUtils.VzmFile> of("<vaadin-grid-tree-toggle "
                             + "leaf='[[item.leaf]]' expanded='{{expanded}}' level='[[level]]'>"
 //                            + "<img src='" + "[[item.icon]]" + "' alt=''>&nbsp;&nbsp;"
 //                            + "<iron-icon style=\"padding-left: 1em; width: 0.8em; height: 0.8em;\" icon=\"vaadin:check\"></iron-icon>&nbsp;&nbsp;"
+//                            + "<iron-icon style=\"padding-left: 1em; width: 0.8em; height: 0.8em;\" icon=\"vaadin:check\"></iron-icon>&nbsp;&nbsp;"
+
+                            + "<iron-icon style=\"[[item.icon-style]]\" icon=\"[[item.icon-name]]\"></iron-icon>&nbsp;&nbsp;"
 //                            + "<iron-icon style=\"padding-left: 1em; width: 0.8em; height: 0.8em;\" icon=\"[[item.icon]]\"></iron-icon>&nbsp;&nbsp;"
-                            + "<iron-icon style=\"padding-left: 1em; width: 0.8em; height: 0.8em;\" icon=\"vaadin:check\"></iron-icon>&nbsp;&nbsp;"
+
+//                            + "<iron-icon style=\"padding-left: 1em; width: 0.8em; height: 0.8em;\" icon=\"vaadin:folder-o\"></iron-icon>&nbsp;&nbsp;"
+
                             + "[[item.name]]"
                             + "</vaadin-grid-tree-toggle>")
-            .withProperty("leaf", item -> !treeGrid.getDataCommunicator().hasChildren(item))
-            .withProperty("icon", icon -> String.valueOf(fileIconProvider.apply(icon)))
-            .withProperty("name", value -> value.getName())
+            .withProperty("leaf", file -> !treeGrid.getDataCommunicator().hasChildren(file))
+            .withProperty("icon-name", file -> String.valueOf(vzmFileIconNameProvider.apply(file)))
+            .withProperty("icon-style", file -> String.valueOf(vzmFileIconStyleProvider.apply(file)))
+//            .withProperty("icon", icon -> "vaadin:folder-o")
+            .withProperty("name", file -> file.getName())
 //            .withProperty("name", value -> String.valueOf(valueProvider.apply(value)))
             ;
 
