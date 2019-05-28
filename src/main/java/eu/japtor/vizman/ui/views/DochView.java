@@ -2130,7 +2130,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 dochDate
                 , cinRepo.findByCinKod(odchodWhereKod)
 //                , currentDateTime.toLocalTime()
-                , null
+                , (fromTimeIsEditable || toTimeIsEditable) ? null : currentDateTime.toLocalTime()
                 , null
                 , odchodWhereKod
         );
