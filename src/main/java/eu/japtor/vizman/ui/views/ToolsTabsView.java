@@ -18,9 +18,6 @@ package eu.japtor.vizman.ui.views;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -29,15 +26,9 @@ import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.ExtendedPagedTabs;
-import eu.japtor.vizman.ui.forms.CfgPropsForm;
-import eu.japtor.vizman.ui.forms.PersonEditorDialog;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.vaadin.stefan.fullcalendar.*;
 
 import javax.annotation.PostConstruct;
-import java.awt.*;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
@@ -74,21 +65,21 @@ public class ToolsTabsView extends VerticalLayout implements BeforeEnterObserver
         toolsExtTabs.add(dirTreeView, tabDirs);
 //        toolsExtTabs.add(curr, tabCurr);
 
-        MemoryBuffer buffer = new MemoryBuffer();
-        Upload upload = new Upload(buffer);
-//        upload.addSucceededListener(event -> {
+//        MemoryBuffer buffer = new MemoryBuffer();
+//        Upload upload = new Upload(buffer);
+////        upload.addSucceededListener(event -> {
+//////            Component component = createComponent(event.getMIMEType(),
 ////            Component component = createComponent(event.getMIMEType(),
-//            Component component = createComponent(event.getMIMEType(),
-//                    event.getFileName(), buffer.getInputStream());
-//            showOutput(event.getFileName(), component, output);
-//        });
+////                    event.getFileName(), buffer.getInputStream());
+////            showOutput(event.getFileName(), component, output);
+////        });
 
-        add(toolsExtTabs);
+        this.add(toolsExtTabs);
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         // Navigation first goes here, then to the beforeEnter of MainView
-        // System.out.println("###  CfgTabsView.beforeEnter");
+        // System.out.println("###  ToolsTabsView.beforeEnter");
     }
 }

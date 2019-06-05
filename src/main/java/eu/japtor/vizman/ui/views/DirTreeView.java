@@ -28,7 +28,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.treegrid.TreeGrid;
-import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -64,8 +63,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
     private static final String RADIO_DIRS_ALL = "Vše";
 
 
-    private TreeGrid<File> treeGrid;
-    private TreeData<File> dirTreeData;
+    private TreeGrid<VzmFileUtils.VzmFile> treeGrid;
     private Button genMissingDirsButton;
     private Button reloadButton;
     private RadioButtonGroup<String> dirFilterRadio;
@@ -101,7 +99,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
         initGenMissingDirsButton();
 
         this.add(buildGridContainer());
-        File rootFile = new File(cfgPropsCache.getDocRootServer());
+        VzmFileUtils.VzmFile rootFile = new VzmFileUtils.VzmFile(cfgPropsCache.getDocRootServer(), true);
         treeGrid.setDataProvider(new FileSystemDataProvider(rootFile));
 
         dirFilterRadio.addValueChangeListener(event -> updateViewContent());
@@ -295,7 +293,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
 //        return iconStyle;
 //    };
 
-    TemplateRenderer fileIconTextRenderer = TemplateRenderer.<VzmFileUtils.VzmFile> of("<vaadin-grid-tree-toggle "
+    private TemplateRenderer fileIconTextRenderer = TemplateRenderer.<VzmFileUtils.VzmFile> of("<vaadin-grid-tree-toggle "
                             + "leaf='[[item.leaf]]' expanded='{{expanded}}' level='[[level]]'>"
 //                            + "<img src='" + "[[item.icon]]" + "' alt=''>&nbsp;&nbsp;"
 //                            + "<iron-icon style=\"padding-left: 1em; width: 0.8em; height: 0.8em;\" icon=\"vaadin:check\"></iron-icon>&nbsp;&nbsp;"
@@ -312,7 +310,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
             .withProperty("icon-name", file -> String.valueOf(vzmFileIconNameProvider.apply(file)))
             .withProperty("icon-style", file -> String.valueOf(vzmFileIconStyleProvider.apply(file)))
 //            .withProperty("icon", icon -> "vaadin:folder-o")
-            .withProperty("name", file -> file.getName())
+            .withProperty("name", File::getName)
 //            .withProperty("name", value -> String.valueOf(valueProvider.apply(value)))
             ;
 
@@ -327,7 +325,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
 //    ;
 
 //    private ComponentRenderer<Component, File> iconTextRenderer = new ComponentRenderer<>(file -> {
-    private ValueProvider<File, IconTextField> iconTextValueProvider = file -> {
+    private ValueProvider<VzmFileUtils.VzmFile, IconTextField> iconTextValueProvider = file -> {
 //        Icon icon;
 //        if (file.isDirectory()) {
 //            icon = VaadinIcon.FOLDER_O.create();
@@ -348,7 +346,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
         private Icon icon;
         private Span text;
 
-        public IconTextField(File file) {
+        IconTextField(VzmFileUtils.VzmFile file) {
             Icon icon;
             if (file.isDirectory()) {
                 icon = VaadinIcon.FOLDER_O.create();
@@ -409,7 +407,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
         return viewToolBar;
     }
 
-    Component initReloadButton() {
+    private Component initReloadButton() {
         reloadButton = new ReloadButton(event -> updateViewContent());
         return reloadButton;
     }
@@ -425,7 +423,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
         updateViewContent(null);
     }
 
-    private void updateViewContent(final File itemToSelect) {
+    private void updateViewContent(final VzmFileUtils.VzmFile itemToSelect) {
 //        kzTreeData = loadKzTreeData(archFilterRadio.getValue());
 //        inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
 //        assignDataProviderToGridAndSort(inMemoryKzTreeProvider);

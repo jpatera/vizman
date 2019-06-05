@@ -10,21 +10,26 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class VzmFileUtils implements HasLogger {
 
-    final static Logger LOG = LoggerFactory.getLogger(VzmFileUtils.class);
-    public static final String ZAK_DOPISY_FOLDER = "Odesilaci_dopisy";
-    public static final String ZAK_FAKTURY_FOLDER = "Faktury";
-    public static final String KONT_SOD_FOLDER = "0__SOD";
+    private final static Logger LOG = LoggerFactory.getLogger(VzmFileUtils.class);
+    private static final String ZAK_DOPISY_FOLDER = "Odesilaci_dopisy";
+    private static final String ZAK_FAKTURY_FOLDER = "Faktury";
+    private static final String KONT_SOD_FOLDER = "0__SOD";
+
+    private static final Pattern accentCharsPattern = Pattern.compile("\\p{M}");   // for unicode
+    private static final Pattern illegalFileCharsPattern = Pattern.compile("[^\\w.-]");
 
     /**
      * Replace illegal characters in a filename with "_"
@@ -43,22 +48,20 @@ public class VzmFileUtils implements HasLogger {
         validateFile(file);
     }
 
-    public static void validateFile(File file) {
+    private static void validateFile(File file) {
         try {
             file.getCanonicalPath();
-        } catch (SecurityException esec) {
+        } catch (SecurityException | IOException esec) {
             esec.printStackTrace();
-        } catch (IOException eio) {
-            eio.printStackTrace();
         }
     }
 
 
-    public static String normalizeDirname(final String dirname) {
+    static String normalizeDirname(final String dirname) {
+
         String normDirname = Normalizer.normalize(dirname, Normalizer.Form.NFD);
-        normDirname = normDirname.replaceAll("\\p{M}", "");   // for unicode
-        normDirname = normDirname.replaceAll(" ", "_");   // for unicode
-//        filepath = filepath.replaceAll("[^\\p{ASCII}]", "");    // otherwise
+        normDirname = accentCharsPattern.matcher(normDirname).replaceAll("");
+        normDirname = illegalFileCharsPattern.matcher(normDirname).replaceAll("_");   // for unicode
         return normDirname;
     }
 
@@ -149,11 +152,11 @@ public class VzmFileUtils implements HasLogger {
         return kontProjRootExists(getKontProjRootPath(projRoot, kontFolder));
     }
 
-    public static boolean kontProjRootExists(Path kontDocRootPath) {
+    private static boolean kontProjRootExists(Path kontDocRootPath) {
         return (kontDocRootPath.toFile().exists());
     }
 
-    public static Path getKontProjRootPath(String projRoot, String kontFolder) {
+    private static Path getKontProjRootPath(String projRoot, String kontFolder) {
         return Paths.get(
                 null == projRoot ? "###-NOT-SET-PROJ-ROOT-###" : projRoot
                 , null == kontFolder ? "###-NOT-SET-KONT-PROJ-FOLDER-###" : kontFolder
@@ -193,7 +196,7 @@ public class VzmFileUtils implements HasLogger {
         );
     }
 
-    public static Path getFolderPath(File parentDir, String childFolder) {
+    private static Path getFolderPath(File parentDir, String childFolder) {
         return Paths.get(
                 null == parentDir ? "" : parentDir.toString()
                 , null == childFolder ? "" : childFolder
@@ -219,7 +222,7 @@ public class VzmFileUtils implements HasLogger {
         return false;
     }
 
-
+// ============================================================
 
     public static class VzmFile extends File {
         private boolean vzmControledDir;
@@ -239,15 +242,48 @@ public class VzmFileUtils implements HasLogger {
 //            this(path.Uri(), vzmControledDir);
         }
 
-        public boolean isVzmControledDir() {
+        public VzmFile (final File file, final boolean vzmControledDir) {
+            this(file.toString(), vzmControledDir);
+//            this(path.Uri(), vzmControledDir);
+        }
+
+        boolean isVzmControledDir() {
             return vzmControledDir;
+        }
+
+        public Stream<VzmFile> listVzmFiles(VzmFile parent, FilenameFilter fileFilter)  {
+            if (null == parent) {
+                return Stream.empty();
+            }
+            File[] filteredFiles = parent.listFiles(fileFilter);
+            if (filteredFiles.length == 0) {
+                return Stream.empty();
+            }
+            return Stream.of(filteredFiles)
+                .map(file -> new VzmFile(file, true))
+//                .collect(Collectors.toList())
+            ;
+        }
+
+        public Stream<VzmFile> listVzmFiles(VzmFile parent)  {
+            if (null == parent) {
+                return Stream.empty();
+            }
+            File[] files = parent.listFiles();
+            if (files.length == 0) {
+                return Stream.empty();
+            }
+            return Stream.of(parent.listFiles())
+                .map(file -> new VzmFile(file, true))
+//                .collect(Collectors.toList())
+            ;
         }
     }
 
     public static TreeData<VzmFile> getExpectedKontDocDirTree(final String docRoot, final Kont kont) {
         Assert.notNull(kont, "CHYBA při generování adresářů: nedefinovaný kontrakt.");
 
-        TreeData expectedTree = new TreeData<>();
+        TreeData<VzmFile> expectedTree = new TreeData<>();
         String expectedKontFolder = getExpectedKontFolder(kont);
         VzmFile docRootDir = new VzmFile(docRoot, true);
 //        VzmFile kontDocDir = new VzmFile(getFolderPath(docRootDir, expectedKontFolder).toUri(), true);
@@ -262,7 +298,7 @@ public class VzmFileUtils implements HasLogger {
     public static TreeData<VzmFile> getExpectedZakDocDirTree(final String kontDocRoot, final Zak zak) {
         Assert.notNull(zak, "CHYBA při generování adresářů: nedefinovaná zakázka.");
 
-        TreeData expectedTree = new TreeData<>();
+        TreeData<VzmFile> expectedTree = new TreeData<>();
 //        String kontDocRootDir = NormalizeDirnamesAndJoin(docRoot, getExpectedKontFolder(zak.getKont()));
 
         File kontDocRootDir = new File(kontDocRoot);
@@ -282,7 +318,7 @@ public class VzmFileUtils implements HasLogger {
         return NormalizeDirnamesAndJoin(zak.getCzak().toString(), zak.getText());
     }
 
-    public static void addExpectedKontDocSubDirs(TreeData<VzmFile> kontDocTreeData, final VzmFile kontDocDir, boolean asRootItems) {
+    private static void addExpectedKontDocSubDirs(TreeData<VzmFile> kontDocTreeData, final VzmFile kontDocDir, boolean asRootItems) {
         List<VzmFile> kontDocRootSubDirs = new ArrayList<>();
 //        kontDocRootSubDirs.add(new VzmFile(getFolderPath(kontDocDir, KONT_SOD_FOLDER).toUri(), true));
         kontDocRootSubDirs.add(new VzmFile(getFolderPath(kontDocDir, KONT_SOD_FOLDER).toString(), true));
@@ -305,7 +341,7 @@ public class VzmFileUtils implements HasLogger {
         }
     }
 
-    public static void addExpectedKontZakSubDirs(TreeData<VzmFile> kontDocTreeData, final VzmFile kontDocDir, final Kont kont) {
+    private static void addExpectedKontZakSubDirs(TreeData<VzmFile> kontDocTreeData, final VzmFile kontDocDir, final Kont kont) {
         List<VzmFile> zakDocDirs = new ArrayList<>();
         kont.getZaks().forEach(zak -> {
             String expZakFolder = NormalizeDirnamesAndJoin(zak.getCzak().toString(), zak.getText());
@@ -318,7 +354,7 @@ public class VzmFileUtils implements HasLogger {
         });
     }
 
-    public static void addExpectedZakDocSubDirs(TreeData<VzmFile> treeData, final VzmFile zakDocDir, boolean asRootItems) {
+    private static void addExpectedZakDocSubDirs(TreeData<VzmFile> treeData, final VzmFile zakDocDir, boolean asRootItems) {
         List<VzmFile> zakDocSubDirs = new ArrayList<>();
 //        zakDocSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_DOPISY_FOLDER).toUri(), true));
 //        zakDocSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_FAKTURY_FOLDER).toUri(), true));
@@ -402,11 +438,11 @@ public class VzmFileUtils implements HasLogger {
         return zakProjRootExists(getZakProjRootPath(projRoot, kontFolder, zakFolder));
     }
 
-    public static boolean zakProjRootExists(Path zakProjRootPath) {
+    private static boolean zakProjRootExists(Path zakProjRootPath) {
         return (zakProjRootPath.toFile().exists());
     }
 
-    public static Path getZakProjRootPath(String projRoot, String kontFolder, String zakFolder) {
+    private static Path getZakProjRootPath(String projRoot, String kontFolder, String zakFolder) {
         return Paths.get(
                 null == projRoot ? "###-NOT-SET-PROJ-ROOT-###" : projRoot
                 , null == kontFolder ? "###-NOT-SET-KONT-PROJ-FOLDER-###" : kontFolder

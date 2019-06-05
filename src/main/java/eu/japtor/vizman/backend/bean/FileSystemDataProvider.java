@@ -4,6 +4,7 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
+import eu.japtor.vizman.backend.utils.VzmFileUtils;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -14,58 +15,54 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FileSystemDataProvider extends
-        AbstractBackEndHierarchicalDataProvider<File, FilenameFilter> {
+        AbstractBackEndHierarchicalDataProvider<VzmFileUtils.VzmFile, FilenameFilter> {
 
-        private static final Comparator<File> nameComparator = (fileA, fileB) -> {
-            return String.CASE_INSENSITIVE_ORDER.compare(fileA.getName(), fileB.getName());
-        };
+        private static final Comparator<VzmFileUtils.VzmFile> nameComparator = (fileA, fileB) ->
+                String.CASE_INSENSITIVE_ORDER.compare(fileA.getName(), fileB.getName());
 
-        private static final Comparator<File> sizeComparator = (fileA, fileB) -> {
-            return Long.compare(fileA.length(), fileB.length());
-        };
+        private static final Comparator<VzmFileUtils.VzmFile> sizeComparator = Comparator.comparingLong(File::length);
 
-        private static final Comparator<File> lastModifiedComparator = (fileA, fileB) -> {
-            return Long.compare(fileA.lastModified(), fileB.lastModified());
-        };
+        private static final Comparator<VzmFileUtils.VzmFile> lastModifiedComparator = Comparator.comparingLong(File::lastModified);
 
-        private final File root;
+        private final VzmFileUtils.VzmFile root;
 
-        public FileSystemDataProvider(File root) {
+        public FileSystemDataProvider(VzmFileUtils.VzmFile root) {
             this.root = root;
         }
 
         @Override
         public int getChildCount(
-                HierarchicalQuery<File, FilenameFilter> query) {
+                HierarchicalQuery<VzmFileUtils.VzmFile, FilenameFilter> query) {
             return (int) fetchChildren(query).count();
         }
 
         @Override
-        protected Stream<File> fetchChildrenFromBackEnd(
-                HierarchicalQuery<File, FilenameFilter> query) {
-            final File parent = query.getParentOptional().orElse(root);
-            Stream<File> filteredFiles = query.getFilter()
-                    .map(filter -> Stream.of(parent.listFiles(filter)))
-                    .orElse(Stream.of(parent.listFiles()))
+        protected Stream<VzmFileUtils.VzmFile> fetchChildrenFromBackEnd(
+                HierarchicalQuery<VzmFileUtils.VzmFile, FilenameFilter> query) {
+
+            final VzmFileUtils.VzmFile parent = query.getParentOptional().orElse(root);
+            Stream<VzmFileUtils.VzmFile> filteredFiles = query.getFilter()
+                    .map(filter -> parent.listVzmFiles(parent, filter))
+                    .orElse(parent.listVzmFiles(parent))
                     .skip(query.getOffset()).limit(query.getLimit());
             return sortFileStream(filteredFiles, query.getSortOrders());
         }
 
         @Override
-        public boolean hasChildren(File item) {
-            return item.list() != null && item.list().length > 0;
+        public boolean hasChildren(VzmFileUtils.VzmFile item) {
+            return (item.list() != null) && (item.list().length > 0);
         }
 
-        private Stream<File> sortFileStream(Stream<File> fileStream,
+        private Stream<VzmFileUtils.VzmFile> sortFileStream(Stream<VzmFileUtils.VzmFile> fileStream,
                                             List<QuerySortOrder> sortOrders) {
 
             if (sortOrders.isEmpty()) {
                 return fileStream;
             }
 
-            List<Comparator<File>> comparators = sortOrders.stream()
+            List<Comparator<VzmFileUtils.VzmFile>> comparators = sortOrders.stream()
                     .map(sortOrder -> {
-                        Comparator<File> comparator = null;
+                        Comparator<VzmFileUtils.VzmFile> comparator = null;
                         if (sortOrder.getSorted().equals("file-name")) {
                             comparator = nameComparator;
                         } else if (sortOrder.getSorted().equals("file-size")) {
@@ -84,8 +81,8 @@ public class FileSystemDataProvider extends
                 return fileStream;
             }
 
-            Comparator<File> first = comparators.remove(0);
-            Comparator<File> combinedComparators = comparators.stream()
+            Comparator<VzmFileUtils.VzmFile> first = comparators.remove(0);
+            Comparator<VzmFileUtils.VzmFile> combinedComparators = comparators.stream()
                     .reduce(first, Comparator::thenComparing);
             return fileStream.sorted(combinedComparators);
         }

@@ -178,7 +178,8 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
 
 //        menuPanel.add(tabs);
 //        add(container);
-        add(cfgExtTabs);
+
+        this.add(cfgExtTabs);
     }
 
     @Override
