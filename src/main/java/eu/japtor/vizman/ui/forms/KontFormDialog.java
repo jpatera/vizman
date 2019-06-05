@@ -1216,6 +1216,10 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         getBinder().forField(investorField)
 //                .withConverter(String::trim, String::trim)    // TODO: Gives NPE for null
 //                .bind(Kont::getInvestor, Kont::setInvestor);
+                .withValidator(new StringLengthValidator(
+                        "Investor může mít max. 127 znaků",
+                        0, 127)
+                )
                 .bind(Kont::getInvestor, Kont::setInvestor);
         investorField.setValueChangeMode(ValueChangeMode.EAGER);
         return investorField;

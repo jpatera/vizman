@@ -214,6 +214,10 @@ public class SubFormDialog extends AbstractFormDialog<Fakt> implements HasLogger
         textField = new TextField("Text subdoddávky");
         textField.getElement().setAttribute("colspan", "2");
         getBinder().forField(textField)
+                .withValidator(new StringLengthValidator(
+                        "Text subdodávky může mít  max. 127 znaků",
+                        0, 127)
+                )
                 .bind(Fakt::getText, Fakt::setText);
         textField.setValueChangeMode(ValueChangeMode.EAGER);
         return textField;

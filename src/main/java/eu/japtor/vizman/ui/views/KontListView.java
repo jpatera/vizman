@@ -71,9 +71,6 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
 
 
     @Autowired
-    public KontRepo kontRepo;
-
-    @Autowired
     public KontService kontService;
 
 //    public KontListView() {

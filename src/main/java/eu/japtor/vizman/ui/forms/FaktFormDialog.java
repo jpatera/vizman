@@ -337,6 +337,10 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
         textField = new TextField("Text dílčího plnění");
         textField.getElement().setAttribute("colspan", "2");
         getBinder().forField(textField)
+                .withValidator(new StringLengthValidator(
+                        "Text plnění může mít max. 127 znaků",
+                        0, 127)
+                )
                 .bind(Fakt::getText, Fakt::setText);
         textField.setValueChangeMode(ValueChangeMode.EAGER);
         return textField;
