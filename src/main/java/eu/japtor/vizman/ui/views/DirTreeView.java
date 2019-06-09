@@ -16,36 +16,45 @@
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.treegrid.TreeGrid;
+import com.vaadin.flow.data.provider.SortDirection;
+import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
-import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.bean.FileSystemDataProvider;
+import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.Perm;
+import eu.japtor.vizman.backend.entity.VzmFolderType;
+import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
+import eu.japtor.vizman.backend.service.KontService;
+import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.backend.utils.VzmFileUtils;
 import eu.japtor.vizman.ui.components.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
+import static eu.japtor.vizman.backend.utils.VzmFileUtils.*;
 import static eu.japtor.vizman.backend.utils.VzmFormatUtils.vzmFileIconNameProvider;
 import static eu.japtor.vizman.backend.utils.VzmFormatUtils.vzmFileIconStyleProvider;
 
@@ -63,14 +72,21 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
     private static final String RADIO_DIRS_ALL = "Vše";
 
 
-    private TreeGrid<VzmFileUtils.VzmFile> treeGrid;
-    private Button genMissingDirsButton;
+    private TreeGrid<VzmFileUtils.VzmFile> folderGrid;
+    private Button genMissingFoldersButton;
     private Button reloadButton;
     private RadioButtonGroup<String> dirFilterRadio;
 
+    private List<GridSortOrder<VzmFileUtils.VzmFile>> initialFolderSortOrder;
 
     @Autowired
     public CfgPropsCache cfgPropsCache;
+
+    @Autowired
+    public KontService kontService;
+
+    @Autowired
+    public ZakService zakService;
 
 
     @Autowired
@@ -90,19 +106,19 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
 
 //        <vaadin-vertical-layout style="width: 100%; height: 100%;" theme="padding">
 //        <vaadin-text-field style="width: 100%;" placeholder="ID" id="idSearchTextField"></vaadin-text-field>
-//        <vaadin-treeGrid items="[[items]]" id="treeGrid" style="width: 100%;"></vaadin-treeGrid>
+//        <vaadin-folderGrid items="[[items]]" id="folderGrid" style="width: 100%;"></vaadin-folderGrid>
     }
 
     @PostConstruct
     public void postInit() {
 
-        initGenMissingDirsButton();
+        initGenMissingFoldersButton();
 
         this.add(buildGridContainer());
-        VzmFileUtils.VzmFile rootFile = new VzmFileUtils.VzmFile(cfgPropsCache.getDocRootServer(), true);
-        treeGrid.setDataProvider(new FileSystemDataProvider(rootFile));
+        VzmFileUtils.VzmFile rootFile = new VzmFileUtils.VzmFile(cfgPropsCache.getDocRootServer(), true, VzmFolderType.ROOT, 0);
+        folderGrid.setDataProvider(new FileSystemDataProvider(rootFile));
 
-        dirFilterRadio.addValueChangeListener(event -> updateViewContent());
+        dirFilterRadio.addValueChangeListener(event -> updateFolderViewContent());
         dirFilterRadio.setValue(RADIO_DIRS_EXISTING);
     }
 
@@ -115,27 +131,33 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
 
         gridContainer.add(buildGridToolBar());
         gridContainer.add(initDirTreeGrid());
+        initialFolderSortOrder = Arrays.asList(new GridSortOrder(
+                folderGrid.getColumnByKey(FOLDER_NAME_KEY), SortDirection.ASCENDING)
+        );
         return gridContainer;
     }
 
+    private static final String FOLDER_NAME_KEY = "flder-name-key";
+    private static final String FOLDER_SIZE_KEY = "folder-size-key";
+    private static final String FOLDER_LAST_MODIFIED_KEY = "folder-last-modified";
+
     private Grid initDirTreeGrid() {
 
-        treeGrid = new TreeGrid<>();
+        folderGrid = new TreeGrid<>();
 
-//        treeGrid.addColumn(iconTextValueProvider)
+//        folderGrid.addColumn(iconTextValueProvider)
 //            .setHeader("ČK/ČZ")
 //            .setFlexGrow(0)
 //            .setWidth("4em")
 //            .setKey("file-icon")
 //            .setId("file-icon-id")
 //        ;
-//        treeGrid.addHierarchyColumn(iconTextValueProvider);
-        Grid.Column hierCol = treeGrid.addColumn(fileIconTextRenderer);
-        hierCol
-                .setHeader("Název")
+//        folderGrid.addHierarchyColumn(iconTextValueProvider);
+        Grid.Column hCol = folderGrid.addColumn(fileIconTextRenderer);
+        hCol.setHeader("Název")
                 .setFlexGrow(1)
                 .setWidth("30em")
-                .setKey("file-name")
+                .setKey("folder-name-key")
 //                .setId("file-name-id")
                 .setResizable(true)
 //                .setFrozen(true)
@@ -147,7 +169,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
 //                        valueProvider.apply(b))));
 
 
-//        treeGrid.addColumn(file -> {
+//        folderGrid.addColumn(file -> {
 //            String iconHtml;
 //            if (file.isDirectory()) {
 //                iconHtml = VaadinIcons.FOLDER_O.getHtml();
@@ -158,19 +180,19 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
 //                    + Jsoup.clean(file.getName(), Whitelist.simpleText());
 //        }, new ComponentRenderer<>();
 
-        treeGrid.addColumn(file -> file.isDirectory() ? "--" : file.length() + " bytes")
+        folderGrid.addColumn(file -> file.isDirectory() ? "--" : file.length() + " bytes")
                 .setHeader("Velikost")
-                .setKey("file-size")
-                .setId("file-size-id")
+                .setKey(FOLDER_SIZE_KEY)
+//                .setId("file-size-id")
         ;
 
-        treeGrid.addColumn(file -> new Date(file.lastModified()))
+        folderGrid.addColumn(file -> new Date(file.lastModified()))
                 .setHeader("Poslední změna")
-                .setKey("file-last-modified")
-                .setId("file-last-modified-id")
+                .setKey(FOLDER_LAST_MODIFIED_KEY)
+//                .setId("file-last-modified-id")
         ;
 
-//        treeGrid.addColumn(file -> new Date(file.lastModified()),
+//        folderGrid.addColumn(file -> new Date(file.lastModified()),
 //                new DateRenderer()).setCaption("Last Modified")
 //                .setId("file-last-modified");
 
@@ -236,7 +258,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
 //                .setWidth("8em")
 //                .setResizable(true)
 //        ;
-        return treeGrid;
+        return folderGrid;
     }
 
 //    private ComponentRenderer<Component, KzTreeAware> kzArchRenderer = new ComponentRenderer<>(kz -> {
@@ -306,7 +328,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
 
                             + "[[item.name]]"
                             + "</vaadin-grid-tree-toggle>")
-            .withProperty("leaf", file -> !treeGrid.getDataCommunicator().hasChildren(file))
+            .withProperty("leaf", file -> !folderGrid.getDataCommunicator().hasChildren(file))
             .withProperty("icon-name", file -> String.valueOf(vzmFileIconNameProvider.apply(file)))
             .withProperty("icon-style", file -> String.valueOf(vzmFileIconStyleProvider.apply(file)))
 //            .withProperty("icon", icon -> "vaadin:folder-o")
@@ -324,39 +346,39 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
 //            .withProperty("name", value -> String.valueOf(valueProvider.apply(value))))
 //    ;
 
-//    private ComponentRenderer<Component, File> iconTextRenderer = new ComponentRenderer<>(file -> {
-    private ValueProvider<VzmFileUtils.VzmFile, IconTextField> iconTextValueProvider = file -> {
-//        Icon icon;
-//        if (file.isDirectory()) {
-//            icon = VaadinIcon.FOLDER_O.create();
-//        } else {
-//            icon = VaadinIcon.FILE_O.create();
-//        }
+////    private ComponentRenderer<Component, File> iconTextRenderer = new ComponentRenderer<>(file -> {
+//    private ValueProvider<VzmFileUtils.VzmFile, IconTextField> iconTextValueProvider = file -> {
+////        Icon icon;
+////        if (file.isDirectory()) {
+////            icon = VaadinIcon.FOLDER_O.create();
+////        } else {
+////            icon = VaadinIcon.FILE_O.create();
+////        }
+////
+////        Component comp = new Composite<>();
 //
-//        Component comp = new Composite<>();
-
-        return new IconTextField(file);
-        //            return iconHtml + " "
-        //                    + Jsoup.clean(file.getName(), Whitelist.simpleText());
-    };
+//        return new IconTextField(file);
+//        //            return iconHtml + " "
+//        //                    + Jsoup.clean(file.getName(), Whitelist.simpleText());
+//    };
 
 
 
-    public class IconTextField extends Composite<Div> {
-        private Icon icon;
-        private Span text;
-
-        IconTextField(VzmFileUtils.VzmFile file) {
-            Icon icon;
-            if (file.isDirectory()) {
-                icon = VaadinIcon.FOLDER_O.create();
-            } else {
-                icon = VaadinIcon.FILE_O.create();
-            }
-            text = new Span(file.getName());
-            getContent().add(icon, text);
-        }
-    }
+//    public class IconTextField extends Composite<Div> {
+//        private Icon icon;
+//        private Span text;
+//
+//        IconTextField(VzmFileUtils.VzmFile file) {
+//            Icon icon;
+//            if (file.isDirectory()) {
+//                icon = VaadinIcon.FOLDER_O.create();
+//            } else {
+//                icon = VaadinIcon.FILE_O.create();
+//            }
+//            text = new Span(file.getNainitgrme());
+//            getContent().add(icon, text);
+//        }
+//    }
 
 
     private Component buildGridToolBar() {
@@ -402,35 +424,117 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
                 , new Ribbon()
                 , archFilterComponent
                 , new Ribbon()
-                , initGenMissingDirsButton()
+                , initFixFoldersInDbButton()
+                , initGenMissingFoldersButton()
         );
         return viewToolBar;
     }
 
     private Component initReloadButton() {
-        reloadButton = new ReloadButton(event -> updateViewContent());
+        reloadButton = new ReloadButton(event -> updateFolderViewContent());
         return reloadButton;
     }
 
-    private Component initGenMissingDirsButton() {
-        genMissingDirsButton = new NewItemButton("Generuj...?"
+    private Component initGenMissingFoldersButton() {
+        genMissingFoldersButton = new NewItemButton("Generuj...?"
                 , event -> {
         });
-        return genMissingDirsButton;
+        return genMissingFoldersButton;
     }
 
-    private void updateViewContent() {
-        updateViewContent(null);
+    private Component initFixFoldersInDbButton() {
+        genMissingFoldersButton = new NewItemButton("Opravit adresare v DB/FS", event -> {
+            fixAllKontZakFoldersInDbAndFs();
+        });
+        return genMissingFoldersButton;
     }
 
-    private void updateViewContent(final VzmFileUtils.VzmFile itemToSelect) {
+    private void fixAllKontZakFoldersInDbAndFs() {
+        List<Kont> konts = kontService.fetchAll();
+        for (Kont kont : konts) {
+            fixKontZakDocFoldersInDb(kont);
+        }
+        for (Kont kont : konts) {
+            fixKontZakDocFoldersInFs(cfgPropsCache.getDocRootServer(), kont);
+//            fixKontZakProjFoldersInFs(cfgPropsCache.getProjRootServer(), kont);
+        }
+    }
+
+    private void fixKontZakDocFoldersInDb(Kont kont) {
+        String expectedKontFolder = VzmFileUtils.getExpectedKontFolder(kont);
+        kont.setFolder(expectedKontFolder);
+        kontService.saveKont(kont, Operation.EDIT);
+        for (Zak  zak : kont.getZaks()) {
+            String expectedZakFolder = VzmFileUtils.getExpectedZakFolder(zak);
+            zak.setFolder(expectedZakFolder);
+            zakService.saveZak(zak, Operation.EDIT);
+        }
+    }
+
+    private void fixKontZakDocFoldersInFs(String docRoot, Kont kont) {
+        String kontFolder = kont.getFolder();
+        if (!VzmFileUtils.kontDocRootExists(docRoot, kontFolder)) {
+            VzmFileUtils.createKontDocDirs(docRoot, kontFolder);
+        }
+        for (Zak  zak : kont.getZaks()) {
+            String zakFolder = zak.getFolder();
+            if (!VzmFileUtils.zakDocRootExists(docRoot, kontFolder, zakFolder)) {
+                VzmFileUtils.createZakDocDirs(docRoot, kontFolder, zakFolder);
+            }
+        }
+    }
+
+    private void fixKontZakProjFoldersInFs(String projRoot, Kont kont) {
+        String kontFolder = kont.getFolder();
+        if (!VzmFileUtils.kontProjRootExists(projRoot, kontFolder)) {
+            VzmFileUtils.createKontProjDirs(projRoot, kontFolder);
+        }
+        for (Zak  zak : kont.getZaks()) {
+            String zakFolder = zak.getFolder();
+            if (!VzmFileUtils.zakProjRootExists(projRoot, kontFolder, zakFolder)) {
+                VzmFileUtils.createZakProjDirs(projRoot, kontFolder, zakFolder);
+            }
+        }
+    }
+
+    private void updateFolderViewContent() {
+        updateFolderViewContent(null);
+    }
+
+    private void assignDataProviderToGridAndSort(TreeData<VzmFileUtils.VzmFile> folderTreeData) {
+        List<GridSortOrder<VzmFile>> sortOrderOrig = folderGrid.getSortOrder();
+        folderGrid.setTreeData(folderTreeData);
+        if (CollectionUtils.isEmpty(sortOrderOrig)) {
+            folderGrid.sort(initialFolderSortOrder);
+        } else {
+            folderGrid.sort(sortOrderOrig);
+        }
+    }
+
+    private void updateFolderViewContent(final VzmFileUtils.VzmFile itemToSelect) {
 //        kzTreeData = loadKzTreeData(archFilterRadio.getValue());
 //        inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
 //        assignDataProviderToGridAndSort(inMemoryKzTreeProvider);
 //        inMemoryKzTreeProvider.refreshAll();
-        treeGrid.getDataProvider().refreshAll();
-        if (null != itemToSelect) {
-            treeGrid.getSelectionModel().select(itemToSelect);
-        }
+
+//        folderGrid.deselectAll();
+//        TreeData<VzmFileUtils.VzmFile> folderTreeData
+//                = VzmFileUtils.getExpectedKontFolderTree(cfgPropsCache.getDocRootServer(), null);
+//
+//        Path folderRootPath = getKontDocRootPath(cfgPropsCache.getDocRootServer(), currentItem.getFolder());
+//        File folderRootDir = new File(folderRootPath.toString());
+//        addFilesToExpectedVzmTreeData(folderTreeData, folderRootDir.listFiles(), null);
+//
+//        addNotExpectedKontSubDirs(folderTreeData
+//                , new VzmFileUtils.VzmFile(folderRootPath, true)
+//        );
+//        addNotExpectedKontSubDirs(folderTreeData, new VzmFileUtils.VzmFile(getExpectedKontFolder(currentItem), true));
+//
+//        assignDataProviderToGridAndSort(kontDocTreeData);
+
+        folderGrid.getDataProvider().refreshAll();
+//        if (null != itemToSelect) {
+//            folderGrid.getSelectionModel().select(itemToSelect);
+//        }
     }
 }

@@ -1449,16 +1449,17 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         zakDocGrid.deselectAll();
         Path kontDocRootPath = getKontDocRootPath(cfgPropsCache.getDocRootServer(), currentItem.getKontFolder());
         TreeData<VzmFileUtils.VzmFile> zakDocTreeData
-                = VzmFileUtils.getExpectedZakDocDirTree(kontDocRootPath.toString(), currentItem);
+                = VzmFileUtils.getExpectedZakDocFolderFilesTree(kontDocRootPath.toString(), currentItem);
 
         Path zakDocRootPath = getZakDocRootPath(cfgPropsCache.getDocRootServer(), currentItem.getKontFolder(), currentItem.getFolder());
         File zakDocRootDir = new File(zakDocRootPath.toString());
         addFilesToExpectedVzmTreeData(zakDocTreeData, zakDocRootDir.listFiles(), null);
 
         addNotExpectedKontSubDirs(zakDocTreeData
-                , new VzmFileUtils.VzmFile(zakDocRootPath, true)
+                , new VzmFileUtils.VzmFile(zakDocRootPath, true, VzmFolderType.OTHER, 0)
         );
-        addNotExpectedKontSubDirs(zakDocTreeData, new VzmFileUtils.VzmFile(getExpectedZakFolder(currentItem), true));
+        addNotExpectedKontSubDirs(zakDocTreeData
+                , new VzmFileUtils.VzmFile(getExpectedZakFolder(currentItem), true, VzmFolderType.OTHER, 0));
 
         assignDataProviderToGridAndSort(zakDocTreeData);
         zakDocGrid.getDataProvider().refreshAll();

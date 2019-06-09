@@ -2,6 +2,7 @@ package eu.japtor.vizman.backend.utils;
 
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import eu.japtor.vizman.app.HasLogger;
+import eu.japtor.vizman.backend.entity.VzmFolderType;
 import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.Zak;
 import org.apache.commons.lang3.StringUtils;
@@ -211,10 +212,14 @@ public class VzmFileUtils implements HasLogger {
             Path kontDocRootPath = getKontDocRootPath(docRoot, kontFolderNew);
             if (!kontDocRootPath.toFile().exists()) {
                 Files.createDirectories(kontDocRootPath);
-                Path zeroSodPath = Paths.get(kontDocRootPath.toString(), KONT_SOD_FOLDER);
+            }
+            Path zeroSodPath = Paths.get(kontDocRootPath.toString(), KONT_SOD_FOLDER);
+            if (!zeroSodPath.toFile().exists()) {
                 Files.createDirectories(zeroSodPath);
                 return true;
             }
+            LOG.info("KONT-DOC dir structure created for " + kontFolderNew);
+            return true;
 //        } catch (IOException ioExceptionObj) {
         } catch (Exception e) {
             LOG.error("Problem while creating the KONT-DOC dir structure: " + e.getMessage());
@@ -226,10 +231,27 @@ public class VzmFileUtils implements HasLogger {
 
     public static class VzmFile extends File {
         private boolean vzmControledDir;
+        private VzmFolderType vzmFolderType;
+        private int vzmFolderLevel;
 
-        public VzmFile (final String pathName, final boolean vzmControledDir) {
+        public VzmFile (
+                final String pathName
+                , final boolean vzmControlledDir
+                , final VzmFolderType vzmFolderType
+                , final int vzmFolderLevel
+        ) {
             super(pathName);
-            this.vzmControledDir = vzmControledDir;
+            this.vzmControledDir = vzmControlledDir;
+            this.vzmFolderType = vzmFolderType;
+            this.vzmFolderLevel = vzmFolderLevel;
+        }
+
+        public VzmFolderType getVzmFolderType() {
+            return vzmFolderType;
+        }
+
+        public int getVzmFolderLevel() {
+            return vzmFolderLevel;
         }
 
 //        public VzmFile (final URI uri, final boolean vzmControledDir) {
@@ -237,13 +259,13 @@ public class VzmFileUtils implements HasLogger {
 //            this.vzmControledDir = vzmControledDir;
 //        }
 
-        public VzmFile (final Path path, final boolean vzmControledDir) {
-            this(path.toString(), vzmControledDir);
+        public VzmFile (final Path path, final boolean vzmControlledDir, final VzmFolderType vzmFolderType, final int vzmFolderLevel) {
+            this(path.toString(), vzmControlledDir, vzmFolderType, vzmFolderLevel);
 //            this(path.Uri(), vzmControledDir);
         }
 
-        public VzmFile (final File file, final boolean vzmControledDir) {
-            this(file.toString(), vzmControledDir);
+        public VzmFile (final File file, final boolean vzmControlledDir, final VzmFolderType vzmFolderType, final int vzmFolderLevel) {
+            this(file.toString(), vzmControlledDir, vzmFolderType, vzmFolderLevel);
 //            this(path.Uri(), vzmControledDir);
         }
 
@@ -260,7 +282,7 @@ public class VzmFileUtils implements HasLogger {
                 return Stream.empty();
             }
             return Stream.of(filteredFiles)
-                .map(file -> new VzmFile(file, true))
+                .map(file -> new VzmFile(file, true, VzmFolderType.OTHER, 0))
 //                .collect(Collectors.toList())
             ;
         }
@@ -274,20 +296,69 @@ public class VzmFileUtils implements HasLogger {
                 return Stream.empty();
             }
             return Stream.of(parent.listFiles())
-                .map(file -> new VzmFile(file, true))
+                .map(file -> new VzmFile(file, true, VzmFolderType.OTHER, 0))
 //                .collect(Collectors.toList())
             ;
         }
+
+        public Stream<VzmFile> listVzmFolders(VzmFile parent)  {
+            if (null == parent) {
+                return Stream.empty();
+            }
+
+            VzmFolderType parentVzmFolderType = (null == parent ? VzmFolderType.KONT : parent.getVzmFolderType());
+            int parentVzmFolderLevel = (null == parent ? 0 : parent.getVzmFolderLevel());
+
+            List<VzmFile> vzmFolders = new ArrayList<>();
+//        kontDocRootSubDirs.add(new VzmFile(getFolderPath(kontDocDir, KONT_SOD_FOLDER).toUri(), true));
+            if (parentVzmFolderType == VzmFolderType.KONT) {
+                if (parentVzmFolderLevel == 0) {
+                    vzmFolders.add(new VzmFile(
+                                getFolderPath(parent.getParentFile(), KONT_SOD_FOLDER).toString()
+                                , true
+                                , parentVzmFolderType
+                                , 1
+                            )
+                    );
+                } else if (parentVzmFolderLevel == 1) {
+
+                }
+//                vzmFolders.add(new VzmFile(getFolderPath(kontDocDir, KONT_SOD_FOLDER).toString(), true));
+            } else if (parentVzmFolderType == VzmFolderType.ZAK) {
+                if (parentVzmFolderLevel == 0) {
+                    vzmFolders.add(new VzmFile(
+                            getFolderPath(parent.getParentFile(), ZAK_DOPISY_FOLDER).toString()
+                            , true
+                            , VzmFolderType.ZAK
+                            , 1
+                            )
+                    );
+                    vzmFolders.add(new VzmFile(
+                                    getFolderPath(parent.getParentFile(), ZAK_FAKTURY_FOLDER).toString()
+                                    , true
+                                    , VzmFolderType.ZAK
+                                    , 1
+                            )
+                    );
+//                } else if (parentVzmFolderLevel == 1) {
+                }
+            }
+            if (vzmFolders.size() == 0) {
+                return Stream.empty();
+            } else {
+                return vzmFolders.stream();
+            }
+        }
     }
 
-    public static TreeData<VzmFile> getExpectedKontDocDirTree(final String docRoot, final Kont kont) {
+    public static TreeData<VzmFile> getExpectedKontFolderTree(final String docRoot, final Kont kont) {
         Assert.notNull(kont, "CHYBA při generování adresářů: nedefinovaný kontrakt.");
 
         TreeData<VzmFile> expectedTree = new TreeData<>();
         String expectedKontFolder = getExpectedKontFolder(kont);
-        VzmFile docRootDir = new VzmFile(docRoot, true);
+        VzmFile docRootDir = new VzmFile(docRoot, true, VzmFolderType.KONT, 0);
 //        VzmFile kontDocDir = new VzmFile(getFolderPath(docRootDir, expectedKontFolder).toUri(), true);
-        VzmFile kontDocDir = new VzmFile(getFolderPath(docRootDir, expectedKontFolder).toString(), true);
+        VzmFile kontDocDir = new VzmFile(getFolderPath(docRootDir, expectedKontFolder).toString(), true, VzmFolderType.KONT, 0);
 
         addExpectedKontDocSubDirs(expectedTree, kontDocDir, true);
         addExpectedKontZakSubDirs(expectedTree, kontDocDir, kont);
@@ -295,7 +366,7 @@ public class VzmFileUtils implements HasLogger {
         return expectedTree;
     }
 
-    public static TreeData<VzmFile> getExpectedZakDocDirTree(final String kontDocRoot, final Zak zak) {
+    public static TreeData<VzmFile> getExpectedZakDocFolderFilesTree(final String kontDocRoot, final Zak zak) {
         Assert.notNull(zak, "CHYBA při generování adresářů: nedefinovaná zakázka.");
 
         TreeData<VzmFile> expectedTree = new TreeData<>();
@@ -304,24 +375,32 @@ public class VzmFileUtils implements HasLogger {
         File kontDocRootDir = new File(kontDocRoot);
         String expectedZakFolder = getExpectedZakFolder(zak);
 //        VzmFile zakDocDir = new VzmFile(getFolderPath(kontDocRootDir, expectedZakFolder).toUri(), true);
-        VzmFile zakDocDir = new VzmFile(getFolderPath(kontDocRootDir, expectedZakFolder).toString(), true);
+        VzmFile zakDocDir = new VzmFile(getFolderPath(kontDocRootDir, expectedZakFolder).toString(), true, VzmFolderType.ZAK, 0);
 
         addExpectedZakDocSubDirs(expectedTree, zakDocDir, true);
         return expectedTree;
     }
 
     public static String getExpectedKontFolder(final Kont kont) {
-        return NormalizeDirnamesAndJoin(kont.getCkont(), kont.getText());
+        if (null == kont) {
+            return null;
+        } else {
+            return NormalizeDirnamesAndJoin(kont.getCkont(), kont.getText());
+        }
     }
 
     public static String getExpectedZakFolder(final Zak zak) {
-        return NormalizeDirnamesAndJoin(zak.getCzak().toString(), zak.getText());
+        if (null == zak) {
+            return null;
+        } else {
+            return NormalizeDirnamesAndJoin(zak.getCzak().toString(), zak.getText());
+        }
     }
 
     private static void addExpectedKontDocSubDirs(TreeData<VzmFile> kontDocTreeData, final VzmFile kontDocDir, boolean asRootItems) {
         List<VzmFile> kontDocRootSubDirs = new ArrayList<>();
 //        kontDocRootSubDirs.add(new VzmFile(getFolderPath(kontDocDir, KONT_SOD_FOLDER).toUri(), true));
-        kontDocRootSubDirs.add(new VzmFile(getFolderPath(kontDocDir, KONT_SOD_FOLDER).toString(), true));
+        kontDocRootSubDirs.add(new VzmFile(getFolderPath(kontDocDir, KONT_SOD_FOLDER).toString(), true, VzmFolderType.OTHER.KONT, 1));
         kontDocTreeData.addItems(asRootItems ? null : kontDocDir, kontDocRootSubDirs);
     }
 
@@ -333,7 +412,7 @@ public class VzmFileUtils implements HasLogger {
             Files.newDirectoryStream(kontDocDir.toPath()).forEach(realKontSubPath -> {
                 if (kontDocTreeData.getChildren(null).stream().noneMatch(
                         treeKontSub -> treeKontSub.getName().equals(realKontSubPath.getFileName().toString()))) {
-                    kontDocTreeData.addItem(null, new VzmFile(getFolderPath(kontDocDir, realKontSubPath.getFileName().toString()), false));
+                    kontDocTreeData.addItem(null, new VzmFile(getFolderPath(kontDocDir, realKontSubPath.getFileName().toString()), false, VzmFolderType.OTHER, 99));
                 }
             });
         } catch (IOException e) {
@@ -346,11 +425,11 @@ public class VzmFileUtils implements HasLogger {
         kont.getZaks().forEach(zak -> {
             String expZakFolder = NormalizeDirnamesAndJoin(zak.getCzak().toString(), zak.getText());
 //            VzmFile zakDocDir = new VzmFile(getFolderPath(kontDocDir, expZakFolder).toUri(), true);
-            VzmFile zakDocDir = new VzmFile(getFolderPath(kontDocDir, expZakFolder).toString(), true);
+            VzmFile zakDocDir = new VzmFile(getFolderPath(kontDocDir, expZakFolder).toString(), true, VzmFolderType.ZAK, 0);
             kontDocTreeData.addItem(null, zakDocDir);
             addExpectedZakDocSubDirs(kontDocTreeData, zakDocDir, false);
 //            zakDocDirs.add(new VzmFile(getFolderPath(kontDocDir, expZakFolder).toUri(), true));
-            zakDocDirs.add(new VzmFile(getFolderPath(kontDocDir, expZakFolder).toString(), true));
+            zakDocDirs.add(new VzmFile(getFolderPath(kontDocDir, expZakFolder).toString(), true, VzmFolderType.ZAK, 0));
         });
     }
 
@@ -358,8 +437,8 @@ public class VzmFileUtils implements HasLogger {
         List<VzmFile> zakDocSubDirs = new ArrayList<>();
 //        zakDocSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_DOPISY_FOLDER).toUri(), true));
 //        zakDocSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_FAKTURY_FOLDER).toUri(), true));
-        zakDocSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_DOPISY_FOLDER).toString(), true));
-        zakDocSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_FAKTURY_FOLDER).toString(), true));
+        zakDocSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_DOPISY_FOLDER).toString(), true, VzmFolderType.ZAK, 1));
+        zakDocSubDirs.add(new VzmFile(getFolderPath(zakDocDir, ZAK_FAKTURY_FOLDER).toString(), true, VzmFolderType.ZAK, 1));
         treeData.addItems(asRootItems ? null : zakDocDir, zakDocSubDirs);
     }
 
@@ -388,7 +467,11 @@ public class VzmFileUtils implements HasLogger {
 //        List<VzmFile> expectedVzmDirs = expectedTreeData.getChildren(parent);
         for (File fileScanned : filesToBeScanned) {
 //            VzmFile vzmFileScanned = new VzmFile(fileScanned.toURI(), false);
-            VzmFile vzmFileScanned = new VzmFile(fileScanned.toString(), false);
+            VzmFile vzmFileScanned = new VzmFile(
+                    fileScanned.toString()
+                    , false
+                    , null == scannedDirsVzmParent ? VzmFolderType.ROOT : scannedDirsVzmParent.getVzmFolderType()
+                    , 99);
 
 //            if (!expectedTreeData.contains(expectedDir)) {
 //                continue;
@@ -460,49 +543,84 @@ public class VzmFileUtils implements HasLogger {
             Path zakProjRootPath = getZakProjRootPath(projRoot, kontFolder, zakFolderNew);
             if (!zakProjRootPath.toFile().exists()) {
                 Files.createDirectories(zakProjRootPath);
-                Path inzenyringPath = Paths.get(zakProjRootPath.toString(), "INZENYRING");
-                Files.createDirectories(inzenyringPath);
-
-                Path orgPath = Paths.get(zakProjRootPath.toString(), "ORG");
-                Files.createDirectories(orgPath);
-                Path orgSeznamyPath = Paths.get(orgPath.toString(), "1_SEZNAMY");
-                Files.createDirectories(orgSeznamyPath);
-                Path orgTextyPath = Paths.get(orgPath.toString(), "2_TEXTY_PROJEKTU");
-                Files.createDirectories(orgTextyPath);
-                Path orgPripominkyPath = Paths.get(orgPath.toString(), "3_PRIPOMINKY");
-                Files.createDirectories(orgPripominkyPath);
-                Path orgZaznamyPath = Paths.get(orgPath.toString(), "4_ZAZNAMY");
-                Files.createDirectories(orgZaznamyPath);
-                Path orgFotoPath = Paths.get(orgPath.toString(), "5_FOTO");
-                Files.createDirectories(orgFotoPath);
-                Path orgAdPath = Paths.get(orgPath.toString(), "6_AD");
-                Files.createDirectories(orgAdPath);
-                Path orgVicepracePath = Paths.get(orgPath.toString(), "7_VICEPRACE");
-                Files.createDirectories(orgVicepracePath);
-                Path orgVtanoviskaPath = Paths.get(orgPath.toString(), "8_STANOVISKA");
-                Files.createDirectories(orgVtanoviskaPath);
-
-                Path podkladyPath = Paths.get(zakProjRootPath.toString(), "PODKLADY");
-                Files.createDirectories(podkladyPath);
-
-                Path podkladyOutPath = Paths.get(zakProjRootPath.toString(), "PODKLADY_OUT");
-                Files.createDirectories(podkladyOutPath);
-
-                Path projektPath = Paths.get(zakProjRootPath.toString(), "PROJEKT");
-                Files.createDirectories(projektPath);
-                Path projStatikaPath = Paths.get(projektPath.toString(), "STATIKA");
-                Files.createDirectories(projStatikaPath);
-                Path projVykresyPath = Paths.get(projektPath.toString(), "VYKRESY");
-                Files.createDirectories(projVykresyPath);
-                Path projVymeryPath = Paths.get(projektPath.toString(), "VYMERY");
-                Files.createDirectories(projVymeryPath);
-
-                Path projektDigital = Paths.get(zakProjRootPath.toString(), "PROJEKT_DIGITAL");
-                Files.createDirectories(projektDigital);
-
-                LOG.info("ZAK-DOC dir structure created for " + kontFolder);
-                return true;
             }
+            Path inzenyringPath = Paths.get(zakProjRootPath.toString(), "INZENYRING");
+            if (!inzenyringPath.toFile().exists()) {
+                Files.createDirectories(inzenyringPath);
+            }
+
+            Path orgPath = Paths.get(zakProjRootPath.toString(), "ORG");
+            if (!orgPath.toFile().exists()) {
+                Files.createDirectories(orgPath);
+            }
+            Path orgSeznamyPath = Paths.get(orgPath.toString(), "1_SEZNAMY");
+            if (!orgSeznamyPath.toFile().exists()) {
+                Files.createDirectories(orgSeznamyPath);
+            }
+            Path orgTextyPath = Paths.get(orgPath.toString(), "2_TEXTY_PROJEKTU");
+            if (!orgTextyPath.toFile().exists()) {
+                Files.createDirectories(orgTextyPath);
+            }
+            Path orgPripominkyPath = Paths.get(orgPath.toString(), "3_PRIPOMINKY");
+            if (!orgPripominkyPath.toFile().exists()) {
+                Files.createDirectories(orgPripominkyPath);
+            }
+            Path orgZaznamyPath = Paths.get(orgPath.toString(), "4_ZAZNAMY");
+            if (!orgZaznamyPath.toFile().exists()) {
+                Files.createDirectories(orgZaznamyPath);
+            }
+            Path orgFotoPath = Paths.get(orgPath.toString(), "5_FOTO");
+            if (!orgFotoPath.toFile().exists()) {
+                Files.createDirectories(orgFotoPath);
+            }
+            Path orgAdPath = Paths.get(orgPath.toString(), "6_AD");
+            if (!orgAdPath.toFile().exists()) {
+                Files.createDirectories(orgAdPath);
+            }
+            Path orgVicepracePath = Paths.get(orgPath.toString(), "7_VICEPRACE");
+            if (!orgVicepracePath.toFile().exists()) {
+                Files.createDirectories(orgVicepracePath);
+            }
+            Path orgVtanoviskaPath = Paths.get(orgPath.toString(), "8_STANOVISKA");
+            if (!orgVtanoviskaPath.toFile().exists()) {
+                Files.createDirectories(orgVtanoviskaPath);
+            }
+
+            Path podkladyPath = Paths.get(zakProjRootPath.toString(), "PODKLADY");
+            if (!podkladyPath.toFile().exists()) {
+                Files.createDirectories(podkladyPath);
+            }
+
+            Path podkladyOutPath = Paths.get(zakProjRootPath.toString(), "PODKLADY_OUT");
+            if (!podkladyOutPath.toFile().exists()) {
+                Files.createDirectories(podkladyOutPath);
+            }
+
+            Path projektPath = Paths.get(zakProjRootPath.toString(), "PROJEKT");
+            if (!projektPath.toFile().exists()) {
+                Files.createDirectories(projektPath);
+            }
+            Path projStatikaPath = Paths.get(projektPath.toString(), "STATIKA");
+            if (!projStatikaPath.toFile().exists()) {
+                Files.createDirectories(projStatikaPath);
+            }
+            Path projVykresyPath = Paths.get(projektPath.toString(), "VYKRESY");
+            if (!projVykresyPath.toFile().exists()) {
+                Files.createDirectories(projVykresyPath);
+            }
+            Path projVymeryPath = Paths.get(projektPath.toString(), "VYMERY");
+            if (!projVymeryPath.toFile().exists()) {
+                Files.createDirectories(projVymeryPath);
+            }
+
+            Path projektDigital = Paths.get(zakProjRootPath.toString(), "PROJEKT_DIGITAL");
+            if (!projektDigital.toFile().exists()) {
+                Files.createDirectories(projektDigital);
+            }
+
+            LOG.info("ZAK-DOC dir structure created for " + kontFolder);
+            return true;
+//            }
 //        } catch (IOException ioExceptionObj) {
 //            System.out.println("Problem occured while creating the directory structure = " + ioExceptionObj.getMessage());
 //        }
@@ -572,9 +690,13 @@ public class VzmFileUtils implements HasLogger {
             Path zakDocRootPath = getZakDocRootPath(docRoot, kontFolder, zakFolderNew);
             if (!zakDocRootPath.toFile().exists()) {
                 Files.createDirectories(zakDocRootPath);
-                Path dopisyPath = Paths.get(zakDocRootPath.toString(), ZAK_DOPISY_FOLDER);
+            }
+            Path dopisyPath = Paths.get(zakDocRootPath.toString(), ZAK_DOPISY_FOLDER);
+            if (!dopisyPath.toFile().exists()) {
                 Files.createDirectories(dopisyPath);
-                Path fakturyPath = Paths.get(zakDocRootPath.toString(), ZAK_FAKTURY_FOLDER);
+            }
+            Path fakturyPath = Paths.get(zakDocRootPath.toString(), ZAK_FAKTURY_FOLDER);
+            if (!fakturyPath.toFile().exists()) {
                 Files.createDirectories(fakturyPath);
                 return true;
             }

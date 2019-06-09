@@ -343,7 +343,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         this.zakGrid.deselectAll();
         this.zakGrid.setItems(kontItem.getZaks());
 //        this.kontDocGrid.setItems(kontItem.getKontDocs());
-//        this.kontDocGrid.setDataProvider(VzmFileUtils.getExpectedKontDocDirTree(cfgPropsCache.getDocRootServer(), kontItem));
+//        this.kontDocGrid.setDataProvider(VzmFileUtils.getExpectedKontFolderTree(cfgPropsCache.getDocRootServer(), kontItem));
 
         if  (Operation.ADD != kontOperation) {
             updateKontDocViewContent(null);
@@ -1577,14 +1577,14 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
             .withProperty("leaf", file -> !kontDocGrid.getDataCommunicator().hasChildren(file))
             .withProperty("icon-name", file -> String.valueOf(vzmFileIconNameProvider.apply(file)))
             .withProperty("icon-style", file -> String.valueOf(vzmFileIconStyleProvider.apply(file)))
-            .withProperty("name", file -> file.getName())
+            .withProperty("name", File::getName)
         ;
 
     private void updateKontDocViewContent(final VzmFileUtils.VzmFile itemToSelect) {
 //        kontDocTreeData = loadKzTreeData(archFilterRadio.getValue());
         kontDocGrid.deselectAll();
         TreeData<VzmFileUtils.VzmFile> kontDocTreeData
-                = VzmFileUtils.getExpectedKontDocDirTree(cfgPropsCache.getDocRootServer(), currentItem);
+                = VzmFileUtils.getExpectedKontFolderTree(cfgPropsCache.getDocRootServer(), currentItem);
 
         Path kontDocRootPath = getKontDocRootPath(cfgPropsCache.getDocRootServer(), currentItem.getFolder());
         File kontDocRootDir = new File(kontDocRootPath.toString());
@@ -1592,9 +1592,10 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //        addFilesToExpectedVzmTreeData(kontDocTreeData, kontDocTreeData.getChildren(null), null);
 
         addNotExpectedKontSubDirs(kontDocTreeData
-                , new VzmFileUtils.VzmFile(kontDocRootPath, true)
+                , new VzmFileUtils.VzmFile(kontDocRootPath, true, VzmFolderType.OTHER, 0)
         );
-        addNotExpectedKontSubDirs(kontDocTreeData, new VzmFileUtils.VzmFile(getExpectedKontFolder(currentItem), true));
+        addNotExpectedKontSubDirs(kontDocTreeData
+                , new VzmFileUtils.VzmFile(getExpectedKontFolder(currentItem), true, VzmFolderType.OTHER, 0));
 //        TreeDataProvider<File> kontDocTreeDataProvider = new TreeDataProvider(kontDocTreeData);
 
 //        kontDocGrid.setTreeData(kontDocTreeData);

@@ -22,7 +22,7 @@ public interface KontService {
 
     Kont fetchByFolder(String folder);
 
-    List<? super Kont> fetchAll();
+    List<Kont> fetchAll();
 
     List<? super Kont> fetchByRok(Integer rok);
 

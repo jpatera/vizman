@@ -7,6 +7,7 @@ import eu.japtor.vizman.backend.entity.KzTreeAware;
 import eu.japtor.vizman.backend.service.KontService;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -25,7 +26,10 @@ public class LazyHierarchicalKontProvider extends
 
         final KzTreeAware parent = hierarchicalQuery.getParentOptional().orElse(null);
         if (null == parent) {
-            return ((Collection<KzTreeAware>) kontService.fetchAll()).stream();
+
+//            return ((Collection<KzTreeAware>) kontService.fetchAll()).stream();
+            // FIXME
+            return null;
         } else {
             return parent.getNodes().stream()
                     .skip(hierarchicalQuery.getOffset()).limit(hierarchicalQuery.getLimit());
