@@ -76,6 +76,12 @@ public class NavigationBar extends Div implements RouterLayout {
         kzTreeLink.add(ICON_KONT_TREE, new Text(TITLE_KZ_TREE));
         kzTreeLink.addClassName("main-layout__nav-item");
 
+        RouterLink klientListLink = new RouterLink(null, KlientListView.class);
+        Icon ICON_KLIENT_LIST = new Icon (VaadinIcon.USER_CARD);
+        ICON_KLIENT_LIST.setColor("crimson");
+        klientListLink.add(ICON_KLIENT_LIST, new Text(TITLE_KLIENT));
+        klientListLink.addClassName("main-layout__nav-item");
+
         RouterLink cfgLink = new RouterLink(null, CfgTabsView.class);
         Icon ICON_CFG = new Icon (VaadinIcon.COG);
 //        Icon ICON_CFG = new Icon (VaadinIcon.TOOLS);
@@ -138,7 +144,9 @@ public class NavigationBar extends Div implements RouterLayout {
         if (SecurityUtils.isAccessGranted(KzTreeView.class)) {
             middleNaviBar.add(kzTreeLink);
         }
-
+        if (SecurityUtils.isAccessGranted(KlientListView.class)) {
+            middleNaviBar.add(klientListLink);
+        }
 
         HorizontalLayout rightNaviBar = new HorizontalLayout();
         if (SecurityUtils.isAccessGranted(ToolsTabsView.class)) {

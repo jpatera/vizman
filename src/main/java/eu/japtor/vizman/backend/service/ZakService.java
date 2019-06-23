@@ -17,9 +17,15 @@ public interface ZakService {
 
     List<Zak> fetchAll();
 
+    List<Zak> fetchAllDescOrder();
+
+    List<Zak> fetchByRokDescOrder(Integer rok);
+
     List<Zak> fetchByIds(List<Long> ids);
 
     long countAll();
+
+    List<Integer> fetchZakRoks();
 
     BigDecimal getSumPlneni(Long faktId);
 

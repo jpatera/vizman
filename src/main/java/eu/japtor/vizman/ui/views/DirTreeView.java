@@ -376,7 +376,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
 //                icon = VaadinIcon.FILE_O.create();
 //            }
 //            text = new Span(file.getNainitgrme());
-//            getContent().add(icon, text);
+//            getContentPane().add(icon, text);
 //        }
 //    }
 

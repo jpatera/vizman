@@ -29,12 +29,14 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.service.KlientService;
+import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.KlientFormDialog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,11 +45,14 @@ import javax.annotation.PostConstruct;
 
 import java.util.List;
 
+import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_KLIENT;
+import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_PRUH;
 import static eu.japtor.vizman.ui.util.VizmanConst.TITLE_KLIENT;
 
 //@Route(value = ROUTE_KLIENT, layout = MainView.class)
 //@PageTitle(PAGE_TITLE_KLIENT)
 //@Tag(TAG_KLIENT)
+@Route(value = ROUTE_KLIENT, layout = MainView.class)
 @Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL
         , Perm.KLIENT_READ, Perm.KLIENT_MODIFY
 })

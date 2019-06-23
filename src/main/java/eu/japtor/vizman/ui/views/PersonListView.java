@@ -142,8 +142,8 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 //        ConfigurableFilterDataProvider<Person, Void, String> buildDataProvider() {
 //            CallbackDataProvider<Person, String> dataProvider = DataProvider.fromFilteringCallbacks(
 //                    q -> q.getFilter()
-//                            .map(document -> personService.findAll(buildExample(document), ChunkRequest.of(q, defaultSort)).getContent())
-//                            .orElseGet(() -> personService.findAll(ChunkRequest.of(q, defaultSort)).getContent())
+//                            .map(document -> personService.findAll(buildExample(document), ChunkRequest.of(q, defaultSort)).getContentPane())
+//                            .orElseGet(() -> personService.findAll(ChunkRequest.of(q, defaultSort)).getContentPane())
 //                            .stream(),
 ////                    q -> Ints.checkedCast(q
 //                    q -> (int) q

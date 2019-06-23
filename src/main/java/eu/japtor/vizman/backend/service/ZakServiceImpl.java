@@ -1,11 +1,9 @@
 package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.app.HasLogger;
-import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.repository.KontRepo;
 import eu.japtor.vizman.backend.repository.ZakRepo;
-import eu.japtor.vizman.ui.components.OkDialog;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -101,6 +99,16 @@ public class ZakServiceImpl implements ZakService, HasLogger {
     }
 
     @Override
+    public List<Zak> fetchAllDescOrder() {
+        return zakRepo.findAllByOrderByDateCreateDesc();
+    }
+
+    @Override
+    public List<Zak> fetchByRokDescOrder(final Integer rok) {
+        return zakRepo.findByRokOrderByRokDescIdDesc(rok);
+    }
+
+    @Override
     public List<Zak> fetchByIds(final List<Long> ids) {
         return zakRepo.findAllById(ids);
     };
@@ -108,5 +116,10 @@ public class ZakServiceImpl implements ZakService, HasLogger {
     @Override
     public long countAll() {
         return zakRepo.count();
+    }
+
+    @Override
+    public List<Integer> fetchZakRoks() {
+        return zakRepo.findZakRoks();
     }
 }
