@@ -41,6 +41,16 @@ public class ItemNames {
         itemNameMaps.put(ItemType.ZAK, itemZakNameMap);
         itemGenderMap.put(ItemType.ZAK, GrammarGender.FEMININE);
 
+        Map<GrammarShapes, String>itemZakrNameMap = new HashMap<>();
+        itemZakrNameMap.put(GrammarShapes.NOM_S, "Rozpracovanost");
+        itemZakrNameMap.put(GrammarShapes.NOM_P, "Rozpracovanost");
+        itemZakrNameMap.put(GrammarShapes.GEN_S, "Rozpracovanosti");
+        itemZakrNameMap.put(GrammarShapes.GEN_P, "Rozpracovaností");
+        itemZakrNameMap.put(GrammarShapes.ACCU_S, "Rozpracovanost");
+        itemZakrNameMap.put(GrammarShapes.ACCU_P, "Rozpracovanost");
+        itemNameMaps.put(ItemType.ZAKR, itemZakrNameMap);
+        itemGenderMap.put(ItemType.ZAKR, GrammarGender.FEMININE);
+
         Map<GrammarShapes, String>itemSubNameMap = new HashMap<>();
         itemSubNameMap.put(GrammarShapes.NOM_S, "Subdodávka");
         itemSubNameMap.put(GrammarShapes.NOM_P, "Subdodávky");

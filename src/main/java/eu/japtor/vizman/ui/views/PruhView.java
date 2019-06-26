@@ -1038,6 +1038,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 .setComponent(sumHodsTextComp)
 //                .setText("Odpracováno z docházky")
         ;
+
+        // Grid editor:
         Binder<PruhZak> pzBinder = new Binder<>(PruhZak.class);
         Editor<PruhZak> pzEditor = pruhZakGrid.getEditor();
         pzEditor.setBinder(pzBinder);

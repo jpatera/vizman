@@ -48,6 +48,11 @@ public class VizmanConst {
 	public static final String TAG_ZAK = "zak-list-view";
 	public static final String ROUTE_ZAK_LIST = "zak";
 
+	public static final String TITLE_ZAKR_LIST = "Rozpracovanost";
+	public static final String PAGE_TITLE_ZAKR_LIST = PAGE_TITLE_BASE + " - " + TITLE_ZAKR_LIST;
+	public static final String TAG_ZAKR = "zakr-list-view";
+	public static final String ROUTE_ZAKR_LIST = "zakr";
+
 	public static final String TITLE_KZ_TREE = "Kont-Zak";
 	public static final String PAGE_TITLE_KZ_TREE = PAGE_TITLE_BASE + " - " + TITLE_KZ_TREE;
 	public static final String TAG_KZ_TREE = "kz-tree-view";

@@ -26,6 +26,8 @@ public enum Perm implements GrantedAuthority {
     ZAK_BASIC_MODIFY("Lze vytvářet/editovat/rušit kontrakty/zakazky, přístup pouze k základním údajům"),
     ZAK_EXT_READ("Lze prohlížet seznam kontraktů/zakázek, přístup ke všem údajům"),
     ZAK_EXT_MODIFY("Lze vytvářet/editovat/rušit kontrakty/zakazky, přístup ke všem údajům"),
+    ZAK_ROZPRAC_READ("Lze prohlížet seznam rozpracovanocti zakázek, přístup ke všem údajům"),
+    ZAK_ROZPRAC_MODIFY("Lze editovat rozpracovanost zakazek, přístup ke všem údajům"),
 
     CONFIG_CHANGE("Lze nastavovat a měnit konfiguraci VizMana"),
 

@@ -1,5 +1,5 @@
 package eu.japtor.vizman.backend.entity;
 
 public enum ItemType {
-    UNKNOWN, KONT, ZAK, SUB, REZ, LEK, PARAG, AKV, FAKT, KLI;
+    UNKNOWN, KONT, ZAK, ZAKR, SUB, REZ, LEK, PARAG, AKV, FAKT, KLI;
 }

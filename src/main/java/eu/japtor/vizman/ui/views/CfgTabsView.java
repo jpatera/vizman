@@ -68,8 +68,8 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
     @Autowired
     RoleListView roleListView;
 
-    @Autowired
-    KlientListView klientListView;
+//    @Autowired
+//    KlientListView klientListView;
 
     @Autowired
     CinListView cinListView;
@@ -108,7 +108,7 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
 //        personListView = new UserListView();
         cfgExtTabs.add(personListView, tabPerson);
         cfgExtTabs.add(roleListView, tabRole);
-        cfgExtTabs.add(klientListView, tabKlient);
+//        cfgExtTabs.add(klientListView, tabKlient);
         cfgExtTabs.add(cinListView, tabCin);
         cfgExtTabs.add(cal, tabCal);
         cfgExtTabs.add(curr, tabCurr);

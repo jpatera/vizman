@@ -70,6 +70,12 @@ public class NavigationBar extends Div implements RouterLayout {
         zakListLink.add(ICON_ZAK_LIST, new Text(TITLE_ZAK_LIST));
         zakListLink.addClassName("main-layout__nav-item");
 
+        RouterLink rozpracListLink = new RouterLink(null, ZakrListView.class);
+        Icon ICON_ROZPRAC_LIST = new Icon (VaadinIcon.PIE_BAR_CHART);
+        ICON_ROZPRAC_LIST.setColor("dodgerblue");
+        rozpracListLink.add(ICON_ROZPRAC_LIST, new Text(TITLE_ZAKR_LIST));
+        rozpracListLink.addClassName("main-layout__nav-item");
+
         RouterLink kzTreeLink = new RouterLink(null, KzTreeView.class);
         Icon ICON_KONT_TREE = new Icon (VaadinIcon.TREE_TABLE);
         ICON_KONT_TREE.setColor("brown");
@@ -146,6 +152,9 @@ public class NavigationBar extends Div implements RouterLayout {
         }
         if (SecurityUtils.isAccessGranted(KlientListView.class)) {
             middleNaviBar.add(klientListLink);
+        }
+        if (SecurityUtils.isAccessGranted(ZakrListView.class)) {
+            middleNaviBar.add(rozpracListLink);
         }
 
         HorizontalLayout rightNaviBar = new HorizontalLayout();
