@@ -32,10 +32,11 @@ import java.util.Map;
 public class VzmFormatUtils {
 
     public static final DecimalFormat decimalFormat = new DecimalFormat("#,##0");
-    public static final NumberFormat yearFormat = getYearFormat(Locale.getDefault());
-    public static final NumberFormat moneyFormat = getMoneyFormat(Locale.getDefault());
-    public static final NumberFormat percentFormat = getPercentFormat(Locale.getDefault());
-    public static final NumberFormat decHodFormat = getDecHodFormat(Locale.getDefault());
+    public static final NumberFormat yearFormat = getDecFormat(Locale.getDefault(), 4,0);
+    public static final NumberFormat moneyFormat = getDecFormat(Locale.getDefault(), 10,2, true);
+    public static final NumberFormat procFormat = getDecFormat(Locale.getDefault(), 3, 1);
+    public static final NumberFormat procIntFormat = getDecFormat(Locale.getDefault(), 3,0);
+    public static final NumberFormat decHodFormat = getDecFormat(Locale.getDefault(), 4,1);
 //    public final static NumberFormat moneyFormat = new MoneyFormat();
 //    public final static NumberFormat yearFormat = new YearFormat();
 //    public static final StringToBigDecimalConverter bigDecimalMoneyConverter;
@@ -171,6 +172,8 @@ public class VzmFormatUtils {
 //        };
 //    }
 
+    public static final ValidatedProcIntToStringConverter VALIDATED_PROC_INT_TO_STRING_CONVERTER =
+            new ValidatedProcIntToStringConverter("Špatný formát čísla");
 
     public static String getItemTypeColorName(ItemType itemType) {
         String colorName = "black";
@@ -271,6 +274,47 @@ public class VzmFormatUtils {
         }
     }
 
+    public static class ValidatedProcIntToStringConverter implements Converter<String, BigDecimal>, HasLogger {
+
+        private String errorMessage;
+
+        public ValidatedProcIntToStringConverter(String errorMessage) {
+            this.errorMessage = errorMessage;
+        }
+
+        @Override
+        public Result<BigDecimal> convertToModel(String s, ValueContext valueContext) {
+            try {
+                if (StringUtils.isBlank(s)) {
+                    return Result.ok(null);
+                }
+
+//                BigDecimal decHod = new BigDecimal(s);
+
+                DecimalFormat df = (DecimalFormat) NumberFormat.getInstance();
+                df.setParseBigDecimal(true);
+                BigDecimal decHod = null;
+                decHod = (BigDecimal) df.parse(s);
+
+                if (decHod.compareTo(BigDecimal.valueOf(-1000000)) < 0
+                        || decHod.compareTo(BigDecimal.valueOf(1000000)) > 0) {
+                    return Result.error(errorMessage + " (číslo musí být v rozmezí -1000000 až +1000000)");
+                }
+                return Result.ok(decHod);
+            } catch (NumberFormatException | ParseException e) {
+                return Result.error(errorMessage);
+            } catch (Exception e) {
+                getLogger().error(e.getMessage(), e);
+                return Result.error(errorMessage);
+            }
+        }
+
+        @Override
+        public String convertToPresentation(BigDecimal proc, ValueContext valueContext) {
+            return null == proc ? "" : procIntFormat.format(proc);
+        }
+    }
+
     public static class BigDecimalMoneyPercentConverter implements Converter<String, BigDecimal>, HasLogger {
 
         private String errorMessage;
@@ -353,88 +397,89 @@ public class VzmFormatUtils {
     }
 
 
-    private static NumberFormat getDecHodFormat(Locale locale) {
+    private static NumberFormat getDecFormat(Locale locale, int intMaxDigits, int fractDigits) {
+        return getDecFormat(locale, intMaxDigits, fractDigits, false) ;
+    }
+
+    private static NumberFormat getDecFormat(Locale locale, int intMaxDigits, int fractDigits, boolean  grouping) {
         if(null == locale) {
             locale = Locale.getDefault();
         }
-//        DecimalFormat df = new DecimalFormat();
-//            df.setGroupingUsed(false);
-//            df.setMaximumFractionDigits(1);
-//            df.setMinimumFractionDigits(1);
         NumberFormat format = NumberFormat.getInstance(locale);
         if (format instanceof DecimalFormat) {
-            format.setGroupingUsed(false);
-            format.setMinimumFractionDigits(1);
-            format.setMaximumFractionDigits(1);
+            format.setGroupingUsed(grouping);
+            format.setMaximumIntegerDigits(intMaxDigits);
+            format.setMinimumFractionDigits(fractDigits);
+            format.setMaximumFractionDigits(fractDigits);
         }
         return format;
     }
 
 
 
-    private static NumberFormat getPercentFormat(Locale locale) {
-        if(null == locale) {
-            locale = Locale.getDefault();
-        }
-        NumberFormat format = NumberFormat.getInstance(locale);
-        if (format instanceof DecimalFormat) {
-            format.setGroupingUsed(false);
-            format.setMinimumFractionDigits(1);
-            format.setMaximumFractionDigits(1);
-        }
-        return format;
-    }
-
-    private static NumberFormat getYearFormat(Locale locale) {
-        if(null == locale) {
-            locale = Locale.getDefault();
-        }
-        NumberFormat format = NumberFormat.getInstance(locale);
-        if (format instanceof DecimalFormat) {
-            format.setGroupingUsed(false);
-            format.setMinimumFractionDigits(0);
-            format.setMaximumFractionDigits(0);
-        }
-        return format;
-    }
-
-//    public static class NumberFormat extends DecimalFormat {
-    public static NumberFormat getMoneyFormat(Locale locale) {
-
-//        public static NumberFormat getInstance (Locale locale) {
-            if(null == locale) {
-                locale = Locale.getDefault();
-            }
-            NumberFormat format = NumberFormat.getInstance(locale);
-            if (format instanceof DecimalFormat) {
-                format.setGroupingUsed(true);
-                format.setMinimumFractionDigits(2);
-                format.setMaximumFractionDigits(2);
-            }
-            return format;
+//    private static NumberFormat getPercentFormat(Locale locale) {
+//        if(null == locale) {
+//            locale = Locale.getDefault();
 //        }
+//        NumberFormat format = NumberFormat.getInstance(locale);
+//        if (format instanceof DecimalFormat) {
+//            format.setGroupingUsed(false);
+//            format.setMinimumFractionDigits(1);
+//            format.setMaximumFractionDigits(1);
+//        }
+//        return format;
+//    }
 
-////        public MoneyFormat (Locale locale) {
-//        public MoneyFormat (Locale locale) {
-//            super();
+//    private static NumberFormat getYearFormat(Locale locale) {
+//        if(null == locale) {
+//            locale = Locale.getDefault();
+//        }
+//        NumberFormat format = NumberFormat.getInstance(locale);
+//        if (format instanceof DecimalFormat) {
+//            format.setGroupingUsed(false);
+//            format.setMinimumFractionDigits(0);
+//            format.setMaximumFractionDigits(0);
+//        }
+//        return format;
+//    }
+
+////    public static class NumberFormat extends DecimalFormat {
+//    public static NumberFormat getMoneyFormat(Locale locale) {
 //
-//            if (locale == null) {
+////        public static NumberFormat getInstance (Locale locale) {
+//            if(null == locale) {
 //                locale = Locale.getDefault();
 //            }
-//
-//            return NumberFormat.getNumberInstance(locale);
-//
-////        moneyFormat = DecimalFormat.getInstance();
-////        if (moneyFormat instanceof DecimalFormat) {
-////            ((DecimalFormat)moneyFormat).setParseBigDecimal(true);
+//            NumberFormat format = NumberFormat.getInstance(locale);
+//            if (format instanceof DecimalFormat) {
+//                format.setGroupingUsed(true);
+//                format.setMinimumFractionDigits(2);
+//                format.setMaximumFractionDigits(2);
+//            }
+//            return format;
 ////        }
-////            NumberFormat numberFormat = NumberFormat.getInstance(locale);
 //
-//            this.setGroupingUsed(true);
-//            this.setMinimumFractionDigits(2);
-//            this.setMaximumFractionDigits(2);
-//        }
-    }
+//////        public MoneyFormat (Locale locale) {
+////        public MoneyFormat (Locale locale) {
+////            super();
+////
+////            if (locale == null) {
+////                locale = Locale.getDefault();
+////            }
+////
+////            return NumberFormat.getNumberInstance(locale);
+////
+//////        moneyFormat = DecimalFormat.getInstance();
+//////        if (moneyFormat instanceof DecimalFormat) {
+//////            ((DecimalFormat)moneyFormat).setParseBigDecimal(true);
+//////        }
+//////            NumberFormat numberFormat = NumberFormat.getInstance(locale);
+////
+////            this.setGroupingUsed(true);
+////            this.setMinimumFractionDigits(2);
+////            this.setMaximumFractionDigits(2);
+////        }
+//    }
 
 //    public static class YearFormat extends DecimalFormat {
 //
@@ -504,7 +549,7 @@ public class VzmFormatUtils {
             }
             comp.getStyle().set("color", color);
         }
-        comp.setText(null == number ? "" : VzmFormatUtils.percentFormat.format(number));
+        comp.setText(null == number ? "" : VzmFormatUtils.procFormat.format(number));
         return comp;
     }
 

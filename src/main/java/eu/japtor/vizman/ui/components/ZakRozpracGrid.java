@@ -10,21 +10,24 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.ArchIconBox;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Zakr;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.claspina.confirmdialog.ConfirmDialog;
 
 import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class ZakRozpracGrid extends Grid<Zakr> {
@@ -40,6 +43,11 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     public static final String SEL_COL_KEY = "zakr-bg-select";
     public static final String ARCH_COL_KEY = "zakr-bg-arch";
     public static final String R0_COL_KEY = "zakr-bg-r0";
+    public static final String R1_COL_KEY = "zakr-bg-r1";
+    public static final String R2_COL_KEY = "zakr-bg-r2";
+    public static final String R3_COL_KEY = "zakr-bg-r3";
+    public static final String R4_COL_KEY = "zakr-bg-r4";
+    public static final String FINISHED_COL_KEY = "zakr-bg-finished";
 
 //    Grid<Zak> zakGrid;
 
@@ -56,19 +64,49 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
     HeaderRow filterRow;
     Registration zakrGridEditRegistration = null;
+    private Zakr editedItem;
+    private BiConsumer<Zakr, Operation> itemSaver;
 
-    public ZakRozpracGrid(boolean selectFieldVisible, boolean archFieldVisible, Boolean initFilterArchValue) {
-
+    public ZakRozpracGrid(boolean selectFieldVisible, boolean archFieldVisible, Boolean initFilterArchValue
+                    ,BiConsumer<Zakr, Operation> itemSaver
+    ) {
         this.initFilterArchValue = initFilterArchValue;
         this.archFieldVisible = archFieldVisible;
         this.selectFieldVisible = selectFieldVisible;
+        this.itemSaver = itemSaver;
 
 //        Grid<Zak> zakGrid = new Grid<>();
         this.getStyle().set("marginTop", "0.5em");
         this.setColumnReorderingAllowed(true);
         this.setClassName("vizman-simple-grid");
         this.addThemeNames("column-borders", "row-stripes");
-        this.setSelectionMode(SelectionMode.SINGLE);
+
+        this.setSelectionMode(SelectionMode.SINGLE);    // MUST be SINGLE, automatic changes saving is based  onit
+        this.addSelectionListener(event -> {
+            if (this.getEditor().isOpen()) {
+                if (getEditor().isBuffered()) {
+                    this.getEditor().save();
+                } else {
+                    editedItem = this.getEditor().getItem();
+                    this.getEditor().closeEditor();
+                }
+            }
+            String ckzEdit = "N/A";
+            try {
+                if (null != editedItem) {
+                    ckzEdit = String.format("%s / %s", editedItem.getCkont(), editedItem.getCzak());
+                    this.itemSaver.accept(editedItem, Operation.EDIT);
+                }
+                editedItem = event.getFirstSelectedItem().orElse(null);   // Note: grid selection mode is supposed to be SINGLE
+            } catch(Exception ex) {
+                ConfirmDialog
+                        .createError()
+                        .withCaption("Editace rozpracovanosti.")
+                        .withMessage(String.format("Zakázku %s se nepodařilo uložit.", ckzEdit))
+                        .open()
+                ;
+            }
+        });
 
 //        zakGrid.getElement().addEventListener("keypress", e -> {
 //            JsonObject eventData = e.getEventData();
@@ -92,40 +130,50 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //            }
 //        };
 
+        // =============
         // Grid editor:
-        Binder<Zakr> zakrBinder = new Binder<>(Zakr.class);
+        // =============
         Editor<Zakr> zakrEditor = this.getEditor();
-        zakrEditor.setBinder(zakrBinder);
+        Binder<Zakr> zakrEditorBinder = new Binder<>(Zakr.class);
+        zakrEditor.setBinder(zakrEditorBinder);
+        zakrEditor.setBuffered(false);
+        zakrEditor.addSaveListener(event -> {
+           System.out.println("=== editor SAVING...");
+           this.itemSaver.accept(event.getItem(), Operation.EDIT);
+        });
+
         zakrGridEditRegistration = this.addItemDoubleClickListener(event -> {
-            // TODO keyPress listeners...
+            // TODO keyPress listeners...??
             zakrEditor.editItem(event.getItem());
+//            field.focus();
         });
-        zakrBinder.addStatusChangeListener(event -> {
-            event.getBinder().hasChanges();
-        });
+//        zakrEditorBinder.addStatusChangeListener(event -> {
+//            event.getBinder().hasChanges();
+//        });
 
-
+        // =============
         // Columns:
+        // =============
         this.addColumn(archRenderer)
                 .setHeader(("Arch"))
                 .setFlexGrow(0)
-                .setWidth("6em")
+                .setWidth("4em")
                 .setResizable(true)
                 .setKey(ARCH_COL_KEY)
-                .setVisible(this.archFieldVisible);
+                .setVisible(this.archFieldVisible)
         //                .setFrozen(true)
         ;
         this.addColumn(Zakr::getKzCislo)
                 .setHeader("ČK/ČZ")
                 .setFlexGrow(0)
-                .setWidth("9em")
+                .setWidth("7em")
                 .setSortable(true)
                 .setKey(KZCISLO_COL_KEY)
         ;
         this.addColumn(Zakr::getRok)
                 .setHeader("Rok")
                 .setFlexGrow(0)
-                .setWidth("8em")
+                .setWidth("6em")
                 .setTextAlign(ColumnTextAlign.CENTER)
                 .setSortable(true)
                 .setKey(ROK_COL_KEY)
@@ -133,7 +181,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         this.addColumn(Zakr::getSkupina)
                 .setHeader("Sk.")
                 .setFlexGrow(0)
-                .setWidth("6em")
+                .setWidth("4em")
                 .setTextAlign(ColumnTextAlign.CENTER)
                 .setSortable(true)
                 .setKey(SKUPINA_COL_KEY)
@@ -141,7 +189,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         this.addColumn(Zakr::getObjednatel)
                 .setHeader("Objednatel")
                 .setFlexGrow(0)
-                .setWidth("18em")
+                .setWidth("12em")
                 .setSortable(true)
                 .setKey(OBJEDNATEL_COL_KEY)
         ;
@@ -151,22 +199,76 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setWidth("4.5em")
                 .setTextAlign(ColumnTextAlign.CENTER)
                 .setKey(SEL_COL_KEY)
-                .setVisible(this.selectFieldVisible);
+                .setVisible(this.selectFieldVisible)
         ;
 
-
-        Grid.Column<Zakr> colR0 = this.addColumn(Zakr::getR0)
+        Grid.Column<Zakr> colR0 = this.addColumn(r0GridValueProvider)
+//        Grid.Column<Zakr> colR0 = this.addColumn(Zakr::getR0)
 //                new ComponentRenderer<>(pruhZak ->
 //                        VzmFormatUtils.getDecHodComponent(pzHodValProv.apply(pruhZak)))
-
                 .setHeader("R0")
                 .setFlexGrow(0)
-                .setWidth("5em")
+                .setWidth("4em")
+                .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
                 .setKey(R0_COL_KEY)
                 .setResizable(false)
                 ;
-        colR0.setEditorComponent(buildRxEditor(zakrBinder, zakrEditor));
+        colR0.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR0, Zakr::setR0));
+
+        Grid.Column<Zakr> colR1 = this.addColumn(r1GridValueProvider)
+                .setHeader("R1")
+                .setFlexGrow(0)
+                .setWidth("4em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(true)
+                .setKey(R1_COL_KEY)
+                .setResizable(false)
+                ;
+        colR1.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR1, Zakr::setR1));
+
+        Grid.Column<Zakr> colR2 = this.addColumn(r2GridValueProvider)
+                .setHeader("R2")
+                .setFlexGrow(0)
+                .setWidth("4em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(true)
+                .setKey(R2_COL_KEY)
+                .setResizable(false)
+                ;
+        colR2.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR2, Zakr::setR2));
+
+        Grid.Column<Zakr> colR3 = this.addColumn(r3GridValueProvider)
+                .setHeader("R3")
+                .setFlexGrow(0)
+                .setWidth("4em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(true)
+                .setKey(R3_COL_KEY)
+                .setResizable(false)
+                ;
+        colR3.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR3, Zakr::setR3));
+
+        Grid.Column<Zakr> colR4 = this.addColumn(r4GridValueProvider)
+                .setHeader("R4")
+                .setFlexGrow(0)
+                .setWidth("4em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(true)
+                .setKey(R4_COL_KEY)
+                .setResizable(false)
+                ;
+        colR4.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR4, Zakr::setR4));
+
+        Grid.Column<Zakr> colRxVykon = this.addColumn(rxVykonGridValueProvider)
+                .setHeader("Výk. RX")
+                .setFlexGrow(0)
+                .setWidth("7em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(true)
+                .setKey(FINISHED_COL_KEY)
+                .setResizable(false)
+                ;
 
         this.addColumn(Zakr::getKzText)
                 .setHeader("Text")
@@ -177,58 +279,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         ;
 
 
-//        Binder<Zakr> r0Binder = new Binder<>(Zakr.class);
-//        Editor<Zakr> r0Editor = this.getEditor();
-
-//        TextField editComp = new TextField();
-//        editComp.addValueChangeListener(event -> {
-//            if (event.isFromClient() && (StringUtils.isNotBlank(event.getValue()) || StringUtils.isNotBlank(event.getOldValue()))
-//                    && !event.getValue().equals(event.getOldValue())) {
-//                try {
-//                    // TODO: try to use localization instead of regex ?
-////                    pzEditor.getItem().setValueToDayField(day
-//                    zakrEditor.getItem().setR0(
-//                            StringUtils.isBlank(event.getValue()) ?
-//                                    null : new BigDecimal(event.getValue()));
-////                                    null : event.getValue().replaceAll(",", "."));
-////                                    null : new BigDecimal(event.getValue().replaceAll(",", ".")));
-//                    zakrBinder.writeBean(zakrEditor.getItem());
-////                    missingHodsFooterRow.getCell(col)
-////                            .setText(getMissingHodString(day));
-//
-//                    // TODO: disable when pruh is loaded, enable when changed (either hodPrac changed, or zak added/deleted)
-////                    saveEditButton.setEnabled(pzBinder.hasChanges());
-//
-//                } catch (ValidationException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
-//
-//        // TODO: remove margins
-//        editComp.getStyle()
-//                .set("margin", "0")
-//                .set("padding", "0")
-////                .set("width", HOD_COL_WIDTH)
-//                .set("width", "3.5em")
-//                .set("font-size", "var(--lumo-font-size-s)")
-//                .set("height", "1.8m")
-//                .set("min-height", "1.8em")
-//                .set("--lumo-text-field-size", "var(--lumo-size-s)")
-//        ;
-//        editComp.setPattern(RX_REGEX);
-//        editComp.setPreventInvalidInput(true);
-//        zakrBinder.forField(editComp)
-//                .withNullRepresentation("")
-//                .withConverter(VzmFormatUtils.VALIDATED_DEC_HOD_TO_STRING_CONVERTER)
-////                .bind(r0ValProv, r0Setter);
-//                .bind(Zakr::getR0, Zakr::setR0);
-//        col.setEditorComponent(editComp);
-//        zakrBinder.addStatusChangeListener(event -> {
-//            event.getBinder().hasChanges();
-//        });
-
-
+        // =============
+        // Filters
+        // =============
 
         filterRow = this.appendHeaderRow();
 
@@ -266,35 +319,56 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         }
     }
 
+//    private boolean writeZakrToBeanIfValid(Binder zakrEditorBinder, Editor<Zakr> zakrEditor) {
+//        boolean isValid = zakrEditor.save();
+////        boolean isValid = zakrEditorBinder.writeBeanIfValid(zakrEditor.getItem());
+//        if (!isValid) {
+//            ConfirmDialog
+//                    .createWarning()
+//                    .withCaption("Editace zakázky")
+//                    .withMessage("Zakázku nelze uložit, některá pole zřejmě nejsou správně vyplněna.")
+//                    .open();
+//            return false;
+//        }
+//        editedItem = zakrEditor.getItem();
+//        return true;
+//    }
 
-    private Component buildRxEditor(
-            Binder<Zakr> zakrBinder
-            , Editor<Zakr> zakrEditor
+    private ValueProvider<Zakr, String> r0GridValueProvider =
+            zakr -> null == zakr.getR0() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR0())
+    ;
+
+    private ValueProvider<Zakr, String> r1GridValueProvider =
+            zakr -> null == zakr.getR1() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR1())
+    ;
+
+    private ValueProvider<Zakr, String> r2GridValueProvider =
+            zakr -> null == zakr.getR2() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR2())
+    ;
+
+    private ValueProvider<Zakr, String> r3GridValueProvider =
+            zakr -> null == zakr.getR3() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR3())
+    ;
+
+    private ValueProvider<Zakr, String> r4GridValueProvider =
+            zakr -> null == zakr.getR4() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR4())
+    ;
+
+    private ValueProvider<Zakr, String> rxVykonGridValueProvider = zakr -> {
+            BigDecimal rxVykon = getRxVykon(zakr);
+            return null == rxVykon ? "" : VzmFormatUtils.moneyFormat.format(rxVykon);
+    };
+
+
+    // ===========================
+    // Rx Field editor  component
+    // ===========================
+    private Component buildRxEditorComponent(
+            Binder<Zakr> zakrEditorBinder
+            , ValueProvider<Zakr, BigDecimal> rxEditorValueProvider
+            , Setter<Zakr, BigDecimal> rxEditorSetter
     ) {
         TextField editComp = new TextField();
-        editComp.addValueChangeListener(event -> {
-            if (event.isFromClient() && (StringUtils.isNotBlank(event.getValue()) || StringUtils.isNotBlank(event.getOldValue()))
-                    && !event.getValue().equals(event.getOldValue())) {
-                try {
-                    // TODO: try to use localization instead of regex ?
-//                    pzEditor.getItem().setValueToDayField(day
-                    zakrEditor.getItem().setR0(
-                            StringUtils.isBlank(event.getValue()) ?
-                                    null : new BigDecimal(event.getValue()));
-//                                    null : event.getValue().replaceAll(",", "."));
-//                                    null : new BigDecimal(event.getValue().replaceAll(",", ".")));
-                    zakrBinder.writeBean(zakrEditor.getItem());
-//                    missingHodsFooterRow.getCell(col)
-//                            .setText(getMissingHodString(day));
-
-                    // TODO: disable when pruh is loaded, enable when changed (either hodPrac changed, or zak added/deleted)
-//                    saveEditButton.setEnabled(pzBinder.hasChanges());
-
-                } catch (ValidationException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
 
         // TODO: remove margins
         editComp.getStyle()
@@ -309,18 +383,34 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         ;
         editComp.setPattern(RX_REGEX);
         editComp.setPreventInvalidInput(true);
-        zakrBinder.forField(editComp)
+        zakrEditorBinder.forField(editComp)
                 .withNullRepresentation("")
-                .withConverter(VzmFormatUtils.VALIDATED_DEC_HOD_TO_STRING_CONVERTER)
-//                .bind(r0ValProv, r0Setter);
-                .bind(Zakr::getR0, Zakr::setR0);
+                .withConverter(VzmFormatUtils.VALIDATED_PROC_INT_TO_STRING_CONVERTER)
+                .bind(rxEditorValueProvider, rxEditorSetter);
 
         return editComp;
+    }
 
-//        col.setEditorComponent(editComp);
-//        zakrBinder.addStatusChangeListener(event -> {
-//            event.getBinder().hasChanges();
-//        });
+    private BigDecimal getRxVykon(final Zakr zakr) {
+        BigDecimal activeRxValue = getActiveRxValue(zakr);
+        // FIXME:
+        return null == activeRxValue ? null : activeRxValue.multiply(BigDecimal.valueOf(100000L).divide(BigDecimal.valueOf(100L)));
+//        return null == activeRxValue ? null : activeRxValue.multiply(zakr.getHonorarCisty());
+    }
+
+    private BigDecimal getActiveRxValue(Zakr zakr) {
+        if ((null != zakr.getR4()) && (0 != zakr.getR4().compareTo(BigDecimal.ZERO))) {
+            return zakr.getR4();
+        } else if (null != zakr.getR3() && (0 != zakr.getR3().compareTo(BigDecimal.ZERO))) {
+            return zakr.getR3();
+        } else if (null != zakr.getR2() && (0 != zakr.getR2().compareTo(BigDecimal.ZERO))) {
+            return zakr.getR2();
+        } else if (null != zakr.getR1() && (0 != zakr.getR1().compareTo(BigDecimal.ZERO))) {
+            return zakr.getR1();
+        } else if (null != zakr.getR0() && (0 != zakr.getR0().compareTo(BigDecimal.ZERO))) {
+            return zakr.getR0();
+        }
+        return BigDecimal.ZERO;
     }
 
     private void setResizable(Column column) {
@@ -345,16 +435,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
     private <T> Select buildSelectionFilterField() {
         Select <T> selectFilterField = new Select<>();
-//        selectFilterField.setLabel(null);
-//        selectFilterField.setClearButtonVisible(true);
         selectFilterField.setSizeFull();
-//        selectFilterField.setPlaceholder("Vše");
         selectFilterField.setEmptySelectionCaption("Vše");
         selectFilterField.setEmptySelectionAllowed(true);
-//        selectFilterField.setItemLabelGenerator(this::getPersonLabel);
-//        selectFilterField.setValueChangeMode(ValueChangeMode.EAGER);
-//        List<String> skupinaList = Arrays.asList("1", "2");
-//        selectFilterField.setItems(skupinaList);
         selectFilterField.addValueChangeListener(event -> doFilter());
         return selectFilterField;
     }

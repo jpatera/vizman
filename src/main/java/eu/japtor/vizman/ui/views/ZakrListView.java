@@ -16,9 +16,11 @@
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
@@ -26,9 +28,11 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.*;
-import eu.japtor.vizman.backend.repository.ZakrRepo;
+import eu.japtor.vizman.backend.service.ZakService;
+import eu.japtor.vizman.backend.service.ZakrService;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
+import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -47,17 +51,23 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 // ###***
 public class ZakrListView extends VerticalLayout {
 
+    private static final String RADIO_KONT_ACTIVE = "Aktivní";
+    private static final String RADIO_KONT_ARCH = "Archivované";
+    private static final String RADIO_KONT_ALL = "Všechny";
+
     private List<Zakr> zakrList;
     private ZakRozpracGrid zakrGrid;
     private List<GridSortOrder<ZakBasic>> initialSortOrder;
 
-    private static final String RADIO_KONT_ACTIVE = "Aktivní";
-    private static final String RADIO_KONT_ARCH = "Archivované";
-    private static final String RADIO_KONT_ALL = "Všechny";
     private RadioButtonGroup<String> archFilterRadio;
+    private Button saveEditButton;
+
 
     @Autowired
-    public ZakrRepo zakrRepo;
+    public ZakrService zakrService;
+
+    @Autowired
+    public ZakService zakService;
 
     public ZakrListView() {
         initView();
@@ -130,6 +140,36 @@ public class ZakrListView extends VerticalLayout {
         return archFilterRadio;
     }
 
+
+//    private Component initSaveEditButton() {
+//        saveEditButton = new Button("Uložit");
+//        saveEditButton.getElement().setAttribute("theme", "primary");
+//        saveEditButton.addClickListener(event -> {
+//            ConfirmDialog.createQuestion()
+//                    .withCaption("EDITACE PROUŽKU")
+//                    .withMessage("Uložit proužek?")
+//                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+//                    .withYesButton(() -> {
+////                        dochsumZakService.updateDochsumZaksForPersonAndMonth(
+////                                pruhPerson.getId(), pruhYm, transposePruhZaksToDochsumZaks(pruhZakList));
+//                        if (zakrGrid.getEditor().isOpen()) {
+//                            zakrGrid.getEditor().closeEditor();
+//                        }
+//                        boolean ok = zakrService.update...(
+//                                pruhPerson.getId()
+//                                , pruhYm
+//                                , pruhDayMax
+//                                , pruhZakList
+//                        );
+//                        update PruhGrids(pruhPerson, pruhYm);
+//                    } , ButtonOption.focus(), ButtonOption.caption("ULOŽIT"))
+//                    .open()
+//            ;
+//        });
+//        return saveEditButton;
+//    }
+
+
     private Component initGridContainer() {
         VerticalLayout gridContainer = new VerticalLayout();
         gridContainer.setClassName("view-container");
@@ -144,10 +184,45 @@ public class ZakrListView extends VerticalLayout {
     }
 
 
+//    private Zakr selectedItem;
+
+    private void saveZakr(Zakr zakr, Operation operation) {
+        Zakr newInstance = zakService.saveZakr(zakr, operation);
+//        roleGrid.getDataProvider().refreshItem(newInstance);
+        Notification.show(
+//                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
+                "Změny rozpracovanosti uloženy", 2000, Notification.Position.TOP_CENTER);
+//        updateGridContent();
+    }
+
     private Component initZakrGrid() {
-        zakrGrid = new ZakRozpracGrid(false,true, null);
+        zakrGrid = new ZakRozpracGrid(
+                false,true, null, this::saveZakr
+        );
         zakrGrid.setMultiSort(true);
         zakrGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+
+//        zakrGrid.addSelectionListener(event -> {
+//            if (zakrGrid.getEditor().isOpen()) {
+//                zakrGrid.getEditor().save();
+//                zakrGrid.getEditor().closeEditor();
+//            }
+//            String ckzEdit = "N/A";
+//            try {
+//                if (null != selectedItem) {
+//                    ckzEdit = String.format("%s / %s", selectedItem.getCkont(), selectedItem.getCzak());
+//                    zakrService.saveZakr(selectedItem, Operation.EDIT);
+//                }
+//                selectedItem = event.getFirstSelectedItem().orElse(null);   // Note: grid selection mode is supposed to be SINGLE
+//            } catch(Exception ex) {
+//                ConfirmDialog
+//                        .createError()
+//                        .withCaption("Editace rozpracovanosti.")
+//                        .withMessage(String.format("Zakázku %s se nepodařilo uložit.", ckzEdit))
+//                        .open()
+//                ;
+//            }
+//        });
         return zakrGrid;
     }
 
@@ -179,7 +254,7 @@ public class ZakrListView extends VerticalLayout {
 
 
 
-        zakrList = zakrRepo.findAllByOrderByRokDescCkontDescCzakDesc();
+        zakrList = zakrService.fetchAllDescOrder();
         zakrGrid.setItems(zakrList);
         zakrGrid.setRokFilterItems(zakrList.stream()
                 .filter(z -> null != z.getRok())
@@ -199,7 +274,6 @@ public class ZakrListView extends VerticalLayout {
 
 
         zakrGrid.getDataProvider().refreshAll();
-
 
     }
 }

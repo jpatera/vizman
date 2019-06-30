@@ -1040,9 +1040,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         ;
 
         // Grid editor:
-        Binder<PruhZak> pzBinder = new Binder<>(PruhZak.class);
+        Binder<PruhZak> pzEditorBinder = new Binder<>(PruhZak.class);
         Editor<PruhZak> pzEditor = pruhZakGrid.getEditor();
-        pzEditor.setBinder(pzBinder);
+        pzEditor.setBinder(pzEditorBinder);
         zakGridEditRegistration = pruhZakGrid.addItemDoubleClickListener(event -> {
             // TODO keyPress listeners...
             if (event.getItem().isLekarZak()) {
@@ -1075,7 +1075,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
             int ii = i;
             addZakDayColumn(
                     ii
-                    , pzBinder
+                    , pzEditorBinder
                     , pzEditor
                     , pz -> pz.getHod(ii)
                     , (pz, hod) -> pz.setHod(ii, hod)
@@ -1166,7 +1166,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
     private void addZakDayColumn(
             int day
-            , Binder<PruhZak> pzBinder
+            , Binder<PruhZak> pzEditorBinder
             , Editor<PruhZak> pzEditor
             , ValueProvider<PruhZak, BigDecimal> pzHodValProv
             , Setter<PruhZak, BigDecimal> pzHodSetter
@@ -1201,7 +1201,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     pzEditor.getItem().setHod(day
                             , StringUtils.isBlank(event.getValue()) ?
                                     null : new BigDecimal(event.getValue().replaceAll(",", ".")));
-                    pzBinder.writeBean(pzEditor.getItem());
+                    pzEditorBinder.writeBean(pzEditor.getItem());
 //                    col.setFooter(buildDayHodSumComp(getDayZakMissingHods(getDayZakHodSum(day), getDaySumHodSum(day))));
 //                    BigDecimal missingHods = getDayZakMissingHods(getDayZakHodSum(day), getDaySumHodSum(day));
                     missingHodsFooterRow.getCell(col)
@@ -1228,12 +1228,12 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         ;
         editComp.setPattern(PRUH_HOD_REGEX);
         editComp.setPreventInvalidInput(true);
-        pzBinder.forField(editComp)
+        pzEditorBinder.forField(editComp)
                 .withNullRepresentation("")
                 .withConverter(VzmFormatUtils.VALIDATED_DEC_HOD_TO_STRING_CONVERTER)
                 .bind(pzHodValProv, pzHodSetter);
         col.setEditorComponent(editComp);
-        pzBinder.addStatusChangeListener(event -> {
+        pzEditorBinder.addStatusChangeListener(event -> {
                 event.getBinder().hasChanges();
 //                event.getBinder().forField(editComp).getField().getValue().;
         });

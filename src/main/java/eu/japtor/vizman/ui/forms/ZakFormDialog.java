@@ -620,7 +620,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
 
     private void saveClicked(boolean closeAfterSave) {
-        if (!isZakValid()) {
+        if (!writeZakToBeanIfValid()) {
             return;
         }
         try {
@@ -636,7 +636,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     }
 
     private boolean saveWithoutClose() {
-        if (!isZakValid()) {
+        if (!writeZakToBeanIfValid()) {
             return false;
         }
         try {
@@ -676,7 +676,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         ;
     }
 
-    private boolean isZakValid() {
+    private boolean writeZakToBeanIfValid() {
         boolean isValid = binder.writeBeanIfValid(currentItem);
         if (!isValid) {
             ConfirmDialog

@@ -56,6 +56,18 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     private BigDecimal r1;
 
     @Basic
+    @Column(name = "R2")
+    private BigDecimal r2;
+
+    @Basic
+    @Column(name = "R3")
+    private BigDecimal r3;
+
+    @Basic
+    @Column(name = "R4")
+    private BigDecimal r4;
+
+    @Basic
     @Column(name = "OBJEDNATEL")
     private String objednatel;
 
@@ -70,6 +82,15 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     @Transient
     private boolean checked;
 
+//    public BigDecimal getFinished() {
+//        return finished;
+//    }
+//    public void setFinished(BigDecimal finished) {
+//        this.finished = finished;
+//    }
+
+//    @Transient
+//    private BigDecimal finished;
 
 
     public Long getId() {
@@ -115,6 +136,27 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     }
     public void setR1(BigDecimal r1) {
         this.r1 = r1;
+    }
+
+    public BigDecimal getR2() {
+        return r2;
+    }
+    public void setR2(BigDecimal r2) {
+        this.r2 = r2;
+    }
+
+    public BigDecimal getR3() {
+        return r3;
+    }
+    public void setR3(BigDecimal r3) {
+        this.r3 = r3;
+    }
+
+    public BigDecimal getR4() {
+        return r4;
+    }
+    public void setR4(BigDecimal r4) {
+        this.r4 = r4;
     }
 
     public String getObjednatel() {

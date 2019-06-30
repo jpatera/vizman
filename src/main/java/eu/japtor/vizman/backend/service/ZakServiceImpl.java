@@ -2,8 +2,10 @@ package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Zak;
+import eu.japtor.vizman.backend.entity.Zakr;
 import eu.japtor.vizman.backend.repository.KontRepo;
 import eu.japtor.vizman.backend.repository.ZakRepo;
+import eu.japtor.vizman.backend.repository.ZakrRepo;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,9 @@ import java.util.List;
 public class ZakServiceImpl implements ZakService, HasLogger {
 
     private ZakRepo zakRepo;
+
+    @Autowired
+    private ZakrRepo zakrRepo;
 
     @Autowired
     public KontRepo kontRepo;
@@ -58,6 +63,32 @@ public class ZakServiceImpl implements ZakService, HasLogger {
         } catch (Exception e) {
             String errMsg = "Error while saving {} : {} [operation: {}]";
                 getLogger().error(errMsg, zakToSave.getTyp().name(), kzCis, oper.name(), e);
+            throw new VzmServiceException(errMsg);
+        }
+    }
+
+    @Override
+    @Transactional
+    public Zakr saveZakr(Zakr zakrToSave, Operation oper) throws VzmServiceException {
+        String kzCis = String.format("%s / %d", zakrToSave.getCkont(), zakrToSave.getCzak());
+        Zak zakSaved = null;
+        try {
+//            kontRepo.flush();
+//            zakRepo.flush();
+//            Zak zakSaved = zakRepo.saveAndFlush(zakToSave);
+            Zak zakToSave = zakRepo.getOne(zakrToSave.getId());
+            zakToSave.setRozprac(zakrToSave.getR0());
+            zakToSave.setR1(zakrToSave.getR1());
+            zakToSave.setR2(zakrToSave.getR2());
+            zakToSave.setR3(zakrToSave.getR3());
+            zakToSave.setR4(zakrToSave.getR4());
+            zakSaved = zakRepo.save(zakToSave);
+            getLogger().info("{} saved: {} [operation: {}]"
+                    , zakSaved.getTyp().name(), kzCis, oper.name());
+            return zakrRepo.getOne(zakrToSave.getId());
+        } catch (Exception e) {
+            String errMsg = "Error while saving {} : {} [operation: {}]";
+            getLogger().error(errMsg, null == zakSaved ? "N/A" : zakSaved.getTyp().name(), kzCis, oper.name(), e);
             throw new VzmServiceException(errMsg);
         }
     }

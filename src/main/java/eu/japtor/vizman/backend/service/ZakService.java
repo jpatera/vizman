@@ -2,6 +2,7 @@ package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.Zak;
+import eu.japtor.vizman.backend.entity.Zakr;
 import eu.japtor.vizman.ui.components.Operation;
 
 import java.math.BigDecimal;
@@ -34,5 +35,8 @@ public interface ZakService {
     Integer getNewCfakt(Long zakId);
 
     boolean zakIdExistsInKont(Long kontId, Integer czak);
+
+    Zakr saveZakr(Zakr zakr, Operation oper);
+
 
 }

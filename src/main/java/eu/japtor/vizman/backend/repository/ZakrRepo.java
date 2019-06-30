@@ -3,6 +3,7 @@ package eu.japtor.vizman.backend.repository;
 import eu.japtor.vizman.backend.entity.ZakBasic;
 import eu.japtor.vizman.backend.entity.Zakr;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -11,5 +12,13 @@ import java.util.List;
 public interface ZakrRepo extends JpaRepository<Zakr, Long> {
 
     List<Zakr> findAllByOrderByRokDescCkontDescCzakDesc();
+
+    List<Zakr> findByRokOrderByCkontDescCzakDesc(Integer rok);
+
+    @Query(value = "SELECT distinct rok FROM vizman.zakr ORDER BY ROK DESC",
+            nativeQuery = true)
+    List<Integer> findZakRoks();
+
+    Zakr findTopById(Long id);
 
 }

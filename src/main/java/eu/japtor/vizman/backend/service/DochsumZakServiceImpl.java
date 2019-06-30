@@ -123,7 +123,7 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
             // --------------------------------------
             List<DochsumZak> dsZaksToUpdate = new ArrayList<>();
             List<DochsumZak> dsZaksToInsert = new ArrayList<>();
-            List<DochsumZak> dsZaksToDelete = new ArrayList<>();
+//            List<DochsumZak> dsZaksToDelete = new ArrayList<>();
             for (PruhZak pzak : pruhZaks) {
                 Long pzakZakId = pzak.getZakId();
     //            pzak.getZakId()...
