@@ -15,9 +15,9 @@ public interface ZakrRepo extends JpaRepository<Zakr, Long> {
 
     List<Zakr> findByRokOrderByCkontDescCzakDesc(Integer rok);
 
-    @Query(value = "SELECT distinct rok FROM vizman.zakr ORDER BY ROK DESC",
+    @Query(value = "SELECT distinct rok FROM vizman.zak_rozprac_view ORDER BY ROK DESC",
             nativeQuery = true)
-    List<Integer> findZakRoks();
+    List<Integer> findZakrRoks();
 
     Zakr findTopById(Long id);
 

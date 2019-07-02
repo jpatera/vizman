@@ -9,10 +9,9 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.function.SerializableSupplier;
 import eu.japtor.vizman.app.HasLogger;
-//import eu.japtor.vizman.backend.entity.Zak;
-import eu.japtor.vizman.backend.entity.Zakr;
+import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.report.ZakRozpracReport;
-import eu.japtor.vizman.backend.service.ZakrService;
+import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.ui.components.AbstractPrintDialog;
 import eu.japtor.vizman.ui.components.ReportExpAnchor;
 import org.vaadin.reports.PrintPreviewReport;
@@ -23,34 +22,34 @@ import java.util.List;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements HasLogger {
+public class ReportZakTestDialog extends AbstractPrintDialog<Zak> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "1200px";
     public static final String DIALOG_HEIGHT = "700px";
 
-    private final static String REPORT_FILE_NAME = "vzm-rep-zak-rozprac";
+    private final static String REPORT_FILE_NAME = "vzm-rep-zak-test";
 
-    private ZakrService zakrService;
+    private ZakService zakService;
     private ZakRozpracReport report;
     private HorizontalLayout expAnchorsBox;
     private HorizontalLayout reportParamBox;
     Select<Integer> rokFilterField;
     TextField rezieParamField;
 
-    private SerializableSupplier<List<? extends Zakr>> itemsSupplier = () -> {
+    private SerializableSupplier<List<? extends Zak>> itemsSupplier = () -> {
         if (null == rokFilterField.getValue()) {
-            return zakrService.fetchAllDescOrder();
+            return zakService.fetchAllDescOrder();
         } else {
-            return zakrService.fetchByRokDescOrder(rokFilterField.getValue());
+            return zakService.fetchByRokDescOrder(rokFilterField.getValue());
         }
     };
 
 
-    public ReportZakRozpracDialog(ZakrService zakrService) {
+    public ReportZakTestDialog(ZakService zakService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setDialogTitle("REPORT: Zakázky - rozpracovanost");
 //        getHeaderEndBox().setText("END text");
-        this.zakrService = zakrService;
+        this.zakService = zakService;
         initReportControls();
     }
 
@@ -98,7 +97,7 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
     private Component buildRokFilterComponent() {
         Span rokFilterLabel = new Span("Rok:");
         rokFilterField = buildSelectorField();
-        List<Integer> roks = zakrService.fetchZakrRoks();
+        List<Integer> roks = zakService.fetchZakRoks();
 //        Integer rokMax = roks.stream().reduce(Integer::max).orElse(null);
         Integer rokMax = roks.stream().max(Comparator.naturalOrder()).orElse(null);
         rokFilterField.setItems(roks);

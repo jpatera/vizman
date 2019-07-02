@@ -48,6 +48,18 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     private String textZak;
 
     @Basic
+    @Column(name = "HONOR_CISTY")
+    private BigDecimal honorCisty;
+
+    @Basic
+    @Column(name = "HONOR_FAKT")
+    private BigDecimal honorFakt;
+
+    @Basic
+    @Column(name = "HONOR_SUB")
+    private BigDecimal honorSub;
+
+    @Basic
     @Column(name = "R0")
     private BigDecimal r0;
 
@@ -120,9 +132,31 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     public String getTextKont() {
         return textKont;
     }
+
     public String getTextZak() {
         return textZak;
     }
+
+    public BigDecimal getHonorCisty() {
+        return honorCisty;
+    }
+//    public void setHonorCisty(BigDecimal honorCisty) {
+//        this.honorCisty = honorCisty;
+//    }
+
+    public BigDecimal getHonorFakt() {
+        return honorFakt;
+    }
+//    public void setHonorFakt(BigDecimal honorFakt) {
+//        this.honorFakt = honorFakt;
+//    }
+
+    public BigDecimal getHonorSub() {
+        return honorSub;
+    }
+//    public void setHonorSub(BigDecimal honorSub) {
+//        this.honorSub = honorSub;
+//    }
 
     public BigDecimal getR0() {
         return r0;

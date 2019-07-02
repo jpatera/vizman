@@ -19,5 +19,5 @@ public interface ZakrService {
 
     long countAll();
 
-    List<Integer> fetchZakRoks();
+    List<Integer> fetchZakrRoks();
 }

@@ -86,3 +86,45 @@ CREATE OR REPLACE VIEW VIZMAN.ZAK_ROZPRAC_VIEW AS
 ;
 
 COMMIT;
+
+
+CREATE OR REPLACE FORCE VIEW VIZMAN.ZAK_ROZPRAC_VIEW(
+	ID, TYP, CKONT, CZAK, ROK, SKUPINA, TEXT_KONT, TEXT_ZAK, OBJEDNATEL, ARCH, ID_KONT,
+	R0, R1, R2, R3, R4,
+	HONOR_CISTY, HONOR_FAKT, HONOR_SUB
+) AS
+SELECT zak.ID,
+    zak.TYP,
+    KONT.CKONT,
+    zak.CZAK,
+    zak.ROK,
+    zak.SKUPINA,
+    KONT.TEXT AS TEXT_KONT,
+    zak.TEXT AS TEXT_ZAK,
+    KLIENT.NAME AS OBJEDNATEL,
+    zak.ARCH,
+    zak.ID_KONT,
+    zak.ROZPRAC AS R0,
+    zak.R1,
+    zak.R2,
+    zak.R3,
+    zak.R4,
+	SUM(fakta.CASTKA) AS HONOR_CISTY,
+	SUM(faktb.CASTKA) AS HONOR_FAKT,
+	SUM(faktc.CASTKA) AS HONOR_SUB	
+FROM vizman.ZAK zak
+LEFT OUTER JOIN vizman.FAKT fakta
+	on fakta.id_zak = zak.id
+LEFT OUTER JOIN vizman.FAKT faktb
+	on faktb.id = fakta.id AND faktb.typ = 'FAKT'
+LEFT OUTER JOIN vizman.FAKT faktc
+	on faktc.id = fakta.id AND faktc.typ = 'SUB'
+LEFT OUTER JOIN VIZMAN.KONT KONT
+    ON zak.ID_KONT = KONT.ID
+LEFT OUTER JOIN VIZMAN.KLIENT KLIENT
+    ON KONT.ID_KLIENT = KLIENT.ID
+GROUP BY zak.id
+ORDER BY zak.id desc
+;
+
+

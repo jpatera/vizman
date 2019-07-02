@@ -27,6 +27,7 @@ import org.claspina.confirmdialog.ConfirmDialog;
 import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -42,12 +43,14 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     public static final String KZTEXT_COL_KEY = "zakr-bg-kztext";
     public static final String SEL_COL_KEY = "zakr-bg-select";
     public static final String ARCH_COL_KEY = "zakr-bg-arch";
+    public static final String HONOR_CISTY_COL_KEY = "zakr-bg-honor-cisty";
     public static final String R0_COL_KEY = "zakr-bg-r0";
     public static final String R1_COL_KEY = "zakr-bg-r1";
     public static final String R2_COL_KEY = "zakr-bg-r2";
     public static final String R3_COL_KEY = "zakr-bg-r3";
     public static final String R4_COL_KEY = "zakr-bg-r4";
     public static final String FINISHED_COL_KEY = "zakr-bg-finished";
+    public static final String REMAINS_COL_KEY = "zakr-bg-remains";
 
 //    Grid<Zak> zakGrid;
 
@@ -65,6 +68,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     HeaderRow filterRow;
     Registration zakrGridEditRegistration = null;
     private Zakr editedItem;
+    private boolean editedItemChanged;
     private BiConsumer<Zakr, Operation> itemSaver;
 
     public ZakRozpracGrid(boolean selectFieldVisible, boolean archFieldVisible, Boolean initFilterArchValue
@@ -95,9 +99,12 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             try {
                 if (null != editedItem) {
                     ckzEdit = String.format("%s / %s", editedItem.getCkont(), editedItem.getCzak());
-                    this.itemSaver.accept(editedItem, Operation.EDIT);
+                    if (editedItemChanged) {
+                        this.itemSaver.accept(editedItem, Operation.EDIT);
+                    }
                 }
                 editedItem = event.getFirstSelectedItem().orElse(null);   // Note: grid selection mode is supposed to be SINGLE
+                editedItemChanged = false;
             } catch(Exception ex) {
                 ConfirmDialog
                         .createError()
@@ -186,13 +193,6 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setSortable(true)
                 .setKey(SKUPINA_COL_KEY)
         ;
-        this.addColumn(Zakr::getObjednatel)
-                .setHeader("Objednatel")
-                .setFlexGrow(0)
-                .setWidth("12em")
-                .setSortable(true)
-                .setKey(OBJEDNATEL_COL_KEY)
-        ;
         this.addColumn(selectFieldRenderer)
                 .setHeader(("Výběr"))
                 .setFlexGrow(0)
@@ -201,6 +201,16 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(SEL_COL_KEY)
                 .setVisible(this.selectFieldVisible)
         ;
+
+        Grid.Column<Zakr> colHonorCisty = this.addColumn(honorCistyGridValueProvider)
+                .setHeader("R0")
+                .setFlexGrow(0)
+                .setWidth("7em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(true)
+                .setKey(HONOR_CISTY_COL_KEY)
+                .setResizable(true)
+                ;
 
         Grid.Column<Zakr> colR0 = this.addColumn(r0GridValueProvider)
 //        Grid.Column<Zakr> colR0 = this.addColumn(Zakr::getR0)
@@ -261,21 +271,36 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         colR4.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR4, Zakr::setR4));
 
         Grid.Column<Zakr> colRxVykon = this.addColumn(rxVykonGridValueProvider)
-                .setHeader("Výk. RX")
+                .setHeader("Výkon RX")
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
                 .setKey(FINISHED_COL_KEY)
-                .setResizable(false)
-                ;
-
+                .setResizable(true)
+        ;
+        Grid.Column<Zakr> colRxZbyva = this.addColumn(rxZbyvaGridValueProvider)
+                .setHeader("Zbývá RX")
+                .setFlexGrow(0)
+                .setWidth("7em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(true)
+                .setKey(REMAINS_COL_KEY)
+                .setResizable(true)
+        ;
         this.addColumn(Zakr::getKzText)
                 .setHeader("Text")
                 .setFlexGrow(1)
                 .setWidth("25em")
                 .setSortable(true)
                 .setKey(KZTEXT_COL_KEY)
+        ;
+        this.addColumn(Zakr::getObjednatel)
+                .setHeader("Objednatel")
+                .setFlexGrow(0)
+                .setWidth("12em")
+                .setSortable(true)
+                .setKey(OBJEDNATEL_COL_KEY)
         ;
 
 
@@ -354,10 +379,22 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             zakr -> null == zakr.getR4() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR4())
     ;
 
+    private ValueProvider<Zakr, String> honorCistyGridValueProvider = zakr -> {
+        BigDecimal honorCisty = zakr.getHonorCisty();
+        return null == honorCisty ? "" : VzmFormatUtils.moneyFormat.format(honorCisty);
+    };
+
     private ValueProvider<Zakr, String> rxVykonGridValueProvider = zakr -> {
             BigDecimal rxVykon = getRxVykon(zakr);
             return null == rxVykon ? "" : VzmFormatUtils.moneyFormat.format(rxVykon);
     };
+
+    private ValueProvider<Zakr, String> rxZbyvaGridValueProvider = zakr -> {
+            BigDecimal rxZbyva = getRxZbyva(zakr);
+            return null == rxZbyva ? "" : VzmFormatUtils.moneyFormat.format(rxZbyva);
+    };
+
+
 
 
     // ===========================
@@ -369,7 +406,13 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             , Setter<Zakr, BigDecimal> rxEditorSetter
     ) {
         TextField editComp = new TextField();
-
+        editComp.addValueChangeListener(event -> {
+            if (event.isFromClient() && !Objects.equals(event.getValue(), (event.getOldValue()))) {
+                editedItemChanged = true;
+                this.getEditor().getBinder().writeBeanIfValid(this.getEditor().getItem());
+//                this.getDataProvider().refreshItem(this.getEditor().getItem());
+            }
+        });
         // TODO: remove margins
         editComp.getStyle()
                 .set("margin", "0")
@@ -393,22 +436,33 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
     private BigDecimal getRxVykon(final Zakr zakr) {
         BigDecimal activeRxValue = getActiveRxValue(zakr);
-        // FIXME:
-        return null == activeRxValue ? null : activeRxValue.multiply(BigDecimal.valueOf(100000L).divide(BigDecimal.valueOf(100L)));
+        return null == activeRxValue || null == zakr.getHonorCisty() ?
+                null : activeRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L));
 //        return null == activeRxValue ? null : activeRxValue.multiply(zakr.getHonorarCisty());
     }
 
-    private BigDecimal getActiveRxValue(Zakr zakr) {
-        if ((null != zakr.getR4()) && (0 != zakr.getR4().compareTo(BigDecimal.ZERO))) {
-            return zakr.getR4();
-        } else if (null != zakr.getR3() && (0 != zakr.getR3().compareTo(BigDecimal.ZERO))) {
-            return zakr.getR3();
-        } else if (null != zakr.getR2() && (0 != zakr.getR2().compareTo(BigDecimal.ZERO))) {
-            return zakr.getR2();
-        } else if (null != zakr.getR1() && (0 != zakr.getR1().compareTo(BigDecimal.ZERO))) {
-            return zakr.getR1();
-        } else if (null != zakr.getR0() && (0 != zakr.getR0().compareTo(BigDecimal.ZERO))) {
-            return zakr.getR0();
+    private BigDecimal getRxZbyva(final Zakr zakr) {
+        BigDecimal activeRxValue = getActiveRxValue(zakr);
+        return null == activeRxValue || null == zakr.getHonorCisty() ?
+                null : zakr.getHonorCisty().subtract(activeRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L)));
+//        return null == activeRxValue ? null : activeRxValue.multiply(zakr.getHonorarCisty());
+    }
+
+    public static BigDecimal getActiveRxValue(Zakr zakr) {
+        return getActiveRxValue(zakr.getR0(), zakr.getR1(), zakr.getR2(), zakr.getR3(), zakr.getR4());
+    }
+
+    public static BigDecimal getActiveRxValue(BigDecimal r0, BigDecimal r1, BigDecimal r2, BigDecimal r3, BigDecimal r4) {
+        if ((null != r4) && (0 != r4.compareTo(BigDecimal.ZERO))) {
+            return r4;
+        } else if ((null != r3) && (0 != r3.compareTo(BigDecimal.ZERO))) {
+            return r3;
+        } else if ((null != r2) && (0 != r2.compareTo(BigDecimal.ZERO))) {
+            return r2;
+        } else if ((null != r1) && (0 != r1.compareTo(BigDecimal.ZERO))) {
+            return r1;
+        } else if ((null != r0) && (0 != r0.compareTo(BigDecimal.ZERO))) {
+            return r0;
         }
         return BigDecimal.ZERO;
     }

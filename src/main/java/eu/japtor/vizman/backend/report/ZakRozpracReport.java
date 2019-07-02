@@ -1,9 +1,6 @@
 package eu.japtor.vizman.backend.report;
 
-import ar.com.fdvs.dj.domain.AutoText;
-import ar.com.fdvs.dj.domain.DJCalculation;
-import ar.com.fdvs.dj.domain.DJGroupLabel;
-import ar.com.fdvs.dj.domain.Style;
+import ar.com.fdvs.dj.domain.*;
 import ar.com.fdvs.dj.domain.builders.ColumnBuilder;
 import ar.com.fdvs.dj.domain.builders.GroupBuilder;
 import ar.com.fdvs.dj.domain.builders.StyleBuilder;
@@ -11,13 +8,15 @@ import ar.com.fdvs.dj.domain.constants.*;
 import ar.com.fdvs.dj.domain.entities.DJGroup;
 import ar.com.fdvs.dj.domain.entities.columns.AbstractColumn;
 import ar.com.fdvs.dj.domain.entities.columns.PropertyColumn;
-import eu.japtor.vizman.backend.entity.Mena;
+import eu.japtor.vizman.backend.entity.Zakr;
+import eu.japtor.vizman.ui.components.ZakRozpracGrid;
 import org.vaadin.reports.PrintPreviewReport;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.Map;
 
 public class ZakRozpracReport extends PrintPreviewReport {
 
@@ -92,15 +91,15 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setTitle("ČZ")
                 .build();
 
-        AbstractColumn dateCreateCol = ColumnBuilder.getNew()
-                .setColumnProperty("dateCreate", LocalDate.class)
-                .setTitle("Vytvořeno")
-                .setWidth(7)
-                .setTextFormatter(DateTimeFormatter.ISO_DATE.toFormat())
-                .build();
+//        AbstractColumn dateCreateCol = ColumnBuilder.getNew()
+//                .setColumnProperty("dateCreate", LocalDate.class)
+//                .setTitle("Vytvořeno")
+//                .setWidth(7)
+//                .setTextFormatter(DateTimeFormatter.ISO_DATE.toFormat())
+//                .build();
 
-        AbstractColumn honorarCistyCol = ColumnBuilder.getNew()
-                .setColumnProperty("honorarCisty", BigDecimal.class)
+        AbstractColumn honorCistyCol = ColumnBuilder.getNew()
+                .setColumnProperty("honorCisty", BigDecimal.class)
                 .setTitle("Honorář čistý")
 //                .setHeaderStyle(HEADER_STYLE)
                 .setStyle(AMOUNT_STYLE)
@@ -108,30 +107,30 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setPattern("#,##0.00;-#,##0.00")
                 .build();
 
-        AbstractColumn honorarHrubyCol = ColumnBuilder.getNew()
-                .setColumnProperty("honorarHruby", BigDecimal.class)
-                .setTitle("Honorář hrubý")
-//                .setHeaderStyle(HEADER_STYLE)
-                .setStyle(AMOUNT_STYLE)
-                .setWidth(9)
-                .setPattern("#,##0.00;-#,##0.00")
-                .build();
+//        AbstractColumn honorHrubyCol = ColumnBuilder.getNew()
+//                .setColumnProperty("honorHruby", BigDecimal.class)
+//                .setTitle("Honorář hrubý")
+////                .setHeaderStyle(HEADER_STYLE)
+//                .setStyle(AMOUNT_STYLE)
+//                .setWidth(9)
+//                .setPattern("#,##0.00;-#,##0.00")
+//                .build();
 
-        AbstractColumn menaCol = ColumnBuilder.getNew()
-                .setColumnProperty("mena", Mena.class)
-                .setTitle("Měna")
-                .setWidth(5)
-                .build();
+//        AbstractColumn menaCol = ColumnBuilder.getNew()
+//                .setColumnProperty("mena", Mena.class)
+//                .setTitle("Měna")
+//                .setWidth(5)
+//                .build();
 
-        AbstractColumn textCol = ColumnBuilder.getNew()
-                .setColumnProperty("text", String.class)
+        AbstractColumn textZakCol = ColumnBuilder.getNew()
+                .setColumnProperty("textZak", String.class)
                 .setTitle("Text zakázky")
                 .setWidth(26)
 //                .setFixedWidth(false)
                 .build();
 
         AbstractColumn r0Col = ColumnBuilder.getNew()
-                .setColumnProperty("rozprac", BigDecimal.class)
+                .setColumnProperty("r0", BigDecimal.class)
                 .setTitle("R0")
 //                .setHeaderStyle(HEADER_STYLE)
                 .setStyle(PROC_STYLE)
@@ -174,6 +173,40 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setWidth(5)
                 .setPattern("##0;-##0")
                 .build();
+
+//        AbstractColumn vykonRxCol = ColumnBuilder.getNew()
+//                .setCustomExpression(getCustomExpression())
+//                .setCustomExpressionForCalculation(getCustomExpression2()
+////                .setCustomExpression(
+////                        new CustomExpression() {
+////                            @Override
+////                            public Object evaluate(Map fields, Map variables, Map parameters) {
+//////                                return (String) fields.get("ckont");
+////
+//////                                BigDecimal honorCisty = (BigDecimal) fields.get("honorCisty");
+////                                BigDecimal r0 = (BigDecimal) fields.get("r0");
+//////                                BigDecimal r1 = (BigDecimal) fields.get("r1");
+//////                                BigDecimal r2 = (BigDecimal) fields.get("r2");
+//////                                BigDecimal r3 = (BigDecimal) fields.get("r3");
+//////                                BigDecimal r4 = (BigDecimal) fields.get("r4");
+////////                                Integer count = (Integer) variables.get("REPORT_COUNT");
+//////                                BigDecimal activeRxValue  = ZakRozpracGrid.getActiveRxValue(r0, r1, r2, r3, r4);
+//////                                BigDecimal vykon = null == activeRxValue || null == honorCisty ?
+//////                                        null : honorCisty.subtract(activeRxValue.multiply(honorCisty).divide(BigDecimal.valueOf(100L)));
+//////                                return null == vykon ? "" : vykon.toString();
+////                                return r0;
+////                            }
+////                            @Override
+////                            public String getClassName() {
+////                                return BigDecimal.class.getName();
+////                            }
+////                        }
+//                )
+//                .setTitle("Výkony RX")
+////                .setHeaderStyle(HEADER_STYLE)
+//                .setStyle(PROC_STYLE)
+//                .setWidth(5)
+//                .build();
 
 
 //        AbstractColumn honorarHrubyCol = ColumnBuilder.getNew()
@@ -244,19 +277,20 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .addColumn(ckontCol)
                 .addColumn(rokCol)
                 .addColumn(czakCol)
-                .addColumn(dateCreateCol)
+//                .addColumn(dateCreateCol)
 //                .addColumn(honorarCol)
-                .addColumn(honorarCistyCol)
-                .addColumn(honorarHrubyCol)
-                .addColumn(menaCol)
-                .addColumn(textCol)
+                .addColumn(honorCistyCol)
+//                .addColumn(honorHrubyCol)
+//                .addColumn(menaCol)
+                .addColumn(textZakCol)
                 .addColumn(r0Col)
                 .addColumn(r1Col)
                 .addColumn(r2Col)
                 .addColumn(r3Col)
                 .addColumn(r4Col)
+//                .addColumn(vykonRxCol)
 
-                .addGlobalFooterVariable(honorarCistyCol, DJCalculation.SUM, AMOUNT_STYLE)
+                .addGlobalFooterVariable(honorCistyCol, DJCalculation.SUM, AMOUNT_STYLE)
 //                .addGlobalFooterVariable(daysColumn, DJCalculation.AVERAGE, style)
                 ;
 //                    .build();
@@ -282,7 +316,32 @@ public class ZakRozpracReport extends PrintPreviewReport {
 //        return report;
     }
 
-//    public void setParamRok(Integer paramRok) {
+    private CustomExpression getCustomExpression() {
+        return new CustomExpression() {
+            public Object evaluate(Map fields, Map variables, Map parameters) {
+                BigDecimal r1 = ( BigDecimal) fields.get("r1");
+                return r1.toString();
+            }
+
+            public String getClassName() {
+                return String.class.getName();
+            }
+        };
+    }
+
+    private CustomExpression getCustomExpression2() {
+        return new CustomExpression() {
+            public Object evaluate(Map fields, Map variables, Map parameters) {
+                return fields.get("r1");
+            }
+
+            public String getClassName() {
+                return BigDecimal   .class.getName();
+            }
+        };
+    }
+
+    //    public void setParamRok(Integer paramRok) {
 //        this.paramRok = paramRok;
 //        this.paramRokStr = null == paramRok ? "Vše" : paramRok.toString();;
 //    }

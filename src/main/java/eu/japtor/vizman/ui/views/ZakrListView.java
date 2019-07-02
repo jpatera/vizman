@@ -19,7 +19,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -32,7 +31,7 @@ import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.backend.service.ZakrService;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
-import org.claspina.confirmdialog.ConfirmDialog;
+import eu.japtor.vizman.ui.forms.ReportZakRozpracDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -60,6 +59,7 @@ public class ZakrListView extends VerticalLayout {
     private List<GridSortOrder<ZakBasic>> initialSortOrder;
 
     private RadioButtonGroup<String> archFilterRadio;
+    private Button rozpracRepButton;
     private Button saveEditButton;
 
 
@@ -126,8 +126,25 @@ public class ZakrListView extends VerticalLayout {
                 , new Ribbon()
 //                , archFilterComponent
                 , new Ribbon()
-                , new Span(""));
+                , initRozpracRepButton()
+        );
         return gridToolBar;
+    }
+
+    private Component initRozpracRepButton() {
+        rozpracRepButton = new Button("Report"
+            , event -> {
+                openRozpracRepDialog();
+        });
+//        this.addClassName("view-toolbar__button");
+//        this.getStyle().set("theme", "small");
+        rozpracRepButton.getElement().setAttribute("theme", "small secondary");
+        return rozpracRepButton;
+    }
+
+    private void openRozpracRepDialog() {
+        ReportZakRozpracDialog repZakRozpracDlg  = new ReportZakRozpracDialog(zakrService);
+        repZakRozpracDlg.openDialog();
     }
 
     private Component initArchFilterRadio() {

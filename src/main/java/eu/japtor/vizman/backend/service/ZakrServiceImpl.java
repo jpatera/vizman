@@ -1,17 +1,13 @@
 package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.app.HasLogger;
-import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.entity.Zakr;
-import eu.japtor.vizman.backend.repository.KontRepo;
-import eu.japtor.vizman.backend.repository.ZakRepo;
 import eu.japtor.vizman.backend.repository.ZakrRepo;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -67,7 +63,7 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
     }
 
     @Override
-    public List<Integer> fetchZakRoks() {
-        return zakrRepo.findZakRoks();
+    public List<Integer> fetchZakrRoks() {
+        return zakrRepo.findZakrRoks();
     }
 }
