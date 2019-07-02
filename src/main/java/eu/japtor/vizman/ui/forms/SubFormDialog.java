@@ -234,7 +234,7 @@ public class SubFormDialog extends AbstractFormDialog<Fakt> implements HasLogger
                         "Částka subdodávky nesmí být prázdná",
                         1, null))
                 .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
-                .withValidator(castka -> (null != castka) && (castka.compareTo(BigDecimal.ZERO) < 0)
+                .withValidator(castka -> (null != castka) && (castka.compareTo(BigDecimal.ZERO) <= 0)
                         , "Částka subdodávky musí být záporná")
                 .bind(Fakt::getCastka, Fakt::setCastka);
         castkaField.setValueChangeMode(ValueChangeMode.EAGER);

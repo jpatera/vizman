@@ -357,7 +357,7 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
                         "Částka dílčího plnění nesmí být prázdná",
                         1, null))
                 .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
-                .withValidator(castka -> (null != castka) && (castka.compareTo(BigDecimal.ZERO) > 0)
+                .withValidator(castka -> (null != castka) && (castka.compareTo(BigDecimal.ZERO) >= 0)
                         , "Částka plnění musí být kladná")
                 .bind(Fakt::getCastka, Fakt::setCastka);
         castkaField.setValueChangeMode(ValueChangeMode.EAGER);
