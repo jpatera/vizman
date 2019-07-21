@@ -1,10 +1,10 @@
 package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
@@ -35,8 +35,14 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
     private TextField passwordField; // = new TextField("Password");
     private TextField jmenoField; // = new TextField("Jméno");
     private TextField prijmeniField; // = new TextField("Příjmení");
-    private TextField sazbaField; // = new TextField("Sazba");
-    private TextField fakeSazbaField; // = new TextField("Sazba");
+
+    private TextField sazbaOldField;
+    private TextField blindSazbaOldField;
+
+    private TextField sazbaCurrentField;
+    private TextField fakeSazbaCurrentField;
+    private Button sazbaEditButton;
+
     private DatePicker nastupField; // = new DatePicker("Nástup");
     private DatePicker vystupField; // = new DatePicker("Výstup");
     private TwinColGrid<Role> twinRolesGridField;
@@ -99,23 +105,27 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
         nastupField = new DatePicker("Nástup");
         vystupField = new DatePicker("Ukončení");
 
-        sazbaField = new TextField("Sazba");
-        sazbaField.setPattern("[0-9]*");
-        sazbaField.setPreventInvalidInput(true);
-        sazbaField.setSuffixComponent(new Span("CZK"));
+//        sazbaOldField = new TextField("Sazba");
+//        sazbaOldField.setPattern("[0-9]*");
+//        sazbaOldField.setPreventInvalidInput(true);
+//        sazbaOldField.setSuffixComponent(new Span("CZK"));
+//
+//        sazbaCurrentField = new TextField("Sazba aktuální");
+//        sazbaCurrentField.setSuffixComponent(new Span("CZK"));
+//        sazbaCurrentField.setReadOnly(true);
 
-        fakeSazbaField = new TextField("");
-        fakeSazbaField.setVisible(false);
-//        sazbaField.setPattern("[0-9]*");
-//        sazbaField.setPreventInvalidInput(true);
-//        sazbaField.setSuffixComponent(new Span("CZK"));
 
         addUsernameField();
         addPasswordField();
         addJmenoField();
         addPrijmeniField();
         addNastupAndVystupField();
-        addSazbaField();
+
+        getFormLayout().add(
+                initPermittedCurrentSazbaField(),
+                initSazbaEditButton(),
+                initPermittedSazbaOldField()
+        );
 
 //        getFormLayout().add(initRolesField(rolesPool));
         getFormLayout().add(initRolesField(rolesPool));
@@ -197,28 +207,70 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
 
     private void addJmenoField() {
         getFormLayout().add(jmenoField);
-
         getBinder().forField(jmenoField)
                 .bind(Person::getJmeno, Person::setJmeno);
     }
 
     private void addPrijmeniField() {
         getFormLayout().add(prijmeniField);
-
         getBinder().forField(prijmeniField)
                 .bind(Person::getPrijmeni, Person::setPrijmeni);
     }
 
-    private void addSazbaField() {
+    private Component initPermittedCurrentSazbaField() {
         if (!isWagesAccessGranted()) {
-            getFormLayout().add(fakeSazbaField);
+            return initBlindSazbaCurrentField();
         } else {
-            getFormLayout().add(sazbaField);
-            getBinder().forField(sazbaField)
-                    .withConverter(
-                            new StringToBigDecimalConverter("Špatný formát čísla"))
-                    .bind(Person::getSazba, Person::setSazba);
+            return initSazbaCurrentField();
         }
+    }
+
+    private Component initSazbaCurrentField() {
+        sazbaCurrentField = new TextField("Sazba aktuální");
+        sazbaCurrentField.setSuffixComponent(new Span("CZK"));
+        sazbaCurrentField.setReadOnly(true);
+        getBinder().forField(sazbaCurrentField)
+                .withConverter(
+                        new StringToBigDecimalConverter("Špatný formát čísla"))
+                .bind(Person::getWageCurrent, null);
+        return sazbaCurrentField;
+    }
+
+    private Component initBlindSazbaCurrentField() {
+        fakeSazbaCurrentField = new TextField("");
+        fakeSazbaCurrentField.setVisible(false);
+        return fakeSazbaCurrentField;
+    }
+
+    private Component initSazbaEditButton() {
+        sazbaEditButton = new Button("Sazby");
+        return sazbaEditButton;
+    }
+
+    private Component initPermittedSazbaOldField() {
+        if (!isWagesAccessGranted()) {
+            return initBlindSazbaOldField();
+        } else {
+            return initSazbaOldField();
+        }
+    }
+
+    private Component initSazbaOldField() {
+        sazbaOldField = new TextField("Sazba (old ?)");
+        sazbaOldField.setPattern("[0-9]*");
+        sazbaOldField.setPreventInvalidInput(true);
+        sazbaOldField.setSuffixComponent(new Span("CZK"));
+        getBinder().forField(sazbaOldField)
+                .withConverter(
+                        new StringToBigDecimalConverter("Špatný formát čísla"))
+                .bind(Person::getSazba, null);
+        return sazbaOldField;
+    }
+
+    private Component initBlindSazbaOldField() {
+        blindSazbaOldField = new TextField("");
+        blindSazbaOldField.setVisible(false);
+        return blindSazbaOldField;
     }
 
     private Component initRolesField(final Set<Role> allRoles) {

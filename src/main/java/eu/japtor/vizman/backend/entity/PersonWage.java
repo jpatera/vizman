@@ -12,10 +12,6 @@ public class PersonWage extends AbstractGenIdEntity {
 
 
   @Basic
-  @Column(name = "PERSON_ID")
-  private Long personId;
-
-  @Basic
   @Column(name = "USERNAME")
   private String username;
 
@@ -42,16 +38,20 @@ public class PersonWage extends AbstractGenIdEntity {
   private BigDecimal wage;
 
 
+  public Person getPerson() {
+    return person;
+  }
+
+  public void setPerson(Person person) {
+    this.person = person;
+  }
+
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "PERSON_ID")
+  private Person person;
+
   public PersonWage() {
       super();
-  }
-
-
-  public Long getPersonId() {
-    return personId;
-  }
-  public void setPersonId(Long personId) {
-    this.personId = personId;
   }
 
   public YearMonth getYmFrom() {
@@ -62,7 +62,7 @@ public class PersonWage extends AbstractGenIdEntity {
   }
 
   public YearMonth getYmTo() {
-    return ymFrom;
+    return ymTo;
   }
   public void setYmTo(YearMonth ymTo) {
     this.ymTo = ymTo;

@@ -203,7 +203,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         ;
 
         Grid.Column<Zakr> colHonorCisty = this.addColumn(honorCistyGridValueProvider)
-                .setHeader("R0")
+                .setHeader("Honor.čistý")
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setTextAlign(ColumnTextAlign.END)
