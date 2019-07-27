@@ -360,6 +360,19 @@
     </dom-module>
 
 
+    <dom-module id="viewer-dialog-theme" theme-for="vaadin-dialog-overlay">
+        <template>
+            <style>
+                :host([theme~="viewer-dialog"]) [part="content"] {
+                    padding:8px;
+                    /*background-color: #ffe6e6 !important;*/
+                    background-color: oldLace;
+                }
+            </style>
+        </template>
+    </dom-module>
+
+
     <dom-module id="my-dialog-styles" theme-for="vaadin-dialog-overlay">
         <template>
             <style include="lumo-color lumo-typography">

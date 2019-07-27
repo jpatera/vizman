@@ -18,8 +18,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.component.treegrid.TreeGrid;
-import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -55,7 +53,6 @@ import static eu.japtor.vizman.ui.components.OperationResult.NO_CHANGE;
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger {
-//public class KontFormDialog extends AbstractEditorDialog<Kont> implements HasLogger {
 //public class KontFormDialog extends AbstractEditorDialog<Kont> implements BeforeEnterObserver {
 
     private final static String ZAK_EDIT_COL_KEY = "zak-edit-col";
@@ -64,8 +61,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     public static final String DIALOG_WIDTH = "1300px";
     public static final String DIALOG_HEIGHT = "800px";
 
-    //    final ValueProvider<Zak, String> honorProvider;
-//    final ValueProvider<Zak, String> yearProvider;
     private final ComponentRenderer<HtmlComponent, Zak> zakHonorarCellRenderer =
             new ComponentRenderer<>(zak ->
                     VzmFormatUtils.getMoneyComponent(zak.getHonorar())
@@ -81,7 +76,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 
     private TextField ckontField;
     private TextField rokField;
-    //    private Button kontEvidButton;
     private Checkbox archCheck;
     private TextField objednatelField;
     private TextField investorField;
@@ -93,46 +87,24 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private ComboBox<Klient> objednatelCombo;
     private ArchIconBox archIconBox;
 
-    private String kontFolderOrig;
-//    private Kont kontOrig;
-//    private String ckontOrig;
-//    private String textOrig;
-//    private String folderOrig;
-
-//    private TextField menaField = new TextField("Měna");
-
-//    private Span datZadComp = new Span("Datum zadání");
-//    private Checkbox archiveCheckbox; // = new DatePicker("Nástup");
-
-//    private Grid<Zak> zakazkyGrid;
-
-//    private final VerticalLayout roleGridContainer;
-//    private Grid<Role> roleTwinGrid;
-
+//    private String kontFolderOrig;
     private FlexLayout kontDocFolderComponent;
     private KzFolderField kontFolderField;
     private TreeGrid<VzmFileUtils.VzmFile> kontDocGrid;
-    private Button registerDocButton;
+    private Button docRefreshButton;
     private List<GridSortOrder<VzmFileUtils.VzmFile>> initialKontDocSortOrder;
 
     private Grid<Zak> zakGrid;
     private Button newZakButton;
     private Button newAkvButton;
     private FlexLayout zakGridTitleComponent;
-    //    private Button zakGridResizeBtn;
     private ComponentRenderer<Component, Zak> zakArchRenderer;
-    private ComponentRenderer<HtmlComponent, Zak> zakTextRenderer;
     private ComponentRenderer<Component, Zak> avizoRenderer;
 
     EvidKont evidKontOrig;
-    //    private KontEvidFormDialog kontEvidFormDialog;
     private ZakFormDialog zakFormDialog;
-    //    private SubFormDialog subFormDialog;
-//    private ConfirmationDialog<KontDoc> confirmDocUnregisterDialog;
-//    private final ConfirmationDialog<Zak> confirmZakOpenDialog = new ConfirmationDialog<>();
+    private FileViewerDialog fileViewerDialog;
 
-
-//    private Button saveButton;
     private Button revertButton;
     private Button saveAndCloseButton;
     private Button revertAndCloseButton;
@@ -158,24 +130,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private List<Klient> klientList;
     private CfgPropsCache cfgPropsCache;
 
-//    private Registration registrationForSave;
-//    private BiConsumer<T, Operation> itemSaver;
-//    private Consumer<T> itemDeleter;
-//    private BiConsumer<Kont, Operation> itemSaver;
-
-//    private boolean closeAfterSave;
-//    private Consumer<Kont> newItemSaver;
-//    private Consumer<Kont> modItemSaver;
-//    private Consumer<Kont> itemDeleter;
-//    private Consumer<Kont> formCloser;
-
-
     public KontFormDialog(
-//            BiConsumer<Kont, Operation> kontSaver,
-//                          Consumer<Kont> kontDeleter,
-//                          Consumer<Kont> kontFormCloser,
-//                          BiConsumer<Zak, Operation> zakSaver,
-//                          Consumer<Kont> zakDeleter,
             KontService kontService,
             ZakService zakService,
             FaktService faktService,
@@ -184,20 +139,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
             CfgPropsCache cfgPropsCache
     ) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT, true, true);
-
-//        this.dialogWidth = "1300px";
-//        this.dialogHeight = "800px";
-//        setWidth(dialogWidth);
-//        setHeight(dialogHeight);
-//        boolean useUpperRightPane = true;
-//        boolean useLowerPane  = true;
-
-//        this.newItemSaver = saveKont();
-//        this.modItemSaver = this::saveKont;
-//        this.itemDeleter = kontDeleter;
-//        this.formCloser = kontFormCloser;
-
-//        this.closeAfterSave = false;
 
         this.kontService = kontService;
         this.zakService = zakService;
@@ -231,64 +172,17 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                 , initZakGrid()
         );
 
-//        this.getElement().getStyle().set("display", "flex");
-//        getElement().getStyle().set("flex-direction", "column");
-////        getElement().getStyle().set("flex","auto");
-
-
-//        this.getDialogLeftBarPart().add(initKontEvidButton());
-//        this.addOpenedChangeListener(event -> {
-//            if (Operation.ADD == currentOperation) {
-//                kontEvidButton.click();
-//            }
-//        });
-
-//        moneyFormat = DecimalFormat.getInstance();
-//        if (moneyFormat instanceof DecimalFormat) {
-//            ((DecimalFormat)moneyFormat).setParseBigDecimal(true);
-//        }
-//        moneyFormat.setGroupingUsed(true);
-//        moneyFormat.setMinimumFractionDigits(2);
-//        moneyFormat.setMaximumFractionDigits(2);
-
-//        numFormat = DecimalFormat.getInstance(Locale.getDefault());
-//        if (numFormat instanceof DecimalFormat) {
-//            ((DecimalFormat)numFormat).setParseBigDecimal(true);
-//        }
-//        numFormat.setGroupingUsed(true);
-//        numFormat.setMinimumFractionDigits(2);
-//        numFormat.setMaximumFractionDigits(2);
-
-//        bigDecimalMoneyConverter = new StringToBigDecimalConverter("Špatný formát čísla") {
-//            @Override
-//            protected java.text.NumberFormat getFormat(Locale locale) {
-//                NumberFormat numberFormat = super.getFormat(locale);
-//                numberFormat.setGroupingUsed(true);
-//                numberFormat.setMinimumFractionDigits(2);
-//                numberFormat.setMaximumFractionDigits(2);
-//                return numberFormat;
-//            }
-//        };
-
-//        honorProvider = (zak) -> VzmFormatUtils.moneyFormat.format(zak.getHonorar());
-//        yearProvider = (zak) -> VzmFormatUtils.yearFormat.format(zak.getRok());
-
         zakFormDialog = new ZakFormDialog(
                 zakService, faktService, dochsumZakService, cfgPropsCache
         );
+
         zakFormDialog.addOpenedChangeListener(event -> {
-//            System.out.println("OPEN-CHANGED: " + event.toString());
             if (!event.isOpened()) {
                 finishZakEdit((ZakFormDialog) event.getSource());
             }
         });
-//        zakFormDialog.addDialogCloseActionListener(event -> {
-////            System.out.println("DIALOG-CLOSE: " + event.toString());
-//            zakFormDialog.close();
-////            finishKontEdit((KontFormDialog)event.getSource());
-//        });
 
-//        confirmDocUnregisterDialog = new ConfirmationDialog<>();
+        fileViewerDialog = new FileViewerDialog();
     }
 
 
@@ -300,7 +194,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         this.kontItemOrig = kont;
 
         klientList = klientService.fetchAll();
-//        // Following series of commands replacing combo box is because of a bug
+//        // Following series of commands replacing combo box are here because of a bug
 //        // Initialize $connector if values were not set in ComboBox element prior to page load. #188
         binder.removeBinding(objednatelCombo);
         getFormLayout().remove(objednatelCombo);
@@ -309,13 +203,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         getBinder().forField(objednatelCombo)
                 .bind(Kont::getKlient, Kont::setKlient);
         objednatelCombo.setPreventInvalidInput(true);
-
-//        this.objednatelCombo.setItems(new ArrayList<>());
-//        this.objednatelCombo.setItems(klientList);
-
-//        getFormLayout().remove(menaCombo);
-//        getFormLayout().addComponentAtIndex(3, initMenaCombo());
-//        menaCombo.setItems(EUR, CZK);
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -504,27 +391,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
             return;
         }
 
-//        List<Zak> zaks = getCurrentItem().getZaks();
-
-//        if (Operation.EDIT == oper) {
-//            zaks.removeItem(modZak);
-//            zak.removeItem(modZak);
-//        }
-//
-//        if (OperationResult.ITEM_DELETED != operRes) {
-//            int itemIndex = zaks.indexOf(modZak);
-//            if (itemIndex != -1) {
-//                getCurrentItem().getZaks().set(itemIndex, dialogZak);
-//            }
-//
-
-//        Zak dialogZak = zakFormDialog.getCurrentItem(); // Modified, just added or just deleted
-//        Operation oper = zakFormDialog.getCurrentOperation();
-//        OperationResult operRes = zakFormDialog.getLastOperationResult();
-//        if (OperationResult.NO_CHANGE == operRes) {
-//            return;
-//        }
-
         if (Operation.ADD == zakOper) {
             currentItem.addZakOnTop(zakAfter);
         } else if (Operation.EDIT == zakOper) {
@@ -535,10 +401,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                 if (itemIndex != -1) {
                     getCurrentItem().getZaks().set(itemIndex, zakAfter);
                 }
-//                int itemIndex = zaks.indexOf(modZak);
-//                if (itemIndex != -1) {
-//                    zaks.remove(itemIndex);
-//                }
             }
         }
         currentItem = kontService.fetchOne(currentItem.getId());
@@ -547,11 +409,9 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         zakGrid.getDataProvider().refreshAll();
         zakGrid.select(zakAfter);
 
-//        if ( (NO_CHANGE != zakOperRes) || lastZakFaktsChanged) {
-            binder.removeBean();
-            binder.readBean(currentItem);
-            refreshControls(currentItem, currentOperation);
-//        }
+        binder.removeBean();
+        binder.readBean(currentItem);
+        refreshControls(currentItem, currentOperation);
         updateKontDocViewContent(null);
     }
 
@@ -610,7 +470,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                 , revertAndCloseButton
         );
 
-//        buttonBar.getStyle().set("margin-top", "0.2em");
         bar.setSpacing(false);
         bar.setPadding(false);
         bar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
@@ -618,7 +477,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 
         bar.add(leftBarPart, rightBarPart);
         bar.setClassName("buttons");
-//        buttonBar.setSpacing(true);
 
         return bar;
     }
@@ -656,30 +514,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //        }
 //        return value;
 //    }
-
-
-
-
-//    /**
-//     * Called by abstract parent dialog from its open(...) method.
-//     */
-//    protected void openSpecific() {
-//
-//        // Mandatory, should be first
-////        setItemNames(getCurrentItem().getTyp());
-//
-//
-//        // Set locale here, because when it is set in constructor, it is effective only in first open,
-//        // and next openings show date in US format
-////        datZadComp.setLocale(new Locale("cs", "CZ"));
-////        vystupField.setLocale(new Locale("cs", "CZ"));
-//
-////        zakGrid.setItems(getCurrentItem().getNodes());
-////        kontDocGrid.setItems(getCurrentItem().getKontDocs());
-////        kontFolderField.setParentFolder(null);
-////        kontFolderText.setText(getCurrentItem().getFolder());
-//    }
-
 
     private void revertClicked(boolean closeAfterRevert) {
         revertFormChanges();
@@ -818,23 +652,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
             ;
             return false;
         }
-
-        //            GenericModel bean = myGrid.getSelectedRow();
-        //            ListDataProvider<GenericModel> dataProvider=(ListDataProvider<GenericModel>) myGrid.getDataProvider();
-        //            List<GenericModel> ItemsList=(List<GenericModel>) dataProvider.getItems();
-
-        //            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-        //            kzTreeGrid.getDataProvider().refreshAll();
-        //
-        //            HierarchicalDataProvider dataProvider = kzTreeGrid.getDataProvider();
-        //            List<KzTreeAware> itemsList =(List<KzTreeAware>) dataProvider. getItems();
-        //            int index=itemsList.indexOf(bean);//index of the selected item
-        //            GenericModel newSelectedBean=itemsList.get(index+1);
-        //            dataProvider.getItems().remove(bean);
-        //            dataProvider.refreshAll();
-        //            myGrid.select(newSelectedBean);
-        //            myGrid.scrollTo(index+1);
-
     }
 
 
@@ -869,9 +686,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private boolean needCreateKontDirs(final Kont itemToSave, final Operation oper) {
         return  (Operation.ADD == oper) ||
                 ((Operation.EDIT == oper) && !(itemToSave.getFolder()).equals(evidKontOrig.getFolder()));
-
-//                                ((null != folder) && (null != evidKontOrig) && (folder.equals(evidKontOrig.getFolder())) ||
-//                        !VzmFileUtils.kontDocRootExists(cfgPropsCache.getDocRootServer(), folder))
     }
 
     private boolean createKontDirs(final Kont kont) {
@@ -924,115 +738,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     public Kont getKontItemOrig()  {
         return kontItemOrig;
     }
-
-//    private void saveKontEvid(EvidKont evidKont, Operation operation) {
-//        getCurrentItem().setCkont(evidKont.getCkont());
-//        getCurrentItem().setText(evidKont.getText());
-//        getCurrentItem().setFolder(evidKont.getFolder());
-//        getBinder().readBean(getCurrentItem());
-//        formFieldValuesChanged();
-//
-//        Notification.show("Číslo a text kontraktu akceptovány", 2500, Notification.Position.TOP_CENTER);
-//    }
-
-//    private void saveZakForForm(Zak zak, Operation operation) {
-//
-//        Zak savedZak = zakFormDialog.saveFakt(zak, operation);
-//
-////        if (Operation.EDIT == operation && null != zakFolderOrig && !zakFolderOrig.equals(zak.getFolder())) {
-////            if (!VzmFileUtils.kontDocRootExists(getDocRootServer(), zak.getFolder())) {
-////                new OkDialog().open("Adresáře zakázky"
-////                        , "POZOR, dokumentový ani projektový adresář se automaticky nepřejmenovávají.", "");
-////            }
-////            if (!VzmFileUtils.kontProjRootExists(getProjRootServer(), zak.getFolder())) {
-////                new OkDialog().open("Projektový adresáře zakázky"
-////                        , "POZOR, projektový adresář zakázky nenalezen, měl by se přejmenovat ručně", "");
-////            }
-////        } else if (Operation.ADD == operation){
-////            if (!VzmFileUtils.createZakDocDirs(
-////                        cfgPropsCache.getDocRootServer(), zak.getKontFolder(), zak.getFolder())) {
-////                new OkDialog().open("Dokumentové adresáře zakázky"
-////                        , "Adresářovou strukturu se nepodařilo vytvořit", "");
-////            };
-////            if (!VzmFileUtils.createZakProjDirs(
-////                        cfgPropsCache.getProjRootServer(), zak.getKontFolder(), zak.getFolder())) {
-////                new OkDialog().open("Projektové adresáře zakázky"
-////                        , "Adresářovou strukturu se nepodařilo vytvořit", "");
-////            };
-////    //            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
-////    //            kontProjRootDir.setReadOnly();
-////        } else {
-////            new OkDialog().open("Adresáře zakázky"
-////                    , "NEZNÁMÁ OPERACE", "")
-////            ;
-////        }
-////
-////        Zak savedZak = zakService.saveFakt(zak);
-////        new OkDialog().open("Zakázka " + savedZak.getKont().getCkont() + " / " + savedZak.getCzak() + " uložena"
-////                , "", "");
-//
-//
-//
-////        zakGrid.getDataCommunicator().getKeyMapper().removeAll();
-//        if (Operation.ADD == operation) {
-//            getCurrentItem().getZaks().add(0, savedZak);
-//        } else {
-//            int zakItemIndex = getCurrentItem().getZaks().indexOf(savedZak);
-//            if (zakItemIndex != -1) {
-//                getCurrentItem().getZaks().set(zakItemIndex, savedZak);
-//            }
-//        }
-//        zakGrid.setItems(getCurrentItem().getZaks());
-//
-//        zakGrid.getDataCommunicator().getKeyMapper().removeAll();
-//        zakGrid.getDataProvider().refreshAll();
-//        zakGrid.select(savedZak);
-//
-//        Notification.show("Zakázka " + savedZak.getKont().getCkont() + " / " + savedZak.getCzak() + " uložena"
-//                , 2500, Notification.Position.TOP_CENTER);
-//
-////        Notification.show(
-////                "Změny zakázky uloženy", 3000, Notification.Position.TOP_CENTER);
-//    }
-
-//    private void deleteZakForForm(Zak zak) {
-//        String ckzDel = String.format("%s / %d", zak.getCkont(), zak.getCzak());
-//        try {
-//            boolean zakWasDeleted = zakService.deleteZak(zak);
-//
-//            if (!zakWasDeleted) {
-//                ConfirmDialog
-//                        .createError()
-//                        .withCaption("Zrušení zakázky")
-//                        .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
-//                        .open();
-//            } else {
-//                getCurrentItem().getZaks().removeIf(z -> z.getId().equals(zak.getId()));
-//                zakGrid.setItems(getCurrentItem().getZaks());
-//                zakGrid.getDataCommunicator().getKeyMapper().removeAll();
-//                zakGrid.getDataProvider().refreshAll();
-//                getLogger().info(String.format("ZAKAZKA %s deleted", ckzDel));
-//                Notification.show(String.format("Zakázka %s zrušena.", ckzDel)
-//                        , 2500, Notification.Position.TOP_CENTER)
-//                ;
-//                ConfirmDialog
-//                        .createInfo()
-//                        .withCaption("Zrušení zakázky")
-//                        .withMessage(String.format("Zakázka %s byla zrušena.", ckzDel))
-//                        .open()
-//                ;
-//            }
-//        } catch (Exception e) {
-//            getLogger().error(String.format("Error during deletion ZAKAZKA %s / %d", zak.getCkont(), zak.getCzak()), e);
-//            ConfirmDialog
-//                    .createError()
-//                    .withCaption("Zrušení zakázky")
-//                    .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
-//                    .open()
-//            ;
-//        }
-//    }
-
 
     private Component initCkontField() {
         ckontField = new TextField("Číslo kontraktu");
@@ -1109,9 +814,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private ComponentRenderer<Component, Kont> kontArchRenderer = new ComponentRenderer<>(kont -> {
         ArchIconBox archCheck = new ArchIconBox();
         archCheck.showIcon(kont.getTyp(), kont.getArchState());
-//        archBox.showIcon(ItemType.KONT == kz.getTyp() ?
-//                (kz.getArch() ? icoKontArchived : icoKontActive)
-//                : kz.getArch() ? icoZakArchived : new Span();
         return archCheck;
     });
 
@@ -1127,33 +829,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private Component initArchIconBox() {
         archIconBox = new ArchIconBox();
         return archIconBox;
-//        archBox.showIcon(ItemType.KONT == kz.getTyp() ?
-//                (kz.getArch() ? icoKontArchived : icoKontActive)
-//                : kz.getArch() ? icoZakArchived : new Span();
-//        return archCheck;
     }
-
-
-//    private Component initArchCheck() {
-//        archCheck = new Checkbox("Archiv");
-//        archCheck.getElement().setAttribute("theme", "secondary");
-//        archCheck.setReadOnly(true);
-//        getBinder().forField(archCheck)
-//                .bind(Kont::getArch, null);
-//        return archCheck;
-//    }
-
-
-//    private Component initEvidArchComponent() {
-//        FlexLayout evidArchCont = new FlexLayout();
-//        evidArchCont.setAlignItems(FlexComponent.Alignment.BASELINE);
-//        evidArchCont.add(
-//                initKontEvidButton()
-//                , new Ribbon("3em")
-//                , initArchCheck()
-//        );
-//        return evidArchCont;
-//    }
 
     private Component initTextField() {
         textField = new TextField("Text kontraktu");
@@ -1168,47 +844,13 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         return textField;
     }
 
-//    private Component initObjednatelField() {
-//        objednatelField = new TextField("Objednatel");
-//        objednatelField.getElement().setAttribute("colspan", "2");
-//        getBinder().forField(objednatelField)
-////                .withConverter(String::trim, String::trim)
-////                .withValidator(new StringLengthValidator(
-////                        "Uživatelské jméno musí obsahovat aspoň 3 znamky",
-////                        3, null))
-////                .withValidator(
-////                        objednatel -> (currentOperation != Operation.ADD) ?
-////                            true : kontService.fetchByObjednatel(objednatel) == null,
-////                        "Uživatel s tímto jménem již existuje, zvol jiné jméno")
-//                .bind(Kont::getObjednatel, Kont::setObjednatel);
-//        objednatelField.setValueChangeMode(ValueChangeMode.EAGER);
-//        return objednatelField;
-//    }
-
     private Component initObjednatelCombo() {
         objednatelCombo = new ComboBox<>("Objednatel");
         objednatelCombo.getElement().setAttribute("colspan", "2");
         objednatelCombo.setItems(new ArrayList<>());
         objednatelCombo.setItemLabelGenerator(Klient::getName);
-//        objednatelCombo.addValueChangeListener(event -> {
-//            Klient klient = objednatelCombo.getValue();
-////            if (klient != null) {
-////                Notification.show("Vybraný klient: " + klient.getName());
-////            } else {
-////                Notification.show("No song is selected");
-////            }
-//        });
-
-//        getBinder().forField(objednatelCombo)
-////            .withConverter(mena -> Mena.valueOf(mena), menaEnum -> menaEnum.name())
-////                .withValidator(klient -> (null != klient) && klientList.contains(klient)
-////                        ,"Klient musí být zadán")
-//                .bind(Kont::getKlient, Kont::setKlient);
-//        objednatelCombo.setPreventInvalidInput(true);
-
         return objednatelCombo;
     }
-
 
     private Component initInvestorField() {
         investorField = new TextField("Investor");
@@ -1228,24 +870,13 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private Component initMenaCombo() {
         menaCombo = new ComboBox<>("Měna");
         menaCombo.setItems(Mena.values());
-
-//        menaCombo.setRequired(true);  // Bug when using with validator
-//        menaCombo.setDataProvider((DataProvider<Mena, String>) EnumSet.allOf(Mena.class));
-//        menaCombo.setItems(EnumSet.allOf(Mena.class));
         getBinder().forField(menaCombo)
 //            .withConverter(mena -> Mena.valueOf(mena), menaEnum -> menaEnum.name())
             .withValidator(mena -> (null != mena) && Arrays.asList(Mena.values()).contains(mena)
                           ,"Měna musí být zadána")
             .bind(Kont::getMena, Kont::setMena);
         menaCombo.setPreventInvalidInput(true);
-
         return menaCombo;
-
-//        final BeanItemContainer<Status> container = new BeanItemContainer<>(Status.class);
-//        container.addAll(EnumSet.allOf(Status.class));
-//        cStatus.setContainerDataSource(container);
-//        cStatus.setItemCaptionPropertyId("caption");
-//        basicContent.addComponent(cStatus);
     }
 
     private Component initHonorarField() {
@@ -1301,47 +932,10 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         kontFolderField.getStyle().set("padding-top", "0em");
         kontFolderField.setReadOnly(true);
         getBinder().forField(kontFolderField)
-//                .withValidator(
-//                        folder ->
-//                                ((Operation.ADD == currentOperation) && StringUtils.isNotBlank(folder))
-//                        , "Složka kontraktu není definována, je třeba zadat číslo a text kontraktu"
-//                )
-
-//                .withValidator(
-//                    folder ->
-//                        ((Operation.ADD == currentOperation) &&
-//                                !VzmFileUtils.kontDocRootExists(cfgPropsCache.getDocRootServer(), folder))
-//                        ||
-//                        ((Operation.EDIT == currentOperation) &&
-////                                ((null != folder) && (null != evidKontOrig) && (folder.equals(evidKontOrig.getFolder())) ||
-//                                ((folder.equals(evidKontOrig.getFolder())) ||
-//                                        !VzmFileUtils.kontDocRootExists(cfgPropsCache.getDocRootServer(), folder))
-//                        )
-//                    , "Dokumentový adresář kontraktu stejného jména již existuje, změň číslo kontraktu nebo text."
-//                )
-//                .withValidator(
-//                    folder ->
-//                        ((Operation.ADD == currentOperation) &&
-//                                !VzmFileUtils.kontProjRootExists(cfgPropsCache.getProjRootServer(), folder))
-//                        ||
-//                        ((Operation.EDIT == currentOperation) &&
-////                                ((null != folder) && (null != evidKontOrig) && (folder.equals(evidKontOrig.getFolder())) ||
-//                                ((folder.equals(evidKontOrig.getFolder())) ||
-//                                        !VzmFileUtils.kontProjRootExists(cfgPropsCache.getProjRootServer(), folder)
-//                                )
-//                        )
-//                    , "Projektový adresář kontraktu stejného jména již existuje, číslo kontraktu nebo text."
-//                )
-
-                .bind(Kont::getFolder, Kont::setFolder);
-
+                .bind(Kont::getFolder, Kont::setFolder)
+        ;
         return kontFolderField;
     }
-
-//    private MultiFileMemoryBuffer buffer;
-    private MemoryBuffer buffer;
-    private Upload upload;
-
 
 //    private Component initFileDialogButton() {
 //        FileDialog dialog = new FileDialog((Frame) null, "Select File to Open");
@@ -1372,155 +966,24 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         return  layout1;
     }
 
-    private Component initUploadDocButton() {
-//        registerDocButton = new NewItemButton("Dokument", event -> {});
-//        return registerDocButton;
-
-//        buffer = new MultiFileMemoryBuffer();
-        buffer = new MemoryBuffer();
-        upload = new Upload(buffer);
-        upload.setHeight("1em");
-        upload.setAutoUpload(false);
-        upload.setDropAllowed(false);
-//        upload.setUploadButton();
-
-        upload.setUploadButton(initRegisterDocButton());
-
-        upload.addAttachListener(event -> {
-            System.out.println("Attached: " + event.getSource());
+    private Component initDocRefreshButton() {
+        docRefreshButton = new ReloadButton("Načte adresáře", event -> {
+            updateKontDocViewContent(null);
         });
-
-
-//        upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/gif");
-        upload.addStartedListener(event -> {
-            System.out.println("Started: " + event.getFileName());
-        });
-
-        upload.addFailedListener(event -> {
-            System.out.println("Failed: " + event.getFileName());
-        });
-
-        upload.addFinishedListener(event -> {
-            System.out.println("Finished: " + event.getFileName());
-        });
-
-        upload.addProgressListener(event -> {
-            System.out.println("Progress: " + event.getContentLength());
-        });
-
-        upload.addSucceededListener(event -> {
-            System.out.println("Succeeded: " + event.getFileName());
-//            Component component = createComponent(event.getMIMEType(),
-//                    event.getFileName(),
-//                    buffer.getInputStream(event.getFileName()));
-//            showOutput(event.getFileName(), component, output);
-        });
-//
-//        upload.addSucceededListener(event -> {
-//            event.getFileName(), buffer.getInputStream());
-//
-//            Component component = createComponent(event.getMIMEType(),
-//                    event.getFileName(), buffer.getInputStream());
-//            showOutput(event.getFileName(), component, output);
-//        });
-//        upload.
-
-        return upload;
+        return docRefreshButton;
     }
-
-    private Component initRegisterDocButton() {
-        registerDocButton = new NewItemButton("Dokument", event -> {});
-        return registerDocButton;
-    }
-
-//    private Component createNonImmediateUpload() {
-//        Div output = new Div();
-//
-//        // begin-source-example
-//        // source-example-heading: Non immediate upload
-//        MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
-//        Upload upload = new Upload(buffer);
-//        upload.setAutoUpload(false);
-//
-//        upload.addSucceededListener(event -> {
-//            Component component = createComponent(event.getMIMEType(),
-//                    event.getFileName(),
-//                    buffer.getInputStream(event.getFileName()));
-//            showOutput(event.getFileName(), component, output);
-//        });
-//        // end-source-example
-//        upload.setMaxFileSize(200 * 1024);
-//
-//        return output;
-//        addCard("Non immediate upload", upload, output);
-//    }
-//
-//    private Component createComponent(String mimeType, String fileName,
-//                                      InputStream stream) {
-//        if (mimeType.startsWith("text")) {
-//            String text = "";
-//            try {
-//                text = IOUtils.toString(stream, "UTF-8");
-//            } catch (IOException e) {
-//                text = "exception reading stream";
-//            }
-//            return new Text(text);
-//        } else if (mimeType.startsWith("image")) {
-//            Image image = new Image();
-//            try {
-//
-//                byte[] bytes = IOUtils.toByteArray(stream);
-//                image.getElement().setAttribute("src", new StreamResource(
-//                        fileName, () -> new ByteArrayInputStream(bytes)));
-//                try (ImageInputStream in = ImageIO.createImageInputStream(
-//                        new ByteArrayInputStream(bytes))) {
-//                    final Iterator<ImageReader> readers = ImageIO
-//                            .getImageReaders(in);
-//                    if (readers.hasNext()) {
-//                        ImageReader reader = readers.next();
-//                        try {
-//                            reader.setInput(in);
-//                            image.setWidth(reader.getWidth(0) + "px");
-//                            image.setHeight(reader.getHeight(0) + "px");
-//                        } finally {
-//                            reader.dispose();
-//                        }
-//                    }
-//                }
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//            return image;
-//        }
-//        Div content = new Div();
-//        String text = String.format("Mime type: '%s'\nSHA-256 hash: '%s'",
-//                mimeType, MessageDigestUtil.sha256(stream.toString()));
-//        content.setText(text);
-//        return new Div();
-//
-//    }
-//
-//    private void showOutput(String text, Component content,
-//                            HasComponents outputContainer) {
-//        HtmlComponent p = new HtmlComponent(Tag.P);
-//        p.getElement().setText(text);
-//        outputContainer.add(p);
-//        outputContainer.add(content);
-//    }
-
 
     private Component initDocGridBar() {
         FlexLayout docGridBar = new FlexLayout();
         docGridBar.setWidth("100%");
-        docGridBar.setHeight("3em");
+//        docGridBar.setHeight("3em");
         docGridBar.setAlignItems(FlexComponent.Alignment.BASELINE);
         docGridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         docGridBar.add(
                 initDocGridTitle(),
                 new Ribbon(),
 //                initUploadDocButton()
-                initRegisterDocButton()
+                initDocRefreshButton()
         );
         return docGridBar;
     }
@@ -1539,24 +1002,12 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         kontDocGrid.setId("kont-doc-grid");
         kontDocGrid.setClassName("vizman-simple-grid");
 
-//        kontDocGrid.setSizeFull();
-//        kontDocGrid.setHeight("20vh");
-//        kontDocGrid.setHeight("30vh");
-//        kontDocGrid.setHeight("12em");
-
-
-//        kontDocGrid.addColumn(KontDoc::getFilename).setHeader("Soubor");
-//        kontDocGrid.addColumn(KontDoc::getNote).setHeader("Poznámka");
-////        kontDocGrid.addColumn("Honorář CZK");
-//        kontDocGrid.addColumn(KontDoc::getDateCreate).setHeader("Registrováno");
-//        kontDocGrid.addColumn(new ComponentRenderer<>(this::buildDocRemoveButton))
-//                .setFlexGrow(0);
-
-//        kontDocGrid.addColumn(KontDoc::getNote).setHeader("Poznámka");
-//        kontDocGrid.addColumn("Honorář CZK");
-//        kontDocGrid.addColumn(File::getDate...).setHeader("Poslední změna");
-//        kontDocGrid.addColumn(new ComponentRenderer<>(this::buildDocRemoveButton))
-//                .setFlexGrow(0);
+        kontDocGrid.addItemDoubleClickListener(event -> {
+            VzmFile vzmFile = event.getItem();
+//            Notification.show(String.format("Folder %s Soubor: %s", event.getItem().getName(), event.getItem().getName())
+//                    , 2500, Notification.Position.TOP_CENTER);
+            fileViewerDialog.openDialog(vzmFile);
+        });
 
         Grid.Column hCol = kontDocGrid.addColumn(fileIconTextRenderer);
         hCol.setHeader("Název")
@@ -1565,7 +1016,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                 .setKey("kont-doc-file-name")
                 .setResizable(true)
         ;
-
         return kontDocGrid;
     }
 
@@ -1578,6 +1028,11 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
             .withProperty("icon-name", file -> String.valueOf(vzmFileIconNameProvider.apply(file)))
             .withProperty("icon-style", file -> String.valueOf(vzmFileIconStyleProvider.apply(file)))
             .withProperty("name", File::getName)
+            // Following dobleclick listener did notwork; grid listener used instead of it
+//            .withEventHandler("doubleClick", item -> {
+//                Notification.show(String.format("Soubor: %s", item.getName())
+//                        , 2500, Notification.Position.TOP_CENTER);
+//            })
         ;
 
     private void updateKontDocViewContent(final VzmFileUtils.VzmFile itemToSelect) {
@@ -1615,27 +1070,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         } else  {
             kontDocGrid.sort(sortOrderOrig);
         }
-    }
-
-    private Component buildDocRemoveButton(KontDoc kontDoc) {
-        return new GridItemFileRemoveBtn(event -> {
-            ConfirmDialog.createQuestion()
-                    .withCaption("REGISTRACE DOKUMENTU")
-                    .withMessage("Zrušit registraci dokumentu?")
-                    .withYesButton(() -> {
-                        removeDocRegistration(kontDoc);
-                    }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT"))
-                    .withCancelButton(ButtonOption.caption("ZPĚT"))
-                    .open();
-
-//            confirmDocUnregisterDialog.open("Zrušit registraci dokumentu?",
-//                    "", "", "Zrušit",
-//                    true, kontDoc, this::removeDocRegistration, this::open);
-        });
-    }
-
-    private void removeDocRegistration(KontDoc kontDoc) {
-//        closeDialog();
     }
 
     // ----------------------------------------------

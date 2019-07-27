@@ -213,9 +213,9 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
     // Build view toolbar
         viewToolBar.setWidth("100%");
         viewToolBar.setPadding(true);
-        viewToolBar.getStyle().
-
-        set("padding-bottom","5px");
+        viewToolBar.getStyle()
+            .set("padding-bottom","5px")
+        ;
 
         Span viewTitle = new Span(TITLE_KONT_LIST.toUpperCase());
         viewTitle.getStyle()

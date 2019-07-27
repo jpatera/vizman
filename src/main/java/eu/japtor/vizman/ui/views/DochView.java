@@ -200,7 +200,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     @PostConstruct
     public void init() {
-        System.out.println("## 1 POST CONSTRUCT DochView ##");
+//        System.out.println("## 1 POST CONSTRUCT DochView ##");
         authUsername = SecurityUtils.getUsername();
         initDochData();
         dochFormDialog = new DochFormDialog(
@@ -209,12 +209,12 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        System.out.println("## BEFORE ENTER DochView ##");
+//        System.out.println("## BEFORE ENTER DochView ##");
     }
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        System.out.println("## 2 ON ATTACH DochView ##");
+//        System.out.println("## 2 ON ATTACH DochView ##");
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format

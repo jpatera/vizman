@@ -21,7 +21,7 @@
         <!--<vaadin.version>12.0.2</vaadin.version>-->
         <!--<vaadin.version>12.0.5</vaadin.version>-->
         <!--<vaadin.version>13.0.0.beta3</vaadin.version>-->
-        <vaadin.version>13.0.1</vaadin.version>
+        <vaadin.version>13.0.11</vaadin.version>
     </properties>
 
     <parent>
@@ -76,6 +76,18 @@
         <!--</dependency>-->
 
         <dependency>
+            <groupId>org.vaadin.alejandro</groupId>
+            <artifactId>pdf_browser</artifactId>
+            <version>1.0.0-alpha1</version>
+            <exclusions>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.vaadin.stefan</groupId>
             <artifactId>fullcalendar</artifactId>
             <version>1.7.1</version>
@@ -85,6 +97,12 @@
             <groupId>org.claspina</groupId>
             <artifactId>confirm-dialog</artifactId>
             <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.vaadin.olli</groupId>
+            <artifactId>file-download-wrapper</artifactId>
+            <version>1.1.0</version>
         </dependency>
 
         <!--<dependency>-->

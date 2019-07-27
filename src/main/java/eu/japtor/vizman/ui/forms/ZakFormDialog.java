@@ -100,7 +100,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private FlexLayout zakDocFolderComponent;
     private KzFolderField zakFolderField;
     private TreeGrid<VzmFileUtils.VzmFile> zakDocGrid;
-    private Button registerDocButton;
+    private Button docRefreshButton;
     private List<GridSortOrder<VzmFileUtils.VzmFile>> initialZakDocSortOrder;
 
     private Grid<Fakt> faktGrid;
@@ -111,6 +111,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
     private FaktFormDialog faktFormDialog;
     private SubFormDialog subFormDialog;
+    private FileViewerDialog fileViewerDialog;
 
 
 //    private Button saveButton;
@@ -207,6 +208,8 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 finishSubEdit((SubFormDialog) event.getSource());
             }
         });
+
+        fileViewerDialog = new FileViewerDialog();
     }
 
 
@@ -1384,20 +1387,23 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     }
 
 
-    private Component initRegisterDocButton() {
-        registerDocButton = new NewItemButton("Dokument", event -> {});
-        return registerDocButton;
+    private Component initDocRefreshButton() {
+        docRefreshButton = new ReloadButton("Načte adresáře", event -> {
+            updateZakDocViewContent(null);
+        });
+        return docRefreshButton;
     }
 
     private Component initDocGridBar() {
         FlexLayout docGridBar = new FlexLayout();
         docGridBar.setWidth("100%");
+//        docGridBar.setHeight("3em");
         docGridBar.setAlignItems(FlexComponent.Alignment.BASELINE);
         docGridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         docGridBar.add(
                 initDocGridTitle(),
                 new Ribbon(),
-                initRegisterDocButton()
+                initDocRefreshButton()
         );
         return docGridBar;
     }
@@ -1416,12 +1422,10 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         zakDocGrid.setId("zak-doc-grid");
         zakDocGrid.setClassName("vizman-simple-grid");
 
-//        zakDocGrid.addColumn(ZakDoc::getFilename).setHeader("Soubor");
-//        zakDocGrid.addColumn(ZakDoc::getNote).setHeader("Poznámka");
-////        zakDocGrid.addColumn("Honorář CZK");
-//        zakDocGrid.addColumn(ZakDoc::getDateCreate).setHeader("Registrováno");
-//        zakDocGrid.addColumn(new ComponentRenderer<>(this::buildDocRemoveButton))
-//                .setFlexGrow(0);
+        zakDocGrid.addItemDoubleClickListener(event -> {
+            VzmFile vzmFile = event.getItem();
+            fileViewerDialog.openDialog(vzmFile);
+        });
 
         Grid.Column hCol = zakDocGrid.addColumn(fileIconTextRenderer);
         hCol.setHeader("Název")

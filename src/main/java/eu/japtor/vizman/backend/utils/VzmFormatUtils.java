@@ -83,7 +83,7 @@ public class VzmFormatUtils {
                     + (file.exists() ? "MediumSeaGreen;" : "Red;");
         } else {
             iconStyle = "padding-left: 1em; width: 0.8em; height: 0.8em; color: "
-                    + (file.isFile() ? "Grey;" : "DarkMagenta;");
+                    + (file.isFile() ? "Peru;" : "DarkMagenta;");
         }
         return iconStyle;
     };

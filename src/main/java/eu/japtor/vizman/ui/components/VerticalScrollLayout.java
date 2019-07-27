@@ -6,6 +6,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class VerticalScrollLayout  extends VerticalLayout {
 
+    private static final String COMPONENT_HEIGHT = "750px";
+    private static final String CONTENT_FIXED_HEIGHT = "720px";
     private VerticalLayout contentPane;
 
     public VerticalScrollLayout(){
@@ -18,21 +20,29 @@ public class VerticalScrollLayout  extends VerticalLayout {
     }
 
     private void preparePanel() {
+        this.setHeight(COMPONENT_HEIGHT);
         this.setWidth("100%");
-        setHeight("650px");
-//        this.setHeight("400px");
-        this.getStyle().set("overflow", "auto");
-        this.getStyle().set("border", "1px solid");
-        this.setAlignItems(FlexComponent.Alignment.STRETCH);
+//        this.getElement().getStyle().set("padding", "0");
+//        this.getElement().getStyle().set("margin", "0");
+        this.getStyle()
+                .set("display", "flex")
+                .set("margin-top", "4px")
+                .set("padding-bottom", "8px")
+                .set("overflow", "auto")
+                .set("border", "1px solid")
+                .set("border-color", "darkGrey")
+        ;
+        this.setAlignItems(Alignment.STRETCH);
 
         contentPane = new VerticalLayout();
-        contentPane.getStyle().set("display", "block");
+        contentPane.getStyle()
+                .set("display", "block")
+                .set("margin-top", "0")
+        ;
         contentPane.setSizeUndefined();
-        contentPane.setAlignItems(FlexComponent.Alignment.STRETCH);
-//        contentPane.setWidth("100%");
-//        contentPane.setWidth("100%");
+        contentPane.setHeight(CONTENT_FIXED_HEIGHT);
+        contentPane.setAlignItems(Alignment.CENTER);
         contentPane.setPadding(false);
-//        super.add(contentPane);
         this.add(contentPane);
     }
 
@@ -55,4 +65,26 @@ public class VerticalScrollLayout  extends VerticalLayout {
     public void addContentAsFirst(Component component) {
         contentPane.addComponentAtIndex(0, component);
     }
+
+    public void setFixedHeight() {
+        contentPane.setHeight(CONTENT_FIXED_HEIGHT);
+    }
+
+    public void setUndefinedHeight() {
+        contentPane.setHeight(null);
+//        contentPane.setHeight("98%");
+    }
+
+    public void setMaxHeight() {
+        contentPane.setHeight("98%");
+    }
+
+    public void setAlignCenter() {
+        this.setAlignItems(Alignment.CENTER);
+    }
+
+    public void setAlignStretch() {
+        this.setAlignItems(Alignment.STRETCH);
+    }
+
 }
