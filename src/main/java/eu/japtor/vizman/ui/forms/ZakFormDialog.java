@@ -196,7 +196,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 , initFaktGrid()
         );
 
-        faktFormDialog = new FaktFormDialog(faktService);
+        faktFormDialog = new FaktFormDialog(faktService, cfgPropsCache);
         faktFormDialog.addOpenedChangeListener(event -> {
             if (!event.isOpened()) {
                 finishFaktEdit((FaktFormDialog) event.getSource());

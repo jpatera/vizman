@@ -13,6 +13,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.FaktService;
 import eu.japtor.vizman.backend.service.VzmServiceException;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
@@ -21,6 +22,7 @@ import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Locale;
 
 
@@ -41,7 +43,7 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
     private Button revertAndCloseButton;
     private Button deleteAndCloseButton;
     private HorizontalLayout leftBarPart;
-//    private Button fakturovatButton;
+    private Button faktExpButton;
 //    private Button stornoButton;
 
     private TextField zakEvidField;
@@ -53,6 +55,8 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
     private TextField dateTimeExportField;
     private TextField faktCisloField;
 
+    FaktExpDialog faktExpDialog;
+
     private Binder<Fakt> binder = new Binder<>();
     private Fakt currentItem;
     private Fakt origItem;
@@ -63,11 +67,18 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
 
 //    @Autowired
     private FaktService faktService;
+    private CfgPropsCache cfgPropsCache;
 
 
-    public FaktFormDialog(FaktService faktService) {
+    public FaktFormDialog(
+            FaktService faktService
+            , CfgPropsCache cfgPropsCache
+    ) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         this.faktService = faktService;
+        this.cfgPropsCache = cfgPropsCache;
+
+        faktExpDialog = new FaktExpDialog(this.cfgPropsCache);
 
         getFormLayout().add(
                 initZakEvidField()
@@ -199,10 +210,6 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
         return binder.hasChanges();
     }
 
-
-
-
-
     private boolean isFakturovano(final Fakt fakt) {
         return null != fakt.getCastka() && fakt.getCastka().compareTo(BigDecimal.ZERO) > 0;
     }
@@ -216,29 +223,10 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
     }
 
 
-//    private Component initFakturovatButton() {
-//        fakturovatButton = new Button("Fakturovat");
-//        fakturovatButton.addClickListener(event -> {
-//
-//            if (!canFakturovat(getCurrentItem())) {
-//                new OkDialog().open("Nelze fakturovat", "Některé položky předpisu fakturace nejsou zadány.", "");
-//                return;
-//            }
-//
-//            boolean isValid = binder.writeBeanIfValid(getCurrentItem());
-//            if (isValid) {
-//                getCurrentItem().setZaklad(getCurrentItem().getZakHonorar());
-//                getCurrentItem().setCastka(getCurrentItem().getZakHonorar()
-//                        .multiply(getCurrentItem().getPlneni().divide(BigDecimal.valueOf(100))));
-//                getCurrentItem().setDateVystav(LocalDate.now());
-//                getBinder().readBean(getCurrentItem());
-//                activateControls(true);
-//                dateVystavField.setReadOnly(false);
-//                getSaveButton().setEnabled(true);
-//            }
-//        });
-//        return fakturovatButton;
-//    }
+    private Button initFaktExpButton() {
+        faktExpButton = new Button("Fakturovat");
+        return faktExpButton;
+    }
 
 //    private Component initStornoButton() {
 //        stornoButton = new Button("Storno fakturace");
@@ -413,12 +401,16 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
         revertAndCloseButton = new Button(REVERT_AND_CLOSE_STR);
         revertAndCloseButton.addClickListener(e -> revertClicked(true));
 
+        faktExpButton = initFaktExpButton();
+        faktExpButton.addClickListener(event -> faktExpClicked());
+
         leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);
         leftBarPart.add(
 //                saveButton
                 revertButton
                 , deleteAndCloseButton
+                , faktExpButton
         );
 
         HorizontalLayout rightBarPart = new HorizontalLayout();
@@ -441,6 +433,29 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
         );
         return bar;
     }
+
+    private void faktExpClicked() {
+        if (!canFakturovat(getCurrentItem())) {
+            new OkDialog().open("Nelze fakturovat", "Některé položky předpisu fakturace nejsou zadány.", "");
+            return;
+        }
+
+        boolean isValid = binder.writeBeanIfValid(getCurrentItem());
+        if (isValid) {
+//                getCurrentItem().setZaklad(getCurrentItem().getZakHonorar());
+//                getCurrentItem().setCastka(getCurrentItem().getZakHonorar()
+//                        .multiply(getCurrentItem().getPlneni().divide(BigDecimal.valueOf(100))));
+            getCurrentItem().setDateVystav(LocalDate.now());
+            getBinder().readBean(getCurrentItem());
+//                activateControls(true);
+//                dateVystavField.setReadOnly(false);
+//                getSaveButton().setEnabled(true);
+        }
+
+        faktExpDialog.openFaktExpDialog(currentItem);
+    };
+
+
 
     private void revertClicked(boolean closeAfterRevert) {
         revertFormChanges();

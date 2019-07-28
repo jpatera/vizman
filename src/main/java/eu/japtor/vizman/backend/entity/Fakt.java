@@ -204,12 +204,21 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemT
     @Transient
     public String getZakEvid() {
         return getCkont() + " / " + getCzak()
-                + (null == zak.getText() ? "" : " , " + getZak().getText());
+                + (null == zak.getText() ? "" : " , " + zak.getText());
     }
 
     @Transient
     public String getFaktEvid() {
         return getCkont() + " / " + getCzak() + " / " + cfakt;
+    }
+
+    @Transient
+    public String getFaktExpFileName() {
+        return getCkont() + "_#_" + getCzak() + "_#_" + cfakt
+                + "_##_" + (null == zak.getKontFolder() ? "NO-KONT-TEXT" : zak.getKontFolder().substring(0, 15))
+                + "_#_" + (null == zak.getFolder() ? "NO-ZAK-TEXT" : zak.getFolder().substring(0, 15))
+                + ".txt"
+        ;
     }
 
     @Transient

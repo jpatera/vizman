@@ -1,38 +1,52 @@
 package eu.japtor.vizman.ui.forms;
 
-import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.server.StreamResource;
-import eu.japtor.vizman.fsdataprovider.FileTypeResolver;
-import eu.japtor.vizman.tools.EmbeddedDocComponent;
+import eu.japtor.vizman.backend.entity.Fakt;
+import eu.japtor.vizman.backend.service.CfgPropsCache;
+import eu.japtor.vizman.backend.utils.VzmFileUtils;
 import eu.japtor.vizman.ui.components.VerticalScrollLayout;
-import org.apache.commons.lang3.StringUtils;
-import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
-public class FileViewerDialog extends Dialog {
+
+public class FaktExpDialog extends Dialog {
 
     VerticalLayout dialogCanvas;
     VerticalScrollLayout docContainer;
-    EmbeddedDocComponent docComponent;
+//    EmbeddedDocComponent docComponent;
+    Text dataComponent;
     HorizontalLayout titleBar;
     HorizontalLayout toolBar;
     Paragraph viewerTitle;
-    FileDownloadWrapper downloadButtonWrapper;
+//    FileDownloadWrapper downloadButtonWrapper;
+    File docFile;
+    File outputFaktFile;
+    FileOutputStream faktOutStream;
+    String faktExpFilePath;
+    File faktExpFile;
+    String faktExpData = "";
 
-    public FileViewerDialog()
-    {
+//    @Autowired
+    private CfgPropsCache cfgPropsCache;
+
+
+    public FaktExpDialog(
+            CfgPropsCache cfgPropsCache
+    ) {
         super();
 
         this.setCloseOnEsc(true);
         this.setCloseOnOutsideClick(false);
+
+        this.cfgPropsCache = cfgPropsCache;
 
         this.setWidth("1200px");
         this.setHeight("800px");
@@ -51,15 +65,19 @@ public class FileViewerDialog extends Dialog {
         closeButton.getElement().setAttribute("theme", "primary");
         closeButton.addClickListener(e -> this.close());
 
-        Button downloadButton = (new Button("Stáhnout"));
-        downloadButton.getElement().setAttribute("theme", "secondary");
-        downloadButtonWrapper = new FileDownloadWrapper("fakeFile", new File("fakeFile"));
-//                new StreamResource("foo.txt", () -> new ByteArrayInputStream("foo".getBytes())));
-        downloadButtonWrapper.wrapComponent(downloadButton);
+//        Button downloadButton = (new Button("Stáhnout"));
+//        downloadButton.getElement().setAttribute("theme", "secondary");
+//        downloadButtonWrapper = new FileDownloadWrapper("fakeFile", new File("fakeFile"));
+////                new StreamResource("foo.txt", () -> new ByteArrayInputStream("foo".getBytes())));
+//        downloadButtonWrapper.wrapComponent(downloadButton);
+
+        Button exportButton = (new Button("Exportovat", event -> exportFaktExpData()));
+        exportButton.getElement().setAttribute("theme", "secondary");
 
         HorizontalLayout buttonBar = new HorizontalLayout();
         buttonBar.add(
-                downloadButtonWrapper
+                exportButton
+//                , downloadButtonWrapper
                 , closeButton
         );
 
@@ -100,39 +118,49 @@ public class FileViewerDialog extends Dialog {
         );
     }
 
-    public void openDialog(final File inputFile) {
-        viewerTitle.setText(null == inputFile ? "N/A" : inputFile.getName());
+//    public void openDialog(File inputFile) {
+//        viewerTitle.setText(null == inputFile ? "N/A" : inputFile.getName());
+//
+//        String mimeType = FileTypeResolver.getMIMEType(inputFile);
+//        if (StringUtils.isEmpty(mimeType)) {
+//            mimeType = "text/plain";
+//        }
+//        if (mimeType.contains("comma-separated-values")) {
+//            mimeType = "text/plain";
+//        }
+//        StreamResource resource = new StreamResource(inputFile.getName(), () -> {
+//            try {
+//                return new FileInputStream(inputFile);
+//            } catch (FileNotFoundException e) {
+//                return new ByteArrayInputStream(new byte[]{});
+//            }
+//        });
+//        resource.setContentType(mimeType);
+//
+//        openDialog(resource, mimeType);
+//    }
 
-        String mimeType = FileTypeResolver.getMIMEType(inputFile);
-        if (StringUtils.isEmpty(mimeType)) {
-            mimeType = "text/plain";
-        }
-        if (mimeType.contains("comma-separated-values")) {
-            mimeType = "text/plain";
-        }
-        StreamResource resource = new StreamResource(inputFile.getName(), () -> {
-                try {
-                    return new FileInputStream(inputFile);
-                } catch (FileNotFoundException e) {
-                    return new ByteArrayInputStream(new byte[]{});
-                }
-        });
-        resource.setContentType(mimeType);
+    public void openDialog(String faktExpData, String mimeType) {
+        docContainer.removeAll();
+        dataComponent = new Text(faktExpData);
+        docContainer.add(dataComponent);
 
-        openDialog(resource, mimeType);
+        setDocContainerHeightByMime(mimeType, docContainer);
+        this.open();
     }
 
-    public void openDialog(StreamResource resource, String mimeType) {
+    public void openFaktExpDialog(Fakt fakt) {
+        this.faktExpData = "123456\npolozka\tEUR\t100333";
+        this.faktExpFile = new File(VzmFileUtils.getFaktExpPath(cfgPropsCache.getDocRootServer(), fakt));
+        openDialog(faktExpData, "text/plain");
+    }
 
-        if (null != docComponent) {
-            docContainer.removeContent(docComponent);
+    private void exportFaktExpData() {
+        try {
+            Files.write(faktExpFile.toPath(), faktExpData.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        docComponent = new EmbeddedDocComponent(resource, mimeType);
-        docContainer.addContent(docComponent);
-        setDocContainerHeightByMime(mimeType, docContainer);
-
-        downloadButtonWrapper.setResource(resource);
-        this.open();
     }
 
     private void setDocContainerHeightByMime(final String mimeType, VerticalScrollLayout container) {

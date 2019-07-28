@@ -2,6 +2,7 @@ package eu.japtor.vizman.backend.utils;
 
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import eu.japtor.vizman.app.HasLogger;
+import eu.japtor.vizman.backend.entity.Fakt;
 import eu.japtor.vizman.backend.entity.VzmFolderType;
 import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.Zak;
@@ -379,6 +380,17 @@ public class VzmFileUtils implements HasLogger {
 
         addExpectedZakDocSubDirs(expectedTree, zakDocDir, true);
         return expectedTree;
+    }
+
+    public static String getFaktExpPath(final String docRootServer, final Fakt fakt) {
+        Assert.notNull(fakt, "CHYBA PARAMETRU: faktura je null.");
+        return Paths.get(
+                docRootServer
+                , null == fakt.getZak().getKontFolder() ? "" : fakt.getZak().getKontFolder()
+                , null == fakt.getZak().getFolder() ? "" : fakt.getZak().getFolder()
+                , "Faktury"
+                , fakt.getFaktExpFileName()
+        ).toString();
     }
 
     public static String getExpectedKontFolder(final Kont kont) {
