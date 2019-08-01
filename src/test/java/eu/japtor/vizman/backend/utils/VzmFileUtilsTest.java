@@ -24,7 +24,7 @@ class VzmFileUtilsTest {
         String pathToTest = "žščřďťň ŽŠČŘĎŤŇ áäéíóúůüý ÁÄÉÍÓÚŮÜÝ";
         String expectedPath = "zscrdtn ZSCRDTN aaeiouuuy AAEIOUUUYxx";
         assertThat("Normalized string is not as expected"
-                , VzmFileUtils.normalizeDirname(pathToTest), is(expectedPath));
+                , VzmFileUtils.normalizeDirFileName(pathToTest), is(expectedPath));
     }
 
 }

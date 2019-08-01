@@ -1,16 +1,17 @@
 package eu.japtor.vizman.ui.forms;
 
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import eu.japtor.vizman.backend.entity.Fakt;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
-import eu.japtor.vizman.backend.utils.VzmFileUtils;
 import eu.japtor.vizman.ui.components.VerticalScrollLayout;
+import org.claspina.confirmdialog.ButtonOption;
+import org.claspina.confirmdialog.ConfirmDialog;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -22,15 +23,12 @@ public class FaktExpDialog extends Dialog {
     VerticalLayout dialogCanvas;
     VerticalScrollLayout docContainer;
 //    EmbeddedDocComponent docComponent;
-    Text dataComponent;
+    TextArea dataComponent;
+    Fakt fakt;
     HorizontalLayout titleBar;
     HorizontalLayout toolBar;
     Paragraph viewerTitle;
 //    FileDownloadWrapper downloadButtonWrapper;
-    File docFile;
-    File outputFaktFile;
-    FileOutputStream faktOutStream;
-    String faktExpFilePath;
     File faktExpFile;
     String faktExpData = "";
 
@@ -81,7 +79,7 @@ public class FaktExpDialog extends Dialog {
                 , closeButton
         );
 
-        viewerTitle = new Paragraph("");
+        viewerTitle = new Paragraph("DÍLČÍ PLNĚNÍ");
 
         titleBar = new HorizontalLayout();
         titleBar.add(
@@ -140,26 +138,53 @@ public class FaktExpDialog extends Dialog {
 //        openDialog(resource, mimeType);
 //    }
 
-    public void openDialog(String faktExpData, String mimeType) {
-        docContainer.removeAll();
-        dataComponent = new Text(faktExpData);
-        docContainer.add(dataComponent);
+    public void openDialog(Fakt fakt, String mimeType) {
+        this.docContainer.removeAll();
+        this.fakt = fakt;
+        this.faktExpData = this.fakt.getFaktExpData();
+        this.dataComponent = new TextArea("Do souboru: " + fakt.getFaktExpFileName());
+        dataComponent.setValue(faktExpData);
+        this.docContainer.add(dataComponent);
 
         setDocContainerHeightByMime(mimeType, docContainer);
         this.open();
     }
 
     public void openFaktExpDialog(Fakt fakt) {
-        this.faktExpData = "123456\npolozka\tEUR\t100333";
-        this.faktExpFile = new File(VzmFileUtils.getFaktExpPath(cfgPropsCache.getDocRootServer(), fakt));
-        openDialog(faktExpData, "text/plain");
+        this.faktExpData = "NO DATA";
+        this.faktExpFile = new File(fakt.getFaktExpPath(cfgPropsCache.getDocRootServer()));
+        openDialog(fakt, "text/plain");
     }
 
-    private void exportFaktExpData() {
+    private Runnable runExportFile = () -> {
         try {
             Files.write(faktExpFile.toPath(), faktExpData.getBytes(StandardCharsets.UTF_8));
+            ConfirmDialog.createInfo()
+                    .withCaption("EXPORT DÍLČÍHO PLNĚNÍ")
+                    .withMessage("Export zdárně dokončen.")
+                    .open()
+            ;
         } catch (IOException e) {
             e.printStackTrace();
+            ConfirmDialog.createInfo()
+                    .withCaption("EXPORT DÍLČÍHO PLNĚNÍ")
+                    .withMessage("Export se nezdařil.")
+                    .open()
+            ;
+        }
+    };
+
+    private void exportFaktExpData() {
+        if (faktExpFile.exists()) {
+            ConfirmDialog.createQuestion()
+                    .withCaption("EXPORT DÍLČÍHO PLNĚNÍ")
+                    .withMessage(String.format("Soubor stejného jména již existuje. Přepsat novým exportem?"))
+                    .withOkButton(runExportFile, ButtonOption.focus(), ButtonOption.caption("PŘEPSAT"))
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .open()
+            ;
+        } else {
+            runExportFile.run();
         }
     }
 

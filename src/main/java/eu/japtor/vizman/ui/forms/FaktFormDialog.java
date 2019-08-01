@@ -18,6 +18,7 @@ import eu.japtor.vizman.backend.service.FaktService;
 import eu.japtor.vizman.backend.service.VzmServiceException;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.*;
+import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 
@@ -215,16 +216,20 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
     }
 
     private boolean canFakturovat(final Fakt fakt) {
-//        return (null != dateDuzpField.getValue()
-//                && StringUtils.isNotBlank(plneniField.getValue())
-//                && StringUtils.isNotBlank(textField.getValue()));
-
-        return true;
+        return (null != dateDuzpField.getValue()
+                && StringUtils.isNotBlank(fakt.getCkont())
+                && StringUtils.isNotBlank(textField.getValue()))
+                && StringUtils.isNotBlank(fakt.getZakText())
+                && StringUtils.isNotBlank(fakt.getKontText())
+                && StringUtils.isNotBlank(castkaField.getValue())
+                && null != dateDuzpField.getValue()
+                && null != fakt.getMena()
+        ;
     }
 
 
     private Button initFaktExpButton() {
-        faktExpButton = new Button("Fakturovat");
+        faktExpButton = new Button("Export");
         return faktExpButton;
     }
 
@@ -445,7 +450,9 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
 //                getCurrentItem().setZaklad(getCurrentItem().getZakHonorar());
 //                getCurrentItem().setCastka(getCurrentItem().getZakHonorar()
 //                        .multiply(getCurrentItem().getPlneni().divide(BigDecimal.valueOf(100))));
-            getCurrentItem().setDateVystav(LocalDate.now());
+            if (null == dateVystavField.getValue()) {
+                getCurrentItem().setDateVystav(LocalDate.now());
+            }
             getBinder().readBean(getCurrentItem());
 //                activateControls(true);
 //                dateVystavField.setReadOnly(false);

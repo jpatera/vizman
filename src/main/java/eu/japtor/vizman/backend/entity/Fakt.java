@@ -1,10 +1,12 @@
 package eu.japtor.vizman.backend.entity;
 
+import eu.japtor.vizman.backend.utils.VzmFileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -213,12 +215,40 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemT
     }
 
     @Transient
-    public String getFaktExpFileName() {
-        return getCkont() + "_#_" + getCzak() + "_#_" + cfakt
-                + "_##_" + (null == zak.getKontFolder() ? "NO-KONT-TEXT" : zak.getKontFolder().substring(0, 15))
-                + "_#_" + (null == zak.getFolder() ? "NO-ZAK-TEXT" : zak.getFolder().substring(0, 15))
-                + ".txt"
+    public String getFaktExpPath(final String docRootServer) {
+        return Paths.get(
+                docRootServer
+                , null == zak.getKontFolder() ? "XXXXX.X-X_KONT-FOLDER" : zak.getKontFolder()
+                , null == zak.getFolder() ? "X_ZAK-FOLDER" : zak.getFolder()
+                , "Faktury"
+                , getFaktExpFileName()
+        ).toString();
+    }
+
+    @Transient
+    public String getFaktExpData() {
+        return getCkont()
+                + "\n" + getKontText()
+                + "\n" + getCzak() + " - " + getZakText()
+                + "\n" + cfakt + " - " + text + "\t" + castka + "\t" + getMena().toString()
+                       + "\t" + dateDuzp.toString() + "\t" + dateVystav.toString()
         ;
+    }
+
+    @Transient
+    public String getFaktExpFileName() {
+        int MAX_CHAR = 15;
+        String kontText = (StringUtils.isEmpty(getKontText()) ? "NO-KONT-TEXT" : VzmFileUtils.normalizeDirFileName(getKontText()));
+        String zakText = (StringUtils.isEmpty(getZakText()) ? "NO-KONT-TEXT" : VzmFileUtils.normalizeDirFileName(getZakText()));
+        String plnText = (StringUtils.isEmpty(text) ? "NO-PLN-TEXT" : VzmFileUtils.normalizeDirFileName(text));
+        return getCkont()
+                + "_" + StringUtils.substring(kontText, 0, MAX_CHAR)
+                + "_" + getCzak()
+                + "-" + StringUtils.substring(zakText, 0, MAX_CHAR)
+                + "_" + cfakt
+                + "-" + StringUtils.substring(plnText, 0, MAX_CHAR)
+                + ".txt"
+                ;
     }
 
     @Transient
@@ -229,6 +259,16 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemT
     @Transient
     public String getCkont() {
         return null == zak ? "" : zak.getCkont();
+    }
+
+    @Transient
+    public String getKontText() {
+        return null == zak ? "KONT-TEXT" : zak.getKontText();
+    }
+
+    @Transient
+    public String getZakText() {
+        return null == zak ? "ZAK-TEXT" : zak.getText();
     }
 
     @Transient

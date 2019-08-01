@@ -395,6 +395,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         Fakt faktItemOrig = faktFormDialog.getOrigItem();
 
         syncFormGridAfterFaktEdit(faktAfter, faktOper, faktOperRes, faktItemOrig);
+        updateZakDocViewContent(null);
 
         if (OperationResult.ITEM_SAVED == faktOperRes) {
             Notification.show(String.format("Plnění %s uloženo", ckzf)

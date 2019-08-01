@@ -367,6 +367,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //        getBinder().readBean(currentItem);
 
         syncFormGridAfterZakEdit(zakAfter, zakOper, zakOperRes, lastZakFaktsChanged, zakItemOrig);
+        updateKontDocViewContent(null);
 
 //        if (OperationResult.NO_CHANGE == zakOperRes) {
 //            return;

@@ -368,6 +368,11 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     }
 
     @Transient
+    public String getKontText() {
+        return null == kont ? "KONT-TEXT" : kont.getText();
+    }
+
+    @Transient
     public String getKzCislo() {
         StringBuilder builder = new StringBuilder();
         String ckont = null  == kont ? "" : kont.getCkont();

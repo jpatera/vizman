@@ -59,7 +59,7 @@ public class VzmFileUtils implements HasLogger {
     }
 
 
-    static String normalizeDirname(final String dirname) {
+    public static String normalizeDirFileName(final String dirname) {
 
         String normDirname = Normalizer.normalize(dirname, Normalizer.Form.NFD);
         normDirname = accentCharsPattern.matcher(normDirname).replaceAll("");
@@ -68,8 +68,8 @@ public class VzmFileUtils implements HasLogger {
     }
 
     public static String NormalizeDirnamesAndJoin(final String dirname1, final String dirname2) {
-        String dn1 = normalizeDirname(dirname1);
-        String dn2 = normalizeDirname(dirname2);
+        String dn1 = normalizeDirFileName(dirname1);
+        String dn2 = normalizeDirFileName(dirname2);
         String devider = StringUtils.isBlank(dn2) && StringUtils.isBlank(dn2) ? "" : "__";
         return dn1 + devider + dn2;
     }
@@ -380,17 +380,6 @@ public class VzmFileUtils implements HasLogger {
 
         addExpectedZakDocSubDirs(expectedTree, zakDocDir, true);
         return expectedTree;
-    }
-
-    public static String getFaktExpPath(final String docRootServer, final Fakt fakt) {
-        Assert.notNull(fakt, "CHYBA PARAMETRU: faktura je null.");
-        return Paths.get(
-                docRootServer
-                , null == fakt.getZak().getKontFolder() ? "" : fakt.getZak().getKontFolder()
-                , null == fakt.getZak().getFolder() ? "" : fakt.getZak().getFolder()
-                , "Faktury"
-                , fakt.getFaktExpFileName()
-        ).toString();
     }
 
     public static String getExpectedKontFolder(final Kont kont) {
