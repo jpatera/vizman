@@ -7,9 +7,13 @@ import java.time.YearMonth;
 
 @Entity
 @Table(name = "PERSON_WAGE")
+public class PersonWage extends AbstractGenIdEntity implements HasItemType {
 
-public class PersonWage extends AbstractGenIdEntity {
-
+  @Override
+  @Transient
+  public ItemType getTyp() {
+    return ItemType.WAGE;
+  }
 
   @Basic
   @Column(name = "USERNAME")
@@ -38,27 +42,55 @@ public class PersonWage extends AbstractGenIdEntity {
   private BigDecimal wage;
 
 
-  public Person getPerson() {
-    return person;
-  }
 
-  public void setPerson(Person person) {
-    this.person = person;
-  }
+//  @ManyToOne(fetch = FetchType.EAGER)
+//  @JoinColumn(name = "PERSON_ID")
+//  private Person person;
+//
+//  public Person getPerson() {
+//    return person;
+//  }
+//
+//  public void setPerson(Person person) {
+//    this.person = person;
+//  }
 
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "PERSON_ID")
-  private Person person;
+  @Column(name = "PERSON_ID")
+  private Long personId;
+
+
 
   public PersonWage() {
-      super();
+    super();
   }
+
+
+
+
+  public Long getPersonId() {
+    return personId;
+  }
+
+  public void setPersonId(Long personId) {
+    this.personId = personId;
+  }
+
 
   public YearMonth getYmFrom() {
     return ymFrom;
   }
   public void setYmFrom(YearMonth ymFrom) {
     this.ymFrom = ymFrom;
+  }
+
+  @Transient
+  public int getYearFrom() {
+    return ymFrom.getYear();
+  }
+
+  @Transient
+  public int getMonthFrom() {
+    return ymFrom.getMonth().getValue();
   }
 
   public YearMonth getYmTo() {

@@ -5,12 +5,12 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-public class GridFakturovatBtn extends Button {
+public class FakturovatBtn extends Button {
     static Icon fakturovatIcon = new Icon(VaadinIcon.COINS);
     static Icon stornoIcon = new Icon(VaadinIcon.LEVEL_LEFT);
 
 
-    public GridFakturovatBtn(final ComponentEventListener itemAction, boolean isFakturovano) {
+    public FakturovatBtn(final ComponentEventListener itemAction, boolean isFakturovano) {
         super();
         this.setText("");
 //        this.setIcon(new Icon("lumo", "edit"));

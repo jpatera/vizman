@@ -3,6 +3,7 @@ package eu.japtor.vizman.backend.entity;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -54,20 +55,30 @@ public class Person extends AbstractGenIdEntity {
     @Column(name="SAZBA")
     private BigDecimal sazba = BigDecimal.ZERO;
 
-    @OneToMany(mappedBy = "person",
-            fetch = FetchType.EAGER, cascade = CascadeType.REFRESH, orphanRemoval = false)
-    @OrderBy("ymFrom DESC")
-    private List<PersonWage> wages = new ArrayList<>();
+//    @OneToMany(mappedBy = "person",
+//            fetch = FetchType.EAGER, cascade = CascadeType.REFRESH, orphanRemoval = false)
+//    @OrderBy("ymFrom DESC")
+//    private List<PersonWage> wages = new ArrayList<>();
 
-    @Transient
-    public BigDecimal getWageCurrent() {
-        return
-                wages.stream()
-                        .filter(wage -> wage.getYmTo() == null)
-                        .map(wage -> null == wage.getWage() ? BigDecimal.ZERO : wage.getWage())
-                        .findFirst().orElse(BigDecimal.ZERO)
-                ;
-    }
+//    @Transient
+//    public BigDecimal getWageCurrent() {
+//        return
+//                wages.stream()
+//                        .filter(wage -> wage.getYmTo() == null)
+//                        .map(wage -> null == wage.getWage() ? BigDecimal.ZERO : wage.getWage())
+//                        .findFirst().orElse(BigDecimal.ZERO)
+//                ;
+//    }
+//
+//    @Transient
+//    public YearMonth getYmFromCurrent() {
+//        return
+//                wages.stream()
+//                        .filter(wage -> wage.getYmTo() == null)
+//                        .map(wage -> null == wage.getWage() ? null : wage.getYmFrom())
+//                        .findFirst().orElse(null)
+//                ;
+//    }
 
 
     @ManyToMany(

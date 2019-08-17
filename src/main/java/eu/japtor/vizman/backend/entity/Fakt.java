@@ -271,6 +271,7 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemT
         return null == zak ? "ZAK-TEXT" : zak.getText();
     }
 
+
     @Transient
     public boolean isFaktBefore() {
         return ((null == getDateVystav())

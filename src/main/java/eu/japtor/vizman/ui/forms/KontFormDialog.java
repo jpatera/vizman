@@ -90,6 +90,9 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //    private String kontFolderOrig;
     private FlexLayout kontDocFolderComponent;
     private KzFolderField kontFolderField;
+
+    private Anchor kontFolderAnchor;
+
     private TreeGrid<VzmFileUtils.VzmFile> kontDocGrid;
     private Button docRefreshButton;
     private List<GridSortOrder<VzmFileUtils.VzmFile>> initialKontDocSortOrder;
@@ -162,6 +165,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 
         getUpperRightPane().add(
                 initKontDocFolderComponent()
+                , initKontFolderAnchor()
                 , initDocGridBar()
                 , initDocGrid()
         );
@@ -938,6 +942,11 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         return kontFolderField;
     }
 
+    private Component initKontFolderAnchor() {
+        kontFolderAnchor = new Anchor("file:///C:/_Install/", "DIR");
+        return kontFolderAnchor;
+    }
+
 //    private Component initFileDialogButton() {
 //        FileDialog dialog = new FileDialog((Frame) null, "Select File to Open");
 //        dialog.setMode(FileDialog.LOAD);
@@ -1075,7 +1084,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 
     // ----------------------------------------------
 
-    private Component initZakGridTitleComponent() {
+    private Component initTitleComponent() {
         zakGridTitleComponent = new FlexLayout(
                 initZakGridResizeBtn()
                 , initZakGridTitle()
@@ -1141,7 +1150,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         zakGridBar.setAlignItems(FlexComponent.Alignment.BASELINE);
         zakGridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         zakGridBar.add(
-                initZakGridTitleComponent(),
+                initTitleComponent(),
                 new Ribbon(),
                 new FlexLayout(
                     initNewZakButton(),

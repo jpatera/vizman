@@ -10,9 +10,12 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.function.SerializablePredicate;
+import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.service.PersonService;
+import eu.japtor.vizman.backend.service.PersonWageService;
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.AbstractEditorDialog;
 import eu.japtor.vizman.ui.components.Operation;
 import eu.japtor.vizman.ui.components.TwinColGrid;
@@ -40,8 +43,10 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
     private TextField blindSazbaOldField;
 
     private TextField sazbaCurrentField;
-    private TextField fakeSazbaCurrentField;
-    private Button sazbaEditButton;
+    private TextField ymFromCurrentField;
+    private TextField blindSazbaCurrentField;
+    private TextField blindYmFromCurrentField;
+    private Button wagesEditButton;
 
     private DatePicker nastupField; // = new DatePicker("Nástup");
     private DatePicker vystupField; // = new DatePicker("Výstup");
@@ -52,6 +57,7 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
 
 //    @Autowired
     private PersonService personService;
+    private PersonWageService personWageService;
 
     private Set<Role> rolesPool;
 
@@ -64,6 +70,7 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
     public PersonEditorDialog(BiConsumer<Person, Operation> itemSaver,
                               Consumer<Person> itemDeleter,
                               PersonService personService,
+                              PersonWageService personWageService,
                               List<Role> allRoles,
                               PasswordEncoder passwordEncoder)
     {
@@ -78,7 +85,10 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
 //                new FormLayout.ResponsiveStep("10em", 2),
 //                new FormLayout.ResponsiveStep("12em", 3));
 
+        setItemNames(ItemType.PERSON);
+
         this.personService = personService;
+        this.personWageService = personWageService;
         this.rolesPool = new HashSet<>(allRoles);
         this.passwordEncoder = passwordEncoder;
 
@@ -122,20 +132,17 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
         addNastupAndVystupField();
 
         getFormLayout().add(
-                initPermittedCurrentSazbaField(),
-                initSazbaEditButton(),
-                initPermittedSazbaOldField()
+                initPermittedCurrentSazbaField()
+                ,  initWagesEditButton()
+                , initPermittedYmFromCurrentField()
+                , initRolesField(rolesPool)
         );
-
-//        getFormLayout().add(initRolesField(rolesPool));
-        getFormLayout().add(initRolesField(rolesPool));
-
-//        roleGridContainer = buildRoleGridContainer(roleTwinGrid);
     }
 
     /**
      * Called by abstract parent dialog from its open(...) method.
      */
+    @Override
     protected void openSpecific() {
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -225,6 +232,14 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
         }
     }
 
+    private Component initPermittedYmFromCurrentField() {
+        if (!isWagesAccessGranted()) {
+            return initBlindSazbaCurrentField();
+        } else {
+            return initYmFromCurrentField();
+        }
+    }
+
     private Component initSazbaCurrentField() {
         sazbaCurrentField = new TextField("Sazba aktuální");
         sazbaCurrentField.setSuffixComponent(new Span("CZK"));
@@ -236,41 +251,48 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
         return sazbaCurrentField;
     }
 
-    private Component initBlindSazbaCurrentField() {
-        fakeSazbaCurrentField = new TextField("");
-        fakeSazbaCurrentField.setVisible(false);
-        return fakeSazbaCurrentField;
-    }
+    private Component initYmFromCurrentField() {
+        ymFromCurrentField = new TextField("Platnost od");
+        ymFromCurrentField.setReadOnly(true);
+//        ymFromCurrentField.setWidth("10em");
+//        ymFromCurrentField.setPlaceholder("RRRR-MM");
+//        ymFromCurrentField.setPattern("\\d{4}-\\d{2}");
 
-    private Component initSazbaEditButton() {
-        sazbaEditButton = new Button("Sazby");
-        return sazbaEditButton;
-    }
-
-    private Component initPermittedSazbaOldField() {
-        if (!isWagesAccessGranted()) {
-            return initBlindSazbaOldField();
-        } else {
-            return initSazbaOldField();
-        }
-    }
-
-    private Component initSazbaOldField() {
-        sazbaOldField = new TextField("Sazba (old ?)");
-        sazbaOldField.setPattern("[0-9]*");
-        sazbaOldField.setPreventInvalidInput(true);
-        sazbaOldField.setSuffixComponent(new Span("CZK"));
-        getBinder().forField(sazbaOldField)
+        getBinder().forField(ymFromCurrentField)
+                .withNullRepresentation("")
                 .withConverter(
-                        new StringToBigDecimalConverter("Špatný formát čísla"))
-                .bind(Person::getSazba, null);
-        return sazbaOldField;
+                        new VzmFormatUtils.ValidatedIntegerYearMonthConverter())
+                .bind(Person::getYmFromCurrent, null)
+        ;
+        return ymFromCurrentField;
     }
 
-    private Component initBlindSazbaOldField() {
-        blindSazbaOldField = new TextField("");
-        blindSazbaOldField.setVisible(false);
-        return blindSazbaOldField;
+    private Component initBlindSazbaCurrentField() {
+        blindSazbaCurrentField = new TextField("");
+        blindSazbaCurrentField.setVisible(false);
+        return blindSazbaCurrentField;
+    }
+
+    private Component initBlindYmFromCurrentField() {
+        blindYmFromCurrentField = new TextField("");
+        blindYmFromCurrentField.setVisible(false);
+        return blindYmFromCurrentField;
+    }
+
+    private Component initWagesEditButton() {
+        wagesEditButton = new Button("Mzdová tabulka"
+            , event -> {
+            openWageEditDialog();
+        });
+        return wagesEditButton;
+    }
+
+    private void openWageEditDialog() {
+        PersonWageGridDialog personWageGridDialog  = new PersonWageGridDialog(
+                personWageService
+        );
+//        personWageGridDialog.openDialog(personWageService.fetchByPersonId(getCurrentItem().getId()));
+        personWageGridDialog.openDialog(getCurrentItem());
     }
 
     private Component initRolesField(final Set<Role> allRoles) {

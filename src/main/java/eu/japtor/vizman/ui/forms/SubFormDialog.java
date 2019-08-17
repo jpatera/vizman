@@ -28,8 +28,8 @@ import java.util.Locale;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class SubFormDialog extends AbstractFormDialog<Fakt> implements HasLogger {
 
-    public static final String DIALOG_WIDTH = "800px";
-    public static final String DIALOG_HEIGHT = null;
+    private static final String DIALOG_WIDTH = "800px";
+    private static final String DIALOG_HEIGHT = null;
 
     private final static String DELETE_STR = "Zrušit";
     private final static String REVERT_STR = "Vrátit změny";
@@ -457,13 +457,14 @@ public class SubFormDialog extends AbstractFormDialog<Fakt> implements HasLogger
         return lastOperationResult;
     }
 
-    public Fakt getOrigItem()  {
-        return origItem;
-    }
-
     @Override
     public Fakt getCurrentItem() {
         return currentItem;
+    }
+
+    @Override
+    public Fakt getOrigItem()  {
+        return origItem;
     }
 
     @Override

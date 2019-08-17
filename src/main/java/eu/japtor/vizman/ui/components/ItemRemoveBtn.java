@@ -5,9 +5,9 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-public class GridItemRemoveBtn extends Button {
+public class ItemRemoveBtn extends Button {
 
-    public GridItemRemoveBtn(final ComponentEventListener itemAction) {
+    public ItemRemoveBtn(final ComponentEventListener itemAction) {
         super();
         Icon icon = VaadinIcon.CLOSE_SMALL.create();
         icon.getStyle().set("theme", "small icon secondary");

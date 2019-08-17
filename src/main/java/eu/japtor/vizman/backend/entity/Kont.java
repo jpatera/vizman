@@ -110,6 +110,7 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
         return null == klient ? "" : (null == klient.getName() ? "" : klient.getName());
     }
 
+    @Override
     public ItemType getTyp() {
         return typ;
     }

@@ -35,6 +35,7 @@ import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.service.PersonService;
+import eu.japtor.vizman.backend.service.PersonWageService;
 import eu.japtor.vizman.backend.service.RoleService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.*;
@@ -67,6 +68,9 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 
     @Autowired
     public PersonService personService;
+
+    @Autowired
+    public PersonWageService personWageService;
 
     @Autowired
     public RoleService roleService;
@@ -161,7 +165,13 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         personGrid.setDataProvider(personDataProvider);
 
         personEditForm = new PersonEditorDialog(
-                this::savePerson, this::deletePerson, personService, roleService.fetchAllRoles(), passwordEncoder);
+                this::savePerson
+                , this::deletePerson
+                , personService
+                , personWageService
+                , roleService.fetchAllRoles()
+                , passwordEncoder
+        );
 //        initPersonGrid();
 
 //        updateGridContent();
@@ -200,13 +210,13 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
                 .setResizable(true)
                 .setFrozen(true)
         ;
-        personGrid.addColumn(Person::getState)
-                .setHeader("State")
-                .setSortProperty("state")
-                .setWidth("5em")
-                .setResizable(true)
-                .setFrozen(true)
-        ;
+//        personGrid.addColumn(Person::getState)
+//                .setHeader("State")
+//                .setSortProperty("state")
+//                .setWidth("5em")
+//                .setResizable(true)
+//                .setFrozen(true)
+//        ;
         personGrid.addColumn(new ComponentRenderer<>(this::buildEditBtn))
                 .setFlexGrow(0)
         ;
@@ -230,9 +240,9 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
                 .setResizable(true)
         ;
         if (isWagesAccessGranted()) {
-            personGrid.addColumn(new NumberRenderer<>(Person::getSazba, VzmFormatUtils.moneyFormat))
+            personGrid.addColumn(new NumberRenderer<>(Person::getWageCurrent, VzmFormatUtils.moneyFormat))
                     .setTextAlign(ColumnTextAlign.END)
-                    .setHeader("Sazba")
+                    .setHeader("Sazba aktuální")
                     .setWidth("8em")
                     .setResizable(true)
             ;

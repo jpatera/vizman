@@ -101,6 +101,26 @@ public class ItemNames {
         itemNameMaps.put(ItemType.KLI, itemKlientNameMap);
         itemGenderMap.put(ItemType.KLI, GrammarGender.MASCULINE);
 
+        Map<GrammarShapes, String>itemWageNameMap = new HashMap<>();
+        itemWageNameMap.put(GrammarShapes.NOM_S, "Mzda");
+        itemWageNameMap.put(GrammarShapes.NOM_P, "Mzdy");
+        itemWageNameMap.put(GrammarShapes.GEN_S, "Mzdy");
+        itemWageNameMap.put(GrammarShapes.GEN_P, "Mezd");
+        itemWageNameMap.put(GrammarShapes.ACCU_S, "Mzdu");
+        itemWageNameMap.put(GrammarShapes.ACCU_P, "Mzdy");
+        itemNameMaps.put(ItemType.WAGE, itemWageNameMap);
+        itemGenderMap.put(ItemType.WAGE, GrammarGender.FEMININE);
+
+        Map<GrammarShapes, String>itemPersonNameMap = new HashMap<>();
+        itemPersonNameMap.put(GrammarShapes.NOM_S, "Uživatel");
+        itemPersonNameMap.put(GrammarShapes.NOM_P, "Uživatelé");
+        itemPersonNameMap.put(GrammarShapes.GEN_S, "Uživatele");
+        itemPersonNameMap.put(GrammarShapes.GEN_P, "Uživatelů");
+        itemPersonNameMap.put(GrammarShapes.ACCU_S, "Uživatele");
+        itemPersonNameMap.put(GrammarShapes.ACCU_P, "Uživatele");
+        itemNameMaps.put(ItemType.PERSON, itemPersonNameMap);
+        itemGenderMap.put(ItemType.PERSON, GrammarGender.MASCULINE);
+
 //        Map<GrammarShapes, String>itemFaktNameMap = new HashMap<>();
 //        itemFaktNameMap.put(GrammarShapes.NOM_S, "Fakturace");
 //        itemFaktNameMap.put(GrammarShapes.NOM_P, "Fakturace");

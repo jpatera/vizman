@@ -142,6 +142,8 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         setWidth(this.dialogWidth);
         setHeight(this.dialogHeight);
 
+        setDefaultItemNames();  // Set general default names
+
         this.itemSaver = itemSaver;
         this.itemDeleter = itemDeleter;
         this.closeAfterSave = closeAfterSave;
@@ -479,7 +481,7 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     protected void openInternal(T item, final Operation operation
             , String titleItemNameText, Component titleMiddleComponent, String titleEndText)
     {
-        setDefaultItemNames();  // Set general default names
+//        setDefaultItemNames();  // Set general default names
         if (item instanceof HasItemType)
         headerDevider.getStyle().set("background-color", VzmFormatUtils.getItemTypeColorBrighter(((HasItemType)item).getTyp()));
 

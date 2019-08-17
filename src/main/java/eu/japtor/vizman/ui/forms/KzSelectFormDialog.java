@@ -9,8 +9,6 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -19,7 +17,6 @@ import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.ValueProvider;
 import eu.japtor.vizman.backend.entity.ArchIconBox;
 import eu.japtor.vizman.backend.entity.ItemType;
@@ -30,7 +27,6 @@ import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.Ribbon;
 import eu.japtor.vizman.ui.components.Gap;
 import org.claspina.confirmdialog.ConfirmDialog;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -168,14 +164,14 @@ public class KzSelectFormDialog extends Dialog {
 //        <vaadin-treeGrid items="[[items]]" id="treeGrid" style="width: 100%;"></vaadin-treeGrid>
 
         mainPanel.add(
-                initGridContainer()
+                buildGridContainer()
                 , initDialogButtonBar()
         );
         return mainPanel;
     }
 
 
-    private Component initGridContainer() {
+    private Component buildGridContainer() {
 
 //        initSimplePersonTreeGrid();
 //        gridContainer.add(personGrid);

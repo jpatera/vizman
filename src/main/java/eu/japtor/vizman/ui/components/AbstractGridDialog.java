@@ -1,29 +1,30 @@
 package eu.japtor.vizman.ui.components;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import eu.japtor.vizman.backend.entity.*;
-import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import eu.japtor.vizman.backend.entity.GrammarGender;
+import eu.japtor.vizman.backend.entity.ItemNames;
+import eu.japtor.vizman.backend.entity.ItemType;
 
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.function.Consumer;
 
-public abstract class AbstractFormDialog<T extends Serializable> extends Dialog {
+public abstract class AbstractGridDialog<T extends Serializable>  extends Dialog {
 
     private Div dialogCanvas;
     private VerticalLayout dialogContent;
-    private FormLayout formLayout;
+//    private FormLayout formLayout;
+    private VerticalLayout gridContainer;
     private Component buttonBar;
     private HorizontalLayout dialogHeader;
     private HtmlComponent headerDevider;
@@ -38,25 +39,18 @@ public abstract class AbstractFormDialog<T extends Serializable> extends Dialog 
     private String dialogMinWidth;
     private String dialogMinHeight;
 
-//    private FlexLayout headerLeftBox;
-
-    private T currentItem;
-    private T origItem;
-
     private Button mainResizeBtn;
     private FlexLayout headerLeftBox;
     private H3 mainTitle;
     private H5 headerEndBox;
     private Div headerMiddleBox;
 
-//    private Div headerMiddleComponent = new Div();
-//    private H5 headerEndComponent;
 
-    protected AbstractFormDialog() {
+    protected AbstractGridDialog() {
         this("1000px", "800px");
     }
 
-    protected AbstractFormDialog(
+    protected AbstractGridDialog(
             String dialogWidth,
             String dialogHeight
     ){
@@ -68,7 +62,7 @@ public abstract class AbstractFormDialog<T extends Serializable> extends Dialog 
         this.setCloseOnEsc(true);
         this.setCloseOnOutsideClick(false);
 
-        formLayout = buildFormLayout();
+        gridContainer = initGridContainer();
         buttonBar = initDialogButtonBar();
 
         dialogContent = new VerticalLayout();
@@ -77,7 +71,7 @@ public abstract class AbstractFormDialog<T extends Serializable> extends Dialog 
 
         dialogContent.add(
                 initHeaderDevider()
-                , formLayout
+                , gridContainer
                 , new Paragraph("")
                 , buttonBar
         );
@@ -154,19 +148,36 @@ public abstract class AbstractFormDialog<T extends Serializable> extends Dialog 
         return headerDevider;
     }
 
-    private FormLayout buildFormLayout() {
-        FormLayout layout = new FormLayout();
-        layout.addClassName("has-padding");
-        layout.setResponsiveSteps(
-                new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("20em", 2)
-        );
-        return layout;
+    private VerticalLayout initGridContainer() {
+        gridContainer = new VerticalLayout();
+        gridContainer.setClassName("view-container");
+//        gridContainer.addClassName("has-padding");
+        gridContainer.getStyle().set("marginTop", "0.5em");
+        gridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
+
+//        gridContainer.add(initKzToolBar());
+//        gridContainer.add(initKzTreeGrid());
+
+        return gridContainer;
     }
 
-    protected final FormLayout getFormLayout() {
-        return formLayout;
+    protected final HasComponents getGridContainer() {
+        return gridContainer;
     }
+
+//    private FormLayout buildFormLayout() {
+//        FormLayout layout = new FormLayout();
+//        layout.addClassName("has-padding");
+//        layout.setResponsiveSteps(
+//                new FormLayout.ResponsiveStep("0", 1),
+//                new FormLayout.ResponsiveStep("20em", 2)
+//        );
+//        return layout;
+//    }
+
+//    protected final FormLayout getFormLayout() {
+//        return formLayout;
+//    }
 
     private Component initHeaderLeftBox() {
         headerLeftBox = new FlexLayout(
@@ -202,24 +213,9 @@ public abstract class AbstractFormDialog<T extends Serializable> extends Dialog 
         return mainTitle;
     }
 
-    public T getCurrentItem() {
-        return currentItem;
-    };
+    public abstract List<T> getCurrentItemList();
 
-    public void setCurrentItem(T currentItem) {
-        this.currentItem = currentItem;
-    }
-
-    public T getOrigItem() {
-        return origItem;
-    };
-
-    public void setOrigItem(T origItem) {
-        this.origItem = origItem;
-    }
-
-
-    public abstract Operation getCurrentOperation();
+//    public abstract Operation getCurrentOperation();
 
     public void setDefaultItemNames() {
         setItemNames(ItemType.UNKNOWN);
@@ -245,17 +241,17 @@ public abstract class AbstractFormDialog<T extends Serializable> extends Dialog 
 
     public String getHeaderEndComponentValue(final String titleEndText) {
         String value = "";
-        if ((null == titleEndText) && (getCurrentItem() instanceof HasModifDates)) {
-            if (getCurrentOperation() == Operation.ADD) {
-                value = "";
-            } else {
-                LocalDate dateCreate = ((HasModifDates) getCurrentItem()).getDateCreate();
-                String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
-                LocalDateTime dateTimeUpdate = ((HasModifDates) getCurrentItem()).getDatetimeUpdate();
-                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleModifDateFormatter);
-                value = "[ Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr + " ]";
-            }
-        }
+//        if ((null == titleEndText) && (getCurrentItem() instanceof HasModifDates)) {
+//            if (getCurrentOperation() == Operation.ADD) {
+//                value = "";
+//            } else {
+//                LocalDate dateCreate = ((HasModifDates) getCurrentItem()).getDateCreate();
+//                String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
+//                LocalDateTime dateTimeUpdate = ((HasModifDates) getCurrentItem()).getDatetimeUpdate();
+//                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleModifDateFormatter);
+//                value = "[ Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr + " ]";
+//            }
+//        }
         return value;
     }
 }

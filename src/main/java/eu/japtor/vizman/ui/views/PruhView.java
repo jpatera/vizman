@@ -41,7 +41,7 @@ import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.Gap;
-import eu.japtor.vizman.ui.components.GridItemRemoveBtn;
+import eu.japtor.vizman.ui.components.ItemRemoveBtn;
 import eu.japtor.vizman.ui.components.ReloadButton;
 import eu.japtor.vizman.ui.components.Ribbon;
 import eu.japtor.vizman.ui.forms.ZakFlatSelectDialog;
@@ -1338,7 +1338,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         if (pruhZak.isLekarZak()) {
             return new Span("");
         }
-        Button removePruhZakBtn = new GridItemRemoveBtn(event ->
+        Button removePruhZakBtn = new ItemRemoveBtn(event ->
                 ConfirmDialog.createQuestion()
                         .withCaption("Zákázka proužku")
                         .withMessage("Odstranit zakázku z proužku včetně vyplněných hodin?")

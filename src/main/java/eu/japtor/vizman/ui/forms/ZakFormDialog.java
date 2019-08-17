@@ -1484,7 +1484,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     }
 
     private Component buildDocRemoveButton(ZakDoc zakDoc) {
-        return new GridItemOpenBtn(event -> {
+        return new ItemOpenBtn(event -> {
 //            close();
             ConfirmDialog.createQuestion()
                     .withCaption("REGISTRACE DOKUMENTU")
@@ -1682,7 +1682,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private Component buildFakStornoBtn(Fakt fakt) {
         boolean isFakturovano = fakt.isFakturovano();
         if (ItemType.FAKT == fakt.getTyp()) {
-            Button fakStornoBtn = new GridFakturovatBtn(event -> {
+            Button fakStornoBtn = new FakturovatBtn(event -> {
                 if (isFakturovano) {
                     faktFormDialog.openDialog(fakt, Operation.STORNO);
                 } else {

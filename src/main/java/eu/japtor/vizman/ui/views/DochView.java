@@ -230,7 +230,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        System.out.println("## ON DETACH DochView ##");
+//        System.out.println("## ON DETACH DochView ##");
 
         timeThread.interrupt();
         timeThread = null;

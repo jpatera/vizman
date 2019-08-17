@@ -14,6 +14,7 @@ import com.vaadin.flow.function.ValueProvider;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Fakt;
 import eu.japtor.vizman.backend.entity.ItemType;
+import eu.japtor.vizman.backend.entity.PersonWage;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.ui.components.Ribbon;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +25,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Locale;
@@ -56,6 +58,7 @@ public class VzmFormatUtils {
         // color names.
         nameToColorMap = new HashMap<>();
         nameToColorMap.put("black", new Color(0x000000));
+        nameToColorMap.put("darkgrey", new Color(0xA9A9A9));
         nameToColorMap.put("darkgoldenrod", new Color(0xB8860B));
         nameToColorMap.put("sienna", new Color(0xA0522D));
         nameToColorMap.put("dimgray", new Color(0x696969));
@@ -176,7 +179,7 @@ public class VzmFormatUtils {
             new ValidatedProcIntToStringConverter("Špatný formát čísla");
 
     public static String getItemTypeColorName(ItemType itemType) {
-        String colorName = "black";
+        String colorName = "darkgrey";
         if (ItemType.KONT == itemType) {
             colorName = "sienna";
         } else if (ItemType.ZAK == itemType) {
@@ -230,6 +233,36 @@ public class VzmFormatUtils {
         @Override
         public String convertToPresentation(Integer year, ValueContext valueContext) {
             return null == year ? "" : yearFormat.format(year);
+        }
+    }
+
+    public static class ValidatedIntegerYearMonthConverter implements Converter<String, YearMonth>, HasLogger {
+
+        private String errorMessage = "Neplatný formát, očekáván RRRR-MM";
+
+        @Override
+        public Result<YearMonth> convertToModel(String s, ValueContext valueContext) {
+            try {
+                int year = Integer.valueOf(s.substring(0, 4));
+                int month = Integer.valueOf(s.substring(5,7));
+                if (year < 2000 || year >= 2100) {
+                    return Result.error(errorMessage + " (rok musí být mezi 2000-2099)");
+                }
+                if (month < 1 || month > 12) {
+                    return Result.error(errorMessage + " (měsíc musí být mezi 01-12)");
+                }
+                return Result.ok(YearMonth.of(year, month));
+            } catch (NumberFormatException e) {
+                return Result.error(errorMessage);
+            } catch (Exception e) {
+                getLogger().error(e.getMessage(), e);
+                return Result.error(errorMessage);
+            }
+        }
+
+        @Override
+        public String convertToPresentation(YearMonth ym, ValueContext valueContext) {
+            return null == ym ? "" : ym.toString();
         }
     }
 
@@ -593,6 +626,13 @@ public class VzmFormatUtils {
         Div comp = new Div();
         comp.getStyle().set("color", VzmFormatUtils.getItemTypeColorName(fakt.getTyp()));
         comp.setText(fakt.getTyp().name());
+        return comp;
+    }
+
+    public static HtmlComponent getItemTypeColoredTextComponent(PersonWage personWage) {
+        Div comp = new Div();
+        comp.getStyle().set("color", VzmFormatUtils.getItemTypeColorName(personWage.getTyp()));
+        comp.setText(personWage.getTyp().name());
         return comp;
     }
 
