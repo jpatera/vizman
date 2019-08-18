@@ -55,31 +55,10 @@ public class Person extends AbstractGenIdEntity {
     @Column(name="SAZBA")
     private BigDecimal sazba = BigDecimal.ZERO;
 
-//    @OneToMany(mappedBy = "person",
-//            fetch = FetchType.EAGER, cascade = CascadeType.REFRESH, orphanRemoval = false)
-//    @OrderBy("ymFrom DESC")
-//    private List<PersonWage> wages = new ArrayList<>();
-
-//    @Transient
-//    public BigDecimal getWageCurrent() {
-//        return
-//                wages.stream()
-//                        .filter(wage -> wage.getYmTo() == null)
-//                        .map(wage -> null == wage.getWage() ? BigDecimal.ZERO : wage.getWage())
-//                        .findFirst().orElse(BigDecimal.ZERO)
-//                ;
-//    }
-//
-//    @Transient
-//    public YearMonth getYmFromCurrent() {
-//        return
-//                wages.stream()
-//                        .filter(wage -> wage.getYmTo() == null)
-//                        .map(wage -> null == wage.getWage() ? null : wage.getYmFrom())
-//                        .findFirst().orElse(null)
-//                ;
-//    }
-
+    @OneToMany(mappedBy = "person",
+            fetch = FetchType.EAGER, cascade = CascadeType.REFRESH, orphanRemoval = false)
+    @OrderBy("ymFrom DESC")
+    private List<PersonWage> wages = new ArrayList<>();
 
     @ManyToMany(
             fetch = FetchType.EAGER,
@@ -95,6 +74,25 @@ public class Person extends AbstractGenIdEntity {
             inverseJoinColumns = @JoinColumn(
                     name = "role_id", referencedColumnName = "id"))
     private Set<Role> roles;
+
+    @Transient
+    public BigDecimal getWageCurrent() {
+        return wages.stream()
+                .filter(wage -> wage.getYmTo() == null)
+                .map(wage -> null == wage.getTariff() ? BigDecimal.ZERO : wage.getTariff())
+                .findFirst().orElse(BigDecimal.ZERO)
+        ;
+    }
+
+    @Transient
+    public YearMonth getYmFromCurrent() {
+        return
+                wages.stream()
+                        .filter(wage -> wage.getYmTo() == null)
+                        .map(wage -> null == wage.getYmFrom() ? null : wage.getYmFrom())
+                        .findFirst().orElse(null)
+                ;
+    }
 
 // -----------------------------------------------------
 
@@ -165,11 +163,18 @@ public class Person extends AbstractGenIdEntity {
         this.vystup = vystup;
     }
 
-    public BigDecimal getSazba() {
-        return sazba;
+//    public BigDecimal getSazba() {
+//        return sazba;
+//    }
+//    public void setSazba(BigDecimal sazba) {
+//        this.sazba = sazba;
+//    }
+
+    public List<PersonWage> getWages() {
+        return wages;
     }
-    public void setSazba(BigDecimal sazba) {
-        this.sazba = sazba;
+    public void setWages(List<PersonWage> wages) {
+        this.wages = wages;
     }
 
     public Set<Role> getRoles() {

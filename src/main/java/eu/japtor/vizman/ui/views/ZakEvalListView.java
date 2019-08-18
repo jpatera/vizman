@@ -64,7 +64,7 @@ public class ZakEvalListView extends VerticalLayout implements BeforeEnterObserv
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         // Navigation first gos here, then to the beforeEnter of MainView
-        System.out.println("###  ZaklListView.beforeEnter");
+//        System.out.println("###  ZaklListView.beforeEnter");
     }
 
     private void initView() {

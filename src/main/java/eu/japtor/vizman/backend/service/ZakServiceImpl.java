@@ -112,7 +112,6 @@ public class ZakServiceImpl implements ZakService, HasLogger {
     public Zak fetchOne(Long id) {
         return zakRepo.findTopById(id);
 //        return zakRepo.getOne(id);
-//        return zakRepo.getOne(id);
 //      Or...:  return zakRepo.findById();
     }
 

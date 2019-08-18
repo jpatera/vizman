@@ -35,7 +35,7 @@ import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.service.PersonService;
-import eu.japtor.vizman.backend.service.PersonWageService;
+import eu.japtor.vizman.backend.service.WageService;
 import eu.japtor.vizman.backend.service.RoleService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.*;
@@ -70,7 +70,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
     public PersonService personService;
 
     @Autowired
-    public PersonWageService personWageService;
+    public WageService wageService;
 
     @Autowired
     public RoleService roleService;
@@ -168,7 +168,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
                 this::savePerson
                 , this::deletePerson
                 , personService
-                , personWageService
+                , wageService
                 , roleService.fetchAllRoles()
                 , passwordEncoder
         );
@@ -185,7 +185,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         // Navigation first gos here, then to the beforeEnter of MainView
-        System.out.println("###  ZaklListView.beforeEnter");
+//        System.out.println("###  ZaklListView.beforeEnter");
     }
 
     private VerticalLayout buildGridContainer() {

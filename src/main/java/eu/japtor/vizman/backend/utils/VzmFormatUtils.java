@@ -179,7 +179,7 @@ public class VzmFormatUtils {
             new ValidatedProcIntToStringConverter("Špatný formát čísla");
 
     public static String getItemTypeColorName(ItemType itemType) {
-        String colorName = "darkgrey";
+        String colorName = "black";
         if (ItemType.KONT == itemType) {
             colorName = "sienna";
         } else if (ItemType.ZAK == itemType) {
@@ -241,10 +241,13 @@ public class VzmFormatUtils {
         private String errorMessage = "Neplatný formát, očekáván RRRR-MM";
 
         @Override
-        public Result<YearMonth> convertToModel(String s, ValueContext valueContext) {
+        public Result<YearMonth> convertToModel(String str, ValueContext valueContext) {
+            if (StringUtils.isEmpty(str)) {
+                return Result.ok(null);
+            }
             try {
-                int year = Integer.valueOf(s.substring(0, 4));
-                int month = Integer.valueOf(s.substring(5,7));
+                int year = Integer.valueOf(str.substring(0, 4));
+                int month = Integer.valueOf(str.substring(5,7));
                 if (year < 2000 || year >= 2100) {
                     return Result.error(errorMessage + " (rok musí být mezi 2000-2099)");
                 }

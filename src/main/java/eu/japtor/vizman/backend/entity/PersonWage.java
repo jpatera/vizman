@@ -2,7 +2,6 @@ package eu.japtor.vizman.backend.entity;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.YearMonth;
 
 @Entity
@@ -39,24 +38,24 @@ public class PersonWage extends AbstractGenIdEntity implements HasItemType {
 
 
   @Column(name = "WAGE")
-  private BigDecimal wage;
+  private BigDecimal tariff;
 
 
 
-//  @ManyToOne(fetch = FetchType.EAGER)
-//  @JoinColumn(name = "PERSON_ID")
-//  private Person person;
-//
-//  public Person getPerson() {
-//    return person;
-//  }
-//
-//  public void setPerson(Person person) {
-//    this.person = person;
-//  }
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "PERSON_ID")
+  private Person person;
 
-  @Column(name = "PERSON_ID")
-  private Long personId;
+  public Person getPerson() {
+    return person;
+  }
+
+  public void setPerson(Person person) {
+    this.person = person;
+  }
+
+//  @Column(name = "PERSON_ID"; insert="false"; update="false")
+//  private Long personId;
 
 
 
@@ -67,13 +66,13 @@ public class PersonWage extends AbstractGenIdEntity implements HasItemType {
 
 
 
-  public Long getPersonId() {
-    return personId;
-  }
-
-  public void setPersonId(Long personId) {
-    this.personId = personId;
-  }
+//  public Long getPersonId() {
+//    return personId;
+//  }
+//
+//  public void setPersonId(Long personId) {
+//    this.personId = personId;
+//  }
 
 
   public YearMonth getYmFrom() {
@@ -107,11 +106,11 @@ public class PersonWage extends AbstractGenIdEntity implements HasItemType {
     this.username = username;
   }
 
-  public BigDecimal getWage() {
-    return wage;
+  public BigDecimal getTariff() {
+    return tariff;
   }
-  public void setWage(BigDecimal wage) {
-    this.wage = wage;
+  public void setTariff(BigDecimal tariff) {
+    this.tariff = tariff;
   }
 
 }

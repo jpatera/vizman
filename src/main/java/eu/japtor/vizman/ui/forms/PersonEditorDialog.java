@@ -5,6 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
@@ -14,7 +15,7 @@ import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.service.PersonService;
-import eu.japtor.vizman.backend.service.PersonWageService;
+import eu.japtor.vizman.backend.service.WageService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.AbstractEditorDialog;
 import eu.japtor.vizman.ui.components.Operation;
@@ -35,7 +36,7 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
 //    private ComboBox<PersonState> statusField; // = new ComboBox("Status");
     private TextField usernameField; // = new TextField("Username");
 //    private PasswordField passwordField; // = new TextField("Password");
-    private TextField passwordField; // = new TextField("Password");
+    private PasswordField passwordField; // = new TextField("Password");
     private TextField jmenoField; // = new TextField("Jméno");
     private TextField prijmeniField; // = new TextField("Příjmení");
 
@@ -55,9 +56,9 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
 //    private final VerticalLayout roleGridContainer;
 //    private Grid<Role> roleTwinGrid;
 
-//    @Autowired
+    private PersonWageGridDialog personWageGridDialog;
     private PersonService personService;
-    private PersonWageService personWageService;
+    private WageService wageService;
 
     private Set<Role> rolesPool;
 
@@ -70,7 +71,7 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
     public PersonEditorDialog(BiConsumer<Person, Operation> itemSaver,
                               Consumer<Person> itemDeleter,
                               PersonService personService,
-                              PersonWageService personWageService,
+                              WageService wageService,
                               List<Role> allRoles,
                               PasswordEncoder passwordEncoder)
     {
@@ -88,9 +89,11 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
         setItemNames(ItemType.PERSON);
 
         this.personService = personService;
-        this.personWageService = personWageService;
+        this.wageService = wageService;
         this.rolesPool = new HashSet<>(allRoles);
         this.passwordEncoder = passwordEncoder;
+
+        personWageGridDialog  = new PersonWageGridDialog(wageService, personService);
 
 //        getBinder().forField(jmenoField)
 //                .bind(Person::getJmeno, Person::setJmeno);
@@ -108,7 +111,7 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
 
         usernameField = new TextField("Přihlašovací jméno");
 //        passwordField = new PasswordField("Heslo");
-        passwordField = new TextField("Heslo");
+        passwordField = new PasswordField("Heslo");
         jmenoField = new TextField("Jméno");
         prijmeniField = new TextField("Příjmení");
 
@@ -144,6 +147,8 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
      */
     @Override
     protected void openSpecific() {
+
+
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
         nastupField.setLocale(new Locale("cs", "CZ"));
@@ -288,10 +293,10 @@ public class PersonEditorDialog extends AbstractEditorDialog<Person> {
     }
 
     private void openWageEditDialog() {
-        PersonWageGridDialog personWageGridDialog  = new PersonWageGridDialog(
-                personWageService
-        );
-//        personWageGridDialog.openDialog(personWageService.fetchByPersonId(getCurrentItem().getId()));
+//        PersonWageGridDialog personWageGridDialog  = new PersonWageGridDialog(
+//                wageService
+//        );
+//        personWageGridDialog.openDialog(wageService.fetchByPersonId(getCurrentItem().getId()));
         personWageGridDialog.openDialog(getCurrentItem());
     }
 

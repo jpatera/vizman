@@ -52,7 +52,6 @@ public class FaktServiceImpl implements FaktService, HasLogger {
         } catch (Exception e) {
             String errMsg = "Error while deleting {} : {}";
             getLogger().error(errMsg, faktToDel.getTyp().name(), faktEvidCis, e);
-//            throw new VzmServiceException(errMsg);
             return false;
         }
         return true;

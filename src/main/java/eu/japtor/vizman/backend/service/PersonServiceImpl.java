@@ -31,8 +31,9 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
     }
 
     @Override
-    public Person getById(Long id) {
-        return personRepo.getOne(id);
+    public Person fetchOne(Long id) {
+//        return personRepo.getOne(id);
+        return personRepo.findTopById(id);
     }
 
     @Override

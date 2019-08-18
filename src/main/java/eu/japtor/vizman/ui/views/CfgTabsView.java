@@ -185,7 +185,7 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         // Navigation first goes here, then to the beforeEnter of MainView
-        System.out.println("###  CfgTabsView.beforeEnter");
+//        System.out.println("###  CfgTabsView.beforeEnter");
     }
 
 

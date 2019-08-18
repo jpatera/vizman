@@ -17,10 +17,20 @@ public interface PersonWageRepo extends JpaRepository<PersonWage, Long> {
             , nativeQuery = true)
     PersonWage findPersonWageForMonth(Long personId, YearMonth ym);
 
+    @Query(value = "SELECT TOP 1 * FROM VIZMAN.PERSON_WAGE WHERE PERSON_ID = ?1 ORDER BY YM_FROM DESC"
+            , nativeQuery = true)
+    PersonWage findPersonLastWage(Long personId);
+
     LinkedList<PersonWage> findByPersonIdOrderByYmFromDesc(Long personId);
 
     @Query(value = "SELECT COUNT(*) FROM VIZMAN.PERSON_WAGE WHERE PERSON_ID = ?1 AND " +
-            " ((?2 >= YM_FROM) AND ((YM_TO IS NULL) OR (?2 <= YM_TO)))"
+            " ( ((?2 >= YM_FROM) AND (YM_TO IS NOT NULL) AND (?2 <= YM_TO)) " +
+            "     OR " +
+            "   ((?3 >= YM_FROM) AND (YM_TO IS NOT NULL) AND (?3 <= YM_TO)) " +
+            "     OR " +
+            "   ((?2 <= YM_FROM) AND (?3 >= YM_FROM)) " +
+            "     OR " +
+            "   ((?2 <= YM_TO) AND (?3 >= YM_TO)) )"
             ,  nativeQuery = true)
     long getCoincidingWages(Long personId, YearMonth ymFrom, YearMonth ymTo);
 

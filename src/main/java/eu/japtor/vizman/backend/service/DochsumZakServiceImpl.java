@@ -144,7 +144,7 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
                             dsZaksToUpdate.add(dsZakDb);
                         } else {
                             DochsumZak dsZakNew = new DochsumZak(
-                                    pruhPersonId, pzakDate, pzakZakId, newCellHod, personWage.getWage());
+                                    pruhPersonId, pzakDate, pzakZakId, newCellHod, personWage.getTariff());
                             dsZaksToInsert.add(dsZakNew);
                         }
                     } else {
@@ -158,7 +158,7 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
                         } else {
                             if (null != newCellHod && newCellHod.compareTo(BigDecimal.ZERO) != 0) {
                                 DochsumZak dsZakNew = new DochsumZak(
-                                        pruhPersonId, pzakDate, pzakZakId, newCellHod, personWage.getWage());
+                                        pruhPersonId, pzakDate, pzakZakId, newCellHod, personWage.getTariff());
                                 dsZaksToInsert.add(dsZakNew);
                             }
                         }

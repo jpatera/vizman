@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface PersonService {
 
-    Person getById(Long id);
+    Person fetchOne(Long id);
 
     Person savePerson(Person person);
 
