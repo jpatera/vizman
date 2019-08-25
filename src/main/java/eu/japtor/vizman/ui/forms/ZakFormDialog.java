@@ -155,7 +155,6 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     public ZakFormDialog(
 //                         BiConsumer<Zak, Operation> itemSaver,
 //                         Consumer<Zak> zakDeleter,
-                         boolean readonly,
                          ZakService zakService,
                          FaktService faktService,
 //                         DochsumZakService dochsumZakService,
@@ -166,7 +165,6 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //        this.itemDeleter = zakDeleter;
 //        this.closeAfterSave = false;
 
-        this.readonly = readonly;
         this.zakService = zakService;
         this.faktService = faktService;
 //        this.dochsumZakService = dochsumZakService;
@@ -196,7 +194,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         getLowerPane().add(
                 new Hr()
                 , initFaktGridBar()
-                , initFaktGrid()
+                , initFaktGrid(readonly)
         );
 
         faktFormDialog = new FaktFormDialog(faktService, cfgPropsCache);
@@ -216,7 +214,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     }
 
 
-    public void openDialog(Zak zak, Operation operation) {
+    public void openDialog(boolean readonly, Zak zak, Operation operation) {
 
 //        Notification.show(String.format("FAKT položek: %d", zak.getFakts().size())
 //                , 2500, Notification.Position.TOP_CENTER);
@@ -229,6 +227,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //        }
         this.zakFaktsChanged = false;
         this.origItem = zak;
+        this.readonly = readonly;
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -335,21 +334,35 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         saveAndCloseButton.setEnabled(false);
 //        saveButton.setEnabled(false);
         revertButton.setEnabled(false);
-        newFaktButton.setEnabled(true);
-        newSubButton.setEnabled(true);
-        deleteAndCloseButton.setEnabled(currentOperation.isDeleteEnabled() && canDeleteZak(currentItem));
+        newFaktButton.setEnabled(!readonly);
+        newSubButton.setEnabled(!readonly);
+        deleteAndCloseButton.setEnabled(!readonly && currentOperation.isDeleteEnabled() && canDeleteZak(currentItem));
+
+        rokField.setReadOnly(readonly);
+        skupinaField.setReadOnly(readonly);
+        textField.setReadOnly(readonly);
+        poznamkaField.setReadOnly(readonly);
+        akvToZakButton.setEnabled(!readonly);
+        archCheckBox.setEnabled(!readonly);
     }
 
     private void adjustControlsOperability(final boolean hasChanges, final boolean isValid) {
-        saveAndCloseButton.setEnabled(hasChanges && isValid);
-//        saveButton.setEnabled(hasChanges && isValid);
-        revertButton.setEnabled(hasChanges);
-        newFaktButton.setEnabled(isValid);
-        newSubButton.setEnabled(isValid);
+        saveAndCloseButton.setEnabled(!readonly && hasChanges && isValid);
+//        saveButton.setEnabled(!readonly && hasChanges && isValid);
+        revertButton.setEnabled(!readonly && hasChanges);
+        newFaktButton.setEnabled(!readonly && isValid);
+        newSubButton.setEnabled(!readonly && isValid);
 
 //        saveAndCloseButton.setEnabled(!hasChanges ||!isValid);
 //        saveButton.setEnabled(!hasChanges ||!isValid);
-//        revertButton.setEnabled(!hasChanges);
+//        revertButton.setEnabled(!hasChanges);``
+
+//        rokField.setReadOnly(readonly);
+//        skupinaField.setReadOnly(readonly);
+//        textField.setReadOnly(readonly);
+//        poznamkaField.setReadOnly(readonly);
+//        akvToZakButton.setEnabled(!readonly);
+//        archCheckBox.setEnabled(!readonly);
     }
 
 //    void finishZakEdit(ZakFormDialog zakFormDialog) {
@@ -567,11 +580,11 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //        honorarField.setReadOnly(ItemType.AKV == item.getTyp());
         honorarHrubyField.setReadOnly(true);
         akvToZakButton.setVisible(ItemType.AKV == item.getTyp());
+        revertAndCloseButton.setEnabled(true);
         if (readonly) {
             deleteAndCloseButton.setEnabled(false);
             saveAndCloseButton.setEnabled(false);
             akvToZakButton.setEnabled(false);
-            revertAndCloseButton.setEnabled(false);
             newSubButton.setEnabled(false);
             newFaktButton.setEnabled(false);
         }
@@ -1547,10 +1560,11 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //            Fakt fakt = new Fakt(ItemType.FAKT, getCurrentItem().getNewCfakt(), getCurrentItem());
 //            faktFormDialog.open(fakt, Operation.ADD, "Fakturace");
             if (saveWithoutClose()) {
-                faktFormDialog.openDialog(new Fakt(ItemType.FAKT, getCurrentItem().getNewCfakt(), getCurrentItem())
+                faktFormDialog.openDialog(readonly, new Fakt(ItemType.FAKT, getCurrentItem().getNewCfakt(), getCurrentItem())
                         , Operation.ADD);
             }
         });
+        newFaktButton.setEnabled(readonly);
         return newFaktButton;
     }
 
@@ -1559,10 +1573,11 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //            Fakt fakt = new Fakt(ItemType.FAKT, getCurrentItem().getNewCfakt(), getCurrentItem());
 //            faktFormDialog.open(fakt, Operation.ADD, "Fakturace");
             if (saveWithoutClose()) {
-                subFormDialog.openDialog(new Fakt(ItemType.SUB, getCurrentItem().getNewCfakt(), getCurrentItem())
+                subFormDialog.openDialog(readonly, new Fakt(ItemType.SUB, getCurrentItem().getNewCfakt(), getCurrentItem())
                         , Operation.ADD);
             }
         });
+        newSubButton.setEnabled(readonly);
         return newSubButton;
     }
 
@@ -1589,7 +1604,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         return faktGridBar;
     }
 
-    private Component initFaktGrid() {
+    private Component initFaktGrid(boolean readonly) {
         faktGrid = new Grid<>();
         faktGrid.setHeight("3em");
 //        faktGrid.getElement().setProperty("flexGrow", (double)0);
@@ -1679,12 +1694,12 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private Component buildFaktEditBtn(Fakt fakt) {
         if (ItemType.FAKT == fakt.getTyp()) {
             Button faktEditBtn = new GridItemEditBtn(event ->
-                    faktFormDialog.openDialog(fakt, Operation.EDIT)
+                    faktFormDialog.openDialog(readonly, fakt, Operation.EDIT)
                     , VzmFormatUtils.getItemTypeColorName(fakt.getTyp()));
             return faktEditBtn;
         } else {
             Button subEditBtn = new GridItemEditBtn(event ->
-                    subFormDialog.openDialog(fakt, Operation.EDIT)
+                    subFormDialog.openDialog(readonly, fakt, Operation.EDIT)
                     , VzmFormatUtils.getItemTypeColorName(fakt.getTyp()));
             return subEditBtn;
         }
@@ -1695,7 +1710,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         if (ItemType.FAKT == fakt.getTyp()) {
             Button fakStornoBtn = new FakturovatBtn(event -> {
                 if (isFakturovano) {
-                    faktFormDialog.openDialog(fakt, Operation.STORNO);
+                    faktFormDialog.openDialog(readonly, fakt, Operation.STORNO);
                 } else {
                     if (null == fakt.getPlneni() || fakt.getPlneni().compareTo(BigDecimal.ZERO) <= 0) {
                         ConfirmDialog.createInfo()
@@ -1709,7 +1724,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                                 .open();
 
                     } else {
-                        faktFormDialog.openDialog(fakt, Operation.FAKTUROVAT);
+                        faktFormDialog.openDialog(readonly, fakt, Operation.FAKTUROVAT);
                     }
                 }
             }, isFakturovano);
@@ -1726,7 +1741,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             Button exportBackBtn = new GridFaktExportBtn(event -> {
                 //            Fakt fakt = new Fakt(ItemType.FAKT, getCurrentItem().getNewCfakt(), getCurrentItem());
                 //            faktFormDialog.open(fakt, Operation.ADD, "Fakturace");
-                faktFormDialog.openDialog(fakt, Operation.EXPORT);
+                faktFormDialog.openDialog(readonly, fakt, Operation.EXPORT);
             });
             exportBackBtn.setEnabled(false);
             return exportBackBtn;

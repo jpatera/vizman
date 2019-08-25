@@ -57,6 +57,7 @@ public class SubFormDialog extends AbstractFormDialog<Fakt> implements HasLogger
     private Fakt origItem;
     private Operation currentOperation;
     private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
+    private boolean readonly;
 
     private Registration binderChangeListener = null;
 
@@ -84,12 +85,13 @@ public class SubFormDialog extends AbstractFormDialog<Fakt> implements HasLogger
     }
 
 
-    public void openDialog(Fakt fakt, Operation operation) {
+    public void openDialog(boolean readonly, Fakt fakt, Operation operation) {
         setItemNames(fakt.getTyp());
 
         this.currentOperation = operation;
         this.currentItem = fakt;
         this.origItem = fakt;
+        this.readonly = readonly;
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -176,8 +178,19 @@ public class SubFormDialog extends AbstractFormDialog<Fakt> implements HasLogger
 
 //    private void adjustControlsOperability(final boolean hasChanges, final boolean isValid) {
     private void adjustControlsOperability(final boolean hasChanges) {
-        saveAndCloseButton.setEnabled(hasChanges);
-        revertButton.setEnabled(hasChanges);
+        saveAndCloseButton.setEnabled(hasChanges && !readonly);
+        revertButton.setEnabled(hasChanges && !readonly);
+
+        textField.setReadOnly(readonly);
+        castkaField.setReadOnly(readonly);
+        dateDuzpField.setReadOnly(readonly);
+        faktCisloField.setReadOnly(readonly);
+        dateVystavField.setReadOnly(readonly);
+
+        revertAndCloseButton.setEnabled(true);
+
+        deleteAndCloseButton.setEnabled(!readonly);
+        revertButton.setEnabled(!readonly);
     }
 
     private Component initZakEvidField() {
@@ -204,6 +217,7 @@ public class SubFormDialog extends AbstractFormDialog<Fakt> implements HasLogger
 
     private Component initDateDuzpField() {
         dateDuzpField = new DatePicker("DUZP");
+        dateDuzpField.setReadOnly(readonly);
         getBinder().forField(dateDuzpField)
 //                .withConverter(String::trim, String::trim)
                 .bind(Fakt::getDateDuzp, Fakt::setDateDuzp);
@@ -213,6 +227,7 @@ public class SubFormDialog extends AbstractFormDialog<Fakt> implements HasLogger
     private Component initTextField() {
         textField = new TextField("Text subdoddávky");
         textField.getElement().setAttribute("colspan", "2");
+        textField.setReadOnly(readonly);
         getBinder().forField(textField)
                 .withValidator(new StringLengthValidator(
                         "Text subdodávky může mít  max. 127 znaků",
@@ -226,7 +241,7 @@ public class SubFormDialog extends AbstractFormDialog<Fakt> implements HasLogger
     private Component initCastkaField() {
         castkaField = new TextField("Částka subdodávky");
 //        castkaField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
-        castkaField.setReadOnly(false);
+        castkaField.setReadOnly(readonly);
 //        castkaField.setSuffixComponent(new Span(faktMena.name()));
         getBinder().forField(castkaField)
                 .withNullRepresentation("")
@@ -252,7 +267,7 @@ public class SubFormDialog extends AbstractFormDialog<Fakt> implements HasLogger
 
     private Component initFaktCisloField() {
         faktCisloField = new TextField("Číslo faktury");
-        faktCisloField.setReadOnly(false);
+        faktCisloField.setReadOnly(readonly);
         getBinder().forField(faktCisloField)
                 .withValidator(new StringLengthValidator(
                         "Číslo faktury muže mít max. 40 znaků",

@@ -67,27 +67,27 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 
     @Basic
     @Column(name = "RP")
-    private BigDecimal rp;
+    private BigDecimal rp;  // Rozpracovanost posledni platna
 
     @Basic
     @Column(name = "R0")
-    private BigDecimal r0;
+    private BigDecimal r0;  // Rozpracovanost  na konci Q4 minuleho roku
 
     @Basic
     @Column(name = "R1")
-    private BigDecimal r1;
+    private BigDecimal r1;  // Rozpracovanost na konci Q1
 
     @Basic
     @Column(name = "R2")
-    private BigDecimal r2;
+    private BigDecimal r2;  // Rozpracovanost na konci Q2
 
     @Basic
     @Column(name = "R3")
-    private BigDecimal r3;
+    private BigDecimal r3;  // Rozpracovanost na konci Q3
 
     @Basic
     @Column(name = "R4")
-    private BigDecimal r4;
+    private BigDecimal r4;  // Rozpracovanost na konci Q4
 
     @Basic
     @Column(name = "OBJEDNATEL")

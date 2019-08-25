@@ -165,7 +165,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 
         getUpperRightPane().add(
                 initKontDocFolderComponent()
-                , initKontFolderAnchor()
+                // TODO
+//                , initKontFolderAnchor()
                 , initDocGridBar()
                 , initDocGrid()
         );
@@ -177,7 +178,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         );
 
         zakFormDialog = new ZakFormDialog(
-                false, zakService, faktService, cfgPropsCache
+                zakService, faktService, cfgPropsCache
         );
 
         zakFormDialog.addOpenedChangeListener(event -> {
@@ -1110,7 +1111,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private Component initNewZakButton() {
         newZakButton = new NewItemButton(ItemNames.getNomS(ItemType.ZAK), event -> {
             if (saveWithoutClose()) {
-                zakFormDialog.openDialog(new Zak(ItemType.ZAK, getCurrentItem().getNewCzak(), getCurrentItem())
+                zakFormDialog.openDialog(false, new Zak(ItemType.ZAK, getCurrentItem().getNewCzak(), getCurrentItem())
                         , Operation.ADD);
 //                , Operation.ADD, ItemNames.getNomS(ItemType.ZAK), new FlexLayout(), "")
             }
@@ -1121,7 +1122,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private Component initNewAkvButton() {
         newAkvButton = new NewItemButton(ItemNames.getNomS(ItemType.AKV), event -> {
             if (saveWithoutClose()) {
-                zakFormDialog.openDialog(new Zak(ItemType.AKV, getCurrentItem().getNewCzak(), getCurrentItem())
+                zakFormDialog.openDialog(false, new Zak(ItemType.AKV, getCurrentItem().getNewCzak(), getCurrentItem())
                         , Operation.ADD);
             }
         });
@@ -1288,7 +1289,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //        } else {
             Button btn = new GridItemEditBtn(event -> {
                     if (saveWithoutClose()) {
-                        zakFormDialog.openDialog(zak, Operation.EDIT);
+                        zakFormDialog.openDialog(false, zak, Operation.EDIT);
                     }
                 }
                 , VzmFormatUtils.getItemTypeColorName(zak.getTyp())

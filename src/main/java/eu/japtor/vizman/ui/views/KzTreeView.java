@@ -205,7 +205,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        });
 
         zakFormDialog = new ZakFormDialog(
-                false, zakService, faktService, cfgPropsCache
+                zakService, faktService, cfgPropsCache
         );
         zakFormDialog.addOpenedChangeListener(event -> {
 //            System.out.println("OPEN-CHANGED: " + event.toString());
@@ -1038,7 +1038,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 ;
             }
         } else if (ItemType.ZAK == kz.getTyp() || ItemType.AKV == kz.getTyp()) {
-            btn = new GridItemEditBtn(event -> zakFormDialog.openDialog((Zak)kz, Operation.EDIT)
+            btn = new GridItemEditBtn(event -> zakFormDialog.openDialog(false, (Zak)kz, Operation.EDIT)
                     , VzmFormatUtils.getItemTypeColorName(kz.getTyp()));
             if (ItemType.KONT != kz.getTyp()) {
                 btn.getStyle()

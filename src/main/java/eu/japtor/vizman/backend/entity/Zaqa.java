@@ -12,6 +12,17 @@ public class Zaqa extends AbstractGenIdEntity implements HasItemType {
 
     public static final GrammarGender GENDER = GrammarGender.MASCULINE;
 
+    public Zaqa() {
+
+    }
+
+    public Zaqa(Integer rok, Integer qa, BigDecimal rx, Zakr zakr) {
+        this.rok = rok;
+        this.qa = qa;
+        this.rx = rx;
+        this.zakr = zakr;
+    }
+
     @Column(name="ROK")
     private Integer rok;
 

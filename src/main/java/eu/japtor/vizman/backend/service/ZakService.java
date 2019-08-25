@@ -35,8 +35,4 @@ public interface ZakService {
     Integer getNewCfakt(Long zakId);
 
     boolean zakIdExistsInKont(Long kontId, Integer czak);
-
-    Zakr saveZakr(Zakr zakr, Operation oper);
-
-
 }

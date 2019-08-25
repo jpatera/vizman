@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -212,22 +213,33 @@ public class ZakrListView extends VerticalLayout {
         return gridContainer;
     }
 
+    private void saveGridItem(Zakr itemToSave, Operation operation) {
+        zakrService.saveZakr(itemToSave);
+//        Zakr savedItem = zakrService.fetchOne(itemToSave.getId());
+        zakrList = zakrService.fetchAllDescOrder();
+        zakrGrid.setItems(zakrList);
 
-//    private Zakr selectedItem;
+//        savedItem = zakrService.fetchOne(itemToSave.getId());
+//        zakrGrid.getDataCommunicator().getKeyMapper().removeAll();
+//        zakrGrid.getDataCommunicator().getKeyMapper().remove(savedItem);
+//        zakrGrid.getDataCommunicator().getKeyMapper().remove(itemToSave);
+//        zakrGrid.getDataProvider().refreshItem(savedItem);
+//        zakrGrid.getDataProvider().refreshItem(itemToSave);
+        zakrGrid.getDataProvider().refreshAll();
 
-    private void saveZakr(Zakr zakr, Operation operation) {
-        Zakr newInstance = zakService.saveZakr(zakr, operation);
-//        roleGrid.getDataProvider().refreshItem(newInstance);
+//        zakrGrid.rpVysledekGridValueProvider.apply(savedItem);
+//        zakrGrid.getDataProvider().refreshAll();
+//        zakrList = zakrService.fetchAllDescOrder();
+//        zakrGrid.setItems(zakrList);
+
         Notification.show(
-//                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
-                "Změny rozpracovanosti uloženy", 2000, Notification.Position.TOP_CENTER);
-//        updateGridContent();
+                "Rozpracovanost uložena", 2000, Notification.Position.TOP_CENTER);
     }
 
     private Component initZakrGrid() {
         zakrGrid = new ZakRozpracGrid(
                 false,true, null
-                , this::saveZakr
+                , this::saveGridItem
                 , BigDecimal.valueOf(25.5)
                 // FIXME
                 // , cfgPropsCache.getDecimalValue("")
@@ -287,11 +299,6 @@ public class ZakrListView extends VerticalLayout {
         if (zakrGrid.getEditor().isOpen()) {
             zakrGrid.getEditor().closeEditor();
         }
-
-
-
-
-
         zakrList = zakrService.fetchAllDescOrder();
         zakrGrid.setItems(zakrList);
         zakrGrid.setRokFilterItems(zakrList.stream()
@@ -309,9 +316,6 @@ public class ZakrListView extends VerticalLayout {
                 .filter(a -> null != a)
                 .distinct().collect(Collectors.toCollection(LinkedList::new))
         );
-
-
         zakrGrid.getDataProvider().refreshAll();
-
     }
 }

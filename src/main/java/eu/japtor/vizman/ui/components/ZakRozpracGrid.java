@@ -61,6 +61,8 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     public static final String R4_COL_KEY = "zakr-bg-r4";
     public static final String FINISHED_COL_KEY = "zakr-bg-finished";
     public static final String REMAINS_COL_KEY = "zakr-bg-remains";
+    public static final String RESULT_COL_KEY = "zakr-bg-result";
+    public static final String RESULTP8_COL_KEY = "zakr-bg-result-p8";
 
 //    Grid<Zak> zakGrid;
     private ZakFormDialog zakFormDialog;
@@ -119,7 +121,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 this.zaqaService, this.zakrService
         );
         zakFormDialog = new ZakFormDialog(
-                false, this.zakService, this.faktService, this.cfgPropsCache
+                this.zakService, this.faktService, this.cfgPropsCache
         );
 
 //        Grid<Zak> zakGrid = new Grid<>();
@@ -130,32 +132,8 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
         this.setSelectionMode(SelectionMode.SINGLE);    // MUST be SINGLE, automatic changes saving is based  onit
         this.addSelectionListener(event -> {
-            if (this.getEditor().isOpen()) {
-                if (getEditor().isBuffered()) {
-                    this.getEditor().save();
-                } else {
-                    editedItem = this.getEditor().getItem();
-                    this.getEditor().closeEditor();
-                }
-            }
-            String ckzEdit = "N/A";
-            try {
-                if (null != editedItem) {
-                    ckzEdit = String.format("%s / %s", editedItem.getCkont(), editedItem.getCzak());
-                    if (editedItemChanged) {
-                        this.itemSaver.accept(editedItem, Operation.EDIT);
-                    }
-                }
-                editedItem = event.getFirstSelectedItem().orElse(null);   // Note: grid selection mode is supposed to be SINGLE
-                editedItemChanged = false;
-            } catch(Exception ex) {
-                ConfirmDialog
-                        .createError()
-                        .withCaption("Editace rozpracovanosti.")
-                        .withMessage(String.format("Zakázku %s se nepodařilo uložit.", ckzEdit))
-                        .open()
-                ;
-            }
+            attemptSaveFromEditor();
+            editedItem = event.getFirstSelectedItem().orElse(null);   // Note: grid selection mode is supposed to be SINGLE
         });
 
 //        zakGrid.getElement().addEventListener("keypress", e -> {
@@ -189,7 +167,8 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         zakrEditor.setBuffered(false);
         zakrEditor.addSaveListener(event -> {
            System.out.println("=== editor SAVING...");
-           this.itemSaver.accept(event.getItem(), Operation.EDIT);
+//           this.itemSaver.accept(event.getItem(), Operation.EDIT);
+           attemptSaveFromEditor();
         });
 
         zakrGridEditRegistration = this.addItemDoubleClickListener(event -> {
@@ -361,6 +340,25 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(REMAINS_COL_KEY)
                 .setResizable(true)
         ;
+        Grid.Column<Zakr> colVysledek = this.addColumn(rpVysledekGridValueProvider)
+                .setHeader("Výsledek")
+                .setFlexGrow(0)
+                .setWidth("7em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(true)
+                .setKey(RESULT_COL_KEY)
+                .setResizable(true)
+                ;
+
+        Grid.Column<Zakr> colVysledekP8 = this.addColumn(rpVysledekP8GridValueProvider)
+                .setHeader("Výsledek P8")
+                .setFlexGrow(0)
+                .setWidth("7em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(true)
+                .setKey(RESULTP8_COL_KEY)
+                .setResizable(true)
+                ;
 
         this.addColumn(Zakr::getKzText)
                 .setHeader("Text")
@@ -419,7 +417,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
     Component buildZakViewBtn(Zakr zakr) {
         return new GridItemBtn(event -> zakFormDialog.openDialog(
-                zakService.fetchOne(zakr.getId()), Operation.EDIT)
+                true, zakService.fetchOne(zakr.getId()), Operation.EDIT)
                 , new Icon(VaadinIcon.EYE), VzmFormatUtils.getItemTypeColorName(zakr.getTyp())
         );
     }
@@ -433,6 +431,38 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //                zaqaService.fetchAllByZakId(zakr.getId()), Operation.EDIT)
 //                , VzmFormatUtils.getItemTypeColorName(zakr.getTyp()));
     }
+
+    private void attemptSaveFromEditor() {
+
+        if (this.getEditor().isOpen()) {
+            if (getEditor().isBuffered()) {
+                this.getEditor().save();
+            } else {
+                editedItem = this.getEditor().getItem();
+                this.getEditor().closeEditor();
+            }
+        }
+        String ckzEdit = "N/A";
+        try {
+            if (null != editedItem) {
+                ckzEdit = String.format("%s / %s", editedItem.getCkont(), editedItem.getCzak());
+                if (editedItemChanged) {
+                    this.itemSaver.accept(editedItem, Operation.EDIT);
+//                    rpVysledekGridValueProvider.apply(editedItem);
+                }
+            }
+//            editedItem = event.getFirstSelectedItem().orElse(null);   // Note: grid selection mode is supposed to be SINGLE
+            editedItemChanged = false;
+        } catch(Exception ex) {
+            ConfirmDialog
+                    .createError()
+                    .withCaption("Editace rozpracovanosti.")
+                    .withMessage(String.format("Rozpracovanost %s se nepodařilo uložit.", ckzEdit))
+                    .open()
+            ;
+        }
+    }
+
 
 //    private boolean writeZakrToBeanIfValid(Binder zakrEditorBinder, Editor<Zakr> zakrEditor) {
 //        boolean isValid = zakrEditor.save();
@@ -496,6 +526,17 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             return null == rpZbyva ? "" : VzmFormatUtils.moneyFormat.format(rpZbyva);
     };
 
+    public ValueProvider<Zakr, String> rpVysledekGridValueProvider = zakr -> {
+            BigDecimal rpVysledek = getRpVysledek(zakr);
+            return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
+    };
+
+    private ValueProvider<Zakr, String> rpVysledekP8GridValueProvider = zakr -> {
+//            BigDecimal rpVysledek = getRpVysledekP8(zakr);
+//            return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
+            return "";
+    };
+
     private ValueProvider<Zakr, String> menaValueProvider = zakr -> {
         return null == zakr.getMena() ? null : zakr.getMena().name();
     };
@@ -549,6 +590,13 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         return null == lastRxValue || null == zakr.getHonorCisty() ? null :
                 zakr.getHonorCisty().subtract(
                         lastRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L))
+        );
+    }
+
+    private BigDecimal getRpVysledek(final Zakr zakr) {
+        BigDecimal lastRxValue = zakr.getRP();
+        return null == lastRxValue || null == zakr.getHonorCisty() ? null :
+                lastRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L)
         );
     }
 

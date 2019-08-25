@@ -20,4 +20,6 @@ public interface ZakrService {
     long countAll();
 
     List<Integer> fetchZakrRoks();
+
+    Zakr saveZakr(Zakr itemToSave);
 }

@@ -63,6 +63,7 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
     private Fakt origItem;
     private Operation currentOperation;
     private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
+    private boolean readonly;
 
     private Registration binderChangeListener = null;
 
@@ -99,11 +100,12 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
     }
 
 
-    public void openDialog(Fakt fakt, Operation operation) {
+    public void openDialog(boolean readonly, Fakt fakt, Operation operation) {
 
         this.currentOperation = operation;
         this.currentItem = fakt;
         this.origItem = fakt;
+        this.readonly = readonly;
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -192,14 +194,26 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
         saveAndCloseButton.setEnabled(false);
 //        saveButton.setEnabled(false);
         revertButton.setEnabled(false);
-        deleteAndCloseButton.setEnabled(currentOperation.isDeleteEnabled() && canDeleteFakt(currentItem));
+        deleteAndCloseButton.setEnabled(!readonly && currentOperation.isDeleteEnabled() && canDeleteFakt(currentItem));
+
+        textField.setReadOnly(readonly);
+        castkaField.setReadOnly(readonly);
+        dateDuzpField.setReadOnly(readonly);
+        faktCisloField.setReadOnly(readonly);
+        dateVystavField.setReadOnly(readonly);
+
+        revertAndCloseButton.setEnabled(true);
+
+        deleteAndCloseButton.setEnabled(!readonly);
+        revertButton.setEnabled(!readonly);
+        faktExpButton.setEnabled(!readonly);
     }
 
 //    private void adjustControlsOperability(final boolean hasChanges, final boolean isValid) {
     private void adjustControlsOperability(final boolean hasChanges) {
 //        saveAndCloseButton.setEnabled(hasChanges && isValid);
-        saveAndCloseButton.setEnabled(hasChanges);
-        revertButton.setEnabled(hasChanges);
+        saveAndCloseButton.setEnabled(!readonly && hasChanges);
+        revertButton.setEnabled(!readonly && hasChanges);
     }
 
 
@@ -320,6 +334,7 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
 
     private Component initDateDuzpField() {
         dateDuzpField = new DatePicker("DUZP");
+        dateDuzpField.setReadOnly(readonly);
         getBinder().forField(dateDuzpField)
 //                .withConverter(String::trim, String::trim)
                 .bind(Fakt::getDateDuzp, Fakt::setDateDuzp);
@@ -329,6 +344,7 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
     private Component initTextField() {
         textField = new TextField("Text dílčího plnění");
         textField.getElement().setAttribute("colspan", "2");
+        textField.setReadOnly(readonly);
         getBinder().forField(textField)
                 .withValidator(new StringLengthValidator(
                         "Text plnění může mít max. 127 znaků",
@@ -342,7 +358,7 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
     private Component initCastkaField() {
         castkaField = new TextField("Částka dílčího plnění");
 //        castkaField.setReadOnly(true);
-        castkaField.setReadOnly(false);
+        castkaField.setReadOnly(readonly);
 //        castkaField.setSuffixComponent(new Span(faktMena.name()));
         getBinder().forField(castkaField)
                 .withNullRepresentation("")
@@ -359,7 +375,7 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
 
     private Component initDateVystavField() {
         dateVystavField = new DatePicker("Vystaveno, fakturovano...");
-//        dateVystavField.setReadOnly(true);
+        dateVystavField.setReadOnly(readonly);
         getBinder().forField(dateVystavField)
 //                .withConverter(String::trim, String::trim)
                 .bind(Fakt::getDateVystav, Fakt::setDateVystav);
@@ -368,7 +384,7 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
 
     private Component initFaktCisloField() {
         faktCisloField = new TextField("Číslo faktury");
-        faktCisloField.setReadOnly(false);
+        faktCisloField.setReadOnly(readonly);
         getBinder().forField(faktCisloField)
                 .withValidator(new StringLengthValidator(
                         "Číslo faktury muže mít max. 40 znaků",

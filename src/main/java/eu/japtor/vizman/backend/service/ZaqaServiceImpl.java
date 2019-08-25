@@ -3,6 +3,8 @@ package eu.japtor.vizman.backend.service;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.app.HasLogger;
+import eu.japtor.vizman.backend.entity.Zak;
+import eu.japtor.vizman.backend.entity.Zakr;
 import eu.japtor.vizman.backend.entity.Zaqa;
 import eu.japtor.vizman.backend.repository.ZaqaRepo;
 import eu.japtor.vizman.ui.components.Operation;
@@ -10,8 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 
 @Service
 public class ZaqaServiceImpl extends AbstractSortableService implements ZaqaService, HasLogger {
@@ -36,10 +38,7 @@ public class ZaqaServiceImpl extends AbstractSortableService implements ZaqaServ
         return zaqaRepo.findByZakrIdOrderByRokDesc(parentId);
     }
 
-    @Override
-    public List<Zaqa> saveItemList(List<Zaqa> itemListToSave) {
-        return null;
-    }
+
 
     @Override
     @Transactional

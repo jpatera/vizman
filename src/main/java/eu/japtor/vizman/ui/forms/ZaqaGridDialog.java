@@ -253,10 +253,10 @@ public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogge
         gridBar.setAlignItems(FlexComponent.Alignment.BASELINE);
         gridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         gridBar.add(
-                new Ribbon(),
-                new FlexLayout(
-                        initNewItemButton()
-                )
+                new Ribbon()
+//                new FlexLayout(
+//                        initNewItemButton()
+//                )
         );
         return gridBar;
     }
@@ -329,20 +329,71 @@ public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogge
                 .setFlexGrow(0)
                 .setResizable(true)
         ;
-        grid.addColumn(Zaqa::getRx)
+        Grid.Column<Zaqa> colRx = grid.addColumn(Zaqa::getRx)
                 .setHeader("RX")
                 .setWidth("10em")
                 .setFlexGrow(0)
                 .setResizable(true)
         ;
+//        colRx.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zaqa::getRx, Zaqa::setRx));
+
 //        personWageGrid.addColumn(new ComponentRenderer<>(this::buildZakOpenBtn))
 //                .setFlexGrow(0)
 //                .setKey(PERSON_WAGE_EDIT_COL_KEY)
 //        ;
 
+
+//        // =============
+//        // Grid editor:
+//        // =============
+//        Editor<Zaqa> zaqaEditor = this.grid.getEditor();
+//        Binder<Zaqa> zaqaEditorBinder = new Binder<>(Zaqa.class);
+//        zaqaEditor.setBinder(zaqaEditorBinder);
+//        zaqaEditor.setBuffered(false);
+//        zaqaEditor.addSaveListener(event -> {
+//            System.out.println("=== editor SAVING...");
+//            this.itemSaver.accept(event.getItem(), Operation.EDIT);
+//        });
+//
         return grid;
     }
 
+//    // ===========================
+//    //  Rx Field editor  component
+//    // ===========================
+//    private Component buildRxEditorComponent(
+//            Binder<Zaqa> zaqaEditorBinder
+//            , ValueProvider<Zakr, BigDecimal> rxEditorValueProvider
+//            , Setter<Zaqa, BigDecimal> rxEditorSetter
+//    ) {
+//        TextField editComp = new TextField();
+//        editComp.addValueChangeListener(event -> {
+//            if (event.isFromClient() && !Objects.equals(event.getValue(), (event.getOldValue()))) {
+//                editedItemChanged = true;
+//                this.getEditor().getBinder().writeBeanIfValid(this.getEditor().getItem());
+////                this.getDataProvider().refreshItem(this.getEditor().getItem());
+//            }
+//        });
+//        // TODO: remove margins
+//        editComp.getStyle()
+//                .set("margin", "0")
+//                .set("padding", "0")
+////                .set("width", HOD_COL_WIDTH)
+//                .set("width", "3.5em")
+//                .set("font-size", "var(--lumo-font-size-s)")
+//                .set("height", "1.8m")
+//                .set("min-height", "1.8em")
+//                .set("--lumo-text-field-size", "var(--lumo-size-s)")
+//        ;
+//        editComp.setPattern(RX_REGEX);
+//        editComp.setPreventInvalidInput(true);
+//        zakrEditorBinder.forField(editComp)
+//                .withNullRepresentation("")
+//                .withConverter(VzmFormatUtils.VALIDATED_PROC_INT_TO_STRING_CONVERTER)
+//                .bind(rxEditorValueProvider, rxEditorSetter);
+//
+//        return editComp;
+//    }
 
 //    private Component buildZaqaOpenBtn(Zaqa item) {
 //        return new GridItemEditBtn(event -> {
