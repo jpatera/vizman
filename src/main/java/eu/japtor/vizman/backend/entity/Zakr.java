@@ -66,6 +66,10 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     private BigDecimal honorSub;
 
     @Basic
+    @Column(name = "RP")
+    private BigDecimal rp;
+
+    @Basic
     @Column(name = "R0")
     private BigDecimal r0;
 
@@ -171,6 +175,13 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 //    public void setHonorSub(BigDecimal honorSub) {
 //        this.honorSub = honorSub;
 //    }
+
+    public BigDecimal getRP() {
+        return rp;
+    }
+    public void setRP(BigDecimal rp) {
+        this.rp = rp;
+    }
 
     public BigDecimal getR0() {
         return r0;

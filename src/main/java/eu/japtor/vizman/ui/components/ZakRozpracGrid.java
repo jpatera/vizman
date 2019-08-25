@@ -1,7 +1,6 @@
 package eu.japtor.vizman.ui.components;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
@@ -54,6 +53,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     public static final String MENA_COL_KEY = "zakr-bg-mena";
     public static final String ARCH_COL_KEY = "zakr-bg-arch";
     public static final String HONOR_CISTY_COL_KEY = "zakr-bg-honor-cisty";
+    public static final String RP_COL_KEY = "zakr-bg-rp";
     public static final String R0_COL_KEY = "zakr-bg-r0";
     public static final String R1_COL_KEY = "zakr-bg-r1";
     public static final String R2_COL_KEY = "zakr-bg-r2";
@@ -85,9 +85,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     private boolean editedItemChanged;
     private BiConsumer<Zakr, Operation> itemSaver;
 
-    private ZakService zakService;
-    private ZaqaService zaqaService;
     private ZakrService zakrService;
+    private ZakService zakService;
+    private FaktService faktService;
+    private ZaqaService zaqaService;
     private CfgPropsCache cfgPropsCache;
 
     public ZakRozpracGrid(
@@ -98,6 +99,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             , BigDecimal kurzEur
             , ZakrService zakrService
             , ZakService zakService
+            , FaktService faktService
             , ZaqaService zaqaService
             , CfgPropsCache cfgPropsCache
     ) {
@@ -107,13 +109,17 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         this.itemSaver = itemSaver;
         this.kurzEur = kurzEur;
 
-        this.zakService = zakService;
         this.zakrService = zakrService;
+        this.zakService = zakService;
+        this.faktService = faktService;
         this.zaqaService = zaqaService;
         this.cfgPropsCache = cfgPropsCache;
 
         zaqaGridDialog = new ZaqaGridDialog(
-                zaqaService, zakrService
+                this.zaqaService, this.zakrService
+        );
+        zakFormDialog = new ZakFormDialog(
+                false, this.zakService, this.faktService, this.cfgPropsCache
         );
 
 //        Grid<Zak> zakGrid = new Grid<>();
@@ -260,7 +266,13 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setSortable(true)
                 .setKey(HONOR_CISTY_COL_KEY)
                 .setResizable(true)
-                ;
+        ;
+
+        this.addColumn(new ComponentRenderer<>(this::buildZaqaOpenBtn))
+                .setHeader("QX")
+                .setFlexGrow(0)
+                .setWidth("3em")
+        ;
 
         Grid.Column<Zakr> colR0 = this.addColumn(r0GridValueProvider)
 //        Grid.Column<Zakr> colR0 = this.addColumn(Zakr::getR0)
@@ -275,12 +287,6 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setResizable(false)
                 ;
         colR0.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR0, Zakr::setR0));
-
-        this.addColumn(new ComponentRenderer<>(this::buildZaqaOpenBtn))
-                .setHeader("QX")
-                .setFlexGrow(0)
-                .setWidth("3em")
-        ;
 
         Grid.Column<Zakr> colR1 = this.addColumn(r1GridValueProvider)
                 .setHeader("R1")
@@ -327,7 +333,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         colR4.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR4, Zakr::setR4));
 
         Grid.Column<Zakr> colRxVykon = this.addColumn(rxVykonGridValueProvider)
-                .setHeader("Výkon RX")
+                .setHeader("Výkon RX-RY")
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setTextAlign(ColumnTextAlign.END)
@@ -335,8 +341,19 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(FINISHED_COL_KEY)
                 .setResizable(true)
         ;
-        Grid.Column<Zakr> colRxZbyva = this.addColumn(rxZbyvaGridValueProvider)
-                .setHeader("Zbývá RX")
+
+        Grid.Column<Zakr> colRp = this.addColumn(rpGridValueProvider)
+                .setHeader("RP")
+                .setFlexGrow(0)
+                .setWidth("4em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(true)
+                .setKey(RP_COL_KEY)
+                .setResizable(false)
+                ;
+//        colRP.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR0, Zakr::setR0));
+        Grid.Column<Zakr> colRpZbyva = this.addColumn(rpZbyvaGridValueProvider)
+                .setHeader("Zbývá celk.")
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setTextAlign(ColumnTextAlign.END)
@@ -344,6 +361,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(REMAINS_COL_KEY)
                 .setResizable(true)
         ;
+
         this.addColumn(Zakr::getKzText)
                 .setHeader("Text")
                 .setFlexGrow(1)
@@ -399,31 +417,21 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         }
     }
 
-//    @PostConstruct
-//    public void postInit() {
-//        zakFormDialog = new ZakFormDialog(
-//                false, zakService, faktService, cfgPropsCache
-//        );
-//    }
-
-
     Component buildZakViewBtn(Zakr zakr) {
-        Button btn = new GridItemBtn(event -> zakFormDialog.openDialog(
+        return new GridItemBtn(event -> zakFormDialog.openDialog(
                 zakService.fetchOne(zakr.getId()), Operation.EDIT)
                 , new Icon(VaadinIcon.EYE), VzmFormatUtils.getItemTypeColorName(zakr.getTyp())
         );
-        return btn;
     }
 
     Component buildZaqaOpenBtn(Zakr zakr) {
-        Button btn = new GridItemBtn(event -> zaqaGridDialog.openDialog(
+        return new GridItemBtn(event -> zaqaGridDialog.openDialog(
                 zakrService.fetchOne(zakr.getId()))
                 , new Icon(VaadinIcon.LINES_LIST), null
         );
 //        Button btn = new GridItemEditBtn(event -> zaqaFormDialog.openDialog(
 //                zaqaService.fetchAllByZakId(zakr.getId()), Operation.EDIT)
 //                , VzmFormatUtils.getItemTypeColorName(zakr.getTyp()));
-        return btn;
     }
 
 //    private boolean writeZakrToBeanIfValid(Binder zakrEditorBinder, Editor<Zakr> zakrEditor) {
@@ -440,6 +448,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //        editedItem = zakrEditor.getItem();
 //        return true;
 //    }
+
+    private ValueProvider<Zakr, String> rpGridValueProvider =
+            zakr -> null == zakr.getRP() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getRP())
+    ;
 
     private ValueProvider<Zakr, String> r0GridValueProvider =
             zakr -> null == zakr.getR0() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR0())
@@ -462,8 +474,12 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     ;
 
     private ValueProvider<Zakr, String> honorCistyValueProvider = zakr -> {
+        if (null == zakr.getHonorCisty()) {
+            return "";
+        } else {
             BigDecimal honorCisty = zakr.getMena() == EUR ? zakr.getHonorCisty().multiply(kurzEur) : zakr.getHonorCisty();
             return null == honorCisty ? "" : VzmFormatUtils.moneyFormat.format(honorCisty);
+        }
     };
 
     private ValueProvider<Zakr, String> rxVykonGridValueProvider = zakr -> {
@@ -475,9 +491,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         }
     };
 
-    private ValueProvider<Zakr, String> rxZbyvaGridValueProvider = zakr -> {
-            BigDecimal rxZbyva = getRxZbyva(zakr);
-            return null == rxZbyva ? "" : VzmFormatUtils.moneyFormat.format(rxZbyva);
+    private ValueProvider<Zakr, String> rpZbyvaGridValueProvider = zakr -> {
+            BigDecimal rpZbyva = getRpZbyva(zakr);
+            return null == rpZbyva ? "" : VzmFormatUtils.moneyFormat.format(rpZbyva);
     };
 
     private ValueProvider<Zakr, String> menaValueProvider = zakr -> {
@@ -526,20 +542,22 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         BigDecimal activeRxValue = getActiveRxValue(zakr);
         return null == activeRxValue || null == zakr.getHonorCisty() ?
                 null : activeRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L));
-//        return null == activeRxValue ? null : activeRxValue.multiply(zakr.getHonorarCisty());
     }
 
-    private BigDecimal getRxZbyva(final Zakr zakr) {
-        BigDecimal activeRxValue = getActiveRxValue(zakr);
-        return null == activeRxValue || null == zakr.getHonorCisty() ?
-                null : zakr.getHonorCisty().subtract(activeRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L)));
-//        return null == activeRxValue ? null : activeRxValue.multiply(zakr.getHonorarCisty());
+    private BigDecimal getRpZbyva(final Zakr zakr) {
+        BigDecimal lastRxValue = zakr.getRP();
+        return null == lastRxValue || null == zakr.getHonorCisty() ? null :
+                zakr.getHonorCisty().subtract(
+                        lastRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L))
+        );
     }
 
+    // TODO Probably  obsolete - remove ??
     public static BigDecimal getActiveRxValue(Zakr zakr) {
         return getActiveRxValue(zakr.getR0(), zakr.getR1(), zakr.getR2(), zakr.getR3(), zakr.getR4());
     }
 
+    // TODO Probably  obsolete - remove
     public static BigDecimal getActiveRxValue(BigDecimal r0, BigDecimal r1, BigDecimal r2, BigDecimal r3, BigDecimal r4) {
         if ((null != r4) && (0 != r4.compareTo(BigDecimal.ZERO))) {
             return r4;

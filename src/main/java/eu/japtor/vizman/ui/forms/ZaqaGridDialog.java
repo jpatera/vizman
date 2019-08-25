@@ -4,22 +4,15 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.*;
-import eu.japtor.vizman.backend.service.PersonService;
-import eu.japtor.vizman.backend.service.WageService;
 import eu.japtor.vizman.backend.service.ZakrService;
 import eu.japtor.vizman.backend.service.ZaqaService;
-import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.*;
-import org.claspina.confirmdialog.ConfirmDialog;
 
-import java.time.YearMonth;
 import java.util.Collections;
 import java.util.List;
 

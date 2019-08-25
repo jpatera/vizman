@@ -70,10 +70,10 @@ public class ZakrListView extends VerticalLayout {
     public ZakService zakService;
 
     @Autowired
-    public ZaqaService zaqaService;
+    public FaktService faktService;
 
-//    @Autowired
-//    public FaktService faktService;
+    @Autowired
+    public ZaqaService zaqaService;
 
     @Autowired
     public CfgPropsCache cfgPropsCache;
@@ -233,6 +233,7 @@ public class ZakrListView extends VerticalLayout {
                 // , cfgPropsCache.getDecimalValue("")
                 , zakrService
                 , zakService
+                , faktService
                 , zaqaService
                 , cfgPropsCache
         );
