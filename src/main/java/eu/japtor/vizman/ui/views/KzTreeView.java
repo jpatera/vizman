@@ -205,7 +205,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        });
 
         zakFormDialog = new ZakFormDialog(
-                zakService, faktService, dochsumZakService, cfgPropsCache
+                false, zakService, faktService, cfgPropsCache
         );
         zakFormDialog.addOpenedChangeListener(event -> {
 //            System.out.println("OPEN-CHANGED: " + event.toString());

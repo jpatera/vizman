@@ -1,12 +1,15 @@
 package eu.japtor.vizman.ui.components;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -20,7 +23,10 @@ import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.ArchIconBox;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Zakr;
+import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import eu.japtor.vizman.ui.forms.ZakFormDialog;
+import eu.japtor.vizman.ui.forms.ZaqaGridDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ConfirmDialog;
 
@@ -30,6 +36,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+
+import static eu.japtor.vizman.backend.entity.Mena.EUR;
+
 
 public class ZakRozpracGrid extends Grid<Zakr> {
 
@@ -42,6 +51,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     public static final String OBJEDNATEL_COL_KEY = "zakr-bg-objednatel";
     public static final String KZTEXT_COL_KEY = "zakr-bg-kztext";
     public static final String SEL_COL_KEY = "zakr-bg-select";
+    public static final String MENA_COL_KEY = "zakr-bg-mena";
     public static final String ARCH_COL_KEY = "zakr-bg-arch";
     public static final String HONOR_CISTY_COL_KEY = "zakr-bg-honor-cisty";
     public static final String R0_COL_KEY = "zakr-bg-r0";
@@ -53,17 +63,21 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     public static final String REMAINS_COL_KEY = "zakr-bg-remains";
 
 //    Grid<Zak> zakGrid;
+    private ZakFormDialog zakFormDialog;
+    private ZaqaGridDialog zaqaGridDialog;
 
-    TextField kzCisloFilterField;
-    Select<Boolean> archFilterField;
-    Select<Integer> rokFilterField;
-    Select<String> skupinaFilterField;
-    TextField objednatelFilterField;
-    TextField kzTextFilterField;
+    private TextField kzCisloFilterField;
+    private Select<Boolean> archFilterField;
+    private Select<Integer> rokFilterField;
+    private Select<String> skupinaFilterField;
+    private TextField objednatelFilterField;
+    private TextField kzTextFilterField;
 
     private Boolean initFilterArchValue;
     private boolean archFieldVisible;
     private boolean selectFieldVisible;
+
+    private BigDecimal kurzEur;
 
     HeaderRow filterRow;
     Registration zakrGridEditRegistration = null;
@@ -71,13 +85,36 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     private boolean editedItemChanged;
     private BiConsumer<Zakr, Operation> itemSaver;
 
-    public ZakRozpracGrid(boolean selectFieldVisible, boolean archFieldVisible, Boolean initFilterArchValue
-                    ,BiConsumer<Zakr, Operation> itemSaver
+    private ZakService zakService;
+    private ZaqaService zaqaService;
+    private ZakrService zakrService;
+    private CfgPropsCache cfgPropsCache;
+
+    public ZakRozpracGrid(
+            boolean selectFieldVisible
+            , boolean archFieldVisible
+            , Boolean initFilterArchValue
+            , BiConsumer<Zakr, Operation> itemSaver
+            , BigDecimal kurzEur
+            , ZakrService zakrService
+            , ZakService zakService
+            , ZaqaService zaqaService
+            , CfgPropsCache cfgPropsCache
     ) {
         this.initFilterArchValue = initFilterArchValue;
         this.archFieldVisible = archFieldVisible;
         this.selectFieldVisible = selectFieldVisible;
         this.itemSaver = itemSaver;
+        this.kurzEur = kurzEur;
+
+        this.zakService = zakService;
+        this.zakrService = zakrService;
+        this.zaqaService = zaqaService;
+        this.cfgPropsCache = cfgPropsCache;
+
+        zaqaGridDialog = new ZaqaGridDialog(
+                zaqaService, zakrService
+        );
 
 //        Grid<Zak> zakGrid = new Grid<>();
         this.getStyle().set("marginTop", "0.5em");
@@ -170,6 +207,13 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setVisible(this.archFieldVisible)
         //                .setFrozen(true)
         ;
+//        if (isZakFormsAccessGranted()) {
+         this.addColumn(new ComponentRenderer<>(this::buildZakViewBtn))
+                    .setHeader("Zak")
+                    .setFlexGrow(0)
+                    .setWidth("3em")
+            ;
+//        }
         this.addColumn(Zakr::getKzCislo)
                 .setHeader("ČK/ČZ")
                 .setFlexGrow(0)
@@ -201,9 +245,15 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(SEL_COL_KEY)
                 .setVisible(this.selectFieldVisible)
         ;
-
-        Grid.Column<Zakr> colHonorCisty = this.addColumn(honorCistyGridValueProvider)
-                .setHeader("Honor.čistý")
+        this.addColumn(menaValueProvider)
+                .setHeader("Měna")
+                .setFlexGrow(0)
+                .setWidth("4em")
+//                .setResizable(true)
+                .setKey(MENA_COL_KEY)
+        ;
+        this.addColumn(honorCistyValueProvider)
+                .setHeader("Hon.č. [CZK]")
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setTextAlign(ColumnTextAlign.END)
@@ -225,6 +275,12 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setResizable(false)
                 ;
         colR0.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR0, Zakr::setR0));
+
+        this.addColumn(new ComponentRenderer<>(this::buildZaqaOpenBtn))
+                .setHeader("QX")
+                .setFlexGrow(0)
+                .setWidth("3em")
+        ;
 
         Grid.Column<Zakr> colR1 = this.addColumn(r1GridValueProvider)
                 .setHeader("R1")
@@ -303,7 +359,6 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(OBJEDNATEL_COL_KEY)
         ;
 
-
         // =============
         // Filters
         // =============
@@ -344,6 +399,33 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         }
     }
 
+//    @PostConstruct
+//    public void postInit() {
+//        zakFormDialog = new ZakFormDialog(
+//                false, zakService, faktService, cfgPropsCache
+//        );
+//    }
+
+
+    Component buildZakViewBtn(Zakr zakr) {
+        Button btn = new GridItemBtn(event -> zakFormDialog.openDialog(
+                zakService.fetchOne(zakr.getId()), Operation.EDIT)
+                , new Icon(VaadinIcon.EYE), VzmFormatUtils.getItemTypeColorName(zakr.getTyp())
+        );
+        return btn;
+    }
+
+    Component buildZaqaOpenBtn(Zakr zakr) {
+        Button btn = new GridItemBtn(event -> zaqaGridDialog.openDialog(
+                zakrService.fetchOne(zakr.getId()))
+                , new Icon(VaadinIcon.LINES_LIST), null
+        );
+//        Button btn = new GridItemEditBtn(event -> zaqaFormDialog.openDialog(
+//                zaqaService.fetchAllByZakId(zakr.getId()), Operation.EDIT)
+//                , VzmFormatUtils.getItemTypeColorName(zakr.getTyp()));
+        return btn;
+    }
+
 //    private boolean writeZakrToBeanIfValid(Binder zakrEditorBinder, Editor<Zakr> zakrEditor) {
 //        boolean isValid = zakrEditor.save();
 ////        boolean isValid = zakrEditorBinder.writeBeanIfValid(zakrEditor.getItem());
@@ -379,14 +461,18 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             zakr -> null == zakr.getR4() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR4())
     ;
 
-    private ValueProvider<Zakr, String> honorCistyGridValueProvider = zakr -> {
-        BigDecimal honorCisty = zakr.getHonorCisty();
-        return null == honorCisty ? "" : VzmFormatUtils.moneyFormat.format(honorCisty);
+    private ValueProvider<Zakr, String> honorCistyValueProvider = zakr -> {
+            BigDecimal honorCisty = zakr.getMena() == EUR ? zakr.getHonorCisty().multiply(kurzEur) : zakr.getHonorCisty();
+            return null == honorCisty ? "" : VzmFormatUtils.moneyFormat.format(honorCisty);
     };
 
     private ValueProvider<Zakr, String> rxVykonGridValueProvider = zakr -> {
-            BigDecimal rxVykon = getRxVykon(zakr);
+        if (null == getRxVykon(zakr)) {
+            return "";
+        } else {
+            BigDecimal rxVykon = zakr.getMena() == EUR ? getRxVykon(zakr).multiply(kurzEur) : getRxVykon(zakr);
             return null == rxVykon ? "" : VzmFormatUtils.moneyFormat.format(rxVykon);
+        }
     };
 
     private ValueProvider<Zakr, String> rxZbyvaGridValueProvider = zakr -> {
@@ -394,7 +480,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             return null == rxZbyva ? "" : VzmFormatUtils.moneyFormat.format(rxZbyva);
     };
 
-
+    private ValueProvider<Zakr, String> menaValueProvider = zakr -> {
+        return null == zakr.getMena() ? null : zakr.getMena().name();
+    };
 
 
     // ===========================

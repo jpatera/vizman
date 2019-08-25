@@ -6,6 +6,8 @@ import org.hibernate.annotations.Immutable;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Immutable
 //@ReadOnly
@@ -46,6 +48,10 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     @Basic
     @Column(name = "TEXT_ZAK")
     private String textZak;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "MENA")
+    private Mena mena;
 
     @Basic
     @Column(name = "HONOR_CISTY")
@@ -91,6 +97,10 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     @Column(name = "ID_KONT")
     private Long idKont;
 
+    @OneToMany(mappedBy = "zakr", fetch = FetchType.EAGER, cascade = CascadeType.REFRESH, orphanRemoval = false)
+    @OrderBy("rok DESC, qa DESC")
+    private List<Zaqa> zaqas = new ArrayList<>();
+
     @Transient
     private boolean checked;
 
@@ -135,6 +145,10 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 
     public String getTextZak() {
         return textZak;
+    }
+
+    public Mena getMena() {
+        return mena;
     }
 
     public BigDecimal getHonorCisty() {
@@ -208,6 +222,28 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     public Long getIdKont() {
         return idKont;
     }
+
+
+    // Zaqa
+    // -----
+    public List<Zaqa> getZaqas() {
+        return zaqas;
+    }
+
+    public void setZaqas(List<Zaqa> zaqas) {
+        this.zaqas = zaqas;
+    }
+
+    public void addZaqa(Zaqa zaqa) {
+        zaqas.add(zaqa);
+        zaqa.setZakr(this);
+    }
+
+    public void addZaqaOnTop(Zaqa zaqa) {
+        zaqas.add(0, zaqa);
+        zaqa.setZakr(this);
+    }
+
 
     @Transient
     public boolean isChecked() {

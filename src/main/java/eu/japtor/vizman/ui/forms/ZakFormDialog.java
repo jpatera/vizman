@@ -133,9 +133,10 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private Registration textFieldListener = null;
     private Registration zakFolderFieldListener = null;
 
+    private boolean readonly;
     private ZakService zakService;
     private FaktService faktService;
-    private DochsumZakService dochsumZakService;
+//    private DochsumZakService dochsumZakService;
     private CfgPropsCache cfgPropsCache;
 
 
@@ -154,9 +155,10 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     public ZakFormDialog(
 //                         BiConsumer<Zak, Operation> itemSaver,
 //                         Consumer<Zak> zakDeleter,
+                         boolean readonly,
                          ZakService zakService,
                          FaktService faktService,
-                         DochsumZakService dochsumZakService,
+//                         DochsumZakService dochsumZakService,
                          CfgPropsCache cfgPropsCache
     ){
         super(DIALOG_WIDTH, DIALOG_HEIGHT, true, true);
@@ -164,9 +166,10 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //        this.itemDeleter = zakDeleter;
 //        this.closeAfterSave = false;
 
+        this.readonly = readonly;
         this.zakService = zakService;
         this.faktService = faktService;
-        this.dochsumZakService = dochsumZakService;
+//        this.dochsumZakService = dochsumZakService;
         this.cfgPropsCache = cfgPropsCache;
 
         getFormLayout().add(
@@ -232,12 +235,12 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //        datZadComp.setLocale(new Locale("cs", "CZ"));
 //        vystupField.setLocale(new Locale("cs", "CZ"));
 
-        initZakDataAndControls(currentItem, currentOperation);
+        initZakDataAndControls(currentItem, currentOperation, readonly);
         this.open();
     }
 
 
-    private void initZakDataAndControls(final Zak zakItem, final Operation zakOperation) {
+    private void initZakDataAndControls(final Zak zakItem, final Operation zakOperation, final boolean readonly) {
 
         deactivateListeners();
 
@@ -270,7 +273,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         refreshHeaderMiddleBox(zakItem);
         getHeaderEndBox().setText(getHeaderEndComponentValue(null));
 
-        initControlsForItemAndOperation(zakItem, zakOperation);
+        initControlsForItemAndOperation(zakItem, zakOperation, readonly);
         initControlsOperability();
 
         activateListeners();
@@ -552,7 +555,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     }
 
 
-    protected void initControlsForItemAndOperation(final Zak item, final Operation operation) {
+    protected void initControlsForItemAndOperation(final Zak item, final Operation operation, final boolean readonly) {
         setItemNames(item.getTyp());
         getMainTitle().setText(operation.getDialogTitle(getItemName(operation), itemGender));
 
@@ -564,6 +567,14 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //        honorarField.setReadOnly(ItemType.AKV == item.getTyp());
         honorarHrubyField.setReadOnly(true);
         akvToZakButton.setVisible(ItemType.AKV == item.getTyp());
+        if (readonly) {
+            deleteAndCloseButton.setEnabled(false);
+            saveAndCloseButton.setEnabled(false);
+            akvToZakButton.setEnabled(false);
+            revertAndCloseButton.setEnabled(false);
+            newSubButton.setEnabled(false);
+            newFaktButton.setEnabled(false);
+        }
     }
 
 
@@ -632,7 +643,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             if (closeAfterSave) {
                 closeDialog();
             } else {
-                initZakDataAndControls(currentItem, currentOperation);
+                initZakDataAndControls(currentItem, currentOperation, readonly);
             }
         } catch (VzmServiceException e) {
             showSaveErrMessage();
@@ -648,7 +659,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             if (Operation.ADD ==  currentOperation) {
                 currentOperation = Operation.EDIT;
             }
-            initZakDataAndControls(currentItem, currentOperation);
+            initZakDataAndControls(currentItem, currentOperation, readonly);
 //            binder.removeBean();
 //            binder.readBean(currentItem);
 //            initControlsOperability();

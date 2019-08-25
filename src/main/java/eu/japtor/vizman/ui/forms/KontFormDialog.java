@@ -177,7 +177,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         );
 
         zakFormDialog = new ZakFormDialog(
-                zakService, faktService, dochsumZakService, cfgPropsCache
+                false, zakService, faktService, cfgPropsCache
         );
 
         zakFormDialog.addOpenedChangeListener(event -> {

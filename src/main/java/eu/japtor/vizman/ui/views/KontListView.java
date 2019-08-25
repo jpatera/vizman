@@ -112,11 +112,27 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
         gridContainer.setAlignItems(Alignment.STRETCH);
 
 //        kontGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#");
-        kontGrid.addColumn(Kont::getCkont).setHeader("ČK").setWidth("7em").setResizable(true);
-        kontGrid.addColumn(Kont::getKlient).setHeader("Objednatel").setWidth("16em").setResizable(true);
+        kontGrid.addColumn(Kont::getCkont)
+                .setHeader("ČK")
+                .setWidth("7em")
+                .setResizable(true)
+        ;
+        kontGrid.addColumn(Kont::getKlient)
+                .setHeader("Objednatel")
+                .setWidth("16em")
+                .setResizable(true)
+        ;
 //        kontGrid.addColumn(Kont::getArch).setHeader("Arch").setWidth("4em").setResizable(true);
-        kontGrid.addColumn(Kont::getText).setHeader("Text").setWidth("25em").setResizable(true);
-        kontGrid.addColumn(Kont::getDateCreate).setHeader("Dat.zad.").setWidth("7em").setResizable(true);
+        kontGrid.addColumn(Kont::getText)
+                .setHeader("Text")
+                .setWidth("25em")
+                .setResizable(true)
+        ;
+        kontGrid.addColumn(Kont::getDateCreate)
+                .setHeader("Dat.zad.")
+                .setWidth("7em")
+                .setResizable(true)
+        ;
         kontGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 
         kontGrid.setItemDetailsRenderer(new ComponentRenderer<>(kont -> {

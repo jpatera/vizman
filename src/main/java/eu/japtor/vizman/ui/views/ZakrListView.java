@@ -27,14 +27,14 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.*;
-import eu.japtor.vizman.backend.service.ZakService;
-import eu.japtor.vizman.backend.service.ZakrService;
+import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.ReportZakRozpracDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
+import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -69,6 +69,15 @@ public class ZakrListView extends VerticalLayout {
     @Autowired
     public ZakService zakService;
 
+    @Autowired
+    public ZaqaService zaqaService;
+
+//    @Autowired
+//    public FaktService faktService;
+
+    @Autowired
+    public CfgPropsCache cfgPropsCache;
+
     public ZakrListView() {
         initView();
     }
@@ -79,13 +88,16 @@ public class ZakrListView extends VerticalLayout {
 //        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
         this.setPadding(false);
         this.setMargin(false);
-        this.add(
-                initGridContainer()
-        );
+//        this.add(
+//                initGridContainer()
+//        );
     }
 
     @PostConstruct
     public void postInit() {
+        this.add(
+                initGridContainer()
+        );
         loadInitialViewContent();
         // TODO: inital sort order markers
         //        zakrGrid.sort(initialSortOrder);
@@ -214,7 +226,15 @@ public class ZakrListView extends VerticalLayout {
 
     private Component initZakrGrid() {
         zakrGrid = new ZakRozpracGrid(
-                false,true, null, this::saveZakr
+                false,true, null
+                , this::saveZakr
+                , BigDecimal.valueOf(25.5)
+                // FIXME
+                // , cfgPropsCache.getDecimalValue("")
+                , zakrService
+                , zakService
+                , zaqaService
+                , cfgPropsCache
         );
         zakrGrid.setMultiSort(true);
         zakrGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
