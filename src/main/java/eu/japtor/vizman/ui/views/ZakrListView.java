@@ -23,8 +23,13 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import eu.japtor.vizman.app.CfgPropName;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.*;
@@ -35,7 +40,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -62,7 +66,9 @@ public class ZakrListView extends VerticalLayout {
     private RadioButtonGroup<String> archFilterRadio;
     private Button rozpracRepButton;
     private Button saveEditButton;
+    private TextField kurzField;
 
+    private ZakrParams zakrParams;
 
     @Autowired
     public ZakrService zakrService;
@@ -96,6 +102,9 @@ public class ZakrListView extends VerticalLayout {
 
     @PostConstruct
     public void postInit() {
+        zakrParams = new ZakrParams();
+        zakrParams.setKurz(new BigDecimal(cfgPropsCache.getValue(CfgPropName.APP_KURZ_CZK_EUR.getName())));
+
         this.add(
                 initGridContainer()
         );
@@ -122,6 +131,17 @@ public class ZakrListView extends VerticalLayout {
         gridToolBar.setAlignItems(Alignment.END);
         gridToolBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
+        gridToolBar.add(
+                buildTitleComponent()
+                , new Ribbon()
+                , buildGridToolBarControlsComponent()
+                , new Ribbon()
+                , initRozpracRepButton()
+        );
+        return gridToolBar;
+    }
+
+    private Component buildTitleComponent() {
         HorizontalLayout titleComponent = new HorizontalLayout();
         titleComponent.setMargin(false);
         titleComponent.setPadding(false);
@@ -131,17 +151,63 @@ public class ZakrListView extends VerticalLayout {
         titleComponent.add(
                 new GridTitle(ItemNames.getNomP(ItemType.ZAKR))
                 , new Ribbon()
-                , new ReloadButton(event -> loadInitialViewContent())
+                , new ReloadButton(event -> {
+                    reloadViewContentPreserveFilters();
+//                    loadGridDataAndRebuildFilterFields();
+                })
+//                , new ReloadButton(event -> loadInitialViewContent())
         );
+        return titleComponent;
+    }
 
-        gridToolBar.add(
-                titleComponent
+    private Component buildGridToolBarControlsComponent() {
+        HorizontalLayout controlsComponent = new HorizontalLayout();
+        controlsComponent.setMargin(false);
+        controlsComponent.setPadding(false);
+        controlsComponent.setSpacing(false);
+        controlsComponent.setAlignItems(Alignment.CENTER);
+        controlsComponent.setJustifyContentMode(JustifyContentMode.START);
+        controlsComponent.add(
+                initKurzField()
+                , new Ribbon("3em")
+                , new TextField("RX (od)")
                 , new Ribbon()
-//                , archFilterComponent
-                , new Ribbon()
-                , initRozpracRepButton()
+                , new TextField("RY (do)")
         );
-        return gridToolBar;
+        return controlsComponent;
+    }
+
+    private Component initKurzField() {
+        kurzField = new TextField("Kurz CZK/EUR"
+//                , event -> ((CallbackDataProvider) klientGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getValue()))
+        );
+////        kurzField.setStep(0.01);
+//
+//        BigDecimal kurz;
+
+//        kurzField.addValueChangeListener(updateContent);
+        kurzField.setValueChangeMode(ValueChangeMode.EAGER);
+
+        Binder<ZakrParams> binder = new Binder<>();
+        binder.forField(kurzField)
+                .withConverter(new StringToBigDecimalConverter("Špatný formát"))
+                .bind(ZakrParams::getKurz, ZakrParams::setKurz);
+//
+////        .bind("")
+        binder.readBean(zakrParams);
+        return kurzField;
+    }
+
+    public static class ZakrParams {
+        public BigDecimal getKurz() {
+            return kurz;
+        }
+
+        public void setKurz(BigDecimal kurz) {
+            this.kurz = kurz;
+        }
+
+        BigDecimal kurz;
     }
 
     private Component initRozpracRepButton() {
@@ -240,9 +306,11 @@ public class ZakrListView extends VerticalLayout {
         zakrGrid = new ZakRozpracGrid(
                 false,true, null
                 , this::saveGridItem
-                , BigDecimal.valueOf(25.5)
+//                , BigDecimal.valueOf(25.5)
                 // FIXME
                 // , cfgPropsCache.getDecimalValue("")
+//                , new BigDecimal(kurzField.getValue())
+                , zakrParams
                 , zakrService
                 , zakService
                 , faktService
@@ -288,34 +356,22 @@ public class ZakrListView extends VerticalLayout {
 //        }
 //    }
 
-    private void loadInitialViewContent() {
-        loadGridDataAndRebuildFilterFields();
-        zakrGrid.initFilterValues();
-        zakrGrid.doFilter();
-        zakrGrid.getDataProvider().refreshAll();
-    }
-
-    private void loadGridDataAndRebuildFilterFields() {
+    private void reloadViewContentPreserveFilters() {
         if (zakrGrid.getEditor().isOpen()) {
             zakrGrid.getEditor().closeEditor();
         }
         zakrList = zakrService.fetchAllDescOrder();
-        zakrGrid.setItems(zakrList);
-        zakrGrid.setRokFilterItems(zakrList.stream()
-                .filter(z -> null != z.getRok())
-                .map(Zakr::getRok)
-                .distinct().collect(Collectors.toCollection(LinkedList::new))
-        );
-        zakrGrid.setSkupinaFilterItems(zakrList.stream()
-                .map(Zakr::getSkupina)
-                .filter(s -> null != s)
-                .distinct().collect(Collectors.toCollection(LinkedList::new))
-        );
-        zakrGrid.setArchFilterItems(zakrList.stream()
-                .map(Zakr::getArch)
-                .filter(a -> null != a)
-                .distinct().collect(Collectors.toCollection(LinkedList::new))
-        );
+        zakrGrid.populateGridDataAndResoreFilters(zakrList);
+        zakrGrid.getDataProvider().refreshAll();
+    }
+
+    private void loadInitialViewContent() {
+//        kurzField.setValue(cfgPropsCache.getValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
+        if (zakrGrid.getEditor().isOpen()) {
+            zakrGrid.getEditor().closeEditor();
+        }
+        zakrList = zakrService.fetchAllDescOrder();
+        zakrGrid.populateGridDataAndRebuildFilterFields(zakrList);
         zakrGrid.getDataProvider().refreshAll();
     }
 }

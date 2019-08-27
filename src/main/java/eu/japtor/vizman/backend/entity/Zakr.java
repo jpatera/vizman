@@ -101,12 +101,23 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     @Column(name = "ID_KONT")
     private Long idKont;
 
-    @OneToMany(mappedBy = "zakr", fetch = FetchType.EAGER, cascade = CascadeType.REFRESH, orphanRemoval = false)
+//    @OneToMany(mappedBy = "zakr", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH, orphanRemoval = false)
+    @OneToMany(mappedBy = "zakr", cascade = CascadeType.REFRESH, orphanRemoval = false)
     @OrderBy("rok DESC, qa DESC")
     private List<Zaqa> zaqas = new ArrayList<>();
 
     @Transient
     private boolean checked;
+
+    @Transient
+    private BigDecimal rpVysledek;
+
+    public BigDecimal getRpVysledek() {
+//        return rpVysledek;
+        return null == rp || null == honorCisty ? null :
+                rp.multiply(honorCisty).divide(BigDecimal.valueOf(100L)
+        );
+    }
 
 //    public BigDecimal getFinished() {
 //        return finished;

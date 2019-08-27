@@ -6,6 +6,7 @@ import eu.japtor.vizman.backend.entity.Zaqa;
 import eu.japtor.vizman.backend.repository.ZakrRepo;
 import eu.japtor.vizman.backend.repository.ZaqaRepo;
 import eu.japtor.vizman.ui.components.Operation;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,9 +49,12 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
     }
 
     @Override
+    @Transactional
     public Zakr fetchOne(Long id) {
-        return zakrRepo.findTopById(id);
+        Zakr zakr = zakrRepo.findTopById(id);
+        Hibernate.initialize(zakr.getZaqas());
 //      Or...:  return zakRepo.findById();
+        return zakr;
     }
 
     @Override
@@ -82,6 +86,9 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
 //            zakrRepo.flush();
 //            Zak zakToSave = zakRepo.getOne(zakrToSave.getId());
 
+            zakrRepo.
+            Hibernate.initialize(itemForSave.getZaqas());
+            Hibernate.initialize(itemForSave.getZaqas());
             List<Zaqa>zaqasToSave = (null == itemForSave.getZaqas()) ? new ArrayList<>() : itemForSave.getZaqas();
             Integer currentYear = Calendar.getInstance().get(Calendar.YEAR);
 

@@ -153,6 +153,7 @@ public class CfgPropsForm extends VerticalLayout implements HasLogger {
                 throw e;
             }
         }
+        cfgPropsCache.loadPropsFromDb();
         return cfgProp;
     }
 
@@ -187,6 +188,10 @@ public class CfgPropsForm extends VerticalLayout implements HasLogger {
                 appCfg.setAppKoefRezie(value);
                 binder.forField(field).bind(AppCfg::getAppKoefRezie, AppCfg::setAppKoefRezie);
                 break;
+            case APP_KURZ_CZK_EUR:
+                appCfg.setAppKurzCzkEur(value);
+                binder.forField(field).bind(AppCfg::getAppKurzCzkEur, AppCfg::setAppKurzCzkEur);
+                break;
         }
     }
 
@@ -216,6 +221,7 @@ public class CfgPropsForm extends VerticalLayout implements HasLogger {
         addFormItem(CfgPropName.APP_PROJ_ROOT_LOCAL.getName());
         addFormItem(CfgPropName.APP_KOEF_POJIST.getName());
         addFormItem(CfgPropName.APP_KOEF_REZIE.getName());
+        addFormItem(CfgPropName.APP_KURZ_CZK_EUR.getName());
 
         HorizontalLayout propsButtonBar = new HorizontalLayout();
         propsButtonBar.add(buildSaveButton());

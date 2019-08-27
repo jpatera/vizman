@@ -32,7 +32,8 @@ public class Zaqa extends AbstractGenIdEntity implements HasItemType {
     @Column(name="RX")
     private BigDecimal rx;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+//    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "ID_ZAK")
     private Zakr zakr;
 

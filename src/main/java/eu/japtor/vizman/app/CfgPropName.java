@@ -9,6 +9,7 @@ public enum CfgPropName {
     APP_DOC_ROOT_SERVER("app.document.root.server"),
     APP_KOEF_REZIE("app.koef.rezie"),
     APP_KOEF_POJIST("app.koef.pojist"),
+    APP_KURZ_CZK_EUR("app.kurz.czk.eur"),
     ;
 
     private String propName;

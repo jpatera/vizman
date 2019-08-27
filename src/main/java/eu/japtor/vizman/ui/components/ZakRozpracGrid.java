@@ -3,6 +3,7 @@ package eu.japtor.vizman.ui.components;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
+import com.vaadin.flow.component.grid.FooterRow;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.editor.Editor;
@@ -14,6 +15,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Element;
@@ -26,6 +28,7 @@ import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.forms.ZakFormDialog;
 import eu.japtor.vizman.ui.forms.ZaqaGridDialog;
+import eu.japtor.vizman.ui.views.ZakrListView;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ConfirmDialog;
 
@@ -75,14 +78,22 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     private TextField objednatelFilterField;
     private TextField kzTextFilterField;
 
+    private Boolean archFilterValue;
+    private Integer rokFilterValue;
+    private String skupinaFilterValue;
+    private String kzCisloFilterValue;
+    private String kzTextFilterValue;
+    private String objednatelFilterValue;
+
     private Boolean initFilterArchValue;
     private boolean archFieldVisible;
     private boolean selectFieldVisible;
 
-    private BigDecimal kurzEur;
+//    private BigDecimal kurzEur;
 
-    HeaderRow filterRow;
-    Registration zakrGridEditRegistration = null;
+    private HeaderRow filterHeaderRow;
+    private FooterRow sumFooterRow;
+    private Registration zakrGridEditRegistration = null;
     private Zakr editedItem;
     private boolean editedItemChanged;
     private BiConsumer<Zakr, Operation> itemSaver;
@@ -92,13 +103,15 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     private FaktService faktService;
     private ZaqaService zaqaService;
     private CfgPropsCache cfgPropsCache;
+    private ZakrListView.ZakrParams zakrParams;
 
     public ZakRozpracGrid(
             boolean selectFieldVisible
             , boolean archFieldVisible
             , Boolean initFilterArchValue
             , BiConsumer<Zakr, Operation> itemSaver
-            , BigDecimal kurzEur
+//            , BigDecimal kurzEur
+            , ZakrListView.ZakrParams params
             , ZakrService zakrService
             , ZakService zakService
             , FaktService faktService
@@ -109,7 +122,8 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         this.archFieldVisible = archFieldVisible;
         this.selectFieldVisible = selectFieldVisible;
         this.itemSaver = itemSaver;
-        this.kurzEur = kurzEur;
+//        this.kurzEur = params.getKurz();
+        this.zakrParams = params;
 
         this.zakrService = zakrService;
         this.zakService = zakService;
@@ -136,6 +150,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             editedItem = event.getFirstSelectedItem().orElse(null);   // Note: grid selection mode is supposed to be SINGLE
         });
 
+        this.getDataProvider().addDataProviderListener(e -> {
+            updateVysledekSumField();
+            updateRecCountField();
+        });
 //        zakGrid.getElement().addEventListener("keypress", e -> {
 //            JsonObject eventData = e.getEventData();
 //            String enterKey = eventData.getString("event.key");
@@ -375,38 +393,41 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(OBJEDNATEL_COL_KEY)
         ;
 
+        sumFooterRow = this.appendFooterRow();
+
+
         // =============
         // Filters
         // =============
 
-        filterRow = this.appendHeaderRow();
+        filterHeaderRow = this.appendHeaderRow();
 
         archFilterField = buildSelectionFilterField();
 //        archFilterField.setItemLabelGenerator(this::archFilterLabelGenerator);
         archFilterField.setTextRenderer(this::archFilterLabelGenerator);
-        filterRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
+        filterHeaderRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
                 .setComponent(archFilterField);
 
         kzCisloFilterField = buildTextFilterField();
-        filterRow.getCell(this.getColumnByKey(KZCISLO_COL_KEY))
+        filterHeaderRow.getCell(this.getColumnByKey(KZCISLO_COL_KEY))
                 .setComponent(kzCisloFilterField);
 
         rokFilterField = buildSelectionFilterField();
-        filterRow.getCell(this.getColumnByKey(ROK_COL_KEY))
+        filterHeaderRow.getCell(this.getColumnByKey(ROK_COL_KEY))
                 .setComponent(rokFilterField);
 
         skupinaFilterField = buildSelectionFilterField();
-        filterRow.getCell(this.getColumnByKey(SKUPINA_COL_KEY))
+        filterHeaderRow.getCell(this.getColumnByKey(SKUPINA_COL_KEY))
                 .setComponent(skupinaFilterField)
         ;
 
         kzTextFilterField = buildTextFilterField();
-        filterRow.getCell(this.getColumnByKey(KZTEXT_COL_KEY))
+        filterHeaderRow.getCell(this.getColumnByKey(KZTEXT_COL_KEY))
                 .setComponent(kzTextFilterField)
         ;
 
         objednatelFilterField = buildTextFilterField();
-        filterRow.getCell(this.getColumnByKey(OBJEDNATEL_COL_KEY))
+        filterHeaderRow.getCell(this.getColumnByKey(OBJEDNATEL_COL_KEY))
                 .setComponent(objednatelFilterField)
         ;
 
@@ -414,6 +435,78 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             setResizable(colXx);
         }
     }
+
+    private void updateVysledekSumField() {
+        sumFooterRow
+                .getCell(this.getColumnByKey(RESULT_COL_KEY))
+                .setText("" + (VzmFormatUtils.moneyFormat.format(calcVysledekSum())));
+    }
+
+    private BigDecimal calcVysledekSum() {
+        BigDecimal sum = this.getDataProvider()
+                .withConfigurableFilter()
+                .fetch(new Query<>())
+                .map(Zakr::getRpVysledek)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+        ;
+        return sum;
+//        return ((ListDataProvider)this.getDataCommunicator().getDataProvider()).getItems().size();
+    }
+
+    private void updateRecCountField() {
+        sumFooterRow
+                .getCell(this.getColumnByKey(KZCISLO_COL_KEY))
+                .setText("Počet: " + (calcRecCount()));
+    }
+
+    private Integer calcRecCount() {
+        Integer count = this.getDataProvider()
+                .withConfigurableFilter()
+                .fetch(new Query<>())
+                .collect(Collectors.toList())
+                .size();
+        return count;
+    }
+
+    private void setVysledekSum() {
+//        sumTextComponent.setText(String.format("%s  [ Fond: %s ]", ZAK_TEXT_SUM, monthHourFond));
+
+//        sumTextComponent.setText(String.format("%s", ZAK_TEXT_SUM));
+//        sumHodsFooterRow.getCell(pruhZakGrid.getColumnByKey(ZAK_TEXT_COL_KEY))
+//                .setComponent(sumTextComponent);
+
+
+
+//        sumFooterRow.getCell(this.getColumnByKey(RESULT_COL_KEY))
+//                .setText(getVysledekSumString());
+
+
+
+//        for (int day = 1; day <= 31; day++) {
+//            Grid.Column col = pruhZakGrid.getColumnByKey(DZ_KEY_PREF + String.valueOf(day));
+//            if (null != col) {
+//                sumHodsFooterRow.getCell(col).setText(getSumHodString(day));
+//            }
+//        }
+    }
+
+//    private String getVysledekSumString(int day) {
+//        BigDecimal sumVysledek = getDaySumHodSum(day);
+//        return (null == sumVysledek || sumVysledek.compareTo(BigDecimal.ZERO) == 0) ?
+//                "" : VzmFormatUtils.decHodFormat.format(sumVysledek);
+//    }
+
+
+//    private void calcAndSetPruhMissingHods() {
+//        for (int day = 1; day <= 31; day++) {
+//            Grid.Column col = pruhZakGrid.getColumnByKey(DZ_KEY_PREF + String.valueOf(day));
+//            if (null != col) {
+//                getMissingHodString(day);
+//                missingHodsFooterRow.getCell(col).setText(getMissingHodString(day));
+//            }
+//        }
+//    }
 
     Component buildZakViewBtn(Zakr zakr) {
         return new GridItemBtn(event -> zakFormDialog.openDialog(
@@ -507,7 +600,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         if (null == zakr.getHonorCisty()) {
             return "";
         } else {
-            BigDecimal honorCisty = zakr.getMena() == EUR ? zakr.getHonorCisty().multiply(kurzEur) : zakr.getHonorCisty();
+            BigDecimal honorCisty = zakr.getMena() == EUR ? zakr.getHonorCisty().multiply(zakrParams.getKurz()) : zakr.getHonorCisty();
             return null == honorCisty ? "" : VzmFormatUtils.moneyFormat.format(honorCisty);
         }
     };
@@ -516,7 +609,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         if (null == getRxVykon(zakr)) {
             return "";
         } else {
-            BigDecimal rxVykon = zakr.getMena() == EUR ? getRxVykon(zakr).multiply(kurzEur) : getRxVykon(zakr);
+            BigDecimal rxVykon = zakr.getMena() == EUR ? getRxVykon(zakr).multiply(zakrParams.getKurz()) : getRxVykon(zakr);
             return null == rxVykon ? "" : VzmFormatUtils.moneyFormat.format(rxVykon);
         }
     };
@@ -527,8 +620,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     };
 
     public ValueProvider<Zakr, String> rpVysledekGridValueProvider = zakr -> {
-            BigDecimal rpVysledek = getRpVysledek(zakr);
-            return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
+            return null == zakr.getRpVysledek() ? "" : VzmFormatUtils.moneyFormat.format(zakr.getRpVysledek());
     };
 
     private ValueProvider<Zakr, String> rpVysledekP8GridValueProvider = zakr -> {
@@ -658,23 +750,37 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         }
     }
 
-    public void populateGridDataAndRebuildFilterFields(List<Zakr> zakBasicList) {
-        this.setItems(zakBasicList);
-        this.setRokFilterItems(zakBasicList.stream()
+    public void populateGridDataAndRebuildFilterFields(List<Zakr> zakrList) {
+        setItems(zakrList);
+        setRokFilterItems(zakrList.stream()
                 .filter(z -> null != z.getRok())
                 .map(Zakr::getRok)
                 .distinct().collect(Collectors.toCollection(LinkedList::new))
         );
-        this.setSkupinaFilterItems(zakBasicList.stream()
+        setSkupinaFilterItems(zakrList.stream()
                 .map(Zakr::getSkupina)
                 .filter(s -> null != s)
                 .distinct().collect(Collectors.toCollection(LinkedList::new))
         );
-        this.setArchFilterItems(zakBasicList.stream()
+        setArchFilterItems(zakrList.stream()
                 .map(Zakr::getArch)
                 .filter(a -> null != a)
                 .distinct().collect(Collectors.toCollection(LinkedList::new))
         );
+        initFilterValues();
+        doFilter();
+        updateVysledekSumField();
+        updateRecCountField();
+    }
+
+    public void populateGridDataAndResoreFilters(List<Zakr> zakrList) {
+        saveFilterValues();
+        saveFilterValues();
+        setItems(zakrList);
+        restoreFilterValues();
+        doFilter();
+        updateVysledekSumField();
+        updateRecCountField();
     }
 
     public void initFilterValues() {
@@ -689,6 +795,34 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         kzCisloFilterField.clear();
         kzTextFilterField.clear();
         objednatelFilterField.clear();
+    }
+
+    public void saveFilterValues() {
+        rokFilterValue = rokFilterField.getValue();
+        skupinaFilterValue = skupinaFilterField.getValue();
+        kzCisloFilterValue = kzCisloFilterField.getValue();
+        kzTextFilterValue = kzTextFilterField.getValue();
+        objednatelFilterValue = objednatelFilterField.getValue();
+    }
+
+    public void restoreFilterValues() {
+//        rokFilterField.clear();
+//        skupinaFilterField.clear();
+//        kzCisloFilterField.clear();
+//        kzTextFilterField.clear();
+//        objednatelFilterField.clear();
+
+        ((ListDataProvider<Zakr>) this.getDataProvider()).clearFilters();
+        if (null == this.initFilterArchValue) {
+            archFilterField.clear();
+        } else {
+            archFilterField.setValue(this.initFilterArchValue);
+        }
+        rokFilterField.setValue(rokFilterValue);
+        skupinaFilterField.setValue(skupinaFilterValue);
+        kzCisloFilterField.setValue(kzCisloFilterValue);
+        kzTextFilterField.setValue(kzTextFilterValue);
+        objednatelFilterField.setValue(objednatelFilterValue);
     }
 
     public void doFilter() {
@@ -734,6 +868,8 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                     , kzt -> StringUtils.containsIgnoreCase(kzt, kzTextFilterValue)
             );
         }
+        updateVysledekSumField();
+        updateRecCountField();
     }
 
     private ComponentRenderer<Component, Zakr> archRenderer = new ComponentRenderer<>(zakr -> {
@@ -760,21 +896,21 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
     public void setArchFilterItems(final List<Boolean> archItems) {
         archFilterField = buildSelectionFilterField();
-        filterRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
+        filterHeaderRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
                 .setComponent(archFilterField);
         archFilterField.setItems(archItems);
     }
 
     public void setRokFilterItems(final List<Integer> rokItems) {
         rokFilterField = buildSelectionFilterField();
-        filterRow.getCell(this.getColumnByKey(ROK_COL_KEY))
+        filterHeaderRow.getCell(this.getColumnByKey(ROK_COL_KEY))
                 .setComponent(rokFilterField);
         rokFilterField.setItems(rokItems);
     }
 
     public void setSkupinaFilterItems(final List<String> skupinaItems) {
         skupinaFilterField = buildSelectionFilterField();
-        filterRow.getCell(this.getColumnByKey(SKUPINA_COL_KEY))
+        filterHeaderRow.getCell(this.getColumnByKey(SKUPINA_COL_KEY))
                 .setComponent(skupinaFilterField);
         skupinaFilterField.setItems(skupinaItems);
     }
