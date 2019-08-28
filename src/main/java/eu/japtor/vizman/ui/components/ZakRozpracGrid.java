@@ -62,7 +62,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     public static final String R2_COL_KEY = "zakr-bg-r2";
     public static final String R3_COL_KEY = "zakr-bg-r3";
     public static final String R4_COL_KEY = "zakr-bg-r4";
-    public static final String FINISHED_COL_KEY = "zakr-bg-finished";
+    public static final String VYKONY_COL_KEY = "zakr-bg-finished";
     public static final String REMAINS_COL_KEY = "zakr-bg-remains";
     public static final String RESULT_COL_KEY = "zakr-bg-result";
     public static final String RESULTP8_COL_KEY = "zakr-bg-result-p8";
@@ -151,8 +151,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         });
 
         this.getDataProvider().addDataProviderListener(e -> {
-            updateVysledekSumField();
-            updateRecCountField();
+            updateFooterFields();
         });
 //        zakGrid.getElement().addEventListener("keypress", e -> {
 //            JsonObject eventData = e.getEventData();
@@ -330,12 +329,12 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         colR4.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR4, Zakr::setR4));
 
         Grid.Column<Zakr> colRxVykon = this.addColumn(rxVykonGridValueProvider)
-                .setHeader("Výkon RX-RY")
+                .setHeader("Výkon RY-RX")
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
-                .setKey(FINISHED_COL_KEY)
+                .setKey(VYKONY_COL_KEY)
                 .setResizable(true)
         ;
 
@@ -442,16 +441,48 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setText("" + (VzmFormatUtils.moneyFormat.format(calcVysledekSum())));
     }
 
+    private void updateZbyvaSumField() {
+        sumFooterRow
+                .getCell(this.getColumnByKey(REMAINS_COL_KEY))
+                .setText("" + (VzmFormatUtils.moneyFormat.format(calcZbyvaSum())));
+    }
+
+    private void updateVykonySumField() {
+        sumFooterRow
+                .getCell(this.getColumnByKey(VYKONY_COL_KEY))
+                .setText("" + (VzmFormatUtils.moneyFormat.format(calcVykonSum())));
+    }
+
     private BigDecimal calcVysledekSum() {
-        BigDecimal sum = this.getDataProvider()
+        return this.getDataProvider()
                 .withConfigurableFilter()
                 .fetch(new Query<>())
-                .map(Zakr::getRpVysledek)
+                .filter(zakr -> zakr.getRpVysledek() != null)
+                .map(zakr -> EUR == zakr.getMena() ? zakr.getRpVysledek().multiply(zakrParams.getKurz()) : zakr.getRpVysledek())
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+        ;
+    }
+
+    private BigDecimal calcZbyvaSum() {
+        return this.getDataProvider()
+                .withConfigurableFilter()
+                .fetch(new Query<>())
+                .filter(zakr -> zakr.getRpZbyva() != null)
+                .map(zakr -> EUR == zakr.getMena() ? zakr.getRpZbyva().multiply(zakrParams.getKurz()) : zakr.getRpZbyva())
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
         ;
-        return sum;
-//        return ((ListDataProvider)this.getDataCommunicator().getDataProvider()).getItems().size();
+    }
+
+    private BigDecimal calcVykonSum() {
+        return this.getDataProvider()
+                .withConfigurableFilter()
+                .fetch(new Query<>())
+                .filter(zakr -> zakr.getRyRxVykon() != null)
+                .map(zakr -> EUR == zakr.getMena() ? zakr.getRyRxVykon().multiply(zakrParams.getKurz()) : zakr.getRyRxVykon())
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+        ;
     }
 
     private void updateRecCountField() {
@@ -541,6 +572,8 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 ckzEdit = String.format("%s / %s", editedItem.getCkont(), editedItem.getCzak());
                 if (editedItemChanged) {
                     this.itemSaver.accept(editedItem, Operation.EDIT);
+                    updateFooterFields();
+
 //                    rpVysledekGridValueProvider.apply(editedItem);
                 }
             }
@@ -606,21 +639,30 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     };
 
     private ValueProvider<Zakr, String> rxVykonGridValueProvider = zakr -> {
-        if (null == getRxVykon(zakr)) {
+        if (null == zakr.getRyRxVykon()) {
             return "";
         } else {
-            BigDecimal rxVykon = zakr.getMena() == EUR ? getRxVykon(zakr).multiply(zakrParams.getKurz()) : getRxVykon(zakr);
+            BigDecimal rxVykon = zakr.getMena() == EUR ? zakr.getRyRxVykon().multiply(zakrParams.getKurz()) : zakr.getRyRxVykon();
             return null == rxVykon ? "" : VzmFormatUtils.moneyFormat.format(rxVykon);
         }
     };
 
     private ValueProvider<Zakr, String> rpZbyvaGridValueProvider = zakr -> {
-            BigDecimal rpZbyva = getRpZbyva(zakr);
+        if (null == zakr.getRpZbyva()) {
+            return "";
+        } else {
+            BigDecimal rpZbyva = zakr.getMena() == EUR ? zakr.getRpZbyva().multiply(zakrParams.getKurz()) : zakr.getRpZbyva();
             return null == rpZbyva ? "" : VzmFormatUtils.moneyFormat.format(rpZbyva);
+        }
     };
 
     public ValueProvider<Zakr, String> rpVysledekGridValueProvider = zakr -> {
-            return null == zakr.getRpVysledek() ? "" : VzmFormatUtils.moneyFormat.format(zakr.getRpVysledek());
+        if (null == zakr.getRpVysledek()) {
+            return "";
+        } else {
+            BigDecimal rpVysledek = zakr.getMena() == EUR ? zakr.getRpVysledek().multiply(zakrParams.getKurz()) : zakr.getRpVysledek();
+            return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
+        }
     };
 
     private ValueProvider<Zakr, String> rpVysledekP8GridValueProvider = zakr -> {
@@ -671,26 +713,26 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         return editComp;
     }
 
-    private BigDecimal getRxVykon(final Zakr zakr) {
-        BigDecimal activeRxValue = getActiveRxValue(zakr);
-        return null == activeRxValue || null == zakr.getHonorCisty() ?
-                null : activeRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L));
-    }
+//    private BigDecimal getRyRxVykon(final Zakr zakr) {
+//        BigDecimal activeRxValue = getActiveRxValue(zakr);
+//        return null == activeRxValue || null == zakr.getHonorCisty() ?
+//                null : activeRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L));
+//    }
 
-    private BigDecimal getRpZbyva(final Zakr zakr) {
-        BigDecimal lastRxValue = zakr.getRP();
-        return null == lastRxValue || null == zakr.getHonorCisty() ? null :
-                zakr.getHonorCisty().subtract(
-                        lastRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L))
-        );
-    }
-
-    private BigDecimal getRpVysledek(final Zakr zakr) {
-        BigDecimal lastRxValue = zakr.getRP();
-        return null == lastRxValue || null == zakr.getHonorCisty() ? null :
-                lastRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L)
-        );
-    }
+//    private BigDecimal getRpZbyva(final Zakr zakr) {
+//        BigDecimal lastRxValue = zakr.getRP();
+//        return null == lastRxValue || null == zakr.getHonorCisty() ? null :
+//                zakr.getHonorCisty().subtract(
+//                        lastRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L))
+//        );
+//    }
+//
+//    private BigDecimal getRpVysledek(final Zakr zakr) {
+//        BigDecimal lastRxValue = zakr.getRP();
+//        return null == lastRxValue || null == zakr.getHonorCisty() ? null :
+//                lastRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L)
+//        );
+//    }
 
     // TODO Probably  obsolete - remove ??
     public static BigDecimal getActiveRxValue(Zakr zakr) {
@@ -769,18 +811,23 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         );
         initFilterValues();
         doFilter();
+        updateFooterFields();
+    }
+
+    private void updateFooterFields() {
         updateVysledekSumField();
+        updateZbyvaSumField();
+        updateVykonySumField();
         updateRecCountField();
     }
 
-    public void populateGridDataAndResoreFilters(List<Zakr> zakrList) {
+    public void populateGridDataAndRestoreFilters(List<Zakr> zakrList) {
         saveFilterValues();
         saveFilterValues();
         setItems(zakrList);
         restoreFilterValues();
         doFilter();
-        updateVysledekSumField();
-        updateRecCountField();
+        updateFooterFields();
     }
 
     public void initFilterValues() {
@@ -868,8 +915,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                     , kzt -> StringUtils.containsIgnoreCase(kzt, kzTextFilterValue)
             );
         }
-        updateVysledekSumField();
-        updateRecCountField();
+        updateFooterFields();
     }
 
     private ComponentRenderer<Component, Zakr> archRenderer = new ComponentRenderer<>(zakr -> {

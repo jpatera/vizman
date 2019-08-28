@@ -109,14 +109,40 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     @Transient
     private boolean checked;
 
-    @Transient
-    private BigDecimal rpVysledek;
+//    @Transient
+//    private BigDecimal rpVysledek;
 
+    @Transient
     public BigDecimal getRpVysledek() {
-//        return rpVysledek;
-        return null == rp || null == honorCisty ? null :
-                rp.multiply(honorCisty).divide(BigDecimal.valueOf(100L)
-        );
+        if (null == rp || null == honorCisty) {
+            return null;
+        } else {
+            return rp.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+        }
+    }
+
+//    @Transient
+//    private BigDecimal rpZbyva;
+
+    @Transient
+    public BigDecimal getRpZbyva() {
+        if (null == rp || null == honorCisty) {
+            return null;
+        } else {
+            return honorCisty.subtract(rp.multiply(honorCisty).divide(BigDecimal.valueOf(100L)));
+        }
+    }
+
+//    @Transient
+//    private BigDecimal ryRxVykon;
+
+    @Transient
+    public BigDecimal getRyRxVykon() {
+        BigDecimal vykR1 = null == r1 || null == honorCisty ? BigDecimal.ZERO :
+                r1.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+        BigDecimal vykR2 = null == r2 || null == honorCisty ? BigDecimal.ZERO :
+                r2.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+        return vykR2.subtract(vykR1);
     }
 
 //    public BigDecimal getFinished() {

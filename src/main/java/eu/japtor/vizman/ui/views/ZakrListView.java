@@ -26,6 +26,7 @@ import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -40,9 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
@@ -66,7 +65,9 @@ public class ZakrListView extends VerticalLayout {
     private RadioButtonGroup<String> archFilterRadio;
     private Button rozpracRepButton;
     private Button saveEditButton;
-    private TextField kurzField;
+    private TextField kurzParamField;
+    private TextField rxParamField;
+    private TextField ryParamField;
 
     private ZakrParams zakrParams;
 
@@ -170,32 +171,48 @@ public class ZakrListView extends VerticalLayout {
         controlsComponent.add(
                 initKurzField()
                 , new Ribbon("3em")
-                , new TextField("RX (od)")
+                , initRxParamField()
                 , new Ribbon()
-                , new TextField("RY (do)")
+                , initRyParamField()
         );
+
         return controlsComponent;
     }
 
+    private Component initRxParamField() {
+        rxParamField = new TextField("RX (od)");
+        rxParamField.setValue("1");
+        rxParamField.setReadOnly(true);
+        return rxParamField;
+    }
+
+    private Component initRyParamField() {
+        ryParamField = new TextField("RY (do)");
+        ryParamField.setValue("2");
+        ryParamField.setReadOnly(true);
+        return ryParamField;
+    }
+
     private Component initKurzField() {
-        kurzField = new TextField("Kurz CZK/EUR"
+        kurzParamField = new TextField("Kurz CZK/EUR"
 //                , event -> ((CallbackDataProvider) klientGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getValue()))
         );
-////        kurzField.setStep(0.01);
+////        kurzParamField.setStep(0.01);
 //
 //        BigDecimal kurz;
 
-//        kurzField.addValueChangeListener(updateContent);
-        kurzField.setValueChangeMode(ValueChangeMode.EAGER);
+//        kurzParamField.addValueChangeListener(updateContent);
+        kurzParamField.setValueChangeMode(ValueChangeMode.EAGER);
+        kurzParamField.setReadOnly(true);
 
         Binder<ZakrParams> binder = new Binder<>();
-        binder.forField(kurzField)
+        binder.forField(kurzParamField)
                 .withConverter(new StringToBigDecimalConverter("Špatný formát"))
                 .bind(ZakrParams::getKurz, ZakrParams::setKurz);
 //
 ////        .bind("")
         binder.readBean(zakrParams);
-        return kurzField;
+        return kurzParamField;
     }
 
     public static class ZakrParams {
@@ -279,19 +296,60 @@ public class ZakrListView extends VerticalLayout {
         return gridContainer;
     }
 
-    private void saveGridItem(Zakr itemToSave, Operation operation) {
-        zakrService.saveZakr(itemToSave);
-//        Zakr savedItem = zakrService.fetchOne(itemToSave.getId());
-        zakrList = zakrService.fetchAllDescOrder();
-        zakrGrid.setItems(zakrList);
+    private void saveGridItem(Zakr itemForSave, Operation operation) {
 
-//        savedItem = zakrService.fetchOne(itemToSave.getId());
+        zakrService.saveZakr(itemForSave);
+        Zakr savedItem = zakrService.fetchOne(itemForSave.getId());
+
+//        Zakr savedItem = zakrService.fetchOne(itemToSave.getId());
+
+//        zakrList = zakrService.fetchAllDescOrder();
+//        zakrGrid.setItems(zakrList);
+
+        List<Zakr> zakrList = (List<Zakr>)((ListDataProvider)zakrGrid.getDataProvider()).getItems();
+        int idx = zakrList.indexOf(itemForSave);
+        if (idx >= 0) {
+            zakrList.set(idx, savedItem);
+        }
+
+//        zakrGrid.getDataCommunicator().getKeyMapper().remove(itemForSave);
+        zakrGrid.getDataCommunicator().getKeyMapper().removeAll();
+        zakrGrid.getDataCommunicator().getDataProvider().refreshAll();
+        zakrGrid.getDataProvider().refreshAll();
+
+//        zakrGrid.getDataCommunicator().getKeyMapper().refresh(savedItem);
+
+//        ((ListDataProvider)zakrGrid.getDataProvider()).refreshItem(savedItem);
+
+//        List<Zakr> zakrList = (List<Zakr>)((ListDataProvider)zakrGrid.getDataProvider()).getItems();
+//        int idx = zakrList.indexOf(itemForSave);
+//        if (idx >= 0) {
+//            zakrList.set(idx, savedItem);
+//        }
+
+
 //        zakrGrid.getDataCommunicator().getKeyMapper().removeAll();
+//        zakrGrid.getDataCommunicator().getDataProvider().refreshAll();
+
+//        zakrGrid.getDataCommunicator().getKeyMapper().remove(itemForSave);
+//        zakrGrid.getDataCommunicator().getDataProvider().refreshItem(itemForSave);
+//        zakrGrid.getDataCommunicator().getDataProvider().refreshItem(savedItem);
+
+//        zakrGrid.getDataCommunicator().getKeyMapper().refresh(savedItem);
+//        zakrGrid.getDataProvider().refreshItem(savedItem);
+
+
+//        zakrGrid.getDataCommunicator().getKeyMapper().removeAll();
+//        zakrGrid.getDataCommunicator().getDataProvider().refreshAll();
+//        zakrGrid.getDataProvider().refreshAll();
+
+//        zakrGrid.getDataCommunicator().reset();
 //        zakrGrid.getDataCommunicator().getKeyMapper().remove(savedItem);
 //        zakrGrid.getDataCommunicator().getKeyMapper().remove(itemToSave);
-//        zakrGrid.getDataProvider().refreshItem(savedItem);
 //        zakrGrid.getDataProvider().refreshItem(itemToSave);
-        zakrGrid.getDataProvider().refreshAll();
+//        zakrGrid.getDataCommunicator().getDataProvider().refreshItem(savedItem);
+//        zakrGrid.getDataCommunicator().getDataProvider().refreshAll();
+
 
 //        zakrGrid.rpVysledekGridValueProvider.apply(savedItem);
 //        zakrGrid.getDataProvider().refreshAll();
@@ -309,7 +367,7 @@ public class ZakrListView extends VerticalLayout {
 //                , BigDecimal.valueOf(25.5)
                 // FIXME
                 // , cfgPropsCache.getDecimalValue("")
-//                , new BigDecimal(kurzField.getValue())
+//                , new BigDecimal(kurzParamField.getValue())
                 , zakrParams
                 , zakrService
                 , zakService
@@ -361,12 +419,12 @@ public class ZakrListView extends VerticalLayout {
             zakrGrid.getEditor().closeEditor();
         }
         zakrList = zakrService.fetchAllDescOrder();
-        zakrGrid.populateGridDataAndResoreFilters(zakrList);
+        zakrGrid.populateGridDataAndRestoreFilters(zakrList);
         zakrGrid.getDataProvider().refreshAll();
     }
 
     private void loadInitialViewContent() {
-//        kurzField.setValue(cfgPropsCache.getValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
+//        kurzParamField.setValue(cfgPropsCache.getValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
         if (zakrGrid.getEditor().isOpen()) {
             zakrGrid.getEditor().closeEditor();
         }

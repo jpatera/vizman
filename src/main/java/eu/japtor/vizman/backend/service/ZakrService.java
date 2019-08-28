@@ -21,5 +21,5 @@ public interface ZakrService {
 
     List<Integer> fetchZakrRoks();
 
-    Zakr saveZakr(Zakr itemToSave);
+    void saveZakr(Zakr itemToSave);
 }
