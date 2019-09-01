@@ -1,5 +1,7 @@
 package eu.japtor.vizman.app;
 
+import java.math.BigDecimal;
+
 public class AppCfg {
 
     private String appLocale;

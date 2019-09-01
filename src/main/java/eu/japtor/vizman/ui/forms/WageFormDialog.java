@@ -227,7 +227,7 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
 //
 //        ymFromField.setItemLabelGenerator(this::getYmLabel);
 //        ymFromField.addValueChangeListener(event -> {
-////            pruhYm = event.getValue();
+////            pruhYm = event.getStringValue();
 ////            updatePruhGrids(pruhPerson, pruhYm);
 //        });
 //
@@ -253,7 +253,7 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
                 .bind(PersonWage::getYmFrom, PersonWage::setYmFrom)
         ;
         ymFromField.addValueChangeListener(event -> {
-//            pruhYm = event.getValue();
+//            pruhYm = event.getStringValue();
 //            updatePruhGrids(pruhPerson, pruhYm);
         });
         return ymFromField;
@@ -275,7 +275,7 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
                 .bind(PersonWage::getYmTo, PersonWage::setYmTo);
 
         ymToField.addValueChangeListener(event -> {
-//            pruhYm = event.getValue();
+//            pruhYm = event.getStringValue();
 //            updatePruhGrids(pruhPerson, pruhYm);
         });
         return ymToField;

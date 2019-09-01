@@ -748,7 +748,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             if (!StringUtils.isBlank(zakToSave.getKontFolder())) {
                 if (StringUtils.isBlank(zakToSave.getFolder())) {
                     fireEvent(new GeneratedVaadinTextField.ChangeEvent(textField, false));
-//                String textValue = textField.getValue();
+//                String textValue = textField.getStringValue();
 //                textField.clear();
 //                textField.setValue(textValue);
                 }
@@ -1246,7 +1246,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
 //        textField.addValueChangeListener(event -> {
 //            zakFolderField.setValue(
-//                    VzmFileUtils.NormalizeDirnamesAndJoin(czakField.getValue(), event.getValue())
+//                    VzmFileUtils.NormalizeDirnamesAndJoin(czakField.getStringValue(), event.getStringValue())
 //            );
 //        });
 //        textField.setValueChangeMode(ValueChangeMode.EAGER);

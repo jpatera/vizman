@@ -460,7 +460,7 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 //     * @return the current selection
 //     */
 //    @Override
-//    public Set<T> getValue() {
+//    public Set<T> getStringValue() {
 //        return Collections.unmodifiableSet(new LinkedHashSet<>(rightGridDataProvider.getItems()));
 //    }
 
@@ -484,7 +484,7 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 //     * @return the current selection
 //     */
 //    @Override
-//    public Set<T> getValue() {
+//    public Set<T> getStringValue() {
 //        return Collections.unmodifiableSet(new LinkedHashSet<>(rightGridDataProvider.getItems()));
 //    }
 

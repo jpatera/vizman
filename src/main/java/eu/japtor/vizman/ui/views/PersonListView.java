@@ -87,9 +87,9 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 ////                "Hledej uživatele...", event ->
 ////                "Hledej uživatele...", event -> updateGridContent()
 //                "Hledej uživatele...", null
-////                event -> ((ConfigurableFilterDataProvider) personGrid.getDataProvider()).setFilter(event.getValue())
-////                event -> ((CallbackDataProvider) personGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getValue()))
-////                event -> ((CallbackDataProvider) personGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getValue()))
+////                event -> ((ConfigurableFilterDataProvider) personGrid.getDataProvider()).setFilter(event.getStringValue())
+////                event -> ((CallbackDataProvider) personGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getStringValue()))
+////                event -> ((CallbackDataProvider) personGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getStringValue()))
 //        );
 
         newItemButton = new NewItemButton("Nový uživatel",
@@ -138,7 +138,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 //                DataProvider.ofCollection(personService.fetchAll());
 //
 //        personGrid.setDataProvider(personDataProvider);
-////                DataProvider.ofCollection(personService.fetchBySearchFilter(searchField.getValue()));
+////                DataProvider.ofCollection(personService.fetchBySearchFilter(searchField.getStringValue()));
 //        personDataProvider.setSortOrder(Person::getUsername, SortDirection.ASCENDING);
 //
 // ------------------------------
@@ -158,7 +158,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 //        }
 // ------------------------------
 
-//        personDataProvider = DataProvider.ofCollection(personService.fetchBySearchFilter(searchField.getValue()));
+//        personDataProvider = DataProvider.ofCollection(personService.fetchBySearchFilter(searchField.getStringValue()));
 //        personDataProvider.setSortOrder(Person::getUsername, SortDirection.ASCENDING);
 //        wrapper.setSortOrder(Person::getUsername, SortDirection.ASCENDING);
 
@@ -309,10 +309,10 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 //        dataProvider.refreshItem(newInstance);
 //        personGrid.getDataProvider().refreshAll();
 
-//        List<Person> personList = personService.fetchBySearchFilter(searchField.getValue());
+//        List<Person> personList = personService.fetchBySearchFilter(searchField.getStringValue());
 
 //        ListDataProvider<Person> personDataProvider =
-//                DataProvider.ofCollection(personService.fetchBySearchFilter(searchField.getValue()));
+//                DataProvider.ofCollection(personService.fetchBySearchFilter(searchField.getStringValue()));
 //
 //        personDataProvider.setSortOrder(Person::getUsername,
 //                SortDirection.ASCENDING);

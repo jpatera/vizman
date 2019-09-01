@@ -201,7 +201,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         });
 //        kontFormDialog.addDialogCloseActionListener(ev -> {
 ////            Notification.show("Close Action Listener");
-//            loadKzTreeData(archFilterRadio.getValue());
+//            loadKzTreeData(archFilterRadio.getStringValue());
 //        });
 
         zakFormDialog = new ZakFormDialog(
@@ -613,7 +613,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
     //    TextField searchField = new TextField("Hledej kontrakty...");
 ////    SearchField searchField = new SearchField("Hledej uživatele..."
-////            , event -> ((ConfigurableFilterDataProvider) treeGrid.getDataProvider()).setFilter(event.getValue()));
+////            , event -> ((ConfigurableFilterDataProvider) treeGrid.getDataProvider()).setFilter(event.getStringValue()));
 //
 //    ListDataProvider<Kont> kontDataProvider;
 //
@@ -839,10 +839,10 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 ////        objednatelFilterField.addValueChangeListener(event ->
 ////                        ((TreeDataProvider<KzTreeAware>)kzTreeGrid.getDataProvider())
 //////                            .addFilter(KzTreeAware::getObjednatel, t ->
-//////                                    StringUtils.containsIgnoreCase(t, objednatelFilterField.getValue())
+//////                                    StringUtils.containsIgnoreCase(t, objednatelFilterField.getStringValue())
 //////                            )
 ////                            .addFilter(kz -> ItemType.KONT != kz.getTyp() || StringUtils.containsIgnoreCase(
-////                                kz.getObjednatel(), objednatelFilterField.getValue())
+////                                kz.getObjednatel(), objednatelFilterField.getStringValue())
 ////                            )
 ////        );
 //        objednatelFilterField.setValueChangeMode(ValueChangeMode.EAGER);
@@ -858,10 +858,10 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 ////        textFilterField.addValueChangeListener(event ->
 ////                        ((TreeDataProvider<KzTreeAware>)kzTreeGrid.getDataProvider())
 //////                            .addFilter(KzTreeAware::getText, t ->
-//////                                    StringUtils.containsIgnoreCase(t, textFilterField.getValue())
+//////                                    StringUtils.containsIgnoreCase(t, textFilterField.getStringValue())
 //////                            )
 ////                                .addFilter(kz -> ItemType.KONT != kz.getTyp() || StringUtils.containsIgnoreCase(
-////                                        kz.getText(), textFilterField.getValue())
+////                                        kz.getText(), textFilterField.getStringValue())
 ////                                )
 ////        );
 //        textFilterField.setValueChangeMode(ValueChangeMode.EAGER);
@@ -1193,10 +1193,10 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 ////        Notification.show("Kontrakt " + savedKont.getCkont() + " uložen"
 ////                , 2500, Notification.Position.TOP_CENTER);
 ////
-////        if ((Operation.ADD == operation) && (archFilterRadio.getValue().equals(RADIO_KONT_ACTIVE))) {
+////        if ((Operation.ADD == operation) && (archFilterRadio.getStringValue().equals(RADIO_KONT_ACTIVE))) {
 ////                archFilterRadio.setValue(RADIO_KONT_ARCH);
 ////        } else {
-////                loadKzTreeData(archFilterRadio.getValue());
+////                loadKzTreeData(archFilterRadio.getStringValue());
 ////        }
 ////
 ////        kzTreeGrid.expand(savedKont);
@@ -1206,7 +1206,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //    }
 
 //    private void refreshTreeAfterEdit(final KzTreeAware neibourghItem) {
-//        loadKzTreeData(archFilterRadio.getValue());
+//        loadKzTreeData(archFilterRadio.getStringValue());
 //        kzTreeGrid.getSelectionModel().select(neibourghItem);
 //    }
 
@@ -1218,7 +1218,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //
 //        try {
 //            kontService.deleteKont(kontToDelete);
-//            loadKzTreeData(archFilterRadio.getValue());
+//            loadKzTreeData(archFilterRadio.getStringValue());
 //            kzTreeGrid.getSelectionModel().select(newSelectedKont);
 //
 //            ConfirmDialog
@@ -1400,7 +1400,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //
 //        // simulate the date picker light that we can use in polymer
 //        DatePicker gotoDate = new DatePicker();
-//        gotoDate.addValueChangeListener(event1 -> calendar.gotoDate(event1.getValue()));
+//        gotoDate.addValueChangeListener(event1 -> calendar.gotoDate(event1.getStringValue()));
 //        gotoDate.getElement().getStyle().set("visibility", "hidden");
 //        gotoDate.getElement().getStyle().set("position", "fixed");
 //        gotoDate.setWidth("0px");
@@ -1412,14 +1412,14 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //
 //        Button buttonHeight = new Button("Calendar height", event -> new HeightDialog().open());
 //
-//        Checkbox cbWeekNumbers = new Checkbox("Week numbers", event -> calendar.setWeekNumbersVisible(event.getValue()));
+//        Checkbox cbWeekNumbers = new Checkbox("Week numbers", event -> calendar.setWeekNumbersVisible(event.getStringValue()));
 //
 //        ComboBox<Locale> comboBoxLocales = new ComboBox<>();
 //
 //        List<Locale> items = Arrays.asList(CalendarLocale.getAvailableLocales());
 //        comboBoxLocales.setItems(items);
 //        comboBoxLocales.setValue(CalendarLocale.getDefault());
-//        comboBoxLocales.addValueChangeListener(event -> calendar.setLocale(event.getValue()));
+//        comboBoxLocales.addValueChangeListener(event -> calendar.setLocale(event.getStringValue()));
 //        comboBoxLocales.setRequired(true);
 //        comboBoxLocales.setPreventInvalidInput(true);
 //
@@ -1437,14 +1437,14 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //                    return "group by date / resource";
 //            }
 //        });
-//        comboBoxGroupBy.addValueChangeListener(event -> ((Scheduler) calendar).setGroupEntriesBy(event.getValue()));
+//        comboBoxGroupBy.addValueChangeListener(event -> ((Scheduler) calendar).setGroupEntriesBy(event.getStringValue()));
 //
 //        timezoneComboBox = new ComboBox<>("");
 //        timezoneComboBox.setItemLabelGenerator(Timezone::getClientSideValue);
 //        timezoneComboBox.setItems(Timezone.getAvailableZones());
 //        timezoneComboBox.setValue(Timezone.UTC);
 //        timezoneComboBox.addValueChangeListener(event -> {
-//            Timezone value = event.getValue();
+//            Timezone value = event.getStringValue();
 //            calendar.setTimezone(value != null ? value : Timezone.UTC);
 //        });
 //
@@ -1569,7 +1569,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //////                "Hledej uživatele...", event ->
 //////                "Hledej uživatele...", event -> updateZakGridContent()
 ////                "Hledej uživatele...",
-////                event -> ((ConfigurableFilterDataProvider) treeGrid.getDataProvider()).setFilter(event.getValue())
+////                event -> ((ConfigurableFilterDataProvider) treeGrid.getDataProvider()).setFilter(event.getStringValue())
 ////        );        toolBarSearch.add(viewTitle, searchField);
 //
 ////        HorizontalLayout searchToolBar = new HorizontalLayout(viewTitle, searchField);
@@ -1778,7 +1778,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 ////
 ////            TextField heightInput = new TextField("", "500", "e. g. 300");
 ////            Button byPixels = new Button("Set by pixels", e -> {
-////                kzTreeGrid.setHeight(Integer.valueOf(heightInput.getValue()));
+////                kzTreeGrid.setHeight(Integer.valueOf(heightInput.getStringValue()));
 ////
 ////                this.setSizeUndefined();
 ////                setFlexStyles(false);

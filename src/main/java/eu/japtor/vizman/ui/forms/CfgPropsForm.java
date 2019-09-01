@@ -9,6 +9,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.AppCfg;
@@ -23,6 +24,7 @@ import eu.japtor.vizman.ui.components.OkDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -191,6 +193,10 @@ public class CfgPropsForm extends VerticalLayout implements HasLogger {
             case APP_KURZ_CZK_EUR:
                 appCfg.setAppKurzCzkEur(value);
                 binder.forField(field).bind(AppCfg::getAppKurzCzkEur, AppCfg::setAppKurzCzkEur);
+//                binder.forField(field)
+//                        .asRequired("Kurz musí být zadán")
+//                        .withConverter(new StringToBigDecimalConverter("Špatný formát"))
+//                        .bind(AppCfg::getAppKurzCzkEur, AppCfg::setAppKurzCzkEur);
                 break;
         }
     }
@@ -202,17 +208,6 @@ public class CfgPropsForm extends VerticalLayout implements HasLogger {
         setAlignItems(Alignment.STRETCH);
 
         Component propsHeader = new H4("APLIKACE");
-
-//        VerticalLayout propContainer = new VerticalLayout();
-//            propContainer.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-//            propContainer.setAlignItems(Alignment.STRETCH);
-//        propContainer.add(fieldMap.get(CfgPropName.APP_LOCALE.getName()));
-//        propContainer.add(fieldMap.get(CfgPropName.APP_PROJ_ROOT_LOCAL.getName()));
-//        propContainer.add(fieldMap.get(CfgPropName.APP_PROJ_ROOT_SERVER.getName()));
-//        propContainer.add(fieldMap.get(CfgPropName.APP_DOC_ROOT_LOCAL.getName()));
-//        propContainer.add(fieldMap.get(CfgPropName.APP_DOC_ROOT_SERVER.getName()));
-//        propContainer.add(fieldMap.get(CfgPropName.APP_KOEF_POJIST.getName()));
-//        propContainer.add(fieldMap.get(CfgPropName.APP_KOEF_REZIE.getName()));
 
         addFormItem(CfgPropName.APP_LOCALE.getName());
         addFormItem(CfgPropName.APP_DOC_ROOT_SERVER.getName());
@@ -227,7 +222,6 @@ public class CfgPropsForm extends VerticalLayout implements HasLogger {
         propsButtonBar.add(buildSaveButton());
         propsButtonBar.add(buildCancelButton());
 
-//        this.add(propsHeader, propContainer, propsFooter);
         this.add(propsHeader, form, propsButtonBar);
     }
 

@@ -252,10 +252,10 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
 //        dataProvider.refreshItem(newInstance);
 //        personGrid.getDataProvider().refreshAll();
 
-//        List<Person> personList = personService.fetchBySearchFilter(searchField.getValue());
+//        List<Person> personList = personService.fetchBySearchFilter(searchField.getStringValue());
 
 //        ListDataProvider<Person> personDataProvider =
-//                DataProvider.ofCollection(personService.fetchBySearchFilter(searchField.getValue()));
+//                DataProvider.ofCollection(personService.fetchBySearchFilter(searchField.getStringValue()));
 //
 //        personDataProvider.setSortOrder(Person::getUsername,
 //                SortDirection.ASCENDING);

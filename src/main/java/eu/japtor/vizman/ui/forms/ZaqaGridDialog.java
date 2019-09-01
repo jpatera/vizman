@@ -368,7 +368,7 @@ public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogge
 //    ) {
 //        TextField editComp = new TextField();
 //        editComp.addValueChangeListener(event -> {
-//            if (event.isFromClient() && !Objects.equals(event.getValue(), (event.getOldValue()))) {
+//            if (event.isFromClient() && !Objects.equals(event.getStringValue(), (event.getOldValue()))) {
 //                editedItemChanged = true;
 //                this.getEditor().getBinder().writeBeanIfValid(this.getEditor().getItem());
 ////                this.getDataProvider().refreshItem(this.getEditor().getItem());

@@ -512,7 +512,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
     }
 
     private void updateFolderViewContent(final VzmFileUtils.VzmFile itemToSelect) {
-//        kzTreeData = loadKzTreeData(archFilterRadio.getValue());
+//        kzTreeData = loadKzTreeData(archFilterRadio.getStringValue());
 //        inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
 //        assignDataProviderToGridAndSort(inMemoryKzTreeProvider);
 //        inMemoryKzTreeProvider.refreshAll();

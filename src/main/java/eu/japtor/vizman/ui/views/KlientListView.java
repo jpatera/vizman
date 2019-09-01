@@ -81,9 +81,9 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
 //                "Hledej uživatele...", event ->
 //                "Hledej uživatele...", event -> updateGridContent()
                 "Hledej klienta...",
-//                event -> ((ConfigurableFilterDataProvider) klientGrid.getDataProvider()).setFilter(event.getValue())
+//                event -> ((ConfigurableFilterDataProvider) klientGrid.getDataProvider()).setFilter(event.getStringValue())
                 event -> ((CallbackDataProvider) klientGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getValue()))
-//                event -> ((CallbackDataProvider) klientGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getValue()))
+//                event -> ((CallbackDataProvider) klientGrid.getDataProvider()).fetchFromBackEnd(new Query(event.getStringValue()))
         );
 
         newItemButton = new NewItemButton("Nový klient",

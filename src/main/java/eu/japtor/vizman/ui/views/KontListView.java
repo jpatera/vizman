@@ -67,7 +67,7 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
 
     TextField searchField = new TextField("Hledej zakázky...");
 //    SearchField searchField = new SearchField("Hledej uživatele..."
-//            , event -> ((ConfigurableFilterDataProvider) kontGrid.getDataProvider()).setFilter(event.getValue()));
+//            , event -> ((ConfigurableFilterDataProvider) kontGrid.getDataProvider()).setFilter(event.getStringValue()));
 
 
     @Autowired
@@ -243,7 +243,7 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
 ////                "Hledej uživatele...", event ->
 ////                "Hledej uživatele...", event -> updateKontGridContent()
 //                "Hledej uživatele...",
-//                event -> ((ConfigurableFilterDataProvider) kontGrid.getDataProvider()).setFilter(event.getValue())
+//                event -> ((ConfigurableFilterDataProvider) kontGrid.getDataProvider()).setFilter(event.getStringValue())
 //        );        toolBarSearch.add(viewTitle, searchField);
 
         HorizontalLayout searchToolBar = new HorizontalLayout(viewTitle, searchField);

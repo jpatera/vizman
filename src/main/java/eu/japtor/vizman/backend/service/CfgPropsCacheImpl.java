@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,28 +48,34 @@ public class CfgPropsCacheImpl implements CfgPropsCache {
     }
 
     @Override
-    public String getValue(final String propName) {
-        return propsByName.get(propName).getValue();
+    public String getStringValue(final String propName) {
+        return (String)propsByName.get(propName).getValue();
+    }
+
+    @Override
+    public BigDecimal getBigDecimalValue(final String propName) {
+        return new BigDecimal(propsByName.get(propName).getValue());
+//        return (BigDecimal)(propsByName.get(propName).getValue());
     }
 
     @Override
     public String getProjRootServer() {
-        return getValue("app.project.root.server");
+        return getStringValue("app.project.root.server");
     }
 
     @Override
     public String getDocRootServer() {
-        return getValue("app.document.root.server");
+        return getStringValue("app.document.root.server");
     }
 
     @Override
     public String getProjRootLocal() {
-        return getValue("app.project.root.local");
+        return getStringValue("app.project.root.local");
     }
 
     @Override
     public String getDocRootLocal() {
-        return getValue("app.document.root.local");
+        return getStringValue("app.document.root.local");
     }
 
 

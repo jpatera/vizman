@@ -82,11 +82,11 @@ public class VzmFileUtils implements HasLogger {
 //    }
 
 //    private String getDocRootServer() {
-//        return cfgPropsCache.getValue("app.document.root.server");
+//        return cfgPropsCache.getStringValue("app.document.root.server");
 //    }
 
 //    private String getProjRootServer() {
-//        return cfgPropsCache.getValue("app.project.root.server");
+//        return cfgPropsCache.getStringValue("app.project.root.server");
 //    }
 
     static List<ProjFolder> rootZakProjFolders;

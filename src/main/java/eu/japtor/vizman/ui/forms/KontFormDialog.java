@@ -666,7 +666,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         try {
             if (StringUtils.isBlank(kontToSave.getFolder())) {
 //                fireEvent(new AbstractField.ComponentValueChangeEvent(
-//                        textField, textField, textField.getValue(), false)
+//                        textField, textField, textField.getStringValue(), false)
 //                );
 //                fireEvent(new GeneratedVaadinTextField.ChangeEvent(textField, false));
                 String textValue = textField.getValue();
@@ -1047,7 +1047,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         ;
 
     private void updateKontDocViewContent(final VzmFileUtils.VzmFile itemToSelect) {
-//        kontDocTreeData = loadKzTreeData(archFilterRadio.getValue());
+//        kontDocTreeData = loadKzTreeData(archFilterRadio.getStringValue());
         kontDocGrid.deselectAll();
         TreeData<VzmFileUtils.VzmFile> kontDocTreeData
                 = VzmFileUtils.getExpectedKontFolderTree(cfgPropsCache.getDocRootServer(), currentItem);

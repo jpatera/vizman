@@ -139,7 +139,7 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
         czakField.setReadOnly(true);
 //        czakField.addValueChangeListener(event -> {
 //            folderField.setValue(
-//                VzmFileUtils.NormalizeDirnamesAndJoin(event.getValue(), textField.getValue())
+//                VzmFileUtils.NormalizeDirnamesAndJoin(event.getStringValue(), textField.getStringValue())
 //            );
 //        });
 //        czakField.setValueChangeMode(ValueChangeMode.EAGER);

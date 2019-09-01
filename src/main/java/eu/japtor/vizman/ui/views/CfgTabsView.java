@@ -260,8 +260,8 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
 //        // TODO:
 ////        grid.setDataProvider(SpringDataProviderBuilder.forRepository(personRepo));
 //
-//        if (searchField.getValue().length() > 0) {
-//            header.setText("Uživatelé - hledat “"+ searchField.getValue() +"”");
+//        if (searchField.getStringValue().length() > 0) {
+//            header.setText("Uživatelé - hledat “"+ searchField.getStringValue() +"”");
 //        } else {
 //            header.setText("Uživatelé");
 //        }

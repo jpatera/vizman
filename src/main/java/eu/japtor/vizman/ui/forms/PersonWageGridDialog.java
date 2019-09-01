@@ -413,13 +413,13 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
 //    }
 
 //    private boolean canFakturovat(final Fakt fakt) {
-//        return (null != dateDuzpField.getValue()
+//        return (null != dateDuzpField.getStringValue()
 //                && StringUtils.isNotBlank(fakt.getCkont())
-//                && StringUtils.isNotBlank(textField.getValue()))
+//                && StringUtils.isNotBlank(textField.getStringValue()))
 //                && StringUtils.isNotBlank(fakt.getZakText())
 //                && StringUtils.isNotBlank(fakt.getKontText())
-//                && StringUtils.isNotBlank(castkaField.getValue())
-//                && null != dateDuzpField.getValue()
+//                && StringUtils.isNotBlank(castkaField.getStringValue())
+//                && null != dateDuzpField.getStringValue()
 //                && null != fakt.getMena()
 //        ;
 //    }

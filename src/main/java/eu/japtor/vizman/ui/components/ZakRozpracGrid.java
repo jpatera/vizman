@@ -29,6 +29,7 @@ import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.forms.ZakFormDialog;
 import eu.japtor.vizman.ui.forms.ZaqaGridDialog;
 import eu.japtor.vizman.ui.views.ZakrListView;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ConfirmDialog;
 
@@ -62,7 +63,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     public static final String R2_COL_KEY = "zakr-bg-r2";
     public static final String R3_COL_KEY = "zakr-bg-r3";
     public static final String R4_COL_KEY = "zakr-bg-r4";
-    public static final String VYKONY_COL_KEY = "zakr-bg-finished";
+    public static final String PERFORMANCE_COL_KEY = "zakr-bg-performance";
     public static final String REMAINS_COL_KEY = "zakr-bg-remains";
     public static final String RESULT_COL_KEY = "zakr-bg-result";
     public static final String RESULTP8_COL_KEY = "zakr-bg-result-p8";
@@ -111,7 +112,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             , Boolean initFilterArchValue
             , BiConsumer<Zakr, Operation> itemSaver
 //            , BigDecimal kurzEur
-            , ZakrListView.ZakrParams params
+            , ZakrListView.ZakrParams zakrParams
             , ZakrService zakrService
             , ZakService zakService
             , FaktService faktService
@@ -123,7 +124,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         this.selectFieldVisible = selectFieldVisible;
         this.itemSaver = itemSaver;
 //        this.kurzEur = params.getKurz();
-        this.zakrParams = params;
+        this.zakrParams = zakrParams;
 
         this.zakrService = zakrService;
         this.zakService = zakService;
@@ -255,6 +256,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(MENA_COL_KEY)
         ;
         this.addColumn(honorCistyValueProvider)
+                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getHonorCistyByKurz(zakr1), getHonorCistyByKurz(zakr2)))
                 .setHeader("Hon.č. [CZK]")
                 .setFlexGrow(0)
                 .setWidth("7em")
@@ -328,13 +330,14 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 ;
         colR4.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR4, Zakr::setR4));
 
-        Grid.Column<Zakr> colRxVykon = this.addColumn(rxVykonGridValueProvider)
-                .setHeader("Výkon RY-RX")
+        Grid.Column<Zakr> colRxRyVykon = this.addColumn(rxRyVykonGridValueProvider)
+                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getRxRyVykonByKurz(zakr1), getRxRyVykonByKurz(zakr2)))
+                .setHeader("Výkon rx-ry")
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
-                .setKey(VYKONY_COL_KEY)
+                .setKey(PERFORMANCE_COL_KEY)
                 .setResizable(true)
         ;
 
@@ -348,7 +351,11 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setResizable(false)
                 ;
 //        colRP.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR0, Zakr::setR0));
-        Grid.Column<Zakr> colRpZbyva = this.addColumn(rpZbyvaGridValueProvider)
+        Grid.Column<Zakr> colRpZbyva = this.addColumn(rpZbyvaByKurzGridValueProvider)
+                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getRpZbyvaByKurz(zakr1), getRpZbyvaByKurz(zakr2)))
+//                .setComparator((zakr1, zakr2) -> zakr1.getRpZbyva()
+//                        .compareTo(zakr2.getRpZbyva()))
+//                .setComparator(ObjectUtils.compare(zakr.1firstComparable, secondComparable))
                 .setHeader("Zbývá celk.")
                 .setFlexGrow(0)
                 .setWidth("7em")
@@ -357,7 +364,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(REMAINS_COL_KEY)
                 .setResizable(true)
         ;
-        Grid.Column<Zakr> colVysledek = this.addColumn(rpVysledekGridValueProvider)
+
+        Grid.Column<Zakr> colRpVysledek = this.addColumn(rpVysledekGridValueProvider)
+                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getRpVysledekByKurz(zakr1), getRpVysledekByKurz(zakr2)))
                 .setHeader("Výsledek")
                 .setFlexGrow(0)
                 .setWidth("7em")
@@ -447,9 +456,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setText("" + (VzmFormatUtils.moneyFormat.format(calcZbyvaSum())));
     }
 
-    private void updateVykonySumField() {
+    private void updateVykonSumField() {
         sumFooterRow
-                .getCell(this.getColumnByKey(VYKONY_COL_KEY))
+                .getCell(this.getColumnByKey(PERFORMANCE_COL_KEY))
                 .setText("" + (VzmFormatUtils.moneyFormat.format(calcVykonSum())));
     }
 
@@ -478,8 +487,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         return this.getDataProvider()
                 .withConfigurableFilter()
                 .fetch(new Query<>())
-                .filter(zakr -> zakr.getRyRxVykon() != null)
-                .map(zakr -> EUR == zakr.getMena() ? zakr.getRyRxVykon().multiply(zakrParams.getKurz()) : zakr.getRyRxVykon())
+//                .filter(zakr -> zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy()) != null)
+                .map(zakr -> EUR == zakr.getMena() ?
+                        zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy()).multiply(zakrParams.getKurz()) :
+                        zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy()))
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
         ;
@@ -556,6 +567,15 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //                , VzmFormatUtils.getItemTypeColorName(zakr.getTyp()));
     }
 
+    public void setZakrParams(ZakrListView.ZakrParams zakrParams) {
+        this.zakrParams = zakrParams;
+
+    }
+
+    public ZakrListView.ZakrParams getZakrParams() {
+        return zakrParams;
+    }
+
     private void attemptSaveFromEditor() {
 
         if (this.getEditor().isOpen()) {
@@ -629,41 +649,82 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             zakr -> null == zakr.getR4() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR4())
     ;
 
+
     private ValueProvider<Zakr, String> honorCistyValueProvider = zakr -> {
-        if (null == zakr.getHonorCisty()) {
+        BigDecimal honorCistyByKurz = getHonorCistyByKurz(zakr);
+        if (null == honorCistyByKurz) {
             return "";
         } else {
-            BigDecimal honorCisty = zakr.getMena() == EUR ? zakr.getHonorCisty().multiply(zakrParams.getKurz()) : zakr.getHonorCisty();
-            return null == honorCisty ? "" : VzmFormatUtils.moneyFormat.format(honorCisty);
+            return VzmFormatUtils.moneyFormat.format(honorCistyByKurz);
         }
     };
+    private  BigDecimal getHonorCistyByKurz(Zakr zakr) {
+        BigDecimal honorCisty = zakr.getHonorCisty();
+        if (null == honorCisty) {
+            return null;
+        } else {
+            return zakr.getMena() == EUR ?
+                    honorCisty.multiply(zakrParams.getKurz()) :
+                    honorCisty;
+        }
+    }
 
-    private ValueProvider<Zakr, String> rxVykonGridValueProvider = zakr -> {
-        if (null == zakr.getRyRxVykon()) {
+    private ValueProvider<Zakr, String> rxRyVykonGridValueProvider = zakr -> {
+        BigDecimal rxRyVykonByKurz = getRxRyVykonByKurz(zakr);
+        if (null == rxRyVykonByKurz) {
             return "";
         } else {
-            BigDecimal rxVykon = zakr.getMena() == EUR ? zakr.getRyRxVykon().multiply(zakrParams.getKurz()) : zakr.getRyRxVykon();
-            return null == rxVykon ? "" : VzmFormatUtils.moneyFormat.format(rxVykon);
+            return VzmFormatUtils.moneyFormat.format(rxRyVykonByKurz);
         }
     };
+    private  BigDecimal getRxRyVykonByKurz(Zakr zakr) {
+        BigDecimal rxRyVykon = zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy());
+        if (null == rxRyVykon) {
+            return null;
+        } else {
+            return zakr.getMena() == EUR ?
+                    rxRyVykon.multiply(zakrParams.getKurz()) :
+                    rxRyVykon;
+        }
+    }
 
-    private ValueProvider<Zakr, String> rpZbyvaGridValueProvider = zakr -> {
-        if (null == zakr.getRpZbyva()) {
+    private ValueProvider<Zakr, String> rpZbyvaByKurzGridValueProvider = zakr -> {
+        BigDecimal rpZbyvaByKurz = getRpZbyvaByKurz(zakr);
+        if (null == rpZbyvaByKurz) {
             return "";
         } else {
-            BigDecimal rpZbyva = zakr.getMena() == EUR ? zakr.getRpZbyva().multiply(zakrParams.getKurz()) : zakr.getRpZbyva();
-            return null == rpZbyva ? "" : VzmFormatUtils.moneyFormat.format(rpZbyva);
+            return VzmFormatUtils.moneyFormat.format(rpZbyvaByKurz);
         }
     };
+    private  BigDecimal getRpZbyvaByKurz(Zakr zakr) {
+        BigDecimal rpZbyva = zakr.getRpZbyva();
+        if (null == rpZbyva) {
+            return null;
+        } else {
+            return zakr.getMena() == EUR ?
+                    rpZbyva.multiply(zakrParams.getKurz()) :
+                    rpZbyva;
+        }
+    }
 
     public ValueProvider<Zakr, String> rpVysledekGridValueProvider = zakr -> {
         if (null == zakr.getRpVysledek()) {
             return "";
         } else {
-            BigDecimal rpVysledek = zakr.getMena() == EUR ? zakr.getRpVysledek().multiply(zakrParams.getKurz()) : zakr.getRpVysledek();
+            BigDecimal rpVysledek = getRpVysledekByKurz(zakr);
             return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
         }
     };
+    private  BigDecimal getRpVysledekByKurz(Zakr zakr) {
+        BigDecimal rpVysledek = zakr.getRpVysledek();
+        if (null == rpVysledek) {
+            return null;
+        } else {
+            return zakr.getMena() == EUR ?
+                    rpVysledek.multiply(zakrParams.getKurz()) :
+                    rpVysledek;
+        }
+    }
 
     private ValueProvider<Zakr, String> rpVysledekP8GridValueProvider = zakr -> {
 //            BigDecimal rpVysledek = getRpVysledekP8(zakr);
@@ -713,7 +774,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         return editComp;
     }
 
-//    private BigDecimal getRyRxVykon(final Zakr zakr) {
+//    private BigDecimal getRxRyVykon(final Zakr zakr) {
 //        BigDecimal activeRxValue = getActiveRxValue(zakr);
 //        return null == activeRxValue || null == zakr.getHonorCisty() ?
 //                null : activeRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L));
@@ -814,10 +875,22 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         updateFooterFields();
     }
 
+    public void recalcGrid() {
+//    public void recalcGrid(List<Zakr> zakrList) {
+//        setItems(zakrList);
+        this.getColumnByKey(PERFORMANCE_COL_KEY).setHeader(
+                "Výkon "
+                + (null == zakrParams.getRx() ? "rx" : zakrParams.getRx())
+                + "-"
+                + (null == zakrParams.getRy() ? "ry" : zakrParams.getRy())
+        );
+        updateFooterFields();
+    }
+
     private void updateFooterFields() {
         updateVysledekSumField();
         updateZbyvaSumField();
-        updateVykonySumField();
+        updateVykonSumField();
         updateRecCountField();
     }
 
@@ -960,5 +1033,12 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setComponent(skupinaFilterField);
         skupinaFilterField.setItems(skupinaItems);
     }
+
+//    private static Comparator<BigDecimal> bigDecimalSafeComparator = Comparator.nullsFirst(BigDecimal::compareTo);
+//
+//    public int safeCompareTo(BigDecimal that) {
+//        return bigDecimalSafeComparator.compare(this, that);
+//    }
+
 }
 

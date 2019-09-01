@@ -2,32 +2,36 @@ package eu.japtor.vizman.ui.components;
 
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.H5;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-public class ReloadButton extends Button {
-    private static final String DEFAULT_TOOLTIP_TEXT = "Načte data a vynuluje filtry";
+public class CalcButton extends Button {
+    private static final String DEFAULT_TOOLTIP_TEXT = "Přepočítá tabulku dle parametrů";
 
-//    Tooltip tooltip;
+    private Icon calcIconClean;
+    private Icon calcIconDirty;
 
-    public ReloadButton(final ComponentEventListener reloadListener) {
+    public CalcButton(final ComponentEventListener reloadListener) {
         this(null, reloadListener);
     }
 
-    public ReloadButton(final String tooltipText, final ComponentEventListener reloadView) {
+    public CalcButton(final String tooltipText, final ComponentEventListener reloadView) {
         super();
 
-        Icon reloadIcon = VaadinIcon.REFRESH.create();
-        reloadIcon.getStyle()
-                .set("theme", "small")
-        ;
+        calcIconClean = new Icon(VaadinIcon.CALC);
+        calcIconClean.getStyle()
+                .set("theme", "small");
 
-        this.setIcon(reloadIcon);
+        calcIconDirty = new Icon(VaadinIcon.CALC);
+        calcIconDirty.setColor("magenta");
+        calcIconDirty.getStyle()
+                .set("theme", "small");
+
+        this.setIcon(calcIconClean);
         this.getStyle()
                 .set("theme", "icon secondary")
         ;
+
         // TODO: add tooltips
 //        This does  not work:
 //        this.getElement().setAttribute("tooltip", null == tooltipText ? DEFAULT_TOOLTIP_TEXT : tooltipText);
@@ -45,5 +49,13 @@ public class ReloadButton extends Button {
         this.getElement().setProperty("title", DEFAULT_TOOLTIP_TEXT);
 
         this.addClickListener(reloadView);
+    }
+
+    public void setIconDirty() {
+        this.setIcon(calcIconDirty);
+    }
+
+    public void setIconClean() {
+        this.setIcon(calcIconClean);
     }
 }

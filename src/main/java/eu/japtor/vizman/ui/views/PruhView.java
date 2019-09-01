@@ -1235,7 +1235,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         col.setEditorComponent(editComp);
         pzEditorBinder.addStatusChangeListener(event -> {
                 event.getBinder().hasChanges();
-//                event.getBinder().forField(editComp).getField().getValue().;
+//                event.getBinder().forField(editComp).getField().getStringValue().;
         });
 
     }

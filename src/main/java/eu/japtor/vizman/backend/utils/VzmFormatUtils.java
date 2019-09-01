@@ -39,6 +39,7 @@ public class VzmFormatUtils {
     public static final NumberFormat procFormat = getDecFormat(Locale.getDefault(), 3, 1);
     public static final NumberFormat procIntFormat = getDecFormat(Locale.getDefault(), 3,0);
     public static final NumberFormat decHodFormat = getDecFormat(Locale.getDefault(), 4,1);
+    public static final NumberFormat kurzFormat = getDecFormat(Locale.getDefault(), 4, 2);
 //    public final static NumberFormat moneyFormat = new MoneyFormat();
 //    public final static NumberFormat yearFormat = new YearFormat();
 //    public static final StringToBigDecimalConverter bigDecimalMoneyConverter;
@@ -147,6 +148,27 @@ public class VzmFormatUtils {
                 numberFormat.setGroupingUsed(false);
                 numberFormat.setMinimumFractionDigits(1);
                 numberFormat.setMaximumFractionDigits(1);
+                return numberFormat;
+            }
+            @Override
+            public Result<BigDecimal> convertToModel(String value, ValueContext context) {
+                if (null == value) {
+                    return Result.ok(null);
+                }
+                value = value.replaceAll("\\s+","");
+                return super.convertToNumber(value, context)
+                        .map(number -> (BigDecimal) number);
+            }
+        };
+
+    public static final StringToBigDecimalConverter bigDecimalKurzConverter =
+        new StringToBigDecimalConverter("Špatný formát čísla") {
+            @Override
+            protected java.text.NumberFormat getFormat(Locale locale) {
+                NumberFormat numberFormat = super.getFormat(locale);
+                numberFormat.setGroupingUsed(false);
+                numberFormat.setMinimumFractionDigits(1);
+                numberFormat.setMaximumFractionDigits(2);
                 return numberFormat;
             }
             @Override

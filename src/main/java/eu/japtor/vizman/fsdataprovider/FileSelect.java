@@ -133,7 +133,7 @@ public class FileSelect extends TextField {
      * @return The selected File, can be a file or directory
      */
 //    @Override
-//    public File getValue() {
+//    public File getStringValue() {
 //        return selectedFile;
 //    }
 

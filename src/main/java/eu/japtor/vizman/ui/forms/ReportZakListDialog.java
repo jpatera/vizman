@@ -172,7 +172,7 @@ public class ReportZakListDialog extends AbstractPrintDialog<Zak> implements Has
 
     private void generateAndShowReport() {
         deactivateListeners();
-//        report.setParamRok(rokFilterField.getValue());
+//        report.setParamRok(rokFilterField.getStringValue());
         report.getReportBuilder().setSubtitle(
                 "Parametry: Rok=" + (null == rokFilterField.getValue() ? "Vše" : rokFilterField.getValue().toString())
         );
