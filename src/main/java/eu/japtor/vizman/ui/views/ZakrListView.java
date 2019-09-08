@@ -29,7 +29,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
-import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
@@ -48,7 +47,6 @@ import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static eu.japtor.vizman.backend.utils.VzmFormatUtils.kurzFormat;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
 @Route(value = ROUTE_ZAKR_LIST, layout = MainView.class)
@@ -72,6 +70,8 @@ public class ZakrListView extends VerticalLayout {
     private Button rozpracRepButton;
     private CalcButton calcButton;
     private TextField kurzParamField;
+    private TextField rezieParamField;
+    private TextField pojistParamField;
     private Select<String> rxParamField;
     private Select<String> ryParamField;
     private Binder<ZakrParams> paramsBinder;
@@ -116,6 +116,8 @@ public class ZakrListView extends VerticalLayout {
         zakrParams.setKurz(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
         zakrParams.setRx(null);
         zakrParams.setRy(null);
+        zakrParams.setKoefRezie(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KOEF_REZIE.getName()));
+        zakrParams.setKoefPojist(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KOEF_POJIST.getName()));
         paramsBinder = new Binder<>();
         paramsBinder.setBean(zakrParams);
         paramsBinder.addValueChangeListener(event -> calcButton.setIconDirty());
@@ -191,6 +193,10 @@ public class ZakrListView extends VerticalLayout {
                 , initCalcButton()
                 , new Ribbon("3em")
                 , initKurzField()
+                , new Ribbon("3em")
+                , initRezieField()
+                , new Ribbon("3em")
+                , initPojistField()
         );
 
         return controlsComponent;
@@ -215,17 +221,40 @@ public class ZakrListView extends VerticalLayout {
         kurzParamField.setWidth("7em");
         kurzParamField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
         kurzParamField.setValueChangeMode(ValueChangeMode.EAGER);
-
-//        VzmFormatUtils.moneyFormat.format(calcVysledekSum()))
-//        kurzFormat
-
         paramsBinder.forField(kurzParamField)
                 .asRequired("Kurz musí být zadán")
-//                .withConverter(new StringToBigDecimalConverter("Špatný formát"))
                 .withConverter(VzmFormatUtils.bigDecimalKurzConverter)
                 .bind(ZakrParams::getKurz, ZakrParams::setKurz)
         ;
         return kurzParamField;
+    }
+
+    private Component initRezieField() {
+        rezieParamField = new TextField("Koef. režie");
+        rezieParamField.setWidth("5em");
+        rezieParamField.setReadOnly(true);
+        rezieParamField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        rezieParamField.setValueChangeMode(ValueChangeMode.EAGER);
+        paramsBinder.forField(rezieParamField)
+                .asRequired("Koeficient režie musí být zadán")
+                .withConverter(VzmFormatUtils.bigDecimalPercent2Converter)
+                .bind(ZakrParams::getKoefRezie, ZakrParams::setKoefRezie)
+        ;
+        return rezieParamField;
+    }
+
+    private Component initPojistField() {
+        pojistParamField = new TextField("Koef. poj.");
+        pojistParamField.setWidth("5em");
+        pojistParamField.setReadOnly(true);
+        pojistParamField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        pojistParamField.setValueChangeMode(ValueChangeMode.EAGER);
+        paramsBinder.forField(pojistParamField)
+                .asRequired("Koeficient pojištění musí být zadán")
+                .withConverter(VzmFormatUtils.bigDecimalPercent2Converter)
+                .bind(ZakrParams::getKoefPojist, ZakrParams::setKoefPojist)
+        ;
+        return pojistParamField;
     }
 
     private Select<String> initRxParamField() {
@@ -287,7 +316,13 @@ public class ZakrListView extends VerticalLayout {
     }
 
     private void openRozpracRepDialog() {
-        ReportZakRozpracDialog repZakRozpracDlg  = new ReportZakRozpracDialog(zakrService);
+        List<Zakr> zakrRep1 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataCommunicator().getDataProvider()).getItems();
+        List<Zakr> zakrRep2 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataProvider()).getItems();
+        zakrGrid.saveFilterValues();
+        zakrParams.setArch(zakrGrid.getArchFilterValue());
+        zakrParams.setRokZak(zakrGrid.getRokFilterValue());
+        zakrParams.setSkupina(zakrGrid.getSkupinaFilterValue());
+        ReportZakRozpracDialog repZakRozpracDlg  = new ReportZakRozpracDialog(zakrService, zakrParams);
         repZakRozpracDlg.openDialog();
     }
 
@@ -399,7 +434,7 @@ public class ZakrListView extends VerticalLayout {
 //        zakrGrid.getDataCommunicator().getDataProvider().refreshAll();
 
 
-//        zakrGrid.rpVysledekGridValueProvider.apply(savedItem);
+//        zakrGrid.rpHotovoGridValueProvider.apply(savedItem);
 //        zakrGrid.getDataProvider().refreshAll();
 //        zakrList = zakrService.fetchAllDescOrder();
 //        zakrGrid.setItems(zakrList);
@@ -446,24 +481,13 @@ public class ZakrListView extends VerticalLayout {
         return zakrGrid;
     }
 
-//    private void openDir(String path) {
-//        try {
-////            Runtime.getRuntime().exec("explorer.exe /select," + path);
-//            ProcessBuilder pb = new ProcessBuilder("explorer.exe", "/select," + path);
-//            pb.redirectError();
-//            pb.start();
-////            Process proc = pb.start();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     private void reloadViewContentPreserveFilters() {
         if (zakrGrid.getEditor().isOpen()) {
             zakrGrid.getEditor().closeEditor();
         }
         zakrList = zakrService.fetchAllDescOrder();
         zakrGrid.populateGridDataAndRestoreFilters(zakrList);
+        calcButton.setIconClean();
         zakrGrid.getDataProvider().refreshAll();
     }
 
@@ -474,26 +498,65 @@ public class ZakrListView extends VerticalLayout {
         }
         zakrList = zakrService.fetchAllDescOrder();
         zakrGrid.populateGridDataAndRebuildFilterFields(zakrList);
+        calcButton.setIconClean();
         zakrGrid.getDataProvider().refreshAll();
     }
 
     public static class ZakrParams {
         BigDecimal kurz;
+        BigDecimal koefRezie;
+        BigDecimal koefPojist;
         String rx;
         String ry;
+        Boolean arch;
+        Integer rokZak;
+        String skupina;
+
+        public String getSkupina() {
+            return skupina;
+        }
+        public void setSkupina(String skupina) {
+            this.skupina = skupina;
+        }
+
+        public Boolean getArch() {
+            return arch;
+        }
+        public void setArch(Boolean arch) {
+            this.arch = arch;
+        }
+
+        public Integer getRokZak() {
+            return rokZak;
+        }
+        public void setRokZak(Integer rokZak) {
+            this.rokZak = rokZak;
+        }
 
         public BigDecimal getKurz() {
             return kurz;
         }
-
         public void setKurz(BigDecimal kurz) {
             this.kurz = kurz;
+        }
+
+        public BigDecimal getKoefRezie() {
+            return koefRezie;
+        }
+        public void setKoefRezie(BigDecimal koefRezie) {
+            this.koefRezie = koefRezie;
+        }
+
+        public BigDecimal getKoefPojist() {
+            return koefPojist;
+        }
+        public void setKoefPojist(BigDecimal koefPojist) {
+            this.koefPojist = koefPojist;
         }
 
         public String getRx() {
             return rx;
         }
-
         public void setRx(String rx) {
             this.rx = rx;
         }
@@ -501,7 +564,6 @@ public class ZakrListView extends VerticalLayout {
         public String getRy() {
             return ry;
         }
-
         public void setRy(String ry) {
             this.ry = ry;
         }

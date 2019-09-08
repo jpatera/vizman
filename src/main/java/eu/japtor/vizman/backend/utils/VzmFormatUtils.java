@@ -161,6 +161,27 @@ public class VzmFormatUtils {
             }
         };
 
+    public static final StringToBigDecimalConverter bigDecimalPercent2Converter =
+        new StringToBigDecimalConverter("Špatný formát čísla") {
+            @Override
+            protected java.text.NumberFormat getFormat(Locale locale) {
+                NumberFormat numberFormat = super.getFormat(locale);
+                numberFormat.setGroupingUsed(false);
+                numberFormat.setMinimumFractionDigits(2);
+                numberFormat.setMaximumFractionDigits(2);
+                return numberFormat;
+            }
+            @Override
+            public Result<BigDecimal> convertToModel(String value, ValueContext context) {
+                if (null == value) {
+                    return Result.ok(null);
+                }
+                value = value.replaceAll("\\s+","");
+                return super.convertToNumber(value, context)
+                        .map(number -> (BigDecimal) number);
+            }
+        };
+
     public static final StringToBigDecimalConverter bigDecimalKurzConverter =
         new StringToBigDecimalConverter("Špatný formát čísla") {
             @Override

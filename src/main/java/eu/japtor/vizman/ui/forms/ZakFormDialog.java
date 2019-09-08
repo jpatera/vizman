@@ -1280,6 +1280,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         skupinaField.getStyle()
                 .set("padding-top", "0em");
         getBinder().forField(skupinaField)
+                .asRequired("Skupina nesmí být prázdná")
                 .bind(Zak::getSkupina, Zak::setSkupina);
         skupinaField.setValueChangeMode(ValueChangeMode.EAGER);
         return skupinaField;

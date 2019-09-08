@@ -17,14 +17,16 @@ public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializ
     Integer czak;
     ItemType itemType;
     String text;
+    String fullText;
     String tmp;
 
-    public PruhZak(Long zakId, ItemType itemType, String ckont, Integer czak, String text) {
+    public PruhZak(Long zakId, ItemType itemType, String ckont, Integer czak, String text, String fullText) {
         this.zakId = zakId;
         this.itemType = itemType;
         this.ckont = ckont;
         this.czak = czak;
         this.text = text;
+        this.fullText = fullText;
         hods = new HashMap<>();
         for (int i = 1; i <= 31; i++) {
             hods.put(i, null);
@@ -36,8 +38,10 @@ public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializ
         this.itemType = zak.getTyp();
         this.ckont = zak.getCkont();
         this.czak = zak.getCzak();
-        this.text = StringUtils.substring(zak.getKont().getText(), 0, 15) + " / "
-                +  StringUtils.substring(zak.getText(), 0, 15);
+        this.text = StringUtils.substring(zak.getKont().getText(), 0, 25) + " / "
+                +  StringUtils.substring(zak.getText(), 0, 25);
+        this.fullText = zak.getKont().getText() + " / "
+                +  zak.getText();
         hods = new HashMap<>();
         for (int i = 1; i <= 31; i++) {
             hods.put(i, null);
@@ -74,6 +78,13 @@ public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializ
     }
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String getFullText() {
+        return fullText;
+    }
+    public void setFullText(String fullText) {
+        this.fullText = fullText;
     }
 
     public String getTmp() {

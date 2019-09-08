@@ -118,11 +118,11 @@ VALUES(5, 1, 'app.project.root.server', '\\pc-server7\PROJEKT', 120, 'Koøenový a
 ;
 
 INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
-VALUES(6, 1, 'app.koef.pojist', '0.35', 140, 'Koeficient pojištìní', 'Používá se pøi výpoètech vyhodnocovacích tabulek', false)
+VALUES(6, 1, 'app.koef.koefPojist', '0.35', 140, 'Koeficient pojištìní', 'Používá se pøi výpoètech vyhodnocovacích tabulek', false)
 ;
 
 INSERT INTO VIZMAN.CFGPROP (ID, VERSION, NAME, VALUE, ORD, LABEL, DESCRIPTION, RO)
-VALUES(7, 1, 'app.koef.rezie', '0.8', 150, 'Koeficient režie', 'Používá se pøi výpoètech vyhodnocovacích tabulek', false)
+VALUES(7, 1, 'app.koef.koefRezie', '0.8', 150, 'Koeficient režie', 'Používá se pøi výpoètech vyhodnocovacích tabulek', false)
 ;
 
 COMMIT;

@@ -7,6 +7,7 @@ import com.vaadin.flow.component.grid.FooterRow;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.editor.Editor;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -65,8 +66,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     public static final String R4_COL_KEY = "zakr-bg-r4";
     public static final String PERFORMANCE_COL_KEY = "zakr-bg-performance";
     public static final String REMAINS_COL_KEY = "zakr-bg-remains";
+    public static final String FINISHED_COL_KEY = "zakr-bg-finished";
     public static final String RESULT_COL_KEY = "zakr-bg-result";
     public static final String RESULTP8_COL_KEY = "zakr-bg-result-p8";
+    public static final String NAKL_MZDY_POJ_COL_KEY = "nakl-mzdy-poj-bg-result-p8";
 
 //    Grid<Zak> zakGrid;
     private ZakFormDialog zakFormDialog;
@@ -92,6 +95,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
 //    private BigDecimal kurzEur;
 
+    private HeaderRow descHeaderRow;
     private HeaderRow filterHeaderRow;
     private FooterRow sumFooterRow;
     private Registration zakrGridEditRegistration = null;
@@ -278,9 +282,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //                        VzmFormatUtils.getDecHodComponent(pzHodValProv.apply(pruhZak)))
                 .setHeader("R0")
                 .setFlexGrow(0)
-                .setWidth("4em")
+                .setWidth("3em")
                 .setTextAlign(ColumnTextAlign.END)
-                .setSortable(true)
+                .setSortable(false)
                 .setKey(R0_COL_KEY)
                 .setResizable(false)
                 ;
@@ -289,9 +293,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         Grid.Column<Zakr> colR1 = this.addColumn(r1GridValueProvider)
                 .setHeader("R1")
                 .setFlexGrow(0)
-                .setWidth("4em")
+                .setWidth("3em")
                 .setTextAlign(ColumnTextAlign.END)
-                .setSortable(true)
+                .setSortable(false)
                 .setKey(R1_COL_KEY)
                 .setResizable(false)
                 ;
@@ -300,9 +304,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         Grid.Column<Zakr> colR2 = this.addColumn(r2GridValueProvider)
                 .setHeader("R2")
                 .setFlexGrow(0)
-                .setWidth("4em")
+                .setWidth("3em")
                 .setTextAlign(ColumnTextAlign.END)
-                .setSortable(true)
+                .setSortable(false)
                 .setKey(R2_COL_KEY)
                 .setResizable(false)
                 ;
@@ -311,9 +315,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         Grid.Column<Zakr> colR3 = this.addColumn(r3GridValueProvider)
                 .setHeader("R3")
                 .setFlexGrow(0)
-                .setWidth("4em")
+                .setWidth("3em")
                 .setTextAlign(ColumnTextAlign.END)
-                .setSortable(true)
+                .setSortable(false)
                 .setKey(R3_COL_KEY)
                 .setResizable(false)
                 ;
@@ -322,9 +326,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         Grid.Column<Zakr> colR4 = this.addColumn(r4GridValueProvider)
                 .setHeader("R4")
                 .setFlexGrow(0)
-                .setWidth("4em")
+                .setWidth("3em")
                 .setTextAlign(ColumnTextAlign.END)
-                .setSortable(true)
+                .setSortable(false)
                 .setKey(R4_COL_KEY)
                 .setResizable(false)
                 ;
@@ -344,29 +348,52 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         Grid.Column<Zakr> colRp = this.addColumn(rpGridValueProvider)
                 .setHeader("RP")
                 .setFlexGrow(0)
-                .setWidth("4em")
+                .setWidth("3em")
                 .setTextAlign(ColumnTextAlign.END)
-                .setSortable(true)
+                .setSortable(false)
                 .setKey(RP_COL_KEY)
                 .setResizable(false)
                 ;
+
 //        colRP.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR0, Zakr::setR0));
+
+        // TODO: Asi by se melo brat z hrub0ho  honoráře...?
+        Label headerLabel = new Label("Zbývá RP");
+        headerLabel.getElement().setProperty("title", "Zbývá z čistého honoráře -> podle posledního plnění RP");
         Grid.Column<Zakr> colRpZbyva = this.addColumn(rpZbyvaByKurzGridValueProvider)
-                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getRpZbyvaByKurz(zakr1), getRpZbyvaByKurz(zakr2)))
 //                .setComparator((zakr1, zakr2) -> zakr1.getRpZbyva()
 //                        .compareTo(zakr2.getRpZbyva()))
 //                .setComparator(ObjectUtils.compare(zakr.1firstComparable, secondComparable))
-                .setHeader("Zbývá celk.")
+                .setHeader("Zbývá RP")
+//                .setHeader(headerLabel)
+//                .setComparator((p1, p2) -> getRpZbyvaByKurz(p1).compareTo(getRpZbyvaByKurz(p2)))
+                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getRpZbyvaByKurz(zakr1), getRpZbyvaByKurz(zakr2)))
+                .setSortable(true)
+                .setFlexGrow(0)
+                .setWidth("7em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setKey(REMAINS_COL_KEY)
+                .setResizable(true)
+        ;
+        HeaderRow.HeaderCell cell = this.getDefaultHeaderRow().getCell(colRpZbyva);
+        cell.setComponent(headerLabel);
+//        String htmlWithTooltip = String.format(
+//                "<span title=\"%s\">%s</span>", cell.getText(),
+//                cell.getText());
+//                column.getPropertyId());
+
+        Grid.Column<Zakr> colRpVysledek = this.addColumn(rpHotovoGridValueProvider)
+                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getRpHotovokByKurz(zakr1), getRpHotovokByKurz(zakr2)))
+                .setHeader("Hotovo RP")
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
-                .setKey(REMAINS_COL_KEY)
+                .setKey(FINISHED_COL_KEY)
                 .setResizable(true)
-        ;
+                ;
 
-        Grid.Column<Zakr> colRpVysledek = this.addColumn(rpVysledekGridValueProvider)
-                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getRpVysledekByKurz(zakr1), getRpVysledekByKurz(zakr2)))
+        Grid.Column<Zakr> colVysledek = this.addColumn(rpVysledekGridValueProvider)
                 .setHeader("Výsledek")
                 .setFlexGrow(0)
                 .setWidth("7em")
@@ -383,6 +410,16 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
                 .setKey(RESULTP8_COL_KEY)
+                .setResizable(true)
+                ;
+
+        Grid.Column<Zakr> colNaklMzdyPoj = this.addColumn(naklMzdyPojistValueProvider)
+                .setHeader("Mzdy+poj")
+                .setFlexGrow(0)
+                .setWidth("7em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(true)
+                .setKey(NAKL_MZDY_POJ_COL_KEY)
                 .setResizable(true)
                 ;
 
@@ -405,12 +442,44 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
 
         // =============
+        // Headers
+        // =============
+
+        descHeaderRow = this.appendHeaderRow();
+        filterHeaderRow = this.appendHeaderRow();
+
+        // =============
+        // Description
+        // =============
+
+//        String htmlWithTooltip = String.format(
+//                "<span title=\"%s\">%s</span>", cell.getText(),
+//                cell.getText());
+//                column.getPropertyId());
+
+        Label rxRyVykonyDescLabel = new Label("Def.");
+        rxRyVykonyDescLabel.getElement()
+                .setProperty("title", "[Výkon rx-ry] = [Honorář čistý] x ([RY] - [RX])")
+//                .setProperty("text-align", "center")
+        ;
+        descHeaderRow.getCell(colRxRyVykon).setComponent(rxRyVykonyDescLabel);
+
+        Label rpZbyvaDescLabel = new Label("Def.");
+        rpZbyvaDescLabel.getElement()
+                .setProperty("title", "[Zbýva RP] = [Honorář čistý] x (100% - [RP])")
+//                .setProperty("text-align", "center")
+        ;
+//        rpZbyvaDescLabel.getStyle()
+//                .set("text-align", "center");
+        descHeaderRow.getCell(colRpZbyva).setComponent(rpZbyvaDescLabel);
+
+        // =============
         // Filters
         // =============
 
-        filterHeaderRow = this.appendHeaderRow();
 
-        archFilterField = buildSelectionFilterField();
+
+        archFilterField = buildSelectorFilterField();
 //        archFilterField.setItemLabelGenerator(this::archFilterLabelGenerator);
         archFilterField.setTextRenderer(this::archFilterLabelGenerator);
         filterHeaderRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
@@ -420,11 +489,11 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         filterHeaderRow.getCell(this.getColumnByKey(KZCISLO_COL_KEY))
                 .setComponent(kzCisloFilterField);
 
-        rokFilterField = buildSelectionFilterField();
+        rokFilterField = buildSelectorFilterField();
         filterHeaderRow.getCell(this.getColumnByKey(ROK_COL_KEY))
                 .setComponent(rokFilterField);
 
-        skupinaFilterField = buildSelectionFilterField();
+        skupinaFilterField = buildSelectorFilterField();
         filterHeaderRow.getCell(this.getColumnByKey(SKUPINA_COL_KEY))
                 .setComponent(skupinaFilterField)
         ;
@@ -446,7 +515,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
     private void updateVysledekSumField() {
         sumFooterRow
-                .getCell(this.getColumnByKey(RESULT_COL_KEY))
+                .getCell(this.getColumnByKey(FINISHED_COL_KEY))
                 .setText("" + (VzmFormatUtils.moneyFormat.format(calcVysledekSum())));
     }
 
@@ -466,8 +535,8 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         return this.getDataProvider()
                 .withConfigurableFilter()
                 .fetch(new Query<>())
-                .filter(zakr -> zakr.getRpVysledek() != null)
-                .map(zakr -> EUR == zakr.getMena() ? zakr.getRpVysledek().multiply(zakrParams.getKurz()) : zakr.getRpVysledek())
+                .filter(zakr -> zakr.getRpHotovo() != null)
+                .map(zakr -> EUR == zakr.getMena() ? zakr.getRpHotovo().multiply(zakrParams.getKurz()) : zakr.getRpHotovo())
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
         ;
     }
@@ -520,7 +589,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
 
 
-//        sumFooterRow.getCell(this.getColumnByKey(RESULT_COL_KEY))
+//        sumFooterRow.getCell(this.getColumnByKey(FINISHED_COL_KEY))
 //                .setText(getVysledekSumString());
 
 
@@ -594,7 +663,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                     this.itemSaver.accept(editedItem, Operation.EDIT);
                     updateFooterFields();
 
-//                    rpVysledekGridValueProvider.apply(editedItem);
+//                    rpHotovoGridValueProvider.apply(editedItem);
                 }
             }
 //            editedItem = event.getFirstSelectedItem().orElse(null);   // Note: grid selection mode is supposed to be SINGLE
@@ -707,29 +776,44 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         }
     }
 
-    public ValueProvider<Zakr, String> rpVysledekGridValueProvider = zakr -> {
-        if (null == zakr.getRpVysledek()) {
+    public ValueProvider<Zakr, String> rpHotovoGridValueProvider = zakr -> {
+        if (null == zakr.getRpHotovo()) {
             return "";
         } else {
-            BigDecimal rpVysledek = getRpVysledekByKurz(zakr);
+            BigDecimal rpVysledek = getRpHotovokByKurz(zakr);
             return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
         }
     };
-    private  BigDecimal getRpVysledekByKurz(Zakr zakr) {
-        BigDecimal rpVysledek = zakr.getRpVysledek();
-        if (null == rpVysledek) {
+    private  BigDecimal getRpHotovokByKurz(Zakr zakr) {
+        BigDecimal rpHotovo = zakr.getRpHotovo();
+        if (null == rpHotovo) {
             return null;
         } else {
             return zakr.getMena() == EUR ?
-                    rpVysledek.multiply(zakrParams.getKurz()) :
-                    rpVysledek;
+                    rpHotovo.multiply(zakrParams.getKurz()) :
+                    rpHotovo;
         }
     }
+
+    private ValueProvider<Zakr, String> rpVysledekGridValueProvider = zakr -> {
+//            BigDecimal rpVysledek = getRpVysledekP8(zakr);
+//            return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
+            return "";
+    };
 
     private ValueProvider<Zakr, String> rpVysledekP8GridValueProvider = zakr -> {
 //            BigDecimal rpVysledek = getRpVysledekP8(zakr);
 //            return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
             return "";
+    };
+
+    private ValueProvider<Zakr, String> naklMzdyPojistValueProvider = zakr -> {
+            BigDecimal naklMzdyPojìst = zakr.getNaklMzdyPojist();
+            if (null == naklMzdyPojìst) {
+                return "";
+            } else {
+                return VzmFormatUtils.moneyFormat.format(naklMzdyPojìst);
+            }
     };
 
     private ValueProvider<Zakr, String> menaValueProvider = zakr -> {
@@ -788,7 +872,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //        );
 //    }
 //
-//    private BigDecimal getRpVysledek(final Zakr zakr) {
+//    private BigDecimal getRpHotovo(final Zakr zakr) {
 //        BigDecimal lastRxValue = zakr.getRP();
 //        return null == lastRxValue || null == zakr.getHonorCisty() ? null :
 //                lastRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L)
@@ -836,13 +920,13 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         return textFilterField;
     }
 
-    private <T> Select buildSelectionFilterField() {
-        Select <T> selectFilterField = new Select<>();
-        selectFilterField.setSizeFull();
-        selectFilterField.setEmptySelectionCaption("Vše");
-        selectFilterField.setEmptySelectionAllowed(true);
-        selectFilterField.addValueChangeListener(event -> doFilter());
-        return selectFilterField;
+    private <T> Select buildSelectorFilterField() {
+        Select <T> selector = new Select<>();
+        selector.setSizeFull();
+        selector.setEmptySelectionCaption("Vše");
+        selector.setEmptySelectionAllowed(true);
+        selector.addValueChangeListener(event -> doFilter());
+        return selector;
     }
 
     private String archFilterLabelGenerator(Boolean arch) {
@@ -896,7 +980,6 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
     public void populateGridDataAndRestoreFilters(List<Zakr> zakrList) {
         saveFilterValues();
-        saveFilterValues();
         setItems(zakrList);
         restoreFilterValues();
         doFilter();
@@ -918,6 +1001,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     }
 
     public void saveFilterValues() {
+        archFilterValue = archFilterField.getValue();
         rokFilterValue = rokFilterField.getValue();
         skupinaFilterValue = skupinaFilterField.getValue();
         kzCisloFilterValue = kzCisloFilterField.getValue();
@@ -926,17 +1010,16 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     }
 
     public void restoreFilterValues() {
-//        rokFilterField.clear();
-//        skupinaFilterField.clear();
-//        kzCisloFilterField.clear();
-//        kzTextFilterField.clear();
-//        objednatelFilterField.clear();
-
         ((ListDataProvider<Zakr>) this.getDataProvider()).clearFilters();
-        if (null == this.initFilterArchValue) {
+//        if (null == this.initFilterArchValue) {
+//            archFilterField.clear();
+//        } else {
+//            archFilterField.setValue(this.initFilterArchValue);
+//        }
+        if (null == archFilterValue) {
             archFilterField.clear();
         } else {
-            archFilterField.setValue(this.initFilterArchValue);
+            archFilterField.setValue(archFilterValue);
         }
         rokFilterField.setValue(rokFilterValue);
         skupinaFilterField.setValue(skupinaFilterValue);
@@ -1014,21 +1097,21 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     });
 
     public void setArchFilterItems(final List<Boolean> archItems) {
-        archFilterField = buildSelectionFilterField();
+        archFilterField = buildSelectorFilterField();
         filterHeaderRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
                 .setComponent(archFilterField);
         archFilterField.setItems(archItems);
     }
 
     public void setRokFilterItems(final List<Integer> rokItems) {
-        rokFilterField = buildSelectionFilterField();
+        rokFilterField = buildSelectorFilterField();
         filterHeaderRow.getCell(this.getColumnByKey(ROK_COL_KEY))
                 .setComponent(rokFilterField);
         rokFilterField.setItems(rokItems);
     }
 
     public void setSkupinaFilterItems(final List<String> skupinaItems) {
-        skupinaFilterField = buildSelectionFilterField();
+        skupinaFilterField = buildSelectorFilterField();
         filterHeaderRow.getCell(this.getColumnByKey(SKUPINA_COL_KEY))
                 .setComponent(skupinaFilterField);
         skupinaFilterField.setItems(skupinaItems);
@@ -1040,5 +1123,16 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //        return bigDecimalSafeComparator.compare(this, that);
 //    }
 
+    public Boolean getArchFilterValue() {
+        return archFilterValue;
+    }
+
+    public Integer getRokFilterValue() {
+        return rokFilterValue;
+    }
+
+    public String getSkupinaFilterValue() {
+        return skupinaFilterValue;
+    }
 }
 

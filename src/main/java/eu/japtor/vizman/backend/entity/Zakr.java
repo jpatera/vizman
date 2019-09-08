@@ -66,6 +66,14 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     private BigDecimal honorSub;
 
     @Basic
+    @Column(name = "NAKL_MZDA")
+    private BigDecimal naklMzdy;
+
+    @Basic
+    @Column(name = "NAKL_POJIST")
+    private BigDecimal naklPojist;
+
+    @Basic
     @Column(name = "RP")
     private BigDecimal rp;  // Rozpracovanost posledni platna
 
@@ -113,7 +121,7 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 //    private BigDecimal rpVysledek;
 
     @Transient
-    public BigDecimal getRpVysledek() {
+    public BigDecimal getRpHotovo() {
         if (null == rp || null == honorCisty) {
             return null;
         } else {
@@ -135,6 +143,16 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 
 //    @Transient
 //    private BigDecimal ryRxVykon;
+
+
+    @Transient
+    public BigDecimal getNaklMzdyPojist() {
+        if (null == naklMzdy && null == naklPojist) {
+            return null;
+        } else {
+            return (null == naklMzdy ? BigDecimal.ZERO : naklMzdy).add(null == naklPojist ? BigDecimal.ZERO : naklPojist);
+        }
+    }
 
     @Transient
     public BigDecimal getRxRyVykon(String rxParam, String ryParam) {
@@ -277,6 +295,20 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 //    public void setHonorSub(BigDecimal honorSub) {
 //        this.honorSub = honorSub;
 //    }
+
+    public BigDecimal getNaklMzdy() {
+        return naklMzdy;
+    }
+    public void setNaklMzdy(BigDecimal naklMzda) {
+        this.naklMzdy = naklMzda;
+    }
+
+    public BigDecimal getNaklPojist() {
+        return naklPojist;
+    }
+    public void setNaklPojist(BigDecimal naklPojist) {
+        this.naklPojist = naklPojist;
+    }
 
     public BigDecimal getRP() {
         return rp;

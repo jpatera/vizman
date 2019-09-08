@@ -174,6 +174,24 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setPattern("##0;-##0")
                 .build();
 
+        AbstractColumn naklMzdy = ColumnBuilder.getNew()
+                .setColumnProperty("naklMzdy", BigDecimal.class)
+                .setTitle("Mzdy")
+//                .setHeaderStyle(HEADER_STYLE)
+                .setStyle(AMOUNT_STYLE)
+                .setWidth(9)
+                .setPattern("#,##0.00;-#,##0.00")
+                .build();
+
+        AbstractColumn naklPojist = ColumnBuilder.getNew()
+                .setColumnProperty("naklPojist", BigDecimal.class)
+                .setTitle("Pojištění")
+//                .setHeaderStyle(HEADER_STYLE)
+                .setStyle(AMOUNT_STYLE)
+                .setWidth(9)
+                .setPattern("#,##0.00;-#,##0.00")
+                .build();
+
 //        AbstractColumn vykonRxCol = ColumnBuilder.getNew()
 //                .setCustomExpression(getCustomExpression())
 //                .setCustomExpressionForCalculation(getCustomExpression2()
@@ -288,6 +306,8 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .addColumn(r2Col)
                 .addColumn(r3Col)
                 .addColumn(r4Col)
+                .addColumn(naklMzdy)
+                .addColumn(naklPojist)
 //                .addColumn(vykonRxCol)
 
                 .addGlobalFooterVariable(honorCistyCol, DJCalculation.SUM, AMOUNT_STYLE)

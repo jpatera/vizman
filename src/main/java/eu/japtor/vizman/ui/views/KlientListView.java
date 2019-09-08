@@ -150,7 +150,7 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         // Navigation first gos here, then to the beforeEnter of MainView
-        System.out.println("###  KlientListView.beforeEnter");
+//        System.out.println("###  KlientListView.beforeEnter");
     }
 
     private VerticalLayout buildGridContainer(Grid<Klient> grid) {

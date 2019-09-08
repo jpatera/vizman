@@ -21,6 +21,7 @@ import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -272,7 +273,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     .anyMatch(zakId -> zakId.equals(zakBasic.getId()))
             ;
             if (!isZakInPruh) {
-                pruhZakList.add(new PruhZak(zakBasic.getId(), zakBasic.getTyp(), zakBasic.getCkont(), zakBasic.getCzak(), zakBasic.getKzText()));
+                pruhZakList.add(new PruhZak(zakBasic.getId(), zakBasic.getTyp(), zakBasic.getCkont(), zakBasic.getCzak()
+                        , zakBasic.getKzText(), zakBasic.getKzText()));
                 i++;
             }
         }
@@ -304,7 +306,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                     .anyMatch(zakId -> zakId.equals(pzToAdd.getZakId()))
             ;
             if (!isZakInPruh) {
-                pruhZakList.add(0, new PruhZak(pzToAdd.getZakId(), pzToAdd.getItemType(), pzToAdd.getCkont(), pzToAdd.getCzak(), pzToAdd.getText()));
+                pruhZakList.add(0, new PruhZak(pzToAdd.getZakId(), pzToAdd.getItemType(), pzToAdd.getCkont(), pzToAdd.getCzak()
+                        , pzToAdd.getText(), pzToAdd.getFullText()));
                 i++;
             }
         }
@@ -1007,7 +1010,13 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        pruhZakGrid.addThemeNames("no-border", "no-row-borders", "row-stripes");
 //        pruhZakGrid.addThemeNames("border", "row-borders", "row-stripes");
 
-        pruhZakGrid.addColumn(PruhZak::getPruhCellText)
+        ComponentRenderer<Label, PruhZak> textRenderer = new ComponentRenderer<>(item ->{
+            Label textLabel = new Label(item.getPruhCellText());
+            textLabel.getElement().setProperty("title", item.getFullText());
+            return textLabel;
+        });
+//        Grid.Column zakTextCol = pruhZakGrid.addColumn() (PruhZak::getPruhCellText)
+        Grid.Column zakTextCol = pruhZakGrid.addColumn(textRenderer)
                 .setHeader("ČK / ČZ, zakázka")
 //                .setFooter("Zbývá vyplnit")
                 .setWidth("10em")
