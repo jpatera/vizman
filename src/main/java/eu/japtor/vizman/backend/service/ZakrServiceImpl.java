@@ -1,11 +1,13 @@
 package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.app.HasLogger;
+import eu.japtor.vizman.backend.entity.Mena;
 import eu.japtor.vizman.backend.entity.Zakr;
 import eu.japtor.vizman.backend.entity.Zaqa;
 import eu.japtor.vizman.backend.repository.ZakrRepo;
 import eu.japtor.vizman.backend.repository.ZaqaRepo;
 import eu.japtor.vizman.ui.components.Operation;
+import eu.japtor.vizman.ui.views.ZakrListView;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,9 +60,23 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
     }
 
     @Override
-    public List<Zakr> fetchAllDescOrder() {
-        return zakrRepo.findAllByOrderByRokDescCkontDescCzakDesc();
+    public List<Zakr> fetchAllDescOrder(ZakrListView.ZakrParams zakrParams) {
+        List<Zakr> zakrs =  zakrRepo.findAllByOrderByRokDescCkontDescCzakDesc();
+        zakrs.stream()
+                .filter(zr -> zr.getMena() == Mena.EUR)
+                .forEach(zr -> zr.setKurzEur(zakrParams.getKurzEur()));
+        return zakrs;
     }
+
+    @Override
+    public List<Zakr> fetchByFiltersDescOrder(ZakrListView.ZakrParams zakrParams) {
+        List<Zakr> zakrs = zakrRepo.findZakrByArchAndRokAndSkupina(zakrParams.getArch(), zakrParams.getRokZak(), zakrParams.getSkupina());
+        zakrs.stream()
+                .filter(zr -> zr.getMena() == Mena.EUR)
+                .forEach(zr -> zr.setKurzEur(zakrParams.getKurzEur()));
+        return zakrs;
+    }
+
 
     @Override
     public List<Zakr> fetchByRokDescOrder(final Integer rok) {

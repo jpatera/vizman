@@ -113,7 +113,7 @@ public class ZakrListView extends VerticalLayout {
     public void postInit() {
 
         zakrParams = new ZakrParams();
-        zakrParams.setKurz(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
+        zakrParams.setKurzEur(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
         zakrParams.setRx(null);
         zakrParams.setRy(null);
         zakrParams.setKoefRezie(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KOEF_REZIE.getName()));
@@ -224,7 +224,7 @@ public class ZakrListView extends VerticalLayout {
         paramsBinder.forField(kurzParamField)
                 .asRequired("Kurz musí být zadán")
                 .withConverter(VzmFormatUtils.bigDecimalKurzConverter)
-                .bind(ZakrParams::getKurz, ZakrParams::setKurz)
+                .bind(ZakrParams::getKurzEur, ZakrParams::setKurzEur)
         ;
         return kurzParamField;
     }
@@ -293,7 +293,7 @@ public class ZakrListView extends VerticalLayout {
             } else {
                 paramsBinder.writeBeanIfValid(zakrParams);
 //                zakrGrid.setZakrParams(zakrParams);
-                zakrList = zakrService.fetchAllDescOrder();
+                zakrList = zakrService.fetchAllDescOrder(zakrParams);
                 zakrGrid.populateGridDataAndRestoreFilters(zakrList);
                 zakrGrid.recalcGrid();
                 zakrGrid.getDataProvider().refreshAll();
@@ -324,6 +324,7 @@ public class ZakrListView extends VerticalLayout {
         zakrParams.setSkupina(zakrGrid.getSkupinaFilterValue());
         ReportZakRozpracDialog repZakRozpracDlg  = new ReportZakRozpracDialog(zakrService, zakrParams);
         repZakRozpracDlg.openDialog();
+        repZakRozpracDlg.generateAndShowReport();
     }
 
     private Component initArchFilterRadio() {
@@ -445,7 +446,7 @@ public class ZakrListView extends VerticalLayout {
 
     private Component initZakrGrid(ZakrParams zakrParams) {
         zakrGrid = new ZakRozpracGrid(
-                false,true, null
+                false,true, false
                 , this::saveGridItem
                 , zakrParams
                 , zakrService
@@ -485,7 +486,7 @@ public class ZakrListView extends VerticalLayout {
         if (zakrGrid.getEditor().isOpen()) {
             zakrGrid.getEditor().closeEditor();
         }
-        zakrList = zakrService.fetchAllDescOrder();
+        zakrList = zakrService.fetchAllDescOrder(zakrParams);
         zakrGrid.populateGridDataAndRestoreFilters(zakrList);
         calcButton.setIconClean();
         zakrGrid.getDataProvider().refreshAll();
@@ -496,14 +497,14 @@ public class ZakrListView extends VerticalLayout {
         if (zakrGrid.getEditor().isOpen()) {
             zakrGrid.getEditor().closeEditor();
         }
-        zakrList = zakrService.fetchAllDescOrder();
+        zakrList = zakrService.fetchAllDescOrder(zakrParams);
         zakrGrid.populateGridDataAndRebuildFilterFields(zakrList);
         calcButton.setIconClean();
         zakrGrid.getDataProvider().refreshAll();
     }
 
     public static class ZakrParams {
-        BigDecimal kurz;
+        BigDecimal kurzEur;
         BigDecimal koefRezie;
         BigDecimal koefPojist;
         String rx;
@@ -533,11 +534,11 @@ public class ZakrListView extends VerticalLayout {
             this.rokZak = rokZak;
         }
 
-        public BigDecimal getKurz() {
-            return kurz;
+        public BigDecimal getKurzEur() {
+            return kurzEur;
         }
-        public void setKurz(BigDecimal kurz) {
-            this.kurz = kurz;
+        public void setKurzEur(BigDecimal kurzEur) {
+            this.kurzEur = kurzEur;
         }
 
         public BigDecimal getKoefRezie() {

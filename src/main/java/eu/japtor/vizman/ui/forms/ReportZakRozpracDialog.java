@@ -1,5 +1,6 @@
 package eu.japtor.vizman.ui.forms;
 
+import ar.com.fdvs.dj.domain.constants.Page;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -18,9 +19,7 @@ import org.vaadin.reports.PrintPreviewReport;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 //@SpringComponent
@@ -46,11 +45,12 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
     private TextField kurzParamField;
 
     private SerializableSupplier<List<? extends Zakr>> itemsSupplier = () -> {
-        if (null == rokZakParamField.getValue()) {
-            return zakrService.fetchAllDescOrder();
-        } else {
-            return zakrService.fetchByRokDescOrder(rokZakParamField.getValue());
-        }
+//        if (null == rokZakParamField.getValue()) {
+            return zakrService.fetchByFiltersDescOrder(zakrParams);
+//            return zakrService.fetchAllDescOrder();
+//        } else {
+//            return zakrService.fetchByRokDescOrder(rokZakParamField.getValue());
+//        }
     };
 
 
@@ -61,11 +61,15 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
         this.zakrService = zakrService;
         this.zakrParams = zakrParams;
         initReportControls();
+//        this.addOpenedChangeListener(e -> generateAndShowReport());
+//        this.addAttachListener(e -> generateAndShowReport());
     }
 
     public void openDialog() {
 //        showReport();
         this.open();
+//        this.addOpenedChangeListener(e -> generateAndShowReport());
+//        generateAndShowReport();
     }
 
     private void initReportControls() {
@@ -88,8 +92,8 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
                 .set("margin-top", "0.2em")
                 .set("margin-bottom", "0.2em");
         reportParamBox.add(
-                genButton
-                , buildArchiveParamComponent()
+//                genButton
+                buildArchiveParamComponent()
                 , buildZakRokFilterComponent()
                 , buildSkupinaFilterComponent()
                 , buildKurzParamComponent()
@@ -119,6 +123,7 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
         archParamField = buildSelectorParamField();
         archParamField.setLabel("Arch.");
         archParamField.setWidth("5em");
+        archParamField.setReadOnly(true);
         archParamField.setItems(Boolean.valueOf(false), Boolean.valueOf(true));
         archParamField.setValue(zakrParams.getArch());
         return archParamField;
@@ -128,6 +133,7 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
         rokZakParamField = buildSelectorParamField();
         rokZakParamField.setLabel("Rok zak.");
         rokZakParamField.setWidth("5em");
+        rokZakParamField.setReadOnly(true);
         List<Integer> zakRoks = zakrService.fetchZakrRoks();
 //        Integer rokMax = roks.stream().reduce(Integer::max).orElse(null);
 //        Integer rokMax = zakRoks.stream().max(Comparator.naturalOrder()).orElse(null);
@@ -160,10 +166,19 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
         skupinaParamField = buildSelectorParamField();
         skupinaParamField.setLabel("Skupina");
         skupinaParamField.setWidth("5em");
+        skupinaParamField.setReadOnly(true);
         List<String> skups = new ArrayList<>(Arrays.asList("1", "2", "TBD!"));
         skupinaParamField.setItems(skups);
         skupinaParamField.setValue(zakrParams.getSkupina());
         return skupinaParamField;
+    }
+
+    private Component buildKurzParamComponent() {
+        kurzParamField = new TextField("CZK/EUR");
+        kurzParamField.setWidth("5em");
+        kurzParamField.setReadOnly(true);
+        kurzParamField.setValue(zakrParams.getKurzEur().toString());
+        return kurzParamField;
     }
 
     private Component buildRezieParamComponent() {
@@ -185,6 +200,7 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
 //        return rezieParamComponent;
         return rezieParamField;
     }
+
     private Component buildPojistParamComponent() {
         pojistParamField = new TextField("Pojištění");
         pojistParamField.setWidth("5em");
@@ -193,38 +209,34 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
         return pojistParamField;
     }
 
-    private Component buildKurzParamComponent() {
-        kurzParamField = new TextField();
-        kurzParamField.setValue(zakrParams.getKurz().toString());
-        kurzParamField.setLabel("CZK/EUR");
-        kurzParamField.setWidth("5em");
-        return kurzParamField;
-    }
-
     private String getReportFileName(PrintPreviewReport.Format format) {
         return REPORT_FILE_NAME + "." + format.name().toLowerCase();
     }
 
-    private void generateAndShowReport() {
+    public void generateAndShowReport() {
         deactivateListeners();
-        report.getReportBuilder().setSubtitle(
+        report.getReportBuilder()
+            .setSubtitle(
                 "Parametry: Arch=" + (null == archParamField.getValue() ? "Vše" : archParamField.getValue().toString()) +
                 "  Rok zak.=" + (null == rokZakParamField.getValue() ? "Vše" : rokZakParamField.getValue().toString()) +
                 "  Skupina=" + (null == skupinaParamField.getValue() ? "Vše" : skupinaParamField.getValue().toString()) +
                 "  Režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue()) +
                 "  Pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue()) +
                 "  Kurz CZK/EUR=" + (null == kurzParamField.getValue() ? "" : kurzParamField.getValue())
-        );
+            )
+//            .setPageSizeAndOrientation(Page.Page_A4_Landscape())
+//            .build()
+        ;
         report.setItems(itemsSupplier.get());
         expAnchorsBox.getChildren()
                 .forEach(anch -> {
                     if (anch.getClass() == ReportExpAnchor.class) {
                         PrintPreviewReport.Format expFormat = ((ReportExpAnchor)anch).getExpFormat();
-//                        if (expFormat == PrintPreviewReport.Format.PDF)
-                            ((ReportExpAnchor)anch).setHref(
+//                        if (expFormat == PrintPreviewReport.Format.PDF) {
+                            ((ReportExpAnchor) anch).setHref(
                                     report.getStreamResource(getReportFileName(expFormat), itemsSupplier, expFormat)
                             );
-//                        )
+//                        }
                     }
                 });
 

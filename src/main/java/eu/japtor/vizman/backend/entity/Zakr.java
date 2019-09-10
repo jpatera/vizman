@@ -109,6 +109,10 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     @Column(name = "ID_KONT")
     private Long idKont;
 
+    @Basic
+    @Column(name = "KURZ_EUR")
+    private BigDecimal kurzEur;
+
 //    @OneToMany(mappedBy = "zakr", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH, orphanRemoval = false)
     @OneToMany(mappedBy = "zakr", cascade = CascadeType.REFRESH, orphanRemoval = false)
     @OrderBy("rok DESC, qa DESC")
@@ -119,6 +123,9 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 
 //    @Transient
 //    private BigDecimal rpVysledek;
+
+    @Transient
+    private BigDecimal rpHotovo;
 
     @Transient
     public BigDecimal getRpHotovo() {
@@ -142,8 +149,54 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     }
 
 //    @Transient
-//    private BigDecimal ryRxVykon;
+//    private BigDecimal rpHotovoByKurz;
 
+//    @Transient
+//    public static BigDecimal calcRpHotovoByKurz(BigDecimal rpHotovo, BigDecimal kurzEur) {
+//        if (null == rpHotovo) {
+//            return null;
+//        } else {
+//            return getMena() == Mena.EUR ?
+//                    rpHotovo.multiply(kurzEur) :
+//                    rpHotovo;
+//        }
+//    }
+
+//    @Transient
+//    BigDecimal rpHotovoByKurz;
+
+    @Transient
+    public BigDecimal getHonorCistyByKurz() {
+        BigDecimal honorCisty = getHonorCisty();
+        return (null == honorCisty) ? null : honorCisty.multiply(kurzEur);
+    }
+
+    @Transient
+    public BigDecimal getRpHotovoByKurz() {
+        BigDecimal rpHotovo = getRpHotovo();
+        return (null == rpHotovo) ? null : rpHotovo.multiply(kurzEur);
+    }
+
+    @Transient
+    public BigDecimal getRpZbyvaByKurz() {
+        BigDecimal rpZbyva = getRpZbyva();
+        return (null == rpZbyva) ? null : rpZbyva.multiply(kurzEur);
+    }
+
+//    @Transient
+//    private BigDecimal rpZbyvaByKurz;
+//
+//    @Transient
+//    public BigDecimal getRpZbyvaByKurz(BigDecimal kurzEur) {
+//        BigDecimal rpZbyva = getRpZbyva();
+//        if (null == rpZbyva) {
+//            return null;
+//        } else {
+//            return getMena() == Mena.EUR ?
+//                    rpZbyva.multiply(kurzEur) :
+//                    rpZbyva;
+//        }
+//    }
 
     @Transient
     public BigDecimal getNaklMzdyPojist() {
@@ -153,6 +206,16 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
             return (null == naklMzdy ? BigDecimal.ZERO : naklMzdy).add(null == naklPojist ? BigDecimal.ZERO : naklPojist);
         }
     }
+
+
+    @Transient
+    private BigDecimal rxRyVykonByKurz;
+
+    @Transient
+    public BigDecimal getRxRyVykonByKurz() {
+        return null;
+    }
+
 
     @Transient
     public BigDecimal getRxRyVykon(String rxParam, String ryParam) {
@@ -310,10 +373,10 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         this.naklPojist = naklPojist;
     }
 
-    public BigDecimal getRP() {
+    public BigDecimal getRp() {
         return rp;
     }
-    public void setRP(BigDecimal rp) {
+    public void setRp(BigDecimal rp) {
         this.rp = rp;
     }
 
@@ -366,6 +429,13 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 
     public Long getIdKont() {
         return idKont;
+    }
+
+    public BigDecimal getKurzEur() {
+        return kurzEur;
+    }
+    public void setKurzEur(BigDecimal kurzEur) {
+        this.kurzEur = kurzEur;
     }
 
 
@@ -476,11 +546,27 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     }
 
     @Transient
+    private String kzText;
+
+    @Transient
     public String getKzText() {
         StringBuilder builder = new StringBuilder();
         builder .append(StringUtils.substring(getTextKontNotNull(), 0, 25))
                 .append(" / ")
                 .append(getTextZakNotNull())
+        ;
+        return builder.toString();
+    }
+
+    @Transient
+    private String kzTextShort;
+
+    @Transient
+    public String getKzTextShort() {
+        StringBuilder builder = new StringBuilder();
+        builder .append(StringUtils.substring(getTextKontNotNull(), 0, 15))
+                .append(" / ")
+                .append(StringUtils.substring(getTextZakNotNull(), 0, 15))
         ;
         return builder.toString();
     }

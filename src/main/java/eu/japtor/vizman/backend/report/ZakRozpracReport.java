@@ -5,16 +5,15 @@ import ar.com.fdvs.dj.domain.builders.ColumnBuilder;
 import ar.com.fdvs.dj.domain.builders.GroupBuilder;
 import ar.com.fdvs.dj.domain.builders.StyleBuilder;
 import ar.com.fdvs.dj.domain.constants.*;
+import ar.com.fdvs.dj.domain.constants.Font;
 import ar.com.fdvs.dj.domain.entities.DJGroup;
 import ar.com.fdvs.dj.domain.entities.columns.AbstractColumn;
 import ar.com.fdvs.dj.domain.entities.columns.PropertyColumn;
-import eu.japtor.vizman.backend.entity.Zakr;
-import eu.japtor.vizman.ui.components.ZakRozpracGrid;
+import eu.japtor.vizman.backend.entity.Mena;
 import org.vaadin.reports.PrintPreviewReport;
 
+import java.awt.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Map;
 
@@ -26,6 +25,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
     static final Style DEFAULT_STYLE;
     static final Style TITLE_STYLE;
     static final Style HEADER_STYLE;
+    static final Style TEXT_STYLE;
     static final Style AMOUNT_STYLE;
     static final Style PROC_STYLE;
     static {
@@ -43,7 +43,9 @@ public class ZakRozpracReport extends PrintPreviewReport {
 
         DEFAULT_STYLE = new StyleBuilder(false)
                 .setFont(DEFAULT_FONT_PDF)
-//                .setFont(Font.VERDANA_MEDIUM)
+                .setPaddingLeft(Integer.valueOf(5))
+//                .setBorderLeft(Border.PEN_1_POINT())
+//                .setBorderRight(Border.PEN_1_POINT())
 //                .setStretchWithOverflow(false)
 //                .setStretching(Stretching.NO_STRETCH)
                 .build();
@@ -54,19 +56,76 @@ public class ZakRozpracReport extends PrintPreviewReport {
 
         HEADER_STYLE = new StyleBuilder(false)
                 .setFont(HEADER_FONT_PDF)
+                .setHorizontalAlign(HorizontalAlign.CENTER)
+                .setBorder(Border.THIN())
+//        sb.setBorderBottom(Border.PEN_2_POINT());
+                .setBorderColor(Color.BLACK)
                 .setBorderTop(Border.PEN_1_POINT())
                 .setBorderBottom(Border.PEN_1_POINT())
                 .build();
 
+        TEXT_STYLE = new StyleBuilder(false)
+                .setHorizontalAlign(HorizontalAlign.LEFT)
+                .setPaddingLeft(Integer.valueOf(5))
+                .setBorderLeft(Border.THIN())
+                .setBorderRight(Border.THIN())
+                .build();
+
         AMOUNT_STYLE = new StyleBuilder(false)
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
-                .setPaddingRight(Integer.valueOf(10))
+                .setPaddingRight(Integer.valueOf(5))
+                .setBorderLeft(Border.THIN())
+                .setBorderRight(Border.THIN())
+                .setPattern("#,##0.00;-#,##0.00")
                 .build();
 
         PROC_STYLE = new StyleBuilder(false)
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
-                .setPaddingRight(Integer.valueOf(10))
+                .setPaddingRight(Integer.valueOf(5))
+                .setBorderLeft(Border.THIN())
+                .setBorderRight(Border.THIN())
+                .setPattern("##0;-##0")
                 .build();
+
+//        private Style createHeaderStyle() {
+//            StyleBuilder sb=new StyleBuilder(true);
+////        sb.setFont(Font.VERDANA_MEDIUM_BOLD);
+//            sb.setBorder(Border.THIN());
+////        sb.setBorderBottom(Border.PEN_2_POINT());
+//            sb.setBorderColor(Color.BLACK);
+////        sb.setBackgroundColor(Color.ORANGE);
+//            sb.setTextColor(Color.BLACK);
+//            sb.setHorizontalAlign(HorizontalAlign.CENTER);
+//            sb.setVerticalAlign(VerticalAlign.MIDDLE);
+//            sb.setTransparency(Transparency.OPAQUE);
+//            return sb.build();
+//        }
+//
+//        private Style createDetailTextStyle(){
+//            StyleBuilder sb=new StyleBuilder(true);
+////        sb.setFont(Font.VERDANA_MEDIUM);
+////        sb.setBorder(Border.DOTTED());
+//            sb.setBorder(Border.THIN());
+//            sb.setBorderColor(Color.BLACK);
+//            sb.setTextColor(Color.BLACK);
+//            sb.setHorizontalAlign(HorizontalAlign.LEFT);
+//            sb.setVerticalAlign(VerticalAlign.MIDDLE);
+//            sb.setPaddingLeft(5);
+//            return sb.build();
+//        }
+//
+//        private Style createDetailNumberStyle(){
+//            StyleBuilder sb=new StyleBuilder(true);
+////        sb.setFont(Font.VERDANA_MEDIUM);
+////        sb.setBorder(Border.DOTTED());
+//            sb.setBorder(Border.THIN());
+//            sb.setBorderColor(Color.GREEN);
+//            sb.setTextColor(Color.GREEN);
+//            sb.setHorizontalAlign(HorizontalAlign.RIGHT);
+//            sb.setVerticalAlign(VerticalAlign.MIDDLE);
+//            sb.setPaddingRight(5);
+//            return sb.build();
+//        }
     }
 
 
@@ -75,20 +134,37 @@ public class ZakRozpracReport extends PrintPreviewReport {
 
         AbstractColumn ckontCol = ColumnBuilder.getNew()
                 .setColumnProperty("ckont", String.class)
-                .setWidth(7)
                 .setTitle("Č.kont.")
-                .build();
-
-        AbstractColumn rokCol = ColumnBuilder.getNew()
-                .setColumnProperty("rok", Integer.class)
-                .setWidth(4)
-                .setTitle("Rok")
+                .setStyle(TEXT_STYLE)
+                .setWidth(8)
                 .build();
 
         AbstractColumn czakCol = ColumnBuilder.getNew()
                 .setColumnProperty("czak", Integer.class)
-                .setWidth(3)
                 .setTitle("ČZ")
+                .setStyle(TEXT_STYLE)
+                .setWidth(3)
+                .build();
+
+        AbstractColumn rokCol = ColumnBuilder.getNew()
+                .setColumnProperty("rok", Integer.class)
+                .setTitle("Rok")
+                .setStyle(TEXT_STYLE)
+                .setWidth(5)
+                .build();
+
+        AbstractColumn skupCol = ColumnBuilder.getNew()
+                .setColumnProperty("skupina", String.class)
+                .setTitle("Sk.")
+                .setStyle(TEXT_STYLE)
+                .setWidth(3)
+                .build();
+
+        AbstractColumn menaCol = ColumnBuilder.getNew()
+                .setColumnProperty("mena", Mena.class)
+                .setTitle("Měna")
+                .setStyle(TEXT_STYLE)
+                .setWidth(5)
                 .build();
 
 //        AbstractColumn dateCreateCol = ColumnBuilder.getNew()
@@ -98,13 +174,12 @@ public class ZakRozpracReport extends PrintPreviewReport {
 //                .setTextFormatter(DateTimeFormatter.ISO_DATE.toFormat())
 //                .build();
 
-        AbstractColumn honorCistyCol = ColumnBuilder.getNew()
-                .setColumnProperty("honorCisty", BigDecimal.class)
-                .setTitle("Honorář čistý")
+        AbstractColumn honorCistyByKurzCol = ColumnBuilder.getNew()
+                .setColumnProperty("honorCistyByKurz", BigDecimal.class)
+                .setTitle("Honorář č.")
 //                .setHeaderStyle(HEADER_STYLE)
                 .setStyle(AMOUNT_STYLE)
                 .setWidth(9)
-                .setPattern("#,##0.00;-#,##0.00")
                 .build();
 
 //        AbstractColumn honorHrubyCol = ColumnBuilder.getNew()
@@ -113,7 +188,6 @@ public class ZakRozpracReport extends PrintPreviewReport {
 ////                .setHeaderStyle(HEADER_STYLE)
 //                .setStyle(AMOUNT_STYLE)
 //                .setWidth(9)
-//                .setPattern("#,##0.00;-#,##0.00")
 //                .build();
 
 //        AbstractColumn menaCol = ColumnBuilder.getNew()
@@ -122,10 +196,11 @@ public class ZakRozpracReport extends PrintPreviewReport {
 //                .setWidth(5)
 //                .build();
 
-        AbstractColumn textZakCol = ColumnBuilder.getNew()
-                .setColumnProperty("textZak", String.class)
-                .setTitle("Text zakázky")
-                .setWidth(26)
+        AbstractColumn kzTextShortCol = ColumnBuilder.getNew()
+                .setColumnProperty("kzTextShort", String.class)
+                .setTitle("Text")
+                .setStyle(TEXT_STYLE)
+                .setWidth(25)
 //                .setFixedWidth(false)
                 .build();
 
@@ -134,8 +209,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setTitle("R0")
 //                .setHeaderStyle(HEADER_STYLE)
                 .setStyle(PROC_STYLE)
-                .setWidth(5)
-                .setPattern("##0;-##0")
+                .setWidth(4)
                 .build();
 
         AbstractColumn r1Col = ColumnBuilder.getNew()
@@ -143,8 +217,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setTitle("R1")
 //                .setHeaderStyle(HEADER_STYLE)
                 .setStyle(PROC_STYLE)
-                .setWidth(5)
-                .setPattern("##0;-##0")
+                .setWidth(4)
                 .build();
 
         AbstractColumn r2Col = ColumnBuilder.getNew()
@@ -152,8 +225,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setTitle("R2")
 //                .setHeaderStyle(HEADER_STYLE)
                 .setStyle(PROC_STYLE)
-                .setWidth(5)
-                .setPattern("##0;-##0")
+                .setWidth(4)
                 .build();
 
         AbstractColumn r3Col = ColumnBuilder.getNew()
@@ -161,8 +233,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setTitle("R3")
 //                .setHeaderStyle(HEADER_STYLE)
                 .setStyle(PROC_STYLE)
-                .setWidth(5)
-                .setPattern("##0;-##0")
+                .setWidth(4)
                 .build();
 
         AbstractColumn r4Col = ColumnBuilder.getNew()
@@ -170,16 +241,85 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setTitle("R4")
 //                .setHeaderStyle(HEADER_STYLE)
                 .setStyle(PROC_STYLE)
-                .setWidth(5)
-                .setPattern("##0;-##0")
+                .setWidth(4)
                 .build();
+
+        AbstractColumn rxRyVykonByKurzCol = ColumnBuilder.getNew()
+                .setColumnProperty("rxRyVykonByKurz", BigDecimal.class)
+                .setTitle("Výk. RX-RY")
+                .setStyle(AMOUNT_STYLE)
+                .setWidth(10)
+                .build();
+
+        AbstractColumn rpCol = ColumnBuilder.getNew()
+                .setColumnProperty("rp", BigDecimal.class)
+                .setTitle("RP")
+//                .setHeaderStyle(HEADER_STYLE)
+                .setStyle(PROC_STYLE)
+                .setWidth(5)
+                .build();
+
+        AbstractColumn rpHotovo = ColumnBuilder.getNew()
+                .setColumnProperty("rpHotovo", BigDecimal.class)
+                .setTitle("Hotovo RP")
+                .setStyle(PROC_STYLE)
+                .setWidth(5)
+                .build();
+
+        AbstractColumn rpHotovoByKurzCol = ColumnBuilder.getNew()
+                .setColumnProperty("rpHotovoByKurz", BigDecimal.class)
+                .setTitle("Hotovo RP")
+                .setStyle(AMOUNT_STYLE)
+                .setWidth(10)
+                .build();
+
+        AbstractColumn rpZbyvaByKurzCol = ColumnBuilder.getNew()
+                .setColumnProperty("rpZbyvaByKurz", BigDecimal.class)
+                .setTitle("Zbývá RP")
+                .setStyle(AMOUNT_STYLE)
+                .setWidth(10)
+                .build();
+
+//        AbstractColumn rpHotovoByKurzCol = ColumnBuilder.getNew()
+//                .setCustomExpression(
+//                        new CustomExpression() {
+//                            public Object evaluate(Map fields, Map variables, Map parameters) {
+////                                Mena mena = (Mena) fields.get("mena");
+////                                BigDecimal rpHotovo = (BigDecimal) fields.get("rpHotovo");
+////                                BigDecimal rpp = (BigDecimal) fields.get("rp");
+////                                // mena == Mena.EUR ? rpHotovo.multiply(zakrParams kurzEur) : rpHotovo;
+//////                                return mena == Mena.EUR ? rp : rp;
+////                                return rpHotovo;
+//                                return "XYZ";
+//
+////                                return getRpHotovoByKurz(BigDecimal kurzEur)
+////                                String state = (String) fields.get("state");
+////                                String branch = (String) fields.get("branch");
+////                                String productLine = (String) fields.get("productLine");
+////                                Integer count = (Integer) variables.get("REPORT_COUNT");
+////                                return count + ": " +state.toUpperCase() + " / " + branch.toUpperCase() + " / " + productLine;
+//                            }
+//
+//                            public String getClassName() {
+////                                return BigDecimal.class.getName();
+//                                return String.class.getName();
+//                            }
+//                        }
+//                )
+////                .setColumnProperty("rpHotovoByKurz", BigDecimal.class)
+//                .setTitle("Hotovo RP by kurz")
+////                .setHeaderStyle(HEADER_STYLE)
+//                .setStyle(AMOUNT_STYLE)
+//                .setWidth(9)
+//                .setPattern("#,##0.00;-#,##0.00")
+//                .build();
 
         AbstractColumn naklMzdy = ColumnBuilder.getNew()
                 .setColumnProperty("naklMzdy", BigDecimal.class)
                 .setTitle("Mzdy")
 //                .setHeaderStyle(HEADER_STYLE)
                 .setStyle(AMOUNT_STYLE)
-                .setWidth(9)
+                .setWidth(10)
                 .setPattern("#,##0.00;-#,##0.00")
                 .build();
 
@@ -188,7 +328,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setTitle("Pojištění")
 //                .setHeaderStyle(HEADER_STYLE)
                 .setStyle(AMOUNT_STYLE)
-                .setWidth(9)
+                .setWidth(10)
                 .setPattern("#,##0.00;-#,##0.00")
                 .build();
 
@@ -293,24 +433,30 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setGrandTotalLegend("National Total")
 
                 .addColumn(ckontCol)
-                .addColumn(rokCol)
                 .addColumn(czakCol)
-//                .addColumn(dateCreateCol)
-//                .addColumn(honorarCol)
-                .addColumn(honorCistyCol)
+                .addColumn(rokCol)
+                .addColumn(skupCol)
+                .addColumn(menaCol)
+                .addColumn(honorCistyByKurzCol)
 //                .addColumn(honorHrubyCol)
-//                .addColumn(menaCol)
-                .addColumn(textZakCol)
                 .addColumn(r0Col)
                 .addColumn(r1Col)
                 .addColumn(r2Col)
                 .addColumn(r3Col)
                 .addColumn(r4Col)
-                .addColumn(naklMzdy)
-                .addColumn(naklPojist)
+                .addColumn(rxRyVykonByKurzCol)
+                .addColumn(rpCol)
+//                .addColumn(rpHotovo)
+                .addColumn(rpHotovoByKurzCol)
+                .addColumn(rpZbyvaByKurzCol)
+                .addColumn(kzTextShortCol)
+//                .addColumn(naklMzdy)
+//                .addColumn(naklPojist)
 //                .addColumn(vykonRxCol)
 
-                .addGlobalFooterVariable(honorCistyCol, DJCalculation.SUM, AMOUNT_STYLE)
+                .addGlobalFooterVariable(honorCistyByKurzCol, DJCalculation.SUM, AMOUNT_STYLE)
+                .addGlobalFooterVariable(rpHotovoByKurzCol, DJCalculation.SUM, AMOUNT_STYLE)
+                .addGlobalFooterVariable(rpZbyvaByKurzCol, DJCalculation.SUM, AMOUNT_STYLE)
 //                .addGlobalFooterVariable(daysColumn, DJCalculation.AVERAGE, style)
                 ;
 //                    .build();

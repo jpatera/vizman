@@ -56,7 +56,7 @@ public abstract class AbstractPrintDialog<T extends Serializable> extends Dialog
     protected final static List<PrintPreviewReport.Format> VZM_SUPPORTED_EXP_FORMATS = Arrays.asList(
             PrintPreviewReport.Format.PDF
             , PrintPreviewReport.Format.XLS
-            , PrintPreviewReport.Format.CSV
+//            , PrintPreviewReport.Format.CSV
     );
 
     protected AbstractPrintDialog() {

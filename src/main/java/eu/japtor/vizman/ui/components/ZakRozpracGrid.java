@@ -127,7 +127,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         this.archFieldVisible = archFieldVisible;
         this.selectFieldVisible = selectFieldVisible;
         this.itemSaver = itemSaver;
-//        this.kurzEur = params.getKurz();
+//        this.kurzEur = params.getKurzEur();
         this.zakrParams = zakrParams;
 
         this.zakrService = zakrService;
@@ -367,7 +367,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setHeader("Zbývá RP")
 //                .setHeader(headerLabel)
 //                .setComparator((p1, p2) -> getRpZbyvaByKurz(p1).compareTo(getRpZbyvaByKurz(p2)))
-                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getRpZbyvaByKurz(zakr1), getRpZbyvaByKurz(zakr2)))
+                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(
+//                        zakr1.getRpZbyvaByKurz(zakrParams.getKurzEur()), zakr2.getRpZbyvaByKurz(zakrParams.getKurzEur())
+                        zakr1.getRpZbyvaByKurz(), zakr2.getRpZbyvaByKurz()
+                ))
                 .setSortable(true)
                 .setFlexGrow(0)
                 .setWidth("7em")
@@ -382,8 +385,11 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //                cell.getText());
 //                column.getPropertyId());
 
-        Grid.Column<Zakr> colRpVysledek = this.addColumn(rpHotovoGridValueProvider)
-                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getRpHotovokByKurz(zakr1), getRpHotovokByKurz(zakr2)))
+        Grid.Column<Zakr> colRpHotovo = this.addColumn(rpHotovoGridValueProvider)
+                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(
+//                        zakr1.getRpHotovoByKurz(zakrParams.getKurzEur()), zakr2.getRpHotovoByKurz(zakrParams.getKurzEur())
+                        zakr1.getRpHotovoByKurz(), zakr2.getRpHotovoByKurz()
+                ))
                 .setHeader("Hotovo RP")
                 .setFlexGrow(0)
                 .setWidth("7em")
@@ -536,7 +542,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .withConfigurableFilter()
                 .fetch(new Query<>())
                 .filter(zakr -> zakr.getRpHotovo() != null)
-                .map(zakr -> EUR == zakr.getMena() ? zakr.getRpHotovo().multiply(zakrParams.getKurz()) : zakr.getRpHotovo())
+                .map(zakr -> EUR == zakr.getMena() ? zakr.getRpHotovo().multiply(zakrParams.getKurzEur()) : zakr.getRpHotovo())
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
         ;
     }
@@ -546,7 +552,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .withConfigurableFilter()
                 .fetch(new Query<>())
                 .filter(zakr -> zakr.getRpZbyva() != null)
-                .map(zakr -> EUR == zakr.getMena() ? zakr.getRpZbyva().multiply(zakrParams.getKurz()) : zakr.getRpZbyva())
+                .map(zakr -> EUR == zakr.getMena() ? zakr.getRpZbyva().multiply(zakrParams.getKurzEur()) : zakr.getRpZbyva())
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
         ;
@@ -558,7 +564,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .fetch(new Query<>())
 //                .filter(zakr -> zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy()) != null)
                 .map(zakr -> EUR == zakr.getMena() ?
-                        zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy()).multiply(zakrParams.getKurz()) :
+                        zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy()).multiply(zakrParams.getKurzEur()) :
                         zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy()))
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
@@ -695,7 +701,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //    }
 
     private ValueProvider<Zakr, String> rpGridValueProvider =
-            zakr -> null == zakr.getRP() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getRP())
+            zakr -> null == zakr.getRp() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getRp())
     ;
 
     private ValueProvider<Zakr, String> r0GridValueProvider =
@@ -733,7 +739,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             return null;
         } else {
             return zakr.getMena() == EUR ?
-                    honorCisty.multiply(zakrParams.getKurz()) :
+                    honorCisty.multiply(zakrParams.getKurzEur()) :
                     honorCisty;
         }
     }
@@ -752,48 +758,50 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             return null;
         } else {
             return zakr.getMena() == EUR ?
-                    rxRyVykon.multiply(zakrParams.getKurz()) :
+                    rxRyVykon.multiply(zakrParams.getKurzEur()) :
                     rxRyVykon;
         }
     }
 
     private ValueProvider<Zakr, String> rpZbyvaByKurzGridValueProvider = zakr -> {
-        BigDecimal rpZbyvaByKurz = getRpZbyvaByKurz(zakr);
+//        BigDecimal rpZbyvaByKurz = zakr.getRpZbyvaByKurz(zakrParams.getKurzEur());
+        BigDecimal rpZbyvaByKurz = zakr.getRpZbyvaByKurz();
         if (null == rpZbyvaByKurz) {
             return "";
         } else {
             return VzmFormatUtils.moneyFormat.format(rpZbyvaByKurz);
         }
     };
-    private  BigDecimal getRpZbyvaByKurz(Zakr zakr) {
-        BigDecimal rpZbyva = zakr.getRpZbyva();
-        if (null == rpZbyva) {
-            return null;
-        } else {
-            return zakr.getMena() == EUR ?
-                    rpZbyva.multiply(zakrParams.getKurz()) :
-                    rpZbyva;
-        }
-    }
+//    private  BigDecimal getRpZbyvaByKurz(Zakr zakr) {
+//        BigDecimal rpZbyva = zakr.getRpZbyva();
+//        if (null == rpZbyva) {
+//            return null;
+//        } else {
+//            return zakr.getMena() == EUR ?
+//                    rpZbyva.multiply(zakrParams.getKurzEur()) :
+//                    rpZbyva;
+//        }
+//    }
 
     public ValueProvider<Zakr, String> rpHotovoGridValueProvider = zakr -> {
         if (null == zakr.getRpHotovo()) {
             return "";
         } else {
-            BigDecimal rpVysledek = getRpHotovokByKurz(zakr);
+//            BigDecimal rpVysledek = zakr.getRpHotovoByKurz(zakrParams.getKurzEur());
+            BigDecimal rpVysledek = zakr.getRpHotovoByKurz();
             return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
         }
     };
-    private  BigDecimal getRpHotovokByKurz(Zakr zakr) {
-        BigDecimal rpHotovo = zakr.getRpHotovo();
-        if (null == rpHotovo) {
-            return null;
-        } else {
-            return zakr.getMena() == EUR ?
-                    rpHotovo.multiply(zakrParams.getKurz()) :
-                    rpHotovo;
-        }
-    }
+//    private  BigDecimal getRpHotovokByKurz(Zakr zakr) {
+//        BigDecimal rpHotovo = zakr.getRpHotovo();
+//        if (null == rpHotovo) {
+//            return null;
+//        } else {
+//            return zakr.getMena() == EUR ?
+//                    rpHotovo.multiply(zakrParams.getKurzEur()) :
+//                    rpHotovo;
+//        }
+//    }
 
     private ValueProvider<Zakr, String> rpVysledekGridValueProvider = zakr -> {
 //            BigDecimal rpVysledek = getRpVysledekP8(zakr);
