@@ -113,194 +113,18 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     @Column(name = "KURZ_EUR")
     private BigDecimal kurzEur;
 
+    @Basic
+    @Column(name = "RX_RY_VYKON")
+    private BigDecimal rxRyVykon;
+
+    @Basic
+    @Column(name = "VYSLEDEK_BY_KURZ")
+    private BigDecimal vysledekByKurz;
+
 //    @OneToMany(mappedBy = "zakr", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH, orphanRemoval = false)
     @OneToMany(mappedBy = "zakr", cascade = CascadeType.REFRESH, orphanRemoval = false)
     @OrderBy("rok DESC, qa DESC")
     private List<Zaqa> zaqas = new ArrayList<>();
-
-    @Transient
-    private boolean checked;
-
-//    @Transient
-//    private BigDecimal rpVysledek;
-
-    @Transient
-    private BigDecimal rpHotovo;
-
-    @Transient
-    public BigDecimal getRpHotovo() {
-        if (null == rp || null == honorCisty) {
-            return null;
-        } else {
-            return rp.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-        }
-    }
-
-//    @Transient
-//    private BigDecimal rpZbyva;
-
-    @Transient
-    public BigDecimal getRpZbyva() {
-        if (null == rp || null == honorCisty) {
-            return null;
-        } else {
-            return honorCisty.subtract(rp.multiply(honorCisty).divide(BigDecimal.valueOf(100L)));
-        }
-    }
-
-//    @Transient
-//    private BigDecimal rpHotovoByKurz;
-
-//    @Transient
-//    public static BigDecimal calcRpHotovoByKurz(BigDecimal rpHotovo, BigDecimal kurzEur) {
-//        if (null == rpHotovo) {
-//            return null;
-//        } else {
-//            return getMena() == Mena.EUR ?
-//                    rpHotovo.multiply(kurzEur) :
-//                    rpHotovo;
-//        }
-//    }
-
-//    @Transient
-//    BigDecimal rpHotovoByKurz;
-
-    @Transient
-    public BigDecimal getHonorCistyByKurz() {
-        BigDecimal honorCisty = getHonorCisty();
-        return (null == honorCisty) ? null : honorCisty.multiply(kurzEur);
-    }
-
-    @Transient
-    public BigDecimal getRpHotovoByKurz() {
-        BigDecimal rpHotovo = getRpHotovo();
-        return (null == rpHotovo) ? null : rpHotovo.multiply(kurzEur);
-    }
-
-    @Transient
-    public BigDecimal getRpZbyvaByKurz() {
-        BigDecimal rpZbyva = getRpZbyva();
-        return (null == rpZbyva) ? null : rpZbyva.multiply(kurzEur);
-    }
-
-//    @Transient
-//    private BigDecimal rpZbyvaByKurz;
-//
-//    @Transient
-//    public BigDecimal getRpZbyvaByKurz(BigDecimal kurzEur) {
-//        BigDecimal rpZbyva = getRpZbyva();
-//        if (null == rpZbyva) {
-//            return null;
-//        } else {
-//            return getMena() == Mena.EUR ?
-//                    rpZbyva.multiply(kurzEur) :
-//                    rpZbyva;
-//        }
-//    }
-
-    @Transient
-    public BigDecimal getNaklMzdyPojist() {
-        if (null == naklMzdy && null == naklPojist) {
-            return null;
-        } else {
-            return (null == naklMzdy ? BigDecimal.ZERO : naklMzdy).add(null == naklPojist ? BigDecimal.ZERO : naklPojist);
-        }
-    }
-
-
-    @Transient
-    private BigDecimal rxRyVykonByKurz;
-
-    @Transient
-    public BigDecimal getRxRyVykonByKurz() {
-        return null;
-    }
-
-
-    @Transient
-    public BigDecimal getRxRyVykon(String rxParam, String ryParam) {
-        BigDecimal vykRx = BigDecimal.ZERO;
-        BigDecimal vykRy = BigDecimal.ZERO;
-
-        if (rxParam == null) {
-            return vykRx;
-        }
-        switch (rxParam) {
-            case "R0":
-                if (null != r0 && null != honorCisty) {
-                    vykRx = r0.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R1":
-                if (null != r1 && null != honorCisty) {
-                    vykRx = r1.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R2":
-                if (null != r2 && null != honorCisty) {
-                    vykRx =  r2.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R3":
-                if (null != r3 && null != honorCisty) {
-                    vykRx =  r3.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R4":
-                if (null != r4 && null != honorCisty) {
-                    vykRx = r4.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            default:
-        }
-
-        if (ryParam == null) {
-            return vykRy;
-        }
-        switch (ryParam) {
-            case "R0":
-                if (null != r0 && null != honorCisty) {
-                    vykRy = r0.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R1":
-                if (null != r1 && null != honorCisty) {
-                    vykRy = r1.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R2":
-                if (null != r2 && null != honorCisty) {
-                    vykRy =  r2.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R3":
-                if (null != r3 && null != honorCisty) {
-                    vykRy =  r3.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R4":
-                if (null != r4 && null != honorCisty) {
-                    vykRy = r4.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            default:
-                if (null != rp && null != honorCisty) {
-                    vykRy = rp.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-        }
-        return vykRy.subtract(vykRx);
-    }
-
-//    public BigDecimal getFinished() {
-//        return finished;
-//    }
-//    public void setFinished(BigDecimal finished) {
-//        this.finished = finished;
-//    }
-
-//    @Transient
-//    private BigDecimal finished;
-
 
     public Long getId() {
         return id;
@@ -438,6 +262,21 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         this.kurzEur = kurzEur;
     }
 
+    public BigDecimal getRxRyVykon() {
+        return rxRyVykon;
+    }
+    public void setRxRyVykon(BigDecimal rxRyVykon) {
+        this.rxRyVykon = rxRyVykon;
+//        this.rxRyVykon = calcRxRyVykon();
+    }
+
+    public BigDecimal getVysledekByKurz() {
+        return vysledekByKurz;
+    }
+    public void setVysledekByKurz(BigDecimal vysledekByKurz) {
+        this.vysledekByKurz = vysledekByKurz;
+    }
+
 
     // Zaqa
     // -----
@@ -459,6 +298,211 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         zaqa.setZakr(this);
     }
 
+
+// =============================================
+
+    @Transient
+    private boolean checked;
+
+//    @Transient
+//    private BigDecimal rpHotovo;
+
+    @Transient
+    public BigDecimal getRpHotovo() {
+        if (null == rp || null == honorCisty) {
+            return null;
+        } else {
+            return rp.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+        }
+    }
+
+//    @Transient
+//    private BigDecimal rpZbyva;
+
+    @Transient
+    public BigDecimal getRpZbyva() {
+        if (null == rp || null == honorCisty) {
+            return null;
+        } else {
+            return honorCisty.subtract(rp.multiply(honorCisty).divide(BigDecimal.valueOf(100L)));
+        }
+    }
+
+
+//    @Transient
+//    private BigDecimal rpHotovoByKurz;
+
+//    @Transient
+//    public static BigDecimal calcRpHotovoByKurz(BigDecimal rpHotovo, BigDecimal kurzEur) {
+//        if (null == rpHotovo) {
+//            return null;
+//        } else {
+//            return getMena() == Mena.EUR ?
+//                    rpHotovo.multiply(kurzEur) :
+//                    rpHotovo;
+//        }
+//    }
+
+//    @Transient
+//    BigDecimal rpHotovoByKurz;
+
+    @Transient
+    public BigDecimal getHonorCistyByKurz() {
+//        BigDecimal honorCisty = getHonorCisty();
+        return (null == honorCisty) ? null : honorCisty.multiply(kurzEur);
+    }
+
+    @Transient
+    public BigDecimal getRpHotovoByKurz() {
+        BigDecimal rpHotovo = getRpHotovo();
+        return (null == rpHotovo) ? null : rpHotovo.multiply(kurzEur);
+    }
+
+    @Transient
+    public BigDecimal getRpZbyvaByKurz() {
+        BigDecimal rpZbyva = getRpZbyva();
+        return (null == rpZbyva) ? null : rpZbyva.multiply(kurzEur);
+    }
+
+//    @Transient
+//    private BigDecimal rpZbyvaByKurz;
+//
+//    @Transient
+//    public BigDecimal getRpZbyvaByKurz(BigDecimal kurzEur) {
+//        BigDecimal rpZbyva = getRpZbyva();
+//        if (null == rpZbyva) {
+//            return null;
+//        } else {
+//            return getMena() == Mena.EUR ?
+//                    rpZbyva.multiply(kurzEur) :
+//                    rpZbyva;
+//        }
+//    }
+
+//    @Transient
+//    public BigDecimal getNaklMzdyPojist() {
+//        if (null == naklMzdy && null == naklPojist) {
+//            return null;
+//        } else {
+//            return (null == naklMzdy ? BigDecimal.ZERO : naklMzdy).add(null == naklPojist ? BigDecimal.ZERO : naklPojist);
+//        }
+//    }
+
+
+    @Transient
+    private BigDecimal rxRyVykonByKurz;
+
+    @Transient
+    public BigDecimal getRxRyVykonByKurz() {
+        return (null == rxRyVykon) ? null : rxRyVykon.multiply(kurzEur);
+    }
+
+    @Transient
+    public BigDecimal calcRxRyVykon(String rxParam, String ryParam) {
+        BigDecimal vykRx = BigDecimal.ZERO;
+        BigDecimal vykRy = BigDecimal.ZERO;
+
+        if (rxParam == null) {
+//            rxRyVykon = vykRx;
+            return vykRx;
+        }
+        switch (rxParam) {
+            case "R0":
+                if (null != r0 && null != honorCisty) {
+                    vykRx = r0.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            case "R1":
+                if (null != r1 && null != honorCisty) {
+                    vykRx = r1.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            case "R2":
+                if (null != r2 && null != honorCisty) {
+                    vykRx =  r2.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            case "R3":
+                if (null != r3 && null != honorCisty) {
+                    vykRx =  r3.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            case "R4":
+                if (null != r4 && null != honorCisty) {
+                    vykRx = r4.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            default:
+        }
+
+        if (ryParam == null) {
+//            rxRyVykon = vykRy;
+            return vykRy;
+        }
+        switch (ryParam) {
+            case "R0":
+                if (null != r0 && null != honorCisty) {
+                    vykRy = r0.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            case "R1":
+                if (null != r1 && null != honorCisty) {
+                    vykRy = r1.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            case "R2":
+                if (null != r2 && null != honorCisty) {
+                    vykRy =  r2.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            case "R3":
+                if (null != r3 && null != honorCisty) {
+                    vykRy =  r3.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            case "R4":
+                if (null != r4 && null != honorCisty) {
+                    vykRy = r4.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            default:
+                if (null != rp && null != honorCisty) {
+                    vykRy = rp.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+        }
+        return vykRy.subtract(vykRx);
+//        rxRyVykon = vykRy.subtract(vykRx);
+    }
+
+    @Transient
+    public BigDecimal calcVysledekByKurz(BigDecimal koefPojist, BigDecimal koefRezie) {
+        if (null == getHonorCistyByKurz() || null == naklMzdy) {
+            return null;
+        } else {
+            return getHonorCistyByKurz().subtract(
+                    naklMzdy.multiply(koefPojist.add(BigDecimal.ONE)).multiply(koefRezie.add(BigDecimal.ONE))
+            );
+        }
+    }
+
+    @Transient
+    public BigDecimal calcNaklMzdyPojistRezie(BigDecimal koefPojist, BigDecimal koefRezie) {
+        if (null == naklMzdy) {
+            return null;
+        } else {
+            return naklMzdy.multiply(koefPojist.add(BigDecimal.ONE)).multiply(koefRezie.add(BigDecimal.ONE));
+        }
+    }
+
+//    public BigDecimal getFinished() {
+//        return finished;
+//    }
+//    public void setFinished(BigDecimal finished) {
+//        this.finished = finished;
+//    }
+
+//    @Transient
+//    private BigDecimal finished;
 
     @Transient
     public boolean isChecked() {

@@ -43,7 +43,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
 
         DEFAULT_STYLE = new StyleBuilder(false)
                 .setFont(DEFAULT_FONT_PDF)
-                .setPaddingLeft(Integer.valueOf(5))
+                .setPaddingLeft(Integer.valueOf(3))
 //                .setBorderLeft(Border.PEN_1_POINT())
 //                .setBorderRight(Border.PEN_1_POINT())
 //                .setStretchWithOverflow(false)
@@ -66,22 +66,23 @@ public class ZakRozpracReport extends PrintPreviewReport {
 
         TEXT_STYLE = new StyleBuilder(false)
                 .setHorizontalAlign(HorizontalAlign.LEFT)
-                .setPaddingLeft(Integer.valueOf(5))
+                .setPaddingLeft(Integer.valueOf(3))
                 .setBorderLeft(Border.THIN())
                 .setBorderRight(Border.THIN())
                 .build();
 
         AMOUNT_STYLE = new StyleBuilder(false)
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
-                .setPaddingRight(Integer.valueOf(5))
+                .setPaddingRight(Integer.valueOf(3))
                 .setBorderLeft(Border.THIN())
                 .setBorderRight(Border.THIN())
-                .setPattern("#,##0.00;-#,##0.00")
+//                .setPattern("#,##0.00;-#,##0.00")
+                .setPattern("#,##0;-#,##0")
                 .build();
 
         PROC_STYLE = new StyleBuilder(false)
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
-                .setPaddingRight(Integer.valueOf(5))
+                .setPaddingRight(Integer.valueOf(3))
                 .setBorderLeft(Border.THIN())
                 .setBorderRight(Border.THIN())
                 .setPattern("##0;-##0")
@@ -187,7 +188,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
 //                .setTitle("Honorář hrubý")
 ////                .setHeaderStyle(HEADER_STYLE)
 //                .setStyle(AMOUNT_STYLE)
-//                .setWidth(9)
+//                .setWidth(8)
 //                .build();
 
 //        AbstractColumn menaCol = ColumnBuilder.getNew()
@@ -246,9 +247,9 @@ public class ZakRozpracReport extends PrintPreviewReport {
 
         AbstractColumn rxRyVykonByKurzCol = ColumnBuilder.getNew()
                 .setColumnProperty("rxRyVykonByKurz", BigDecimal.class)
-                .setTitle("Výk. RX-RY")
+                .setTitle("Výk. rx-ry")
                 .setStyle(AMOUNT_STYLE)
-                .setWidth(10)
+                .setWidth(9)
                 .build();
 
         AbstractColumn rpCol = ColumnBuilder.getNew()
@@ -277,7 +278,14 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setColumnProperty("rpZbyvaByKurz", BigDecimal.class)
                 .setTitle("Zbývá RP")
                 .setStyle(AMOUNT_STYLE)
-                .setWidth(10)
+                .setWidth(9)
+                .build();
+
+        AbstractColumn vysledekByKurzCol = ColumnBuilder.getNew()
+                .setColumnProperty("vysledekByKurz", BigDecimal.class)
+                .setTitle("Výsledek")
+                .setStyle(AMOUNT_STYLE)
+                .setWidth(9)
                 .build();
 
 //        AbstractColumn rpHotovoByKurzCol = ColumnBuilder.getNew()
@@ -319,8 +327,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setTitle("Mzdy")
 //                .setHeaderStyle(HEADER_STYLE)
                 .setStyle(AMOUNT_STYLE)
-                .setWidth(10)
-                .setPattern("#,##0.00;-#,##0.00")
+                .setWidth(9)
                 .build();
 
         AbstractColumn naklPojist = ColumnBuilder.getNew()
@@ -328,8 +335,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setTitle("Pojištění")
 //                .setHeaderStyle(HEADER_STYLE)
                 .setStyle(AMOUNT_STYLE)
-                .setWidth(10)
-                .setPattern("#,##0.00;-#,##0.00")
+                .setWidth(9)
                 .build();
 
 //        AbstractColumn vykonRxCol = ColumnBuilder.getNew()
@@ -449,6 +455,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
 //                .addColumn(rpHotovo)
                 .addColumn(rpHotovoByKurzCol)
                 .addColumn(rpZbyvaByKurzCol)
+                .addColumn(vysledekByKurzCol)
                 .addColumn(kzTextShortCol)
 //                .addColumn(naklMzdy)
 //                .addColumn(naklPojist)
@@ -457,6 +464,8 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .addGlobalFooterVariable(honorCistyByKurzCol, DJCalculation.SUM, AMOUNT_STYLE)
                 .addGlobalFooterVariable(rpHotovoByKurzCol, DJCalculation.SUM, AMOUNT_STYLE)
                 .addGlobalFooterVariable(rpZbyvaByKurzCol, DJCalculation.SUM, AMOUNT_STYLE)
+                .addGlobalFooterVariable(rxRyVykonByKurzCol, DJCalculation.SUM, AMOUNT_STYLE)
+                .addGlobalFooterVariable(vysledekByKurzCol, DJCalculation.SUM, AMOUNT_STYLE)
 //                .addGlobalFooterVariable(daysColumn, DJCalculation.AVERAGE, style)
                 ;
 //                    .build();

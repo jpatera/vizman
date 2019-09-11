@@ -69,7 +69,8 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     public static final String FINISHED_COL_KEY = "zakr-bg-finished";
     public static final String RESULT_COL_KEY = "zakr-bg-result";
     public static final String RESULTP8_COL_KEY = "zakr-bg-result-p8";
-    public static final String NAKL_MZDY_POJ_COL_KEY = "nakl-mzdy-poj-bg-result-p8";
+    public static final String MZDY_COL_KEY = "mzdy-bg-result";
+    public static final String MZDY_POJ_REZ_COL_KEY = "mzdy-poj-rez-bg-result";
 
 //    Grid<Zak> zakGrid;
     private ZakFormDialog zakFormDialog;
@@ -259,7 +260,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //                .setResizable(true)
                 .setKey(MENA_COL_KEY)
         ;
-        this.addColumn(honorCistyValueProvider)
+        Grid.Column<Zakr> colHonorCisty = this.addColumn(honorCistyValueProvider)
                 .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getHonorCistyByKurz(zakr1), getHonorCistyByKurz(zakr2)))
                 .setHeader("Hon.č. [CZK]")
                 .setFlexGrow(0)
@@ -357,9 +358,22 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
 //        colRP.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR0, Zakr::setR0));
 
-        // TODO: Asi by se melo brat z hrub0ho  honoráře...?
-        Label headerLabel = new Label("Zbývá RP");
-        headerLabel.getElement().setProperty("title", "Zbývá z čistého honoráře -> podle posledního plnění RP");
+        Grid.Column<Zakr> colRpHotovo = this.addColumn(rpHotovoGridValueProvider)
+                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(
+//                        zakr1.getRpHotovoByKurz(zakrParams.getKurzEur()), zakr2.getRpHotovoByKurz(zakrParams.getKurzEur())
+                        zakr1.getRpHotovoByKurz(), zakr2.getRpHotovoByKurz()
+                ))
+                .setHeader("Hotovo RP")
+                .setFlexGrow(0)
+                .setWidth("7em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(true)
+                .setKey(FINISHED_COL_KEY)
+                .setResizable(true)
+                ;
+//        this.getDefaultHeaderRow().getCell(colRpHotovo).setComponent(hotovoHeaderLabel);
+
+
         Grid.Column<Zakr> colRpZbyva = this.addColumn(rpZbyvaByKurzGridValueProvider)
 //                .setComparator((zakr1, zakr2) -> zakr1.getRpZbyva()
 //                        .compareTo(zakr2.getRpZbyva()))
@@ -378,28 +392,8 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(REMAINS_COL_KEY)
                 .setResizable(true)
         ;
-        HeaderRow.HeaderCell cell = this.getDefaultHeaderRow().getCell(colRpZbyva);
-        cell.setComponent(headerLabel);
-//        String htmlWithTooltip = String.format(
-//                "<span title=\"%s\">%s</span>", cell.getText(),
-//                cell.getText());
-//                column.getPropertyId());
 
-        Grid.Column<Zakr> colRpHotovo = this.addColumn(rpHotovoGridValueProvider)
-                .setComparator((zakr1, zakr2) -> ObjectUtils.compare(
-//                        zakr1.getRpHotovoByKurz(zakrParams.getKurzEur()), zakr2.getRpHotovoByKurz(zakrParams.getKurzEur())
-                        zakr1.getRpHotovoByKurz(), zakr2.getRpHotovoByKurz()
-                ))
-                .setHeader("Hotovo RP")
-                .setFlexGrow(0)
-                .setWidth("7em")
-                .setTextAlign(ColumnTextAlign.END)
-                .setSortable(true)
-                .setKey(FINISHED_COL_KEY)
-                .setResizable(true)
-                ;
-
-        Grid.Column<Zakr> colVysledek = this.addColumn(rpVysledekGridValueProvider)
+        Grid.Column<Zakr> colVysledek = this.addColumn(vysledekGridValueProvider)
                 .setHeader("Výsledek")
                 .setFlexGrow(0)
                 .setWidth("7em")
@@ -409,7 +403,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setResizable(true)
                 ;
 
-        Grid.Column<Zakr> colVysledekP8 = this.addColumn(rpVysledekP8GridValueProvider)
+        Grid.Column<Zakr> colVysledekP8 = this.addColumn(vysledekP8GridValueProvider)
                 .setHeader("Výsledek P8")
                 .setFlexGrow(0)
                 .setWidth("7em")
@@ -419,13 +413,23 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setResizable(true)
                 ;
 
-        Grid.Column<Zakr> colNaklMzdyPoj = this.addColumn(naklMzdyPojistValueProvider)
-                .setHeader("Mzdy+poj")
+        Grid.Column<Zakr> colNaklMzdy = this.addColumn(naklMzdyValueProvider)
+                .setHeader("Mzdy")
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
-                .setKey(NAKL_MZDY_POJ_COL_KEY)
+                .setKey(MZDY_COL_KEY)
+                .setResizable(true)
+                ;
+
+        Grid.Column<Zakr> colNaklMzdyPojistRezie = this.addColumn(naklMzdyPojistRezieValueProvider)
+                .setHeader("Mzdy+P+R")
+                .setFlexGrow(0)
+                .setWidth("7em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(true)
+                .setKey(MZDY_POJ_REZ_COL_KEY)
                 .setResizable(true)
                 ;
 
@@ -463,21 +467,44 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //                cell.getText());
 //                column.getPropertyId());
 
+        Label honorarCistyLabel = new Label("Def.");
+        honorarCistyLabel.getElement()
+                .setProperty("title", "[Honorář čistý] = (SUM(fakt) - SUM(sub)) * kurz")
+//                .setProperty("text-align", "center")
+        ;
+        descHeaderRow.getCell(colHonorCisty).setComponent(honorarCistyLabel);
+
         Label rxRyVykonyDescLabel = new Label("Def.");
         rxRyVykonyDescLabel.getElement()
-                .setProperty("title", "[Výkon rx-ry] = [Honorář čistý] x ([RY] - [RX])")
+                .setProperty("title", "[Výkon rx-ry] = [Honorář čistý] * ([RY] - [RX])")
 //                .setProperty("text-align", "center")
         ;
         descHeaderRow.getCell(colRxRyVykon).setComponent(rxRyVykonyDescLabel);
 
         Label rpZbyvaDescLabel = new Label("Def.");
         rpZbyvaDescLabel.getElement()
-                .setProperty("title", "[Zbýva RP] = [Honorář čistý] x (100% - [RP])")
+                .setProperty("title", "[Zbývá RP] = [Honorář čistý] * (100% - [RP])")
 //                .setProperty("text-align", "center")
         ;
+        descHeaderRow.getCell(colRpZbyva).setComponent(rpZbyvaDescLabel);
 //        rpZbyvaDescLabel.getStyle()
 //                .set("text-align", "center");
-        descHeaderRow.getCell(colRpZbyva).setComponent(rpZbyvaDescLabel);
+//        this.getDefaultHeaderRow().getCell(colRpZbyva).setComponent(zbyvaHeaderLabel);
+//        String htmlWithTooltip = String.format(
+//                "<span title=\"%s\">%s</span>", cell.getText(),
+//                cell.getText());
+//                column.getPropertyId());
+
+        Label hotovoHeaderLabel = new Label("Def.");
+        hotovoHeaderLabel.getElement()
+                .setProperty("title", "[Hotovo RP] = [Honorář čistý] * [RP]");
+        descHeaderRow.getCell(colRpHotovo).setComponent(hotovoHeaderLabel);
+
+
+        Label vysledekHeaderLabel = new Label("Def.");
+        vysledekHeaderLabel.getElement()
+                .setProperty("title", "[Výsledek] = [Honorář čistý] - [Mzdy] * (1 + koef_pojist) * (1 + koef_rezie)");
+        descHeaderRow.getCell(colVysledek).setComponent(vysledekHeaderLabel);
 
         // =============
         // Filters
@@ -564,8 +591,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .fetch(new Query<>())
 //                .filter(zakr -> zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy()) != null)
                 .map(zakr -> EUR == zakr.getMena() ?
-                        zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy()).multiply(zakrParams.getKurzEur()) :
-                        zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy()))
+                        (null == zakr.getRxRyVykon() ? null : zakr.getRxRyVykon().multiply(zakrParams.getKurzEur())) :
+                        zakr.getRxRyVykon())
+//                        zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy()).multiply(zakrParams.getKurzEur()) :
+//                        zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy()))
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
         ;
@@ -753,7 +782,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         }
     };
     private  BigDecimal getRxRyVykonByKurz(Zakr zakr) {
-        BigDecimal rxRyVykon = zakr.getRxRyVykon(zakrParams.getRx(), zakrParams.getRy());
+        BigDecimal rxRyVykon = zakr.getRxRyVykon();
         if (null == rxRyVykon) {
             return null;
         } else {
@@ -803,24 +832,28 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //        }
 //    }
 
-    private ValueProvider<Zakr, String> rpVysledekGridValueProvider = zakr -> {
+    private ValueProvider<Zakr, String> vysledekGridValueProvider = zakr -> {
+            BigDecimal vysledek = zakr.getVysledekByKurz();
+            return null == vysledek ? "" : VzmFormatUtils.moneyFormat.format(vysledek);
+    };
+
+    private ValueProvider<Zakr, String> vysledekP8GridValueProvider = zakr -> {
 //            BigDecimal rpVysledek = getRpVysledekP8(zakr);
 //            return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
             return "";
     };
 
-    private ValueProvider<Zakr, String> rpVysledekP8GridValueProvider = zakr -> {
-//            BigDecimal rpVysledek = getRpVysledekP8(zakr);
-//            return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
-            return "";
+    private ValueProvider<Zakr, String> naklMzdyValueProvider = zakr -> {
+            BigDecimal naklMzdy = zakr.getNaklMzdy();
+            return null == naklMzdy ? "" : VzmFormatUtils.moneyFormat.format(naklMzdy);
     };
 
-    private ValueProvider<Zakr, String> naklMzdyPojistValueProvider = zakr -> {
-            BigDecimal naklMzdyPojìst = zakr.getNaklMzdyPojist();
-            if (null == naklMzdyPojìst) {
+    private ValueProvider<Zakr, String> naklMzdyPojistRezieValueProvider = zakr -> {
+            BigDecimal naklMzdy = zakr.calcNaklMzdyPojistRezie(zakrParams.getKoefPojist(), zakrParams.getKoefRezie());
+            if (null == naklMzdy) {
                 return "";
             } else {
-                return VzmFormatUtils.moneyFormat.format(naklMzdyPojìst);
+                return VzmFormatUtils.moneyFormat.format(naklMzdy);
             }
     };
 

@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
@@ -63,17 +62,33 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
     public List<Zakr> fetchAllDescOrder(ZakrListView.ZakrParams zakrParams) {
         List<Zakr> zakrs =  zakrRepo.findAllByOrderByRokDescCkontDescCzakDesc();
         zakrs.stream()
-                .filter(zr -> zr.getMena() == Mena.EUR)
-                .forEach(zr -> zr.setKurzEur(zakrParams.getKurzEur()));
+                .forEach(zr -> {
+                    zr.setRxRyVykon(zr.calcRxRyVykon(zakrParams.getRx(), zakrParams.getRy()));
+                    zr.setVysledekByKurz(zr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
+                    if (zr.getMena() == Mena.EUR) {
+                        zr.setKurzEur(zakrParams.getKurzEur());
+                    }
+                })
+        ;
         return zakrs;
     }
 
     @Override
     public List<Zakr> fetchByFiltersDescOrder(ZakrListView.ZakrParams zakrParams) {
         List<Zakr> zakrs = zakrRepo.findZakrByArchAndRokAndSkupina(zakrParams.getArch(), zakrParams.getRokZak(), zakrParams.getSkupina());
+//        zakrs.stream()
+//                .filter(zr -> zr.getMena() == Mena.EUR)
+//                .forEach(zr -> zr.setKurzEur(zakrParams.getKurzEur()))
+//        ;
         zakrs.stream()
-                .filter(zr -> zr.getMena() == Mena.EUR)
-                .forEach(zr -> zr.setKurzEur(zakrParams.getKurzEur()));
+                .forEach(zr -> {
+                    zr.setRxRyVykon(zr.calcRxRyVykon(zakrParams.getRx(), zakrParams.getRy()));
+                    zr.setVysledekByKurz(zr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
+                    if (zr.getMena() == Mena.EUR) {
+                        zr.setKurzEur(zakrParams.getKurzEur());
+                    }
+                })
+        ;
         return zakrs;
     }
 

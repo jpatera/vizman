@@ -39,6 +39,8 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
     private Select<Integer> rokZakParamField;
     private Select<Boolean> archParamField;
     private Select<String> skupinaParamField;
+    private Select<String> rxParamField;
+    private Select<String> ryParamField;
 //    private Select<Boolean> archFilterRadio;
     private TextField rezieParamField;
     private TextField pojistParamField;
@@ -96,6 +98,8 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
                 buildArchiveParamComponent()
                 , buildZakRokFilterComponent()
                 , buildSkupinaFilterComponent()
+                , buildRxFilterComponent()
+                , buildRyFilterComponent()
                 , buildKurzParamComponent()
                 , buildRezieParamComponent()
                 , buildPojistParamComponent()
@@ -173,6 +177,28 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
         return skupinaParamField;
     }
 
+    private Component buildRxFilterComponent() {
+        rxParamField = buildSelectorParamField();
+        rxParamField.setLabel("RX");
+        rxParamField.setWidth("5em");
+        rxParamField.setReadOnly(true);
+        List<String> rxList = new ArrayList<>(Arrays.asList("R1", "R2", "R3", "R4"));
+        rxParamField.setItems(rxList);
+        rxParamField.setValue(zakrParams.getRx());
+        return rxParamField;
+    }
+
+    private Component buildRyFilterComponent() {
+        ryParamField = buildSelectorParamField();
+        ryParamField.setLabel("RY");
+        ryParamField.setWidth("5em");
+        ryParamField.setReadOnly(true);
+        List<String> ryList = new ArrayList<>(Arrays.asList("R1", "R2", "R3", "R4"));
+        ryParamField.setItems(ryList);
+        ryParamField.setValue(zakrParams.getRy());
+        return ryParamField;
+    }
+
     private Component buildKurzParamComponent() {
         kurzParamField = new TextField("CZK/EUR");
         kurzParamField.setWidth("5em");
@@ -220,6 +246,8 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
                 "Parametry: Arch=" + (null == archParamField.getValue() ? "Vše" : archParamField.getValue().toString()) +
                 "  Rok zak.=" + (null == rokZakParamField.getValue() ? "Vše" : rokZakParamField.getValue().toString()) +
                 "  Skupina=" + (null == skupinaParamField.getValue() ? "Vše" : skupinaParamField.getValue().toString()) +
+                "  rx=" + (null == rxParamField.getValue() ? "" : rxParamField.getValue().toString()) +
+                "  ry=" + (null == ryParamField.getValue() ? "" : ryParamField.getValue().toString()) +
                 "  Režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue()) +
                 "  Pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue()) +
                 "  Kurz CZK/EUR=" + (null == kurzParamField.getValue() ? "" : kurzParamField.getValue())
