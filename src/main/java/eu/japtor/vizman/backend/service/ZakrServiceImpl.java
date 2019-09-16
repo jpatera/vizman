@@ -63,11 +63,11 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
         List<Zakr> zakrs =  zakrRepo.findAllByOrderByRokDescCkontDescCzakDesc();
         zakrs.stream()
                 .forEach(zr -> {
-                    zr.setRxRyVykon(zr.calcRxRyVykon(zakrParams.getRx(), zakrParams.getRy()));
-                    zr.setVysledekByKurz(zr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
                     if (zr.getMena() == Mena.EUR) {
                         zr.setKurzEur(zakrParams.getKurzEur());
                     }
+                    zr.setRxRyVykon(zr.calcRxRyVykon(zakrParams.getRx(), zakrParams.getRy()));
+                    zr.setVysledekByKurz(zr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
                 })
         ;
         return zakrs;
@@ -82,11 +82,11 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
 //        ;
         zakrs.stream()
                 .forEach(zr -> {
-                    zr.setRxRyVykon(zr.calcRxRyVykon(zakrParams.getRx(), zakrParams.getRy()));
-                    zr.setVysledekByKurz(zr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
                     if (zr.getMena() == Mena.EUR) {
                         zr.setKurzEur(zakrParams.getKurzEur());
                     }
+                    zr.setRxRyVykon(zr.calcRxRyVykon(zakrParams.getRx(), zakrParams.getRy()));
+                    zr.setVysledekByKurz(zr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
                 })
         ;
         return zakrs;

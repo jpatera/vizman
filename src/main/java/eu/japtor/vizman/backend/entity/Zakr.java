@@ -476,13 +476,16 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 
     @Transient
     public BigDecimal calcVysledekByKurz(BigDecimal koefPojist, BigDecimal koefRezie) {
-        if (null == getHonorCistyByKurz() || null == naklMzdy) {
-            return null;
-        } else {
-            return getHonorCistyByKurz().subtract(
-                    naklMzdy.multiply(koefPojist.add(BigDecimal.ONE)).multiply(koefRezie.add(BigDecimal.ONE))
-            );
+//        BigDecimal honCalc= getHonorCistyByKurz();
+        BigDecimal hotovoCalc = getRpHotovoByKurz();
+        if (null == hotovoCalc) {
+            hotovoCalc = BigDecimal.ZERO;
         }
+        BigDecimal mzdyCalc = (null == naklMzdy) ? BigDecimal.ZERO : naklMzdy;
+
+        return hotovoCalc.subtract(
+                mzdyCalc.multiply(koefPojist.add(BigDecimal.ONE)).multiply(koefRezie.add(BigDecimal.ONE))
+        );
     }
 
     @Transient

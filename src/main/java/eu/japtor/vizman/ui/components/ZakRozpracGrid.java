@@ -503,7 +503,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
         Label vysledekHeaderLabel = new Label("Def.");
         vysledekHeaderLabel.getElement()
-                .setProperty("title", "[Výsledek] = [Honorář čistý] - [Mzdy] * (1 + koef_pojist) * (1 + koef_rezie)");
+                .setProperty("title", "[Výsledek] = [Zbývá RP] - [Mzdy] * (1 + koef_pojist) * (1 + koef_rezie)");
         descHeaderRow.getCell(colVysledek).setComponent(vysledekHeaderLabel);
 
         // =============
