@@ -7,9 +7,12 @@ import com.vaadin.flow.component.grid.FooterRow;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextFieldVariant;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Zakn;
@@ -30,38 +33,35 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     public static final String DIALOG_HEIGHT = null;
     private static final String CLOSE_STR = "Zavřít";
 
-    private Button closeButton;
     private HorizontalLayout leftBarPart;
     private HorizontalLayout rightBarPart;
-
-
-//    WageFormDialog wageFormDialog;
+    private Button closeButton;
+    private Button zakNaklRepButton;
+    private TextField rezieParamField;
+    private TextField pojistParamField;
+    private Binder<ZakrListView.ZakrParams> paramsBinder;
 
     private List<Zakn> currentItemList;
-
-//    private Zakn zakn;
     private Zakr zakr;
 
     Grid<Zakn> grid;
-    private FlexLayout titleComponent;
     private FooterRow sumFooterRow;
 
     public static final String HODIN_COL_KEY = "zakn-bg-hodin";
     public static final String MZDA_COL_KEY = "zakn-bg-mzda";
     public static final String MZDA_POJ_COL_KEY = "zakn-bg-mzda-poj";
 
-
     private ZaknService zaknService;
     private ZakrListView.ZakrParams zakrParams;
 
-    public ZakNaklGridDialog(
-            ZaknService zaknService
-    ) {
+
+    public ZakNaklGridDialog(ZaknService zaknService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setItemNames(ItemType.UNKNOWN);
         getMainTitle().setText("Tabulka NÁKLADŮ");
 
         this.zaknService = zaknService;
+        this.paramsBinder = new Binder<>();
 
         getGridContainer().add(
                 initGridBar()
@@ -69,22 +69,95 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
         );
     }
 
+    //    public void openDialog(LinkedList<PersonWage> personWages) {
+    public void openDialog(Zakr zakr, ZakrListView.ZakrParams zakrParams) {
 
-    // Title for grid bar - not needed for person wages dialog
+//        this.origItemList = Collections.unmodifiableList(new LinkedList<>(currentItemList));
+
+//        this.itemsChanged = false;
+        this.zakrParams = zakrParams;
+        this.zakr = zakr;
+        paramsBinder.setBean(zakrParams);
+//        paramsBinder.addValueChangeListener(event -> calcButton.setIconDirty());
+        initDataAndControls();
+        this.open();
+    }
+
+    private void closeDialog() {
+        this.close();
+    }
+
+
+    // Title for grid bar
     // -------------------------------------------------------
-    private Component initTitleComponent() {
-        titleComponent = new FlexLayout(
-//                initZakGridResizeBtn()
-                initTitle()
-        );
+    private Component buildTitleComponent() {
+        HorizontalLayout titleComponent = new HorizontalLayout();
+        titleComponent.setMargin(false);
+        titleComponent.setPadding(false);
+        titleComponent.setSpacing(false);
+//        titleComponent.setAlignItems(FlexComponent.Alignment.CENTER);
         titleComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
+        titleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+        titleComponent.add(
+//                new GridTitle(ItemNames.getNomP(ItemType.ZAKR))
+                initTitle()
+                , new Ribbon()
+//                , new ReloadButton(event -> {
+//                    reloadViewContentPreserveFilters();
+//                })
+        );
         return titleComponent;
     }
+
+    private Component buildGridBarControlsComponent() {
+        HorizontalLayout controlsComponent = new HorizontalLayout();
+        controlsComponent.setMargin(false);
+        controlsComponent.setPadding(false);
+        controlsComponent.setSpacing(false);
+        controlsComponent.setAlignItems(FlexComponent.Alignment.CENTER);
+        controlsComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+        controlsComponent.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
+        controlsComponent.add(
+                initRezieField()
+                , new Ribbon("3em")
+                , initPojistField()
+        );
+        return controlsComponent;
+    }
+
+    private Component initRezieField() {
+        rezieParamField = new TextField("Koef. režie");
+        rezieParamField.setWidth("5em");
+        rezieParamField.setReadOnly(true);
+        rezieParamField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        rezieParamField.setValueChangeMode(ValueChangeMode.EAGER);
+        paramsBinder.forField(rezieParamField)
+                .asRequired("Koeficient režie musí být zadán")
+                .withConverter(VzmFormatUtils.bigDecimalPercent2Converter)
+                .bind(ZakrListView.ZakrParams::getKoefRezie, ZakrListView.ZakrParams::setKoefRezie)
+        ;
+        return rezieParamField;
+    }
+
+    private Component initPojistField() {
+        pojistParamField = new TextField("Koef. poj.");
+        pojistParamField.setWidth("5em");
+        pojistParamField.setReadOnly(true);
+        pojistParamField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        pojistParamField.setValueChangeMode(ValueChangeMode.EAGER);
+        paramsBinder.forField(pojistParamField)
+                .asRequired("Koeficient pojištění musí být zadán")
+                .withConverter(VzmFormatUtils.bigDecimalPercent2Converter)
+                .bind(ZakrListView.ZakrParams::getKoefPojist, ZakrListView.ZakrParams::setKoefPojist)
+        ;
+        return pojistParamField;
+    }
+
 
     private Component initTitle() {
         H4 zakTitle = new H4();
 //        zakTitle.setText(ItemNames.getNomP(ItemType.WAGE));
-        zakTitle.setText("NÁKLDŮ");
+        zakTitle.setText("NÁKLADŮ");
         zakTitle.getStyle()
                 .set("margin-top", "0.2em")
                 .set("margin-right", "1em");
@@ -93,21 +166,25 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     // -------------------------------------------------------
 
 
-//    public void openDialog(LinkedList<PersonWage> personWages) {
-    public void openDialog(Zakr zakr, ZakrListView.ZakrParams zakrParams) {
 
-//        this.origItemList = Collections.unmodifiableList(new LinkedList<>(currentItemList));
-
-//        this.itemsChanged = false;
-        this.zakrParams = zakrParams;
-        this.zakr = zakr;
-        initDataAndControls();
-        this.open();
+    private Component initZakNaklRepButton() {
+        zakNaklRepButton = new Button("Report"
+                , event -> {
+            openZakNaklRepDialog();
+        });
+//        this.addClassName("view-toolbar__button");
+        zakNaklRepButton.getElement().setAttribute("theme", "small secondary");
+        return zakNaklRepButton;
     }
 
-    private void closeDialog() {
-        this.close();
+    private void openZakNaklRepDialog() {
+//        zakrParams.setRokZak(zakrGrid.getRokFilterValue());
+//        zakrParams.setSkupina(zakrGrid.getSkupinaFilterValue());
+        ReportZakNaklDialog repZakNaklDialog  = new ReportZakNaklDialog(zaknService, zakr, zakrParams);
+        repZakNaklDialog.openDialog();
+        repZakNaklDialog.generateAndShowReport();
     }
+
 
     private void initDataAndControls() {
         deactivateListeners();
@@ -150,11 +227,16 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
         HorizontalLayout gridBar = new HorizontalLayout();
         gridBar.setSpacing(false);
         gridBar.setPadding(false);
-        gridBar.getStyle().set("margin-left", "-3em");
+        gridBar.getStyle().set("marginTop", "0.2em");
+//        gridBar.getStyle().set("margin-left", "-3em");
         gridBar.setAlignItems(FlexComponent.Alignment.BASELINE);
         gridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         gridBar.add(
-                new Ribbon()
+//                buildTitleComponent()
+//                , new Ribbon()
+                buildGridBarControlsComponent()
+                , new Ribbon()
+                , initZakNaklRepButton()
         );
         return gridBar;
     }

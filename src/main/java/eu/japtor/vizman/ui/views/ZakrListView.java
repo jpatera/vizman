@@ -41,7 +41,6 @@ import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.ReportZakRozpracDialog;
-import eu.japtor.vizman.ui.forms.ZakNaklGridDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -146,20 +145,20 @@ public class ZakrListView extends VerticalLayout {
 //    }
 
 
-    private Component initGridToolBar() {
-        HorizontalLayout gridToolBar = new HorizontalLayout();
-        gridToolBar.setSpacing(false);
-        gridToolBar.setAlignItems(Alignment.END);
-        gridToolBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
+    private Component initGridBar() {
+        HorizontalLayout gridBar = new HorizontalLayout();
+        gridBar.setSpacing(false);
+        gridBar.setAlignItems(Alignment.END);
+        gridBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-        gridToolBar.add(
+        gridBar.add(
                 buildTitleComponent()
                 , new Ribbon()
-                , buildGridToolBarControlsComponent()
+                , buildGridBarControlsComponent()
                 , new Ribbon()
                 , initRozpracRepButton()
         );
-        return gridToolBar;
+        return gridBar;
     }
 
     private Component buildTitleComponent() {
@@ -167,8 +166,9 @@ public class ZakrListView extends VerticalLayout {
         titleComponent.setMargin(false);
         titleComponent.setPadding(false);
         titleComponent.setSpacing(false);
-        titleComponent.setAlignItems(Alignment.CENTER);
-        titleComponent.setJustifyContentMode(JustifyContentMode.START);
+//        titleComponent.setAlignItems(FlexComponent.Alignment.CENTER);
+        titleComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
+        titleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
         titleComponent.add(
                 new GridTitle(ItemNames.getNomP(ItemType.ZAKR))
                 , new Ribbon()
@@ -181,7 +181,7 @@ public class ZakrListView extends VerticalLayout {
         return titleComponent;
     }
 
-    private Component buildGridToolBarControlsComponent() {
+    private Component buildGridBarControlsComponent() {
         HorizontalLayout controlsComponent = new HorizontalLayout();
         controlsComponent.setMargin(false);
         controlsComponent.setPadding(false);
@@ -378,7 +378,7 @@ public class ZakrListView extends VerticalLayout {
         gridContainer.setAlignItems(Alignment.STRETCH);
 
         gridContainer.add(
-                initGridToolBar()
+                initGridBar()
                 , initZakrGrid(zakrParams)
         );
         return gridContainer;

@@ -150,6 +150,10 @@ public class Zakn implements Serializable {
 
     // =============================================
 
+    @Transient
+    public String getPrijmeni() {
+        return person == null ? "N/A" : person.getPrijmeni();
+    }
 
     @Transient
     public BigDecimal getNaklMzdaPojist() {
