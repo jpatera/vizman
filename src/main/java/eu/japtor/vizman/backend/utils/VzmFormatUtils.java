@@ -36,6 +36,7 @@ public class VzmFormatUtils {
     public static final DecimalFormat decimalFormat = new DecimalFormat("#,##0");
     public static final NumberFormat yearFormat = getDecFormat(Locale.getDefault(), 4,0);
     public static final NumberFormat moneyFormat = getDecFormat(Locale.getDefault(), 10,2, true);
+    public static final NumberFormat moneyNoFractFormat = getDecFormat(Locale.getDefault(), 10,0, true);
     public static final NumberFormat procFormat = getDecFormat(Locale.getDefault(), 3, 1);
     public static final NumberFormat procIntFormat = getDecFormat(Locale.getDefault(), 3,0);
     public static final NumberFormat decHodFormat = getDecFormat(Locale.getDefault(), 4,1);

@@ -28,6 +28,7 @@ import eu.japtor.vizman.backend.entity.Zakr;
 import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.forms.ZakFormDialog;
+import eu.japtor.vizman.ui.forms.ZakNaklGridDialog;
 import eu.japtor.vizman.ui.forms.ZaqaGridDialog;
 import eu.japtor.vizman.ui.views.ZakrListView;
 import org.apache.commons.lang3.ObjectUtils;
@@ -75,7 +76,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //    Grid<Zak> zakGrid;
     private ZakFormDialog zakFormDialog;
     private ZaqaGridDialog zaqaGridDialog;
-
+    private ZakNaklGridDialog zakNaklGridDialog;
     private TextField kzCisloFilterField;
     private Select<Boolean> archFilterField;
     private Select<Integer> rokFilterField;
@@ -108,6 +109,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     private ZakService zakService;
     private FaktService faktService;
     private ZaqaService zaqaService;
+    private ZaknService zaknService;
     private CfgPropsCache cfgPropsCache;
     private ZakrListView.ZakrParams zakrParams;
 
@@ -122,6 +124,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             , ZakService zakService
             , FaktService faktService
             , ZaqaService zaqaService
+            , ZaknService zaknService
             , CfgPropsCache cfgPropsCache
     ) {
         this.initFilterArchValue = initFilterArchValue;
@@ -135,6 +138,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         this.zakService = zakService;
         this.faktService = faktService;
         this.zaqaService = zaqaService;
+        this.zaknService = zaknService;
         this.cfgPropsCache = cfgPropsCache;
 
         zaqaGridDialog = new ZaqaGridDialog(
@@ -143,6 +147,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         zakFormDialog = new ZakFormDialog(
                 this.zakService, this.faktService, this.cfgPropsCache
         );
+        zakNaklGridDialog = new ZakNaklGridDialog(
+                zaknService
+        );
+
 
 //        Grid<Zak> zakGrid = new Grid<>();
         this.getStyle().set("marginTop", "0.5em");
@@ -346,6 +354,13 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setResizable(true)
         ;
 
+
+        this.addColumn(new ComponentRenderer<>(this::buildZaknViewBtn))
+                .setHeader("Nak")
+                .setFlexGrow(0)
+                .setWidth("3em")
+        ;
+
         Grid.Column<Zakr> colRp = this.addColumn(rpGridValueProvider)
                 .setHeader("RP")
                 .setFlexGrow(0)
@@ -372,7 +387,6 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setResizable(true)
                 ;
 //        this.getDefaultHeaderRow().getCell(colRpHotovo).setComponent(hotovoHeaderLabel);
-
 
         Grid.Column<Zakr> colRpZbyva = this.addColumn(rpZbyvaByKurzGridValueProvider)
 //                .setComparator((zakr1, zakr2) -> zakr1.getRpZbyva()
@@ -448,15 +462,17 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(OBJEDNATEL_COL_KEY)
         ;
 
-        sumFooterRow = this.appendFooterRow();
 
 
-        // =============
-        // Headers
-        // =============
+        // =================
+        // Headers, Footers
+        // =================
 
         descHeaderRow = this.appendHeaderRow();
         filterHeaderRow = this.appendHeaderRow();
+
+        sumFooterRow = this.appendFooterRow();
+
 
         // =============
         // Description
@@ -658,6 +674,12 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         return new GridItemBtn(event -> zakFormDialog.openDialog(
                 true, zakService.fetchOne(zakr.getId()), Operation.EDIT)
                 , new Icon(VaadinIcon.EYE), VzmFormatUtils.getItemTypeColorName(zakr.getTyp())
+        );
+    }
+
+    Component buildZaknViewBtn(Zakr zakr) {
+        return new GridItemBtn(event -> zakNaklGridDialog.openDialog(zakr, zakrParams)
+                , new Icon(VaadinIcon.COIN_PILES), VzmFormatUtils.getItemTypeColorName(zakr.getTyp())
         );
     }
 

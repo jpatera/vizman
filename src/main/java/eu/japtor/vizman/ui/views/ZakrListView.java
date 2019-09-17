@@ -41,6 +41,7 @@ import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.ReportZakRozpracDialog;
+import eu.japtor.vizman.ui.forms.ZakNaklGridDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -75,8 +76,9 @@ public class ZakrListView extends VerticalLayout {
     private Select<String> rxParamField;
     private Select<String> ryParamField;
     private Binder<ZakrParams> paramsBinder;
-
     private ZakrParams zakrParams;
+
+//    ZakNaklGridDialog zakNaklGridDialog;
 
     @Autowired
     public ZakrService zakrService;
@@ -89,6 +91,9 @@ public class ZakrListView extends VerticalLayout {
 
     @Autowired
     public ZaqaService zaqaService;
+
+    @Autowired
+    public ZaknService zaknService;
 
     @Autowired
     public CfgPropsCache cfgPropsCache;
@@ -111,7 +116,6 @@ public class ZakrListView extends VerticalLayout {
 
     @PostConstruct
     public void postInit() {
-
         zakrParams = new ZakrParams();
         zakrParams.setKurzEur(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
         zakrParams.setRx(null);
@@ -453,6 +457,7 @@ public class ZakrListView extends VerticalLayout {
                 , zakService
                 , faktService
                 , zaqaService
+                , zaknService
                 , cfgPropsCache
         );
         zakrGrid.setMultiSort(true);
