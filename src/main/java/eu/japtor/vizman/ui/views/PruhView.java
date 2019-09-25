@@ -21,7 +21,6 @@ import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -45,7 +44,7 @@ import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.ItemRemoveBtn;
 import eu.japtor.vizman.ui.components.ReloadButton;
 import eu.japtor.vizman.ui.components.Ribbon;
-import eu.japtor.vizman.ui.forms.ZakFlatSelectDialog;
+import eu.japtor.vizman.ui.forms.ZakSelectDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
@@ -120,7 +119,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     private  Icon pruhStateIconLocked;
     private  Icon pruhStateIconNone;
 
-    private ZakFlatSelectDialog zakSelectDialog;
+    private ZakSelectDialog zakSelectDialog;
     private static final Locale czLocale = new Locale("cs", "CZ");
 
     private HorizontalLayout gridZakTitleBar;
@@ -251,7 +250,10 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        !SecurityUtils.isAccessGranted(event.getNavigationTarget())
         authUsername = SecurityUtils.getUsername();
         initPruhData();
-        zakSelectDialog = new ZakFlatSelectDialog(this::addZaksToGrid, zakBasicRepo);
+        zakSelectDialog = new ZakSelectDialog(
+                this::addSelectedZaksToGrid
+                , zakBasicRepo
+        );
     }
 
     private Paragraph buildSumTextComponent() {
@@ -260,14 +262,14 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         return textComp;
     }
 
-    private void addZaksToGrid(final List<ZakBasic> zakBasicList) {
+    private void addSelectedZaksToGrid(final List<ZakBasic> zakBasicList) {
 
         if (pruhZakGrid.getEditor().isOpen()) {
             pruhZakGrid.getEditor().closeEditor();
         }
         int i = 0;
         for (ZakBasic zakBasic : zakBasicList) {
-            zakBasic.getCkont();
+//            zakBasic.getCkont();
             boolean isZakInPruh = pruhZakList.stream()
                     .map(PruhZak::getZakId)
                     .anyMatch(zakId -> zakId.equals(zakBasic.getId()))
@@ -279,14 +281,11 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
             }
         }
         if (i > 0) {
-            Notification.show(String.format("Zakázky přidány: %s", i)
+            Notification.show(String.format("Počet přidaných zakázek: %s", i)
                     , 2500, Notification.Position.TOP_CENTER);
         } else {
-            ConfirmDialog.createInfo()
-                    .withCaption("PŘIDÁNÍ ZAKÁZEK")
-                    .withMessage("Žádné zakázky nebyly přidány, všechny jsou již v proužku přítomny")
-                    .open()
-            ;
+            Notification.show(String.format("Žádná zakázka nebyla přidána.")
+                    , 2500, Notification.Position.TOP_CENTER);
         }
 //        calcAndSetPruhMissingHods();
 //        setPruhSumHods();
@@ -300,7 +299,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         }
         int i = 0;
         for (PruhZak pzToAdd : pruhZakListToAdd) {
-            pzToAdd.getCkont();
+//            pzToAdd.getCkont();
             boolean isZakInPruh = pruhZakList.stream()
                     .map(PruhZak::getZakId)
                     .anyMatch(zakId -> zakId.equals(pzToAdd.getZakId()))
@@ -312,12 +311,12 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
             }
         }
         if (i > 0) {
-            Notification.show(String.format("Zakázky přidány: %s", i)
+            Notification.show(String.format("Počet přidaných zakázek: %s", i)
                     , 2500, Notification.Position.TOP_CENTER);
         } else {
             ConfirmDialog.createInfo()
                     .withCaption("PŘIDÁNÍ ZAKÁZEK")
-                    .withMessage("Žádné zakázky nebyly přidány, všechny jsou již v proužku přítomny")
+                    .withMessage("Žádné zakázky nebyly přidány, všechny jsou již v proužku přítomny.")
                     .open()
             ;
         }
@@ -1605,7 +1604,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
     }
 
     private Component initZaksCopyButton() {
-        zaksCopyButton = new Button("Nakopírovat zakázky");
+        zaksCopyButton = new Button("Zkopírovat zakázky");
         zaksCopyButton.addClickListener(event -> {
             if (pruhZakGrid.getEditor().isOpen()) {
                 pruhZakGrid.getEditor().closeEditor();
@@ -1619,8 +1618,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 return;
             }
 
-            YearMonth lastYm = getLastUserPruhYmNotCurrent(pruhPerson.getId());
-            if (null == lastYm) {
+            YearMonth sourceYm = getLastUserPruhYmNotCurrent(pruhPerson.getId());
+            if (null == sourceYm) {
                 ConfirmDialog.createInfo()
                         .withCaption("KOPÍROVÁNÍ ZAKÁZEK")
                         .withMessage(String.format("Nenalezen žádný proužek uživatele %s.", pruhPerson.getUsername()))
@@ -1631,14 +1630,14 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 
             ConfirmDialog.createQuestion()
                     .withCaption("KOPÍROVÁNÍ ZAKÁZEK")
-                    .withMessage(String.format("Nakopírovat zakázky z proužku %s ?", lastYm))
+                    .withMessage(String.format("Zkopírovat zakázky z proužku %s do proužku aktuálního?", sourceYm))
                     .withCancelButton(ButtonOption.caption("ZPĚT"))
                     .withYesButton(() -> {
-                        List<DochsumZak> lastDsZaks = dochsumZakService.fetchDochsumZaksForPersonAndYm(pruhPerson.getId(), lastYm);
+                        List<DochsumZak> lastDsZaks = dochsumZakService.fetchDochsumZaksForPersonAndYm(pruhPerson.getId(), sourceYm);
                         if (null == lastDsZaks || lastDsZaks.size() == 0) {
                             ConfirmDialog.createInfo()
                                     .withCaption("KOPÍROVÁNÍ ZAKÁZEK")
-                                    .withMessage(String.format("V  posledním proužku uživatele %s nenalezena žádná data.", pruhPerson.getUsername()))
+                                    .withMessage(String.format("Ve zdrojovém proužku %s uživatele %s nenalezena žádná data.", sourceYm, pruhPerson.getUsername()))
                                     .open()
                             ;
                             return;

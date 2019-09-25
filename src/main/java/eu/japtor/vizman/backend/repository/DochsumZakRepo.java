@@ -36,7 +36,8 @@ public interface DochsumZakRepo extends JpaRepository<DochsumZak, Long> {
 //    @Query("DELETE FROM DochsumZak dsz WHERE dsz.dsYm = ?1 AND dsz.personId = ?2 AND (day(dsz.dsDate) <> 1) AND (dsz.dszWorkPruh IS NULL OR dsz.dszWorkPruh = 0)")
 //    @Query(value = "DELETE FROM vizman.dochsum_zak WHERE ds_Ym = ?1 AND person_Id = ?2 AND DAY(ds_Date) <> 1 AND (dsz_Work_Pruh IS NULL OR dsz_Work_Pruh = 0)"
 //            , nativeQuery = true)
-    @Query(value = "DELETE FROM VIZMAN.DOCHSUM_ZAK WHERE DS_YM = ?1 AND PERSON_ID = ?2 AND (DSZ_WORK_PRUH IS NULL OR DSZ_WORK_PRUH = 0) AND DAY(ds_Date) <> 1"
+//    @Query(value = "DELETE FROM VIZMAN.DOCHSUM_ZAK WHERE DS_YM = ?1 AND PERSON_ID = ?2 AND (DSZ_WORK_PRUH IS NULL OR DSZ_WORK_PRUH = 0) AND DAY(ds_Date) <> 1"
+    @Query(value = "DELETE FROM VIZMAN.DOCHSUM_ZAK WHERE DS_YM = ?1 AND PERSON_ID = ?2 AND (DSZ_WORK_PRUH IS NULL OR DSZ_WORK_PRUH = 0)"
             , nativeQuery = true)
     void deleteZeroDochsumZaksByPruhYmAndPerson(YearMonth pruhYm, Long pruhPersonId);
 

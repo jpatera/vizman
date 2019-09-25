@@ -116,7 +116,7 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
             List<Long> dsZakIdsPruh = pruhZaks.stream()
                     .map(zakPruh -> zakPruh.getZakId()).distinct().collect(Collectors.toList());
             List<Long> dsZakIdsToDelete = dsZakIdsDb.stream()
-                    .filter(dszZakIdDb -> !dsZakIdsPruh.contains(dszZakIdDb))
+                    .filter(zakIdDb -> !dsZakIdsPruh.contains(zakIdDb))
                     .collect(Collectors.toList());
 
             // Get DochsumZak list for insert/update:
@@ -127,6 +127,19 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
             for (PruhZak pzak : pruhZaks) {
                 Long pzakZakId = pzak.getZakId();
     //            pzak.getZakId()...
+
+                DochsumZak dsZakDbAnchor = dsZaksDb.stream()
+                        .filter(zakDb -> zakDb.getZakId().equals(pzakZakId)
+                                && zakDb.getDsYm().equals(pruhYm))
+                        .findAny().orElse(null);
+                if (null == dsZakDbAnchor) {
+                    LocalDate pzakDateAnchor = pruhYm.atDay( 1 ).minusYears(200);
+                    DochsumZak dsZakYmAnchor = new DochsumZak(
+                            pruhPersonId, pzakDateAnchor, pruhYm, pzakZakId, null, null);
+                    dsZaksToInsert.add(dsZakYmAnchor);
+                    dsZaksDb.add(dsZakYmAnchor);
+                }
+
                 for (int i = 1; i <= pruhDayMax; i++) {
                     BigDecimal newCellHod = pzak.getHod(i);
                     LocalDate pzakDate = LocalDate.of(pruhYm.getYear(), pruhYm.getMonth(), i);
@@ -135,34 +148,48 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
                                     && zakDb.getDsDate().equals(pzakDate)
                             )
                             .findFirst().orElse(null);
-                    if (i == 1) {
-                        if (null == newCellHod){
-                            newCellHod = BigDecimal.ZERO;
-                        }
-                        if (null != dsZakDb) {
-                            dsZakDb.setDszWorkPruh(newCellHod);
-                            dsZaksToUpdate.add(dsZakDb);
-                        } else {
-                            DochsumZak dsZakNew = new DochsumZak(
-                                    pruhPersonId, pzakDate, pzakZakId, newCellHod, personWage.getTariff());
-                            dsZaksToInsert.add(dsZakNew);
-                        }
-                    } else {
+//                    if (i == 1) {
+//                        if (null == newCellHod){
+//                            newCellHod = BigDecimal.ZERO;
+//                        }
+//                        if (null != dsZakDb) {
+//                            dsZakDb.setDszWorkPruh(newCellHod);
+//                            dsZakDb.setSazba(personWage.getTariff());
+//                            dsZakDb.setDszWorkPruh(dsZakDb.getSazba().multiply(dsZakDb.getDszWorkPruh()));
+//                            dsZaksToUpdate.add(dsZakDb);
+//                        } else {
+//                            DochsumZak dsZakNew = new DochsumZak(
+//                                    pruhPersonId, pzakDate, pzakZakId, newCellHod, personWage.getTariff());
+//                            dsZaksToInsert.add(dsZakNew);
+//                        }
+//                    } else {
                         if (null != dsZakDb) {
                             if ((null == newCellHod) || newCellHod.compareTo(BigDecimal.ZERO) == 0) {
                                 dsZakDb.setDszWorkPruh(null);
-                            } else if (dsZakDb.getDszWorkPruh().compareTo(newCellHod) != 0) {
+                            } else {
                                 dsZakDb.setDszWorkPruh(newCellHod);
+                                dsZakDb.setSazba(personWage.getTariff());
+                                if (null == dsZakDb.getDszWorkPruh() || (null == dsZakDb.getSazba())) {
+                                    dsZakDb.setDszMzda(null);
+                                } else {
+                                    dsZakDb.setDszMzda(dsZakDb.getDszWorkPruh().multiply(dsZakDb.getSazba()));
+                                }
                             }
                             dsZaksToUpdate.add(dsZakDb);
                         } else {
+//                            if (i == 1) {
+//                                LocalDate pzakDateAnchor = pzakDate.minusYears(100);
+//                                DochsumZak dsZakYmAnchor = new DochsumZak(
+//                                        pruhPersonId, pzakDateAnchor, pzakZakId, newCellHod, personWage.getTariff());
+//                                dsZaksToInsert.add(dsZakYmAnchor);
+//                            }
                             if (null != newCellHod && newCellHod.compareTo(BigDecimal.ZERO) != 0) {
                                 DochsumZak dsZakNew = new DochsumZak(
-                                        pruhPersonId, pzakDate, pzakZakId, newCellHod, personWage.getTariff());
+                                        pruhPersonId, pzakDate, pruhYm, pzakZakId, newCellHod, personWage.getTariff());
                                 dsZaksToInsert.add(dsZakNew);
                             }
                         }
-                    }
+//                    }
                 }
             }
 

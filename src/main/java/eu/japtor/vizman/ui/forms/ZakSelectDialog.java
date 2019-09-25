@@ -16,38 +16,36 @@ import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 //@UIScope    // Without this annotation browser refresh throws exception
-public class ZakFlatSelectDialog extends Dialog {
+public class ZakSelectDialog extends Dialog {
 
-    private List<ZakBasic> zakList;
+    private List<ZakBasic> zakBasicList;
     private ZakBasicGrid zakGrid;
 
     VerticalLayout mainPanel;
     HorizontalLayout buttonBar;
-    private Button selectButton;
+    private Button addZaksButton;
     private Button cancelButton;
 
     public ZakBasicRepo zakBasicRepo;
-    private Consumer<List<ZakBasic>> zakBasicSelector;
+    private Consumer<List<ZakBasic>> itemsAder;
 
 
-    public ZakFlatSelectDialog(Consumer<List<ZakBasic>> itemSelector, ZakBasicRepo zakBasicRepo) {
+    public ZakSelectDialog(Consumer<List<ZakBasic>> itemAdder, ZakBasicRepo zakBasicRepo) {
 //        super(itemSaver);
-        this.zakBasicSelector = itemSelector;
+        this.itemsAder = itemAdder;
         this.zakBasicRepo = zakBasicRepo;
 
         this.setWidth("1400px");
         this.setHeight("750px");
 
-        zakList = new ArrayList<>();
+        zakBasicList = new ArrayList<>();
 //        setupEventListeners();
 
         this.add(initView());
@@ -60,18 +58,18 @@ public class ZakFlatSelectDialog extends Dialog {
         cancelButton = new Button("Zpět");
         cancelButton.addClickListener(e -> close());
 
-        selectButton = new Button("Uložit");
-        selectButton.getElement().setAttribute("theme", "primary");
+        addZaksButton = new Button("Přidat zakázky");
+        addZaksButton.getElement().setAttribute("theme", "primary");
+        addZaksButton.addClickListener(e -> addZaksClicked());
         // TODO: Disable when opened, enabled when item selected
-//        selectButton.setEnabled(false);
-
+//        addZaksButton.setEnabled(false);
 
         HorizontalLayout leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);
 
         HorizontalLayout middleBarPart = new HorizontalLayout();
         middleBarPart.setSpacing(true);
-        middleBarPart.add(selectButton, new Gap(), cancelButton);
+        middleBarPart.add(addZaksButton, new Gap(), cancelButton);
 
         HorizontalLayout rightBarPart = new HorizontalLayout();
         rightBarPart.setSpacing(true);
@@ -138,13 +136,13 @@ public class ZakFlatSelectDialog extends Dialog {
 
         gridContainer.add(
                 initGridToolBar()
-                , initZakGrid()
+                , initZakGrid(selCount -> addZaksButton.setEnabled(selCount > 0))
         );
         return gridContainer;
     }
 
-    private Component initZakGrid() {
-        zakGrid = new ZakBasicGrid(true,false, Boolean.FALSE);
+    private Component initZakGrid(Consumer<Integer> selectionChanger) {
+        zakGrid = new ZakBasicGrid(true, selectionChanger, false, Boolean.FALSE);
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.NONE);
         return zakGrid;
@@ -177,27 +175,29 @@ public class ZakFlatSelectDialog extends Dialog {
     }
 
     private void updateViewContent() {
-        zakList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDesc();
-        zakGrid.populateGridDataAndRebuildFilterFields(zakList);
+        zakBasicList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDesc();
+        zakGrid.populateGridDataAndRebuildFilterFields(zakBasicList);
         zakGrid.initFilterValues();
         zakGrid.doFilter();
+        zakGrid.setSelCount(0);
+        addZaksButton.setEnabled(zakGrid.getSelCount() > 0);
         zakGrid.getDataProvider().refreshAll();
     }
 
 //    private void loadGridDataAndRebuildFilterFields() {
-//        zakList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDesc();
-//        zakGrid.setItems(zakList);
-//        zakGrid.setRokFilterItems(zakList.stream()
+//        zakBasicList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDesc();
+//        zakGrid.setItems(zakBasicList);
+//        zakGrid.setRokFilterItems(zakBasicList.stream()
 //                .filter(z -> null != z.getRok())
 //                .map(ZakBasic::getRok)
 //                .distinct().collect(Collectors.toCollection(LinkedList::new))
 //        );
-//        zakGrid.setSkupinaFilterItems(zakList.stream()
+//        zakGrid.setSkupinaFilterItems(zakBasicList.stream()
 //                .map(ZakBasic::getSkupina)
 //                .filter(s -> null != s)
 //                .distinct().collect(Collectors.toCollection(LinkedList::new))
 //        );
-//        zakGrid.setArchFilterItems(zakList.stream()
+//        zakGrid.setArchFilterItems(zakBasicList.stream()
 //                .map(ZakBasic::getArch)
 //                .filter(a -> null != a)
 //                .distinct().collect(Collectors.toCollection(LinkedList::new))
@@ -207,44 +207,44 @@ public class ZakFlatSelectDialog extends Dialog {
 
 //    private void reloadDataProvider() {
 ////        List<? super Zak> kzList;
-////        zakList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDes();
-//        zakList = zakBasicRepo.findAll();
+////        zakBasicList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDes();
+//        zakBasicList = zakBasicRepo.findAll();
 ////        ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
-////        ListDataProvider<Zak> zakProvider = new ListDataProvider(zakList);
+////        ListDataProvider<Zak> zakProvider = new ListDataProvider(zakBasicList);
 ////        zakProvider.set
 //
 ////        zakGrid.setDataProvider(zakProvider);
-//        zakGrid.setItems(zakList);
+//        zakGrid.setItems(zakBasicList);
 //        zakGrid.focus();
 //    }
 
 
 
     public void openDialog() {
-        selectButton.addClickListener(e -> saveClicked());
-        selectButton.setText("Přidat zakázky");
         updateViewContent();
         this.open();
     }
 
-    private void saveClicked() {
-        List<ZakBasic> zakBasicItems = new ArrayList<>();
-        for(ZakBasic zakb :  zakList) {
+    private void addZaksClicked() {
+        List<ZakBasic> zakBasicItemsToAdd = new ArrayList<>();
+        for(ZakBasic zakb : zakBasicList) {
             if (((zakb.getTyp() == ItemType.ZAK) || (zakb.getTyp() == ItemType.LEK) || (zakb.getTyp() == ItemType.REZ))
                     && !zakb.getArch() && zakb.isChecked()) {
-                zakBasicItems.add(zakb);
+                zakBasicItemsToAdd.add(zakb);
             }
         }
 
-        if (CollectionUtils.isEmpty(zakBasicItems)) {
+        if (CollectionUtils.isEmpty(zakBasicItemsToAdd)) {
+//            Notification.show(String.format("Nejsou vybrányPočet přidaných zakázek: %s", i)
+//                    , 2500, Notification.Position.TOP_CENTER);
             ConfirmDialog.createInfo()
                     .withCaption("Přidání zakázek")
                     .withMessage("Nejsou vybrány žádné zakázky")
                     .open()
             ;
         } else {
-            zakBasicSelector.accept(zakBasicItems);
-            close();
+            itemsAder.accept(zakBasicItemsToAdd);
+            this.close();
         }
     }
 }

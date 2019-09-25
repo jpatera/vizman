@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ZakBasicGrid extends Grid<ZakBasic> {
@@ -42,14 +43,18 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
     private Boolean initFilterArchValue;
     private boolean archFieldVisible;
     private boolean selectFieldVisible;
+    private Consumer<Integer> selectionChanger;
+
+    private int selCount;
 
     HeaderRow filterRow;
 
-    public ZakBasicGrid(boolean selectFieldVisible, boolean archFieldVisible, Boolean initFilterArchValue) {
+    public ZakBasicGrid(boolean selectFieldVisible, Consumer<Integer> selectionChanger, boolean archFieldVisible, Boolean initFilterArchValue) {
 
         this.initFilterArchValue = initFilterArchValue;
         this.archFieldVisible = archFieldVisible;
         this.selectFieldVisible = selectFieldVisible;
+        this.selectionChanger = selectionChanger;
 
 //        Grid<Zak> zakGrid = new Grid<>();
         this.getStyle().set("marginTop", "0.5em");
@@ -309,6 +314,14 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
         Checkbox zakSelectBox = new Checkbox();
         zakSelectBox.addValueChangeListener(event -> {
             zakb.setChecked(event.getValue());
+            if (event.getValue()) {
+                selCount++;
+            } else {
+                selCount--;
+            }
+            if  (null != selectionChanger) {
+                selectionChanger.accept(Integer.valueOf(selCount));
+            }
         });
 //        if ((ItemType.ZAK == zakb.getTyp()) || (ItemType.REZ == zakb.getTyp()) || (ItemType.LEK == zakb.getTyp())) {
         if ((ItemType.ZAK == zakb.getTyp()) || (ItemType.REZ == zakb.getTyp())) {
@@ -340,6 +353,14 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
         filterRow.getCell(this.getColumnByKey(SKUPINA_COL_KEY))
                 .setComponent(skupinaFilterField);
         skupinaFilterField.setItems(skupinaItems);
+    }
+
+    public int getSelCount() {
+        return selCount;
+    }
+
+    public void setSelCount(int selCount) {
+        this.selCount = selCount;
     }
 }
 
