@@ -10,4 +10,6 @@ import java.util.List;
 public interface ZaknService {
 
     List<Zakn> fetchByZakId(Long zakId, ZakrListView.ZakrParams zakrParams);
+
+    List<Zakn> fetchByZakIdSumByYm(Long zakId, ZakrListView.ZakrParams zakrParams);
 }

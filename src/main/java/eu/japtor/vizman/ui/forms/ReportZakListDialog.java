@@ -2,6 +2,7 @@ package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -66,6 +67,7 @@ public class ReportZakListDialog extends AbstractPrintDialog<Zak> implements Has
     private ZakListReport report;
     private HorizontalLayout expAnchorsBox;
     private HorizontalLayout reportParamBox;
+//    private HorizontalLayout zakInfoBox;
     Select<Integer> rokFilterField;
 
     private SerializableSupplier<List<? extends Zak>> itemsSupplier = () -> {
@@ -111,6 +113,10 @@ public class ReportZakListDialog extends AbstractPrintDialog<Zak> implements Has
         Button genButton = new Button("Generovat");
         genButton.addClickListener(event -> generateAndShowReport());
 
+//        getReportInfoBox().add(
+//                initZakInfoBox
+//        );
+
         reportParamBox = new HorizontalLayout();
         reportParamBox.getStyle()
                 .set("margin-top", "0.2em")
@@ -124,7 +130,6 @@ public class ReportZakListDialog extends AbstractPrintDialog<Zak> implements Has
                 reportParamBox
                 , expAnchorsBox
         );
-
         report = new ZakListReport();
 
         activateListeners();

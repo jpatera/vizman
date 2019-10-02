@@ -7,6 +7,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,6 +55,14 @@ public class Zakn implements Serializable {
 //    @Column(name = "MENA")
 //    private Mena mena;
 
+    @Column(
+            name = "YM_PRUH",
+            columnDefinition = "INTEGER"
+    )
+    @Convert(
+            converter = YearMonthIntegerAttributeConverter.class
+    )
+    private YearMonth ymPruh;
 
     @Basic
     @Column(name = "DATE_PRUH")
@@ -94,6 +103,13 @@ public class Zakn implements Serializable {
 
     public Long getZakId() {
         return zakId;
+    }
+
+    public YearMonth getYmPruh() {
+        return ymPruh;
+    }
+    public void setYmPruh(YearMonth ymPruh) {
+        this.ymPruh = ymPruh;
     }
 
     public LocalDate getDatePruh() {

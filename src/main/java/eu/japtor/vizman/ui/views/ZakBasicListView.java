@@ -152,7 +152,7 @@ public class ZakBasicListView extends VerticalLayout {
 
 
     private Component initZakGrid() {
-        zakGrid = new ZakBasicGrid(false, null,true, null);
+        zakGrid = new ZakBasicGrid(false, null, null,true, null);
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         return zakGrid;

@@ -27,6 +27,7 @@ public abstract class AbstractGridDialog<T extends Serializable>  extends Dialog
     private VerticalLayout gridContainer;
     private Component buttonBar;
     private HorizontalLayout dialogHeader;
+    private HorizontalLayout gridInfoBox;
     private HtmlComponent headerDevider;
 
     protected GrammarGender itemGender;
@@ -71,6 +72,7 @@ public abstract class AbstractGridDialog<T extends Serializable>  extends Dialog
 
         dialogContent.add(
                 initHeaderDevider()
+                , initGridInfoBox()
                 , gridContainer
                 , new Paragraph("")
                 , buttonBar
@@ -135,6 +137,23 @@ public abstract class AbstractGridDialog<T extends Serializable>  extends Dialog
         headerMiddleBox = new Div();
         return headerMiddleBox;
     }
+
+    private Component initGridInfoBox() {
+        gridInfoBox = new HorizontalLayout();
+        gridInfoBox.getStyle()
+                .set("margin-top", "0.2em")
+                .set("margin-bottom", "0.2em");
+//        reportToolBar.getStyle().set("margin-left", "-2em");
+        gridInfoBox.setSpacing(false);
+//        reportToolBar.setPadding(false);
+        gridInfoBox.setAlignItems(FlexComponent.Alignment.BASELINE);
+        gridInfoBox.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        return gridInfoBox;
+    }
+
+    public HasComponents getGridInfoBox() {
+        return gridInfoBox;
+    };
 
     protected Div getHeaderMiddleBox() {
         return headerMiddleBox;

@@ -2,6 +2,8 @@ package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
@@ -10,7 +12,6 @@ import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Zakn;
 import eu.japtor.vizman.backend.entity.Zakr;
 import eu.japtor.vizman.backend.report.ZakNaklReport;
-import eu.japtor.vizman.backend.report.ZakRozpracReport;
 import eu.japtor.vizman.backend.service.ZaknService;
 import eu.japtor.vizman.ui.components.AbstractPrintDialog;
 import eu.japtor.vizman.ui.components.ReportExpAnchor;
@@ -35,6 +36,7 @@ public class ReportZakNaklDialog extends AbstractPrintDialog<Zakr> implements Ha
     private ZakNaklReport report;
     private HorizontalLayout expAnchorsBox;
     private HorizontalLayout reportParamBox;
+//    private HorizontalLayout zakInfoBox;
 //    private Select<Integer> rokZakParamField;
 //    private Select<Boolean> archParamField;
 //    private Select<String> skupinaParamField;
@@ -45,14 +47,15 @@ public class ReportZakNaklDialog extends AbstractPrintDialog<Zakr> implements Ha
     private TextField pojistParamField;
 //    private TextField kurzParamField;
 
-    private SerializableSupplier<List<? extends Zakn>> itemsSupplier = () -> {
-        return zaknService.fetchByZakId(zakr.getId(), zakrParams);
-    };
+    private SerializableSupplier<List<? extends Zakn>> itemsSupplier = () ->
+//        zaknService.fetchByZakId(zakr.getId(), zakrParams)
+        zaknService.fetchByZakIdSumByYm(zakr.getId(), zakrParams)
+    ;
 
 
     public ReportZakNaklDialog(ZaknService zaknService, Zakr zakr, ZakrListView.ZakrParams zakrParams) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
-        setDialogTitle("REPORT : Zakázka - náklady");
+        setDialogTitle("Report: NÁKLADY NA ZAKÁZKU");
 //        getHeaderEndBox().setText("END text");
         this.zaknService = zaknService;
         this.zakr = zakr;
@@ -78,6 +81,18 @@ public class ReportZakNaklDialog extends AbstractPrintDialog<Zakr> implements Ha
 
         Button genButton = new Button("Generovat");
         genButton.addClickListener(event -> generateAndShowReport());
+
+//        zakInfoBox = new HorizontalLayout();
+//        zakInfoBox.getStyle()
+//                .set("margin-top", "0.2em")
+//                .set("margin-bottom", "0.2em");
+//        zakInfoBox.add(
+//                buildZakInfoComponent()
+//        );
+//
+//        getReportInfoBox().add(
+//                zakInfoBox
+//        );
 
         reportParamBox = new HorizontalLayout();
         reportParamBox.getStyle()

@@ -47,7 +47,7 @@ public class ReportZakTestDialog extends AbstractPrintDialog<Zak> implements Has
 
     public ReportZakTestDialog(ZakService zakService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
-        setDialogTitle("REPORT: Zakázky - rozpracovanost");
+        setDialogTitle("Report: ROZPRACOVANOST ZAKÁZEK");
 //        getHeaderEndBox().setText("END text");
         this.zakService = zakService;
         initReportControls();

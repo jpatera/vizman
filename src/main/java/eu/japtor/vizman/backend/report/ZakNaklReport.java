@@ -15,6 +15,7 @@ import org.vaadin.reports.PrintPreviewReport;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Map;
@@ -30,6 +31,7 @@ public class ZakNaklReport extends PrintPreviewReport {
     static final Style GROUP_HEADER_STYLE;
     static final Style TEXT_STYLE;
     static final Style WORK_HOUR_STYLE;
+    static final Style WORK_HOUR_STYLE_SUM;
     static final Style MONEY_STYLE;
     static final Style MONEY_NO_FRACT_STYLE;
     static final Style PROC_STYLE;
@@ -92,6 +94,19 @@ public class ZakNaklReport extends PrintPreviewReport {
                 .setPattern("#,##0.0;-#,##0.0")
                 .build();
 
+//        WORK_HOUR_STYLE_SUM = WORK_HOUR_STYLE;
+//        WORK_HOUR_STYLE_SUM
+//                .setTextColor(Color.BLUE);
+
+        WORK_HOUR_STYLE_SUM = new StyleBuilder(false)
+                .setHorizontalAlign(HorizontalAlign.RIGHT)
+                .setPaddingRight(Integer.valueOf(3))
+                .setBorderLeft(Border.THIN())
+                .setBorderRight(Border.THIN())
+                .setPattern("#,##0.0;-#,##0.0")
+                .setTextColor(Color.BLUE)
+                .build();
+
         MONEY_NO_FRACT_STYLE = new StyleBuilder(false)
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
                 .setPaddingRight(Integer.valueOf(3))
@@ -129,11 +144,19 @@ public class ZakNaklReport extends PrintPreviewReport {
                 .setWidth(12)
                 .build();
 
-        AbstractColumn datePruhCol = ColumnBuilder.getNew()
-                .setColumnProperty("datePruh", LocalDate.class)
-                .setTitle("Datum")
+//        AbstractColumn datePruhCol = ColumnBuilder.getNew()
+//                .setColumnProperty("datePruh", LocalDate.class)
+//                .setTitle("Datum")
+////                .setStyle(TEXT_STYLE)
+//                .setTextFormatter(DateTimeFormatter.ISO_DATE.toFormat())
+//                .setWidth(8)
+//                .build();
+
+        AbstractColumn ymPruhCol = ColumnBuilder.getNew()
+                .setColumnProperty("ymPruh", YearMonth.class)
+                .setTitle("YM")
 //                .setStyle(TEXT_STYLE)
-                .setTextFormatter(DateTimeFormatter.ISO_DATE.toFormat())
+//                .setTextFormatter(DateTimeFormatter.ISO_DATE.toFormat())
                 .setWidth(8)
                 .build();
 
@@ -181,24 +204,23 @@ public class ZakNaklReport extends PrintPreviewReport {
 
 
 
-        GroupBuilder gb1 = new GroupBuilder();
+        GroupBuilder userGroupBuilder = new GroupBuilder();
 
-        Style glabelStyle = new StyleBuilder(false).setFont(Font.ARIAL_SMALL)
+        Style groupLabelStyle = new StyleBuilder(false).setFont(Font.ARIAL_SMALL)
             .setHorizontalAlign(HorizontalAlign.RIGHT)
             .setBorderTop(Border.THIN())
             .setStretchWithOverflow(false)
             .build();
-
-        DJGroupLabel glabel1 = new DJGroupLabel("", glabelStyle, LabelPosition.LEFT);
-        DJGroupLabel glabel2 = new DJGroupLabel("", glabelStyle, LabelPosition.LEFT);
-        DJGroupLabel glabel3 = new DJGroupLabel("", glabelStyle, LabelPosition.LEFT);
+        DJGroupLabel userGroupWorkHourLabel = new DJGroupLabel("", groupLabelStyle, LabelPosition.LEFT);
+        DJGroupLabel userGroupMzdaLabel = new DJGroupLabel("", groupLabelStyle, LabelPosition.LEFT);
+        DJGroupLabel userGroupWorkMzdaPojistLabel = new DJGroupLabel("", groupLabelStyle, LabelPosition.LEFT);
 
         //		 define the criteria column to group by (columnState)
-        DJGroup g1 = gb1.setCriteriaColumn((PropertyColumn) prijmeniCol)
-              	.addFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_STYLE, null, glabel1) // tell the group place a variable footer of the column "columnAmount" with the SUM of allvalues of the columnAmount in this group.
-          		.addFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_STYLE, null, glabel2) // idem for the columnaQuantity column
-          		.addFooterVariable(naklMzdaPojistCol, DJCalculation.SUM, MONEY_NO_FRACT_STYLE, null, glabel3) // idem for the columnaQuantity column
-         		.setGroupLayout(GroupLayout.VALUE_IN_HEADER) // tells the group how to be shown, there are manyposibilities, see the GroupLayout for more.
+        DJGroup userGroup = userGroupBuilder.setCriteriaColumn((PropertyColumn) prijmeniCol)
+              	.addFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_STYLE, null, userGroupWorkHourLabel) // tell the group place a variable footer of the column "columnAmount" with the SUM of allvalues of the columnAmount in this group.
+          		.addFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_STYLE, null, userGroupMzdaLabel) // idem for the columnaQuantity column
+          		.addFooterVariable(naklMzdaPojistCol, DJCalculation.SUM, MONEY_NO_FRACT_STYLE, null, userGroupWorkMzdaPojistLabel) // idem for the columnaQuantity column
+         		.setGroupLayout(GroupLayout.VALUE_IN_HEADER) // tells the group how to be shown, there are many posibilities, see the GroupLayout for more.
 //         		.setGroupLayout(GroupLayout.DEFAULT)
 //         		.setGroupLayout(GroupLayout.VALUE_IN_HEADER_WITH_HEADERS)
    				.build();
@@ -211,7 +233,7 @@ public class ZakNaklReport extends PrintPreviewReport {
 
 
         this.getReportBuilder()
-                .setTitle("Zakázka - náklady")
+                .setTitle("NÁKLADY NA ZAKÁZKU")
                 .setSubtitle("Text kontraktu... / Text zakázky...")
                 .setReportLocale(new Locale("cs", "CZ"))
 //                .setSubtitle("Rok: " + paramRokStr)
@@ -236,16 +258,19 @@ public class ZakNaklReport extends PrintPreviewReport {
                 .setGrandTotalLegend("Nagruzka Total")
 
                 .addColumn(prijmeniCol)
-                .addColumn(datePruhCol)
+//                .addColumn(datePruhCol)
+                .addColumn(ymPruhCol)
                 .addColumn(workPruhCol)
                 .addColumn(naklMzdaCol)
                 .addColumn(naklMzdaPojistCol)
                 .addColumn(sazbaCol)
 
+                // Grouping by users
                 .setPrintColumnNames(true)
-                .addGroup(g1)
+                .addGroup(userGroup)
 
-                .addGlobalFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_STYLE)
+                // Total summaries
+                .addGlobalFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_STYLE_SUM)
                 .addGlobalFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_STYLE)
                 .addGlobalFooterVariable(naklMzdaPojistCol, DJCalculation.SUM, MONEY_NO_FRACT_STYLE)
         ;

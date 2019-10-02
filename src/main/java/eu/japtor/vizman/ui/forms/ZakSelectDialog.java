@@ -18,6 +18,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 
 //@SpringComponent
@@ -25,6 +26,7 @@ import java.util.function.Consumer;
 //@UIScope    // Without this annotation browser refresh throws exception
 public class ZakSelectDialog extends Dialog {
 
+    private List<Long> pruhZakIdList = new ArrayList<>();
     private List<ZakBasic> zakBasicList;
     private ZakBasicGrid zakGrid;
 
@@ -142,11 +144,14 @@ public class ZakSelectDialog extends Dialog {
     }
 
     private Component initZakGrid(Consumer<Integer> selectionChanger) {
-        zakGrid = new ZakBasicGrid(true, selectionChanger, false, Boolean.FALSE);
+        zakGrid = new ZakBasicGrid(true, checkBoxEnabler, selectionChanger, false, Boolean.FALSE);
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.NONE);
         return zakGrid;
     }
+
+    private Function<ZakBasic, Boolean> checkBoxEnabler = zakb -> !pruhZakIdList.contains(zakb.getId());
+
 
     private Component initGridToolBar() {
         HorizontalLayout gridToolBar = new HorizontalLayout();
@@ -220,7 +225,8 @@ public class ZakSelectDialog extends Dialog {
 
 
 
-    public void openDialog() {
+    public void openDialog(List<Long> pruhZakIdList) {
+        this.pruhZakIdList = pruhZakIdList;
         updateViewContent();
         this.open();
     }

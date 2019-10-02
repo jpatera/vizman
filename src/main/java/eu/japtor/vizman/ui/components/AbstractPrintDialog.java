@@ -27,6 +27,7 @@ public abstract class AbstractPrintDialog<T extends Serializable> extends Dialog
     private VerticalScrollLayout reportPanel;
 //    private Component buttonBar;
     private HorizontalLayout dialogHeader;
+    private HorizontalLayout reportInfoBar;
     private HorizontalLayout reportToolBar;
     private HtmlComponent headerDevider;
     private Button revertAndCloseButton;
@@ -84,6 +85,7 @@ public abstract class AbstractPrintDialog<T extends Serializable> extends Dialog
 
         dialogContent.add(
                 initHeaderDevider()
+                , initReportInfoBar()
                 , initReportToolBar()
                 , reportPanel
 //                , new Paragraph("")
@@ -132,6 +134,19 @@ public abstract class AbstractPrintDialog<T extends Serializable> extends Dialog
         return dialogHeader;
     }
 
+    private Component initReportInfoBar() {
+        reportInfoBar = new HorizontalLayout();
+        reportInfoBar.getStyle()
+                .set("margin-top", "0.2em")
+                .set("margin-bottom", "0.2em");
+//        reportToolBar.getStyle().set("margin-left", "-2em");
+        reportInfoBar.setSpacing(false);
+//        reportToolBar.setPadding(false);
+        reportInfoBar.setAlignItems(FlexComponent.Alignment.BASELINE);
+        reportInfoBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        return reportInfoBar;
+    }
+
     private Component initReportToolBar() {
         reportToolBar = new HorizontalLayout();
         reportToolBar.getStyle()
@@ -144,6 +159,10 @@ public abstract class AbstractPrintDialog<T extends Serializable> extends Dialog
         reportToolBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         return reportToolBar;
     }
+
+    public HasComponents getReportInfoBox() {
+        return reportInfoBar;
+    };
 
     public HasComponents getReportToolBar() {
         return reportToolBar;

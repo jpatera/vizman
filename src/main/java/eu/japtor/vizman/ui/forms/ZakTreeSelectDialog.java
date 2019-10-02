@@ -35,6 +35,7 @@ import org.springframework.context.annotation.Scope;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 
 @SpringComponent
@@ -196,7 +197,7 @@ public class ZakTreeSelectDialog extends Dialog {
         gridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
 
         gridContainer.add(initKzToolBar());
-        zakGrid = new ZakBasicGrid(true, null, false, Boolean.FALSE);
+        zakGrid = new ZakBasicGrid(true, null, null, false, Boolean.FALSE);
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 //        gridContainer.add(initKzTreeGrid());
@@ -206,7 +207,6 @@ public class ZakTreeSelectDialog extends Dialog {
 //        this.add(gridContainer);
         return gridContainer;
     }
-
 
     private Component initKzToolBar() {
 

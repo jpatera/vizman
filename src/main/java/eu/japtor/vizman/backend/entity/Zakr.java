@@ -596,9 +596,31 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     private String kzText;
 
     @Transient
+    public String getCkzTextFull() {
+        StringBuilder builder = new StringBuilder();
+        builder .append(getCkont())
+                .append(" / ")
+                .append(getCzak())
+                .append(" , ")
+                .append(getKzTextFull())
+        ;
+        return builder.toString();
+    }
+
+    @Transient
     public String getKzText() {
         StringBuilder builder = new StringBuilder();
         builder .append(StringUtils.substring(getTextKontNotNull(), 0, 25))
+                .append(" / ")
+                .append(getTextZakNotNull())
+        ;
+        return builder.toString();
+    }
+
+    @Transient
+    public String getKzTextFull() {
+        StringBuilder builder = new StringBuilder();
+        builder .append(getTextKontNotNull())
                 .append(" / ")
                 .append(getTextZakNotNull())
         ;

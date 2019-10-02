@@ -415,7 +415,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
 
 
         this.getReportBuilder()
-                .setTitle("Zakázky - rozpracovanost")
+                .setTitle("ROZPRACOVANOST ZAKÁZEK")
                 .setReportLocale(new Locale("cs", "CZ"))
 //                .setSubtitle("Rok: " + paramRokStr)
 //                .addParameter("PARAM_ROK", String.class.getName())

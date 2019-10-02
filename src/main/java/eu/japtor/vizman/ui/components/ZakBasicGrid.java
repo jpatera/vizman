@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ZakBasicGrid extends Grid<ZakBasic> {
@@ -44,14 +45,21 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
     private boolean archFieldVisible;
     private boolean selectFieldVisible;
     private Consumer<Integer> selectionChanger;
+    private Function<ZakBasic, Boolean> checkBoxEnabler;
 
     private int selCount;
 
     HeaderRow filterRow;
 
-    public ZakBasicGrid(boolean selectFieldVisible, Consumer<Integer> selectionChanger, boolean archFieldVisible, Boolean initFilterArchValue) {
+    public ZakBasicGrid(
+            boolean selectFieldVisible
+            , Function<ZakBasic, Boolean> checkBoxEnabler
+            , Consumer<Integer> selectionChanger
+            , boolean archFieldVisible
+            , Boolean initFilterArchValue) {
 
         this.initFilterArchValue = initFilterArchValue;
+        this.checkBoxEnabler = checkBoxEnabler;
         this.archFieldVisible = archFieldVisible;
         this.selectFieldVisible = selectFieldVisible;
         this.selectionChanger = selectionChanger;
@@ -129,7 +137,7 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
                 .setSortable(true)
                 .setKey(OBJEDNATEL_COL_KEY)
         ;
-        this.addColumn(selectFieldRenderer)
+        this.addColumn(checkFieldRenderer)
                 .setHeader(("Výběr"))
                 .setFlexGrow(0)
                 .setWidth("4.5em")
@@ -310,9 +318,9 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
         return archBox;
     });
 
-    private ComponentRenderer<Component, ZakBasic> selectFieldRenderer = new ComponentRenderer<>(zakb -> {
-        Checkbox zakSelectBox = new Checkbox();
-        zakSelectBox.addValueChangeListener(event -> {
+    private ComponentRenderer<Component, ZakBasic> checkFieldRenderer = new ComponentRenderer<>(zakb -> {
+        Checkbox zakCheckBox = new Checkbox();
+        zakCheckBox.addValueChangeListener(event -> {
             zakb.setChecked(event.getValue());
             if (event.getValue()) {
                 selCount++;
@@ -324,13 +332,15 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
             }
         });
 //        if ((ItemType.ZAK == zakb.getTyp()) || (ItemType.REZ == zakb.getTyp()) || (ItemType.LEK == zakb.getTyp())) {
-        if ((ItemType.ZAK == zakb.getTyp()) || (ItemType.REZ == zakb.getTyp())) {
-            zakSelectBox.addValueChangeListener(event -> {
+        if ( ((ItemType.ZAK == zakb.getTyp()) || (ItemType.REZ == zakb.getTyp()))
+                && ((null != checkBoxEnabler && (checkBoxEnabler.apply(zakb)))) ) {
+            zakCheckBox.addValueChangeListener(event -> {
                 zakb.setChecked(event.getValue());
             });
-            return zakSelectBox;
+            return zakCheckBox;
         } else {
-            return new Span(zakb.getTyp().name());
+//            return new Span(zakb.getTyp().name());
+            return new Span("X");
         }
     });
 

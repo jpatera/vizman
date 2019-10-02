@@ -41,4 +41,17 @@ public class ZaknServiceImpl implements ZaknService, HasLogger {
         ;
         return zakns;
     }
+
+    @Override
+    public List<Zakn> fetchByZakIdSumByYm(final Long zakId, ZakrListView.ZakrParams zakrParams) {
+        List<Zakn> zakns = zaknRepo.findByZakIdSumByYm(zakId);
+        zakns.stream()
+                .filter(zn -> null != zn.getWorkPruh() && zn.getWorkPruh().compareTo(BigDecimal.ZERO) != 0)
+                .forEach(zn -> {
+                    zn.setNaklPojist(zn.calcNaklPojist(zakrParams.getKoefPojist()));
+                    zn.setNaklRezie(zn.calcNaklPojist(zakrParams.getKoefRezie()));
+                })
+        ;
+        return zakns;
+    }
 }

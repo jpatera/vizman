@@ -320,8 +320,8 @@ public class ZakrListView extends VerticalLayout {
     }
 
     private void openRozpracRepDialog() {
-        List<Zakr> zakrRep1 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataCommunicator().getDataProvider()).getItems();
-        List<Zakr> zakrRep2 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataProvider()).getItems();
+//        List<Zakr> zakrRep1 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataCommunicator().getDataProvider()).getItems();
+//        List<Zakr> zakrRep2 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataProvider()).getItems();
         zakrGrid.saveFilterValues();
         zakrParams.setArch(zakrGrid.getArchFilterValue());
         zakrParams.setRokZak(zakrGrid.getRokFilterValue());

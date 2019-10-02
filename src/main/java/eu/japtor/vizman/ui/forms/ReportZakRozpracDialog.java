@@ -58,7 +58,7 @@ public class ReportZakRozpracDialog extends AbstractPrintDialog<Zakr> implements
 
     public ReportZakRozpracDialog(ZakrService zakrService, ZakrListView.ZakrParams zakrParams) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
-        setDialogTitle("REPORT: Zakázky - rozpracovanost");
+        setDialogTitle("Report: ROZPRACOVANOST ZAKÁZEK");
 //        getHeaderEndBox().setText("END text");
         this.zakrService = zakrService;
         this.zakrParams = zakrParams;

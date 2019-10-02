@@ -6,6 +6,7 @@ import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.FooterRow;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -29,8 +30,9 @@ import java.util.Objects;
 
 public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLogger {
 
-    public static final String DIALOG_WIDTH = "1200px";
-    public static final String DIALOG_HEIGHT = null;
+    public static final String DIALOG_WIDTH = "1300px";
+    public static final String DIALOG_HEIGHT = "800px";
+//    public static final String DIALOG_HEIGHT = null;
     private static final String CLOSE_STR = "Zavřít";
 
     private HorizontalLayout leftBarPart;
@@ -38,11 +40,14 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     private Button closeButton;
     private Button zakNaklRepButton;
     private TextField rezieParamField;
+    private Label rezieParamLabel;
     private TextField pojistParamField;
+    private Label pojistParamLabel;
     private Binder<ZakrListView.ZakrParams> paramsBinder;
 
     private List<Zakn> currentItemList;
     private Zakr zakr;
+    private Label zakInfoField;
 
     Grid<Zakn> grid;
     private FooterRow sumFooterRow;
@@ -58,15 +63,27 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     public ZakNaklGridDialog(ZaknService zaknService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setItemNames(ItemType.UNKNOWN);
-        getMainTitle().setText("Tabulka NÁKLADŮ");
+        getMainTitle().setText("NÁKLADY NA ZAKÁZKU");
 
         this.zaknService = zaknService;
         this.paramsBinder = new Binder<>();
 
+        getGridInfoBox().add(
+                initZakInfoField()
+        );
+
         getGridContainer().add(
-                initGridBar()
+                buildGridBar()
                 , initGrid()
         );
+    }
+
+    private Component initZakInfoField() {
+        zakInfoField = new Label();
+        zakInfoField.getStyle()
+                .set("margin-top", "0.2em")
+                .set("margin-bottom", "0.2em");
+        return zakInfoField;
     }
 
     //    public void openDialog(LinkedList<PersonWage> personWages) {
@@ -118,15 +135,18 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
         controlsComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
         controlsComponent.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
         controlsComponent.add(
-                initRezieField()
+                initRezieLabel()
+                , initRezieField()
                 , new Ribbon("3em")
+                , initPojistLabel()
                 , initPojistField()
         );
         return controlsComponent;
     }
 
     private Component initRezieField() {
-        rezieParamField = new TextField("Koef. režie");
+//        rezieParamField = new TextField("Koef. režie");
+        rezieParamField = new TextField();
         rezieParamField.setWidth("5em");
         rezieParamField.setReadOnly(true);
         rezieParamField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
@@ -139,8 +159,16 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
         return rezieParamField;
     }
 
+    private Component initRezieLabel() {
+        rezieParamLabel = new Label("Koef. režie");
+        rezieParamLabel.setWidth("5em");
+//        rezieParamLabel.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        return rezieParamLabel;
+    }
+
     private Component initPojistField() {
-        pojistParamField = new TextField("Koef. poj.");
+//        pojistParamField = new TextField("Koef. poj.");
+        pojistParamField = new TextField();
         pojistParamField.setWidth("5em");
         pojistParamField.setReadOnly(true);
         pojistParamField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
@@ -153,6 +181,12 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
         return pojistParamField;
     }
 
+    private Component initPojistLabel() {
+        pojistParamLabel = new Label("Koef. poj.");
+        pojistParamLabel.setWidth("5em");
+//        rezieParamLabel.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        return pojistParamLabel;
+    }
 
     private Component initTitle() {
         H4 zakTitle = new H4();
@@ -188,10 +222,14 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
 
     private void initDataAndControls() {
         deactivateListeners();
+
+        zakInfoField.setText(zakr.getCkzTextFull());
+
         this.currentItemList = zaknService.fetchByZakId(zakr.getId(), zakrParams);
         grid.setItems(currentItemList);
         updateFooterFields();
         initControlsOperability();
+
         activateListeners();
     }
 
@@ -223,7 +261,7 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     }
 
 
-    private Component initGridBar() {
+    private Component buildGridBar() {
         HorizontalLayout gridBar = new HorizontalLayout();
         gridBar.setSpacing(false);
         gridBar.setPadding(false);
@@ -261,6 +299,10 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
                 .setHeader("Datum")
                 .setFlexGrow(0)
         ;
+//        grid.addColumn(Zakn::getYmPruh)
+//                .setHeader("Rok-měs")
+//                .setFlexGrow(0)
+//        ;
         grid.addColumn(Zakn::getWorkPruh)
                 .setHeader("Hodin")
                 .setWidth("6em")

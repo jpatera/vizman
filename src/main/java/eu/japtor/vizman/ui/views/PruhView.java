@@ -23,9 +23,7 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterListener;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -69,7 +67,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_PRUH;
 })
 @SpringComponent
 @UIScope
-public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterListener {
+public class PruhView extends VerticalLayout implements HasLogger, AfterNavigationObserver {
 
     private static final String PZ_SUM_COL_KEY = "pz-sum-kol";
     private static final String HOD_COL_WIDTH = "2.4em";
@@ -326,11 +324,24 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pruhZakGrid.getDataProvider().refreshAll();
     }
 
+    @Override
+    public void afterNavigation(AfterNavigationEvent event) {
+        // Navigation first goes here, then to the beforeEnter of MainView
+        System.out.println("###  PruhView.beforeEnter");
+//        pruhZakGrid.setItems(pruhZakList);
+
+        // Tohle nefunguje !!!
+        setDayColumnsVisibility(pruhZakGrid, pruhDayMax, DZ_KEY_PREF);
+//        UI.getCurrent().getPage().reload();
+    }
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
 
 //        getLogger().info("## ON ATTACH DochView ##");
+
+//        setDayColumnsVisibility(pruhZakGrid, pruhDayMax, DZ_KEY_PREF);
+//        getUI().notifyAll();
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -348,12 +359,6 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //        getLogger().info("## ON DETACH DochView ##");
 
     }
-
-    @Override
-    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-
-    }
-
 
     private void initPruhData() {
         loadPersonDataFromDb();
@@ -439,6 +444,9 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
 //            pruhZakGrid.setDetailsVisible(pruchZak, StringUtils.isNotBlank(pruhZak.getParagText()));
 //        }
 
+        // UI.getCurrent().getPage().reload(); // ..cykli se
+        // UI.getCurrent().accessLater() getPage(). reload();
+        // UI.getCurrent()....
         pruhZakGrid.focus();
 //        UI.getCurrent().getPage().executeJavaScript("$0._scrollToIndex($1)", pruhZakGrid, 1);
 
@@ -1006,6 +1014,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pruhZakGrid.setClassName("vizman-pruh-grid");
         pruhZakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         pruhZakGrid.addThemeNames("column-borders", "row-stripes");
+        pruhZakGrid.setVerticalScrollingEnabled(true);
+
 //        pruhZakGrid.addThemeNames("no-border", "no-row-borders", "row-stripes");
 //        pruhZakGrid.addThemeNames("border", "row-borders", "row-stripes");
 
@@ -1112,6 +1122,8 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
         pruhParagGrid.setClassName("vizman-pruh-grid");
         pruhParagGrid.setSelectionMode(Grid.SelectionMode.NONE);
         pruhParagGrid.addThemeNames("column-borders", "row-stripes");
+        pruhParagGrid.setVerticalScrollingEnabled(true);
+
 
 
 //        Binder<PruhParag> paragBinder = new Binder<>(PruhParag.class);
@@ -1598,7 +1610,7 @@ public class PruhView extends VerticalLayout implements HasLogger, BeforeEnterLi
                 ;
                 return;
             }
-            zakSelectDialog.openDialog();
+            zakSelectDialog.openDialog(pruhZakList.stream().map(pz -> pz.getZakId()).collect(Collectors.toList()));
         });
         return zaksAddButton;
     }
