@@ -26,6 +26,82 @@ public class Zakn implements Serializable {
     @Column(name = "ZAK_ID")
     private Long zakId;
 
+    @Basic
+    @Column(name = "CKONT")
+    private String ckont;
+
+    @Basic
+    @Column(name = "CZAK")
+    private Integer czak;
+
+    @Basic
+    @Column(name = "TEXT_KONT")
+    private String textKont;
+
+    @Basic
+    @Column(name = "TEXT_ZAK")
+    private String textZak;
+
+    public String getCkont() {
+        return ckont;
+    }
+
+    public Integer getCzak() {
+        return czak;
+    }
+
+    public String getTextKont() {
+        return textKont;
+    }
+
+    public String getTextZak() {
+        return textZak;
+    }
+
+    @Transient
+    public String getCkzTextRep() {
+        StringBuilder builder = new StringBuilder();
+        builder .append(getCkont())
+                .append(" / ")
+                .append(getCzak())
+                .append("\n")
+                .append(getTextKontNotNull())
+                .append(" / ")
+                .append(getTextZakNotNull())
+        ;
+        return builder.toString();
+    }
+
+    @Transient
+    public String getKzTextFull() {
+        StringBuilder builder = new StringBuilder();
+        builder .append(getTextKontNotNull())
+                .append(" / ")
+                .append(getTextZakNotNull())
+        ;
+        return builder.toString();
+    }
+
+    @Transient
+    public String getCkontNotNull() {
+        return null == ckont ? "" : ckont;
+    }
+
+    @Transient
+    public String getCzakNotNull() {
+        return null == czak ? "" : czak.toString();
+    }
+
+    @Transient
+    public String getTextKontNotNull() {
+        return null == textKont ? "" : textKont;
+    }
+
+    @Transient
+    public String getTextZakNotNull() {
+        return null == textZak ? "" : textZak.toString();
+    }
+
 //    @Basic
 //    @Column(name = "CKONT")
 //    private String ckont;
@@ -88,7 +164,46 @@ public class Zakn implements Serializable {
     @Column(name = "SAZBA")
     private BigDecimal sazba;
 
-//    @OneToOne(mappedBy = "zakn", fetch = FetchType.EAGER, cascade = CascadeType.REFRESH, orphanRemoval = false)
+    @Basic
+    @Column(name = "KOEF_P8")
+    private BigDecimal koefP8;
+
+    public BigDecimal getKoefP8() {
+        return koefP8;
+    }
+
+    @Transient
+    public BigDecimal getNaklMzdaP8() {
+        return getNaklMzdaNotNull().multiply(getKoefP8NotNull());
+    }
+
+    @Transient
+    public BigDecimal getWorkPruhP8() {
+        return getWorkPruhNotNull().multiply(getKoefP8NotNull());
+    }
+
+    @Transient
+    public BigDecimal getNaklMzdaPojistP8() {
+        return getNaklMzdaPojistNotNull().multiply(getKoefP8NotNull());
+    }
+
+    @Transient
+    public BigDecimal getKoefP8NotNull() {
+        return null == koefP8 ? BigDecimal.ZERO : koefP8;
+    }
+
+    @Transient
+    public BigDecimal getNaklMzdaNotNull() {
+        return null == naklMzda ? BigDecimal.ZERO : naklMzda;
+    }
+
+    @Transient
+    public BigDecimal getNaklMzdaPojistNotNull() {
+        return null == getNaklMzdaPojist() ? BigDecimal.ZERO : getNaklMzdaPojist();
+    }
+
+
+    //    @OneToOne(mappedBy = "zakn", fetch = FetchType.EAGER, cascade = CascadeType.REFRESH, orphanRemoval = false)
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="PERSON_ID", unique=true, nullable=true, insertable=false, updatable=false)
 //    @JoinColumn(name = "id", nullable = false)
@@ -119,6 +234,12 @@ public class Zakn implements Serializable {
     public BigDecimal getWorkPruh() {
         return workPruh;
     }
+
+    @Transient
+    public BigDecimal getWorkPruhNotNull() {
+        return null == workPruh ? BigDecimal.ZERO : workPruh;
+    }
+
 
 //    public ItemType getTyp() {
 //        return typ;

@@ -52,6 +52,8 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     Grid<Zakn> grid;
     private FooterRow sumFooterRow;
 
+    private ReportZakNaklDialog repZakNaklDialog;
+
     public static final String HODIN_COL_KEY = "zakn-bg-hodin";
     public static final String MZDA_COL_KEY = "zakn-bg-mzda";
     public static final String MZDA_POJ_COL_KEY = "zakn-bg-mzda-poj";
@@ -67,6 +69,8 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
 
         this.zaknService = zaknService;
         this.paramsBinder = new Binder<>();
+
+        repZakNaklDialog  = new ReportZakNaklDialog(zaknService);
 
         getGridInfoBox().add(
                 initZakInfoField()
@@ -214,8 +218,7 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     private void openZakNaklRepDialog() {
 //        zakrParams.setRokZak(zakrGrid.getRokFilterValue());
 //        zakrParams.setSkupina(zakrGrid.getSkupinaFilterValue());
-        ReportZakNaklDialog repZakNaklDialog  = new ReportZakNaklDialog(zaknService, zakr, zakrParams);
-        repZakNaklDialog.openDialog();
+        repZakNaklDialog.openDialog(zakr, zakrParams);
         repZakNaklDialog.generateAndShowReport();
     }
 

@@ -627,6 +627,7 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         return builder.toString();
     }
 
+
     @Transient
     private String kzTextShort;
 

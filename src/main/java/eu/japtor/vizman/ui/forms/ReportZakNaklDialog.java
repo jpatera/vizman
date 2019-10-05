@@ -2,8 +2,6 @@ package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
@@ -53,17 +51,19 @@ public class ReportZakNaklDialog extends AbstractPrintDialog<Zakr> implements Ha
     ;
 
 
-    public ReportZakNaklDialog(ZaknService zaknService, Zakr zakr, ZakrListView.ZakrParams zakrParams) {
+    public ReportZakNaklDialog(ZaknService zaknService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setDialogTitle("Report: NÁKLADY NA ZAKÁZKU");
 //        getHeaderEndBox().setText("END text");
         this.zaknService = zaknService;
-        this.zakr = zakr;
-        this.zakrParams = zakrParams;
         initReportControls();
     }
 
-    public void openDialog() {
+    public void openDialog(Zakr zakr, ZakrListView.ZakrParams zakrParams) {
+        this.zakr = zakr;
+        this.zakrParams = zakrParams;
+        rezieParamField.setValue(zakrParams.getKoefRezie().toString());
+        pojistParamField.setValue(zakrParams.getKoefPojist().toString());
         this.open();
     }
 
@@ -98,10 +98,12 @@ public class ReportZakNaklDialog extends AbstractPrintDialog<Zakr> implements Ha
         reportParamBox.getStyle()
                 .set("margin-top", "0.2em")
                 .set("margin-bottom", "0.2em");
-        reportParamBox.add(
-                buildRezieParamComponent()
-                , buildPojistParamComponent()
-        );
+//        reportParamBox.add(
+//                initRezieParamComponent()
+//                , initPojistParamComponent()
+//        );
+        initRezieParamComponent();
+        initPojistParamComponent();
 
         getReportToolBar().add(
                 reportParamBox
@@ -122,19 +124,17 @@ public class ReportZakNaklDialog extends AbstractPrintDialog<Zakr> implements Ha
     }
 
 
-    private Component buildRezieParamComponent() {
+    private Component initRezieParamComponent() {
         rezieParamField = new TextField("Režie");
         rezieParamField.setWidth("5em");
         rezieParamField.setReadOnly(true);
-        rezieParamField.setValue(zakrParams.getKoefRezie().toString());
         return rezieParamField;
     }
 
-    private Component buildPojistParamComponent() {
+    private Component initPojistParamComponent() {
         pojistParamField = new TextField("Pojištění");
         pojistParamField.setWidth("5em");
         pojistParamField.setReadOnly(true);
-        pojistParamField.setValue(zakrParams.getKoefPojist().toString());
         return pojistParamField;
     }
 
@@ -144,13 +144,10 @@ public class ReportZakNaklDialog extends AbstractPrintDialog<Zakr> implements Ha
 
     public void generateAndShowReport() {
         deactivateListeners();
-        report.getReportBuilder()
-            .setSubtitle(
-                "CKONT/CZAK , Kontrakt text... / Zakázka text...\\n" +
-                "Parametry: Režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue()) +
-                "  Pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue())
-            )
-        ;
+        report.setSubtitleText(
+                "Parametry: Režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue())
+                + "  Pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue())
+        );
         report.setItems(itemsSupplier.get());
         expAnchorsBox.getChildren()
                 .forEach(anch -> {

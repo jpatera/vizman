@@ -9,32 +9,47 @@ import ar.com.fdvs.dj.domain.constants.Font;
 import ar.com.fdvs.dj.domain.entities.DJGroup;
 import ar.com.fdvs.dj.domain.entities.columns.AbstractColumn;
 import ar.com.fdvs.dj.domain.entities.columns.PropertyColumn;
-import eu.japtor.vizman.backend.entity.Mena;
 import org.vaadin.reports.PrintPreviewReport;
 
-import java.awt.*;
+import java.awt.Color;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Map;
 
 public class ZakNaklReport extends PrintPreviewReport {
 
+    static final Color TOTAL_BG_COLOR = new Color(0xFFF4EE);
+    static final Color GROUP_SUM_BG_COLOR = new Color(0xEEF4FF);
+    static final Color HEADER_BG_COLOR = new Color(0xF4F4F4);
+
+    static final Font ARIAL_MEDIUM_XL = new Font(11, Font._FONT_ARIAL, false, false, false);
+    static final Font ARIAL_MEDIUM_XL_BOLD = new Font(11, Font._FONT_ARIAL, true, false, false);
+    static final Font ARIAL_MEDIUM_XXL_BOLD = new Font(12, Font._FONT_ARIAL, true, false, false);
     static final Font DEFAULT_FONT_PDF = Font.ARIAL_MEDIUM;
-    static final Font HEADER_FONT_PDF = Font.ARIAL_MEDIUM_BOLD;
+    static final Font HEADER_FONT_PDF = ARIAL_MEDIUM_XL_BOLD;
+//    static final Font GROUP_HEADER_ZAK_FONT_PDF = Font.ARIAL_MEDIUM_BOLD;
+    static final Font GROUP_HEADER_ZAK_FONT_PDF = ARIAL_MEDIUM_XL_BOLD;
+    static final Font GROUP_HEADER_USER_FONT_PDF = ARIAL_MEDIUM_XL_BOLD;
+    static final Font SUBTITLE_FONT_PDF = ARIAL_MEDIUM_XL;
     static final Font TITLE_FONT_PDF = Font.ARIAL_BIG_BOLD;
     static final Style DEFAULT_STYLE;
+    static final Style DEFAULT_GRID_STYLE;
     static final Style TITLE_STYLE;
+    static final Style SUBTITLE_STYLE;
     static final Style HEADER_STYLE;
-    static final Style GROUP_HEADER_STYLE;
-    static final Style TEXT_STYLE;
+    static final Style GROUP_HEADER_ZAK_STYLE;
+    static final Style GROUP_HEADER_USER_STYLE;
+    static final Style GROUP_LABEL_STYLE;
     static final Style WORK_HOUR_STYLE;
-    static final Style WORK_HOUR_STYLE_SUM;
+    static final Style YM_STYLE;
+    static final Style WORK_HOUR_SUM_STYLE;
+    static final Style WORK_HOUR_TOT_STYLE;
     static final Style MONEY_STYLE;
     static final Style MONEY_NO_FRACT_STYLE;
-    static final Style PROC_STYLE;
+    static final Style MONEY_NO_FRACT_SUM_STYLE;
+    static final Style MONEY_NO_FRACT_TOT_STYLE;
+    static final Style PERCENT_STYLE;
     static {
         DEFAULT_FONT_PDF.setPdfFontEmbedded(true);
         DEFAULT_FONT_PDF.setPdfFontEncoding(Font.PDF_ENCODING_Identity_H_Unicode_with_horizontal_writing);
@@ -44,205 +59,170 @@ public class ZakNaklReport extends PrintPreviewReport {
         HEADER_FONT_PDF.setPdfFontEncoding(Font.PDF_ENCODING_Identity_H_Unicode_with_horizontal_writing);
         HEADER_FONT_PDF.setPdfFontName("/Windows/Fonts/arialbd.ttf");
 
+        SUBTITLE_FONT_PDF.setPdfFontEmbedded(true);
+        SUBTITLE_FONT_PDF.setPdfFontEncoding(Font.PDF_ENCODING_Identity_H_Unicode_with_horizontal_writing);
+        SUBTITLE_FONT_PDF.setPdfFontName("/Windows/Fonts/arialbd.ttf");
+
+
         TITLE_FONT_PDF.setPdfFontEmbedded(true);
         TITLE_FONT_PDF.setPdfFontEncoding(Font.PDF_ENCODING_Identity_H_Unicode_with_horizontal_writing);
         TITLE_FONT_PDF.setPdfFontName("/Windows/Fonts/arialbd.ttf");
 
-        DEFAULT_STYLE = new StyleBuilder(false)
+        DEFAULT_STYLE = new StyleBuilder(false, "default-style")
                 .setFont(DEFAULT_FONT_PDF)
-                .setPaddingLeft(Integer.valueOf(3))
-//                .setBorderLeft(Border.PEN_1_POINT())
-//                .setBorderRight(Border.PEN_1_POINT())
-//                .setStretchWithOverflow(false)
-//                .setStretching(Stretching.NO_STRETCH)
+                .setHorizontalAlign(HorizontalAlign.LEFT)
                 .build();
 
-        TITLE_STYLE = new StyleBuilder(false)
+        DEFAULT_GRID_STYLE = new StyleBuilder(false, "default-grid-style")
+                .setFont(DEFAULT_FONT_PDF)
+                .setHorizontalAlign(HorizontalAlign.LEFT)
+                .setPaddingLeft(Integer.valueOf(3))
+                .setPaddingRight(Integer.valueOf(5))
+                .setBorder(Border.THIN())
+                .build();
+
+        TITLE_STYLE = new StyleBuilder(true,"title-style")
+                .setParentStyleName("default-style")
                 .setFont(TITLE_FONT_PDF)
                 .build();
 
-        HEADER_STYLE = new StyleBuilder(false)
+        SUBTITLE_STYLE = new StyleBuilder(true, "subtitle-style")
+                .setParentStyleName("default-style")
+                .setFont(SUBTITLE_FONT_PDF)
+                .setPaddingTop(8)
+                .setPaddingBottom(6)
+                .setVerticalAlign(VerticalAlign.MIDDLE)
+                .build();
+
+        HEADER_STYLE = new StyleBuilder(true, "header-style")
+                .setParentStyleName("default-grid-style")
                 .setFont(HEADER_FONT_PDF)
                 .setHorizontalAlign(HorizontalAlign.CENTER)
-                .setBorder(Border.THIN())
-//        sb.setBorderBottom(Border.PEN_2_POINT());
-                .setBorderColor(Color.BLACK)
-                .setBorderTop(Border.PEN_1_POINT())
-                .setBorderBottom(Border.PEN_1_POINT())
+                .setVerticalAlign(VerticalAlign.MIDDLE)
+                .setVerticalAlign(VerticalAlign.MIDDLE)
+                .setStretchWithOverflow(true)
+                .setStretching(Stretching.RELATIVE_TO_BAND_HEIGHT)
+                .setBackgroundColor(HEADER_BG_COLOR)
+                .setTransparent(false)
                 .build();
 
-        TEXT_STYLE = new StyleBuilder(false)
+        GROUP_HEADER_ZAK_STYLE = new StyleBuilder(false, "group-header-zak-style")
                 .setHorizontalAlign(HorizontalAlign.LEFT)
-                .setPaddingLeft(Integer.valueOf(3))
-                .setBorderLeft(Border.THIN())
-                .setBorderRight(Border.THIN())
+                .setBorder(Border.NO_BORDER())
+                .setPaddingTop(8)
+                .setPaddingBottom(2)
+                .setFont(GROUP_HEADER_ZAK_FONT_PDF)
                 .build();
 
-        GROUP_HEADER_STYLE = new StyleBuilder(false)
+        GROUP_HEADER_USER_STYLE = new StyleBuilder(false, "group-header-user-style")
                 .setHorizontalAlign(HorizontalAlign.LEFT)
-                .setPaddingLeft(Integer.valueOf(3))
-//                .setBorderLeft(Border.THIN())
-//                .setBorderRight(Border.THIN())
-                .setFont(TITLE_FONT_PDF)
+                .setBorder(Border.NO_BORDER())
+                .setFont(GROUP_HEADER_USER_FONT_PDF)
                 .build();
 
-        WORK_HOUR_STYLE = new StyleBuilder(false)
+        GROUP_LABEL_STYLE = new StyleBuilder(false, "group-label-style")
+                .setFont(Font.ARIAL_MEDIUM)
+                .build();
+
+        YM_STYLE = new StyleBuilder(true, "ym-grid-style")
+                .setParentStyleName("default-grid-style")
+                .setPaddingLeft(20)
+                .build();
+
+        WORK_HOUR_STYLE = new StyleBuilder(true, "work-hour-style")
+                .setParentStyleName("default-grid-style")
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
-                .setPaddingRight(Integer.valueOf(3))
-                .setBorderLeft(Border.THIN())
-                .setBorderRight(Border.THIN())
                 .setPattern("#,##0.0;-#,##0.0")
                 .build();
 
-//        WORK_HOUR_STYLE_SUM = WORK_HOUR_STYLE;
-//        WORK_HOUR_STYLE_SUM
-//                .setTextColor(Color.BLUE);
+        WORK_HOUR_SUM_STYLE = new StyleBuilder(true, "work-hour-sum-style")
+                .setParentStyleName("work-hour-style")
+                .setFont(ARIAL_MEDIUM_XL_BOLD)
+                .setBackgroundColor(GROUP_SUM_BG_COLOR)
+                .setTransparent(false)
+                .build()
+        ;
 
-        WORK_HOUR_STYLE_SUM = new StyleBuilder(false)
-                .setHorizontalAlign(HorizontalAlign.RIGHT)
-                .setPaddingRight(Integer.valueOf(3))
-                .setBorderLeft(Border.THIN())
-                .setBorderRight(Border.THIN())
-                .setPattern("#,##0.0;-#,##0.0")
-                .setTextColor(Color.BLUE)
-                .build();
+        WORK_HOUR_TOT_STYLE = new StyleBuilder(true, "work-hour-tot-style")
+                .setParentStyleName("work-hour-style")
+                .setFont(ARIAL_MEDIUM_XL_BOLD)
+                .setBackgroundColor(TOTAL_BG_COLOR)
+                .setTransparent(false)
+                .build()
+        ;
 
-        MONEY_NO_FRACT_STYLE = new StyleBuilder(false)
+        MONEY_NO_FRACT_STYLE = new StyleBuilder(true, "money-no-fract-style")
+                .setParentStyleName("default-grid-style")
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
-                .setPaddingRight(Integer.valueOf(3))
-                .setBorderLeft(Border.THIN())
-                .setBorderRight(Border.THIN())
                 .setPattern("#,##0;-#,##0")
+                .build()
+        ;
+
+        MONEY_NO_FRACT_SUM_STYLE = new StyleBuilder(true, "money-no-fract-sum-style")
+                .setParentStyleName("money-no-fract-style")
+                .setFont(ARIAL_MEDIUM_XL_BOLD)
+                .setBackgroundColor(GROUP_SUM_BG_COLOR)
+                .setTransparent(false)
                 .build();
 
-        MONEY_STYLE = new StyleBuilder(false)
+        MONEY_NO_FRACT_TOT_STYLE = new StyleBuilder(true, "money-no-fract-tot-style")
+                .setParentStyleName("money-no-fract-style")
+                .setFont(ARIAL_MEDIUM_XL_BOLD)
+                .setBackgroundColor(TOTAL_BG_COLOR)
+                .setTransparent(false)
+                .build();
+
+        MONEY_STYLE = new StyleBuilder(true, "money-style")
+                .setParentStyleName("default-grid-style")
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
-                .setPaddingRight(Integer.valueOf(3))
-                .setBorderLeft(Border.THIN())
-                .setBorderRight(Border.THIN())
                 .setPattern("#,##0.00;-#,##0.00")
                 .build();
 
-        PROC_STYLE = new StyleBuilder(false)
+        PERCENT_STYLE = new StyleBuilder(true, "percent-style")
+                .setParentStyleName("default-grid-style")
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
-                .setPaddingRight(Integer.valueOf(3))
-                .setBorderLeft(Border.THIN())
-                .setBorderRight(Border.THIN())
                 .setPattern("##0;-##0")
                 .build();
     }
+
+    private AbstractColumn ckzTextRepCol;
+    private AbstractColumn prijmeniCol;
+    private AbstractColumn ymPruhCol;
+    private AbstractColumn workPruhCol;
+    private AbstractColumn workPruhP8Col;
+    private AbstractColumn naklMzdaCol;
+    private AbstractColumn naklMzdaP8Col;
+    private AbstractColumn naklMzdaPojistCol;
+    private AbstractColumn naklMzdaPojistP8Col;
+    private AbstractColumn sazbaCol;
+    private AbstractColumn koefP8Col;
+
+    private DJGroup userGroup;
+    private DJGroup zakGroup;
 
 
     public ZakNaklReport() {
         super();
 
-        AbstractColumn prijmeniCol = ColumnBuilder.getNew()
-                .setColumnProperty("prijmeni", String.class)
-                .setTitle("Příjmení")
-//                .setStyle(TEXT_STYLE)
-                .setStyle(GROUP_HEADER_STYLE)
-                .setWidth(12)
-                .build();
-
-//        AbstractColumn datePruhCol = ColumnBuilder.getNew()
-//                .setColumnProperty("datePruh", LocalDate.class)
-//                .setTitle("Datum")
-////                .setStyle(TEXT_STYLE)
-//                .setTextFormatter(DateTimeFormatter.ISO_DATE.toFormat())
-//                .setWidth(8)
-//                .build();
-
-        AbstractColumn ymPruhCol = ColumnBuilder.getNew()
-                .setColumnProperty("ymPruh", YearMonth.class)
-                .setTitle("YM")
-//                .setStyle(TEXT_STYLE)
-//                .setTextFormatter(DateTimeFormatter.ISO_DATE.toFormat())
-                .setWidth(8)
-                .build();
-
-        AbstractColumn workPruhCol = ColumnBuilder.getNew()
-                .setColumnProperty("workPruh", BigDecimal.class)
-                .setTitle("Hodin")
-                .setStyle(WORK_HOUR_STYLE)
-                .setWidth(9)
-                .build();
-
-        AbstractColumn naklMzdaCol = ColumnBuilder.getNew()
-                .setColumnProperty("naklMzda", BigDecimal.class)
-                .setTitle("Mzda")
-                .setStyle(MONEY_NO_FRACT_STYLE)
-                .setWidth(9)
-                .build();
-
-        AbstractColumn naklMzdaPojistCol = ColumnBuilder.getNew()
-                .setColumnProperty("naklMzdaPojist", BigDecimal.class)
-                .setTitle("Mzda+Poj.")
-                .setStyle(MONEY_NO_FRACT_STYLE)
-                .setWidth(9)
-                .build();
-
-        AbstractColumn sazbaCol = ColumnBuilder.getNew()
-                .setColumnProperty("sazba", BigDecimal.class)
-                .setTitle("Sazba")
-                .setStyle(MONEY_STYLE)
-                .setWidth(9)
-                .build();
-
-//        AbstractColumn naklMzda = ColumnBuilder.getNew()
-//                .setColumnProperty("naklMzda", BigDecimal.class)
-//                .setTitle("Mzda")
-//                .setStyle(MONEY_NO_FRACT_STYLE)
-//                .setWidth(9)
-//                .build();
-//
-//        AbstractColumn naklPojist = ColumnBuilder.getNew()
-//                .setColumnProperty("naklPojist", BigDecimal.class)
-//                .setTitle("Pojištění")
-//                .setStyle(MONEY_NO_FRACT_STYLE)
-//                .setWidth(9)
-//                .build();
-
-
-
-        GroupBuilder userGroupBuilder = new GroupBuilder();
-
-        Style groupLabelStyle = new StyleBuilder(false).setFont(Font.ARIAL_SMALL)
-            .setHorizontalAlign(HorizontalAlign.RIGHT)
-            .setBorderTop(Border.THIN())
-            .setStretchWithOverflow(false)
-            .build();
-        DJGroupLabel userGroupWorkHourLabel = new DJGroupLabel("", groupLabelStyle, LabelPosition.LEFT);
-        DJGroupLabel userGroupMzdaLabel = new DJGroupLabel("", groupLabelStyle, LabelPosition.LEFT);
-        DJGroupLabel userGroupWorkMzdaPojistLabel = new DJGroupLabel("", groupLabelStyle, LabelPosition.LEFT);
-
-        //		 define the criteria column to group by (columnState)
-        DJGroup userGroup = userGroupBuilder.setCriteriaColumn((PropertyColumn) prijmeniCol)
-              	.addFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_STYLE, null, userGroupWorkHourLabel) // tell the group place a variable footer of the column "columnAmount" with the SUM of allvalues of the columnAmount in this group.
-          		.addFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_STYLE, null, userGroupMzdaLabel) // idem for the columnaQuantity column
-          		.addFooterVariable(naklMzdaPojistCol, DJCalculation.SUM, MONEY_NO_FRACT_STYLE, null, userGroupWorkMzdaPojistLabel) // idem for the columnaQuantity column
-         		.setGroupLayout(GroupLayout.VALUE_IN_HEADER) // tells the group how to be shown, there are many posibilities, see the GroupLayout for more.
-//         		.setGroupLayout(GroupLayout.DEFAULT)
-//         		.setGroupLayout(GroupLayout.VALUE_IN_HEADER_WITH_HEADERS)
-   				.build();
-
-//        GroupBuilder gb2 = new GroupBuilder(); // Create another group (using another column as criteria)
-//        DJGroup g2 = gb2.setCriteriaColumn((PropertyColumn) columnBranch) // and we add the same operations for the columnAmount and
-//                .addFooterVariable(honorarCistyCol,DJCalculation.SUM) // columnaQuantity columns
-//                .addFooterVariable(columnaQuantity,	DJCalculation.SUM)
-//                .build();
-
+        buildReportColumns();
+        buildReportGroups();
 
         this.getReportBuilder()
                 .setTitle("NÁKLADY NA ZAKÁZKU")
-                .setSubtitle("Text kontraktu... / Text zakázky...")
+                .setPageSizeAndOrientation(Page.Page_A4_Landscape())
+//                .setPageSizeAndOrientation(Page.Page_A4_Portrait())
+                .setUseFullPageWidth(false)
+//                .setSubtitleHeight(200)
+                .setPrintColumnNames(true)
+                .setHeaderHeight(20)
+
+//                .setSubtitle("Text kontraktu... / Text zakázky...")
                 .setReportLocale(new Locale("cs", "CZ"))
 //                .setSubtitle("Rok: " + paramRokStr)
 //                .addParameter("PARAM_ROK", String.class.getName())
-                .setMargins(10, 10, 10, 10)
-                .setPrintBackgroundOnOddRows(true)
-                .setDefaultStyles(TITLE_STYLE, DEFAULT_STYLE, HEADER_STYLE, DEFAULT_STYLE)
-                .setPageSizeAndOrientation(Page.Page_A4_Landscape())
-                .setUseFullPageWidth(true)
+                .setMargins(20, 10, 25, 20)
+//                .setPrintBackgroundOnOddRows(true)
+                .setDefaultStyles(TITLE_STYLE, SUBTITLE_STYLE, HEADER_STYLE, DEFAULT_STYLE)
 
 //                .addAutoText("Rok: " + "\" + $P{PARAM_ROK} + \""
 //                        , AutoText.POSITION_HEADER, AutoText.ALIGMENT_LEFT, 80, DEFAULT_STYLE)
@@ -255,73 +235,198 @@ public class ZakNaklReport extends PrintPreviewReport {
                         , AutoText.POSITION_HEADER, AutoText.ALIGMENT_CENTER)
 //                        , AutoText.POSITION_HEADER, AutoText.ALIGNMENT_RIGHT, 200, 200, DEFAULT_STYLE)
 
-                .setGrandTotalLegend("Nagruzka Total")
+                // Add styles (needed only styles used as parent)
+                .addStyle(DEFAULT_STYLE)
+                .addStyle(DEFAULT_GRID_STYLE)
+                .addStyle(HEADER_STYLE)
+                .addStyle(MONEY_NO_FRACT_STYLE)
+                .addStyle(WORK_HOUR_STYLE)
 
+                // Add columns
+                .addColumn(ckzTextRepCol)
                 .addColumn(prijmeniCol)
-//                .addColumn(datePruhCol)
                 .addColumn(ymPruhCol)
                 .addColumn(workPruhCol)
                 .addColumn(naklMzdaCol)
                 .addColumn(naklMzdaPojistCol)
                 .addColumn(sazbaCol)
+                .addColumn(koefP8Col)
+                .addColumn(workPruhP8Col)
+                .addColumn(naklMzdaP8Col)
+                .addColumn(naklMzdaPojistP8Col)
 
-                // Grouping by users
-                .setPrintColumnNames(true)
+                // Add groups
+                .addGroup(zakGroup)
                 .addGroup(userGroup)
 
-                // Total summaries
-                .addGlobalFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_STYLE_SUM)
-                .addGlobalFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_STYLE)
-                .addGlobalFooterVariable(naklMzdaPojistCol, DJCalculation.SUM, MONEY_NO_FRACT_STYLE)
+                // Add totals
+                .setGrandTotalLegend("Nagruzka Total")
+                .setGrandTotalLegendStyle(GROUP_HEADER_USER_STYLE)
+                .addGlobalFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_TOT_STYLE)
+                .addGlobalFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_TOT_STYLE)
+                .addGlobalFooterVariable(naklMzdaPojistCol, DJCalculation.SUM, MONEY_NO_FRACT_TOT_STYLE)
+                .addGlobalFooterVariable(workPruhP8Col, DJCalculation.SUM, WORK_HOUR_TOT_STYLE)
+                .addGlobalFooterVariable(naklMzdaP8Col, DJCalculation.SUM, MONEY_NO_FRACT_TOT_STYLE)
+                .addGlobalFooterVariable(naklMzdaPojistP8Col, DJCalculation.SUM, MONEY_NO_FRACT_TOT_STYLE)
         ;
-
-        //                .addColumn(ColumnBuilder.getNew()
-        //                        .setColumnProperty("startTime", LocalDateTime.class)
-        //                        .setTitle("Date")
-        //                        .setTextFormatter(DateTimeFormatter.ISO_DATE.toFormat())
-        //                        .build())
-        //                .addColumn(ColumnBuilder.getNew()
-        //                        .setColumnProperty("startTime", LocalDateTime.class)
-        //                        .setTextFormatter(DateTimeFormatter.ISO_LOCAL_TIME.toFormat())
-        //                        .setTitle("Start time")
-        //                        .build())
-        //                .addColumn(ColumnBuilder.getNew()
-        //                        .setColumnProperty("duration", Integer.class)
-        //                        .setTitle("Duration (seconds)")
-        //                        .build())
-        //                .addColumn(ColumnBuilder.getNew()
-        //                        .setColumnProperty("status", Status.class)
-        //                        .setTitle("Status").build());
-//        return report;
     }
 
-    private CustomExpression getCustomExpression() {
-        return new CustomExpression() {
-            public Object evaluate(Map fields, Map variables, Map parameters) {
-                BigDecimal r1 = ( BigDecimal) fields.get("r1");
-                return r1.toString();
-            }
 
+    private void buildReportColumns() {
+
+        ckzTextRepCol = ColumnBuilder.getNew()
+                .setColumnProperty("ckzTextRep", String.class)
+//                .setCustomExpression(getCalcZakId())
+//                .setCustomExpressionForCalculation(getCalcZakId2())
+                .setTitle("Zakázka")
+                .setStyle(GROUP_HEADER_ZAK_STYLE)
+//                .setWidth(110)
+//                .setFixedWidth(true)
+                .build();
+
+        prijmeniCol = ColumnBuilder.getNew()
+                .setColumnProperty("prijmeni", String.class)
+                .setTitle("Příjmení")
+                .setStyle(GROUP_HEADER_USER_STYLE)
+                .setWidth(110)
+                .setFixedWidth(true)
+                .build();
+
+        ymPruhCol = ColumnBuilder.getNew()
+                .setColumnProperty("ymPruh", YearMonth.class)
+                .setTitle("Rok-Měs")
+                .setStyle(YM_STYLE)
+//                .setTextFormatter(DateTimeFormatter.ISO_DATE.toFormat())
+                .setWidth(110)
+//                .setFixedWidth(true)
+                .build();
+
+        workPruhCol = ColumnBuilder.getNew()
+                .setColumnProperty("workPruh", BigDecimal.class)
+                .setTitle("Hodin")
+                .setStyle(WORK_HOUR_STYLE)
+                .setWidth(60)
+//                .setFixedWidth(true)
+                .build();
+
+        workPruhP8Col = ColumnBuilder.getNew()
+                .setColumnProperty("workPruhP8", BigDecimal.class)
+                .setTitle("Hodin P8")
+                .setStyle(WORK_HOUR_STYLE)
+                .setWidth(60)
+//                .setFixedWidth(true)
+                .build();
+
+        naklMzdaCol = ColumnBuilder.getNew()
+                .setColumnProperty("naklMzda", BigDecimal.class)
+                .setTitle("Mzda [CZK]")
+                .setStyle(MONEY_NO_FRACT_STYLE)
+                .setWidth(80)
+//                .setFixedWidth(true)
+                .build();
+
+        naklMzdaPojistCol = ColumnBuilder.getNew()
+                .setColumnProperty("naklMzdaPojist", BigDecimal.class)
+                .setTitle("Mzda + Poj.")
+                .setStyle(MONEY_NO_FRACT_STYLE)
+                .setWidth(80)
+//                .setFixedWidth(true)
+                .build();
+
+        naklMzdaP8Col = ColumnBuilder.getNew()
+                .setColumnProperty("naklMzdaP8", BigDecimal.class)
+                .setTitle("Mzda P8")
+                .setStyle(MONEY_NO_FRACT_STYLE)
+                .setWidth(80)
+//                .setFixedWidth(true)
+                .build();
+
+        naklMzdaPojistP8Col = ColumnBuilder.getNew()
+                .setColumnProperty("naklMzdaPojistP8", BigDecimal.class)
+                .setTitle("Mzda + P. P8")
+                .setStyle(MONEY_NO_FRACT_STYLE)
+                .setWidth(80)
+//                .setFixedWidth(true)
+                .build();
+
+        sazbaCol = ColumnBuilder.getNew()
+                .setColumnProperty("sazba", BigDecimal.class)
+                .setTitle("Sazba")
+                .setStyle(MONEY_STYLE)
+                .setWidth(60)
+                .setFixedWidth(true)
+                .build();
+
+        koefP8Col = ColumnBuilder.getNew()
+                .setColumnProperty("koefP8", BigDecimal.class)
+                .setTitle("Koef P8")
+                .setStyle(MONEY_STYLE)
+                .setWidth(60)
+                .setFixedWidth(true)
+                .build();
+    }
+
+
+    private void buildReportGroups() {
+
+        // User group
+        GroupBuilder userGroupBuilder = new GroupBuilder();
+        DJGroupLabel userGroupWorkHourLabel = new DJGroupLabel("", GROUP_LABEL_STYLE, LabelPosition.LEFT);
+        DJGroupLabel userGroupMzdaLabel = new DJGroupLabel("", GROUP_LABEL_STYLE, LabelPosition.LEFT);
+        DJGroupLabel userGroupWorkMzdaPojistLabel = new DJGroupLabel("", GROUP_LABEL_STYLE, LabelPosition.LEFT);
+        userGroup = userGroupBuilder
+                .setCriteriaColumn((PropertyColumn) prijmeniCol)
+                .addHeaderVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_SUM_STYLE, null, userGroupWorkHourLabel)
+                .addHeaderVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_SUM_STYLE, null, userGroupMzdaLabel)
+                .addHeaderVariable(naklMzdaPojistCol, DJCalculation.SUM, MONEY_NO_FRACT_SUM_STYLE, null, userGroupWorkMzdaPojistLabel)
+                .addHeaderVariable(workPruhP8Col, DJCalculation.SUM, WORK_HOUR_SUM_STYLE, null, null)
+                .addHeaderVariable(naklMzdaP8Col, DJCalculation.SUM, MONEY_NO_FRACT_SUM_STYLE, null, null)
+                .addHeaderVariable(naklMzdaPojistP8Col, DJCalculation.SUM, MONEY_NO_FRACT_SUM_STYLE, null, null)
+                .setGroupLayout(GroupLayout.VALUE_IN_HEADER)
+                .build()
+        ;
+
+
+        // ZAK group
+        GroupBuilder zakGroupBuilder = new GroupBuilder();
+        zakGroup = zakGroupBuilder
+                .setCriteriaColumn((PropertyColumn) ckzTextRepCol)
+                .setGroupLayout(GroupLayout.VALUE_IN_HEADER)
+                .build()
+        ;
+    }
+
+
+    public void setSubtitleText(String subtitleText) {
+        this.getReportBuilder().setSubtitle(subtitleText);
+    }
+
+
+    // Following expressions should work, but there is probbably a bug in Vaadin component
+    private CustomExpression getCalcZakId() {
+        return new CustomExpression() {
+            @Override
+            public Object evaluate(Map fields, Map variables, Map parameters) {
+                Long zakId = (Long)fields.get("zakId");
+                return zakId.toString();
+            }
+            @Override
             public String getClassName() {
                 return String.class.getName();
             }
         };
     }
 
-    private CustomExpression getCustomExpression2() {
+    private CustomExpression getCalcZakId2() {
         return new CustomExpression() {
+            @Override
             public Object evaluate(Map fields, Map variables, Map parameters) {
-                return fields.get("r1");
+                return fields.get("zakId");
             }
-
+            @Override
             public String getClassName() {
-                return BigDecimal   .class.getName();
+                return Long.class.getName();
             }
         };
     }
-
-    //    public void setParamRok(Integer paramRok) {
-//        this.paramRok = paramRok;
-//        this.paramRokStr = null == paramRok ? "Vše" : paramRok.toString();;
-//    }
 }
