@@ -27,7 +27,8 @@ public abstract class AbstractGridDialog<T extends Serializable>  extends Dialog
     private VerticalLayout gridContainer;
     private Component buttonBar;
     private HorizontalLayout dialogHeader;
-    private HorizontalLayout gridInfoBox;
+    private HorizontalLayout gridToolBar;
+    private HorizontalLayout gridInfoBar;
     private HtmlComponent headerDevider;
 
     protected GrammarGender itemGender;
@@ -63,18 +64,23 @@ public abstract class AbstractGridDialog<T extends Serializable>  extends Dialog
         this.setCloseOnEsc(true);
         this.setCloseOnOutsideClick(false);
 
-        gridContainer = initGridContainer();
+//        gridContainer = initGridContainer();
         buttonBar = initDialogButtonBar();
 
         dialogContent = new VerticalLayout();
         dialogContent.getStyle().set("flex", "auto");
         dialogContent.setAlignItems(FlexComponent.Alignment.STRETCH);
+        dialogContent.getStyle()
+                .set("padding-top", "0em")
+                .set("padding-bottom", "0em")
+        ;
 
         dialogContent.add(
                 initHeaderDevider()
-                , initGridInfoBox()
-                , gridContainer
-                , new Paragraph("")
+                , initGridToolBar()
+                , initGridInfoBar()
+                , initGridContainer()
+//                , new Paragraph("")
                 , buttonBar
         );
 
@@ -138,21 +144,39 @@ public abstract class AbstractGridDialog<T extends Serializable>  extends Dialog
         return headerMiddleBox;
     }
 
-    private Component initGridInfoBox() {
-        gridInfoBox = new HorizontalLayout();
-        gridInfoBox.getStyle()
+    private Component initGridInfoBar() {
+        gridInfoBar = new HorizontalLayout();
+        gridInfoBar.getStyle()
                 .set("margin-top", "0.2em")
                 .set("margin-bottom", "0.2em");
 //        reportToolBar.getStyle().set("margin-left", "-2em");
-        gridInfoBox.setSpacing(false);
+        gridInfoBar.setSpacing(false);
 //        reportToolBar.setPadding(false);
-        gridInfoBox.setAlignItems(FlexComponent.Alignment.BASELINE);
-        gridInfoBox.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        return gridInfoBox;
+        gridInfoBar.setAlignItems(FlexComponent.Alignment.BASELINE);
+        gridInfoBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        return gridInfoBar;
     }
 
-    public HasComponents getGridInfoBox() {
-        return gridInfoBox;
+    private Component initGridToolBar() {
+        gridToolBar = new HorizontalLayout();
+        gridToolBar.getStyle()
+                .set("margin-top", "0.2em")
+                .set("margin-bottom", "0.2em");
+//        gridToolBar.getStyle().set("margin-left", "-2em");
+        gridToolBar.setSpacing(false);
+//        gridToolBar.setPadding(false);
+//        gridToolBar.setAlignItems(FlexComponent.Alignment.BASELINE);
+//        gridToolBar.setAlignItems(FlexComponent.Alignment.STRETCH);
+        gridToolBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        return gridToolBar;
+    }
+
+    public HasComponents getGridInfoBar() {
+        return gridInfoBar;
+    };
+
+    public HasComponents getGridToolBar() {
+        return gridToolBar;
     };
 
     protected Div getHeaderMiddleBox() {

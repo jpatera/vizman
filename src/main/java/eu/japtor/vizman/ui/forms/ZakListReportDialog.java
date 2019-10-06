@@ -23,10 +23,10 @@ import java.util.List;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class ReportZakListDialog extends AbstractPrintDialog<Zak> implements HasLogger {
+public class ZakListReportDialog extends AbstractPrintDialog<Zak> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "1200px";
-    public static final String DIALOG_HEIGHT = "700px";
+    public static final String DIALOG_HEIGHT = "750px";
 
 //    private final static String DELETE_STR = "Zrušit";
 //    private final static String REVERT_STR = "Vrátit změny";
@@ -79,7 +79,7 @@ public class ReportZakListDialog extends AbstractPrintDialog<Zak> implements Has
     };
 
 
-    public ReportZakListDialog(ZakService zakService) {
+    public ZakListReportDialog(ZakService zakService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setDialogTitle("REPORT: Zakázky");
 //        getHeaderEndBox().setText("END text");

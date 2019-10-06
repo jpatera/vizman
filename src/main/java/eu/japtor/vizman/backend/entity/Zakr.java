@@ -599,9 +599,9 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     public String getCkzTextFull() {
         StringBuilder builder = new StringBuilder();
         builder .append(getCkont())
-                .append(" / ")
+                .append("/")
                 .append(getCzak())
-                .append(" , ")
+                .append(" : ")
                 .append(getKzTextFull())
         ;
         return builder.toString();

@@ -23,9 +23,8 @@ public class ReloadButton extends Button {
         ;
 
         this.setIcon(reloadIcon);
-        this.getStyle()
-                .set("theme", "icon secondary")
-        ;
+        this.getElement().setAttribute("theme", "icon secondary small");
+
         // TODO: add tooltips
 //        This does  not work:
 //        this.getElement().setAttribute("tooltip", null == tooltipText ? DEFAULT_TOOLTIP_TEXT : tooltipText);

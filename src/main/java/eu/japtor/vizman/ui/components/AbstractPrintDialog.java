@@ -20,17 +20,17 @@ import java.util.function.Consumer;
 
 public abstract class AbstractPrintDialog<T extends Serializable> extends Dialog {
 
-    private final static String REVERT_AND_CLOSE_STR = "Zpět";
+//    private final static String REVERT_AND_CLOSE_STR = "Zpět";
 
     private Div dialogCanvas;
     private VerticalLayout dialogContent;
     private VerticalScrollLayout reportPanel;
-//    private Component buttonBar;
+    private Component buttonBar;
     private HorizontalLayout dialogHeader;
     private HorizontalLayout reportInfoBar;
     private HorizontalLayout reportToolBar;
     private HtmlComponent headerDevider;
-    private Button revertAndCloseButton;
+//    private Button revertAndCloseButton;
 
 //    protected GrammarGender itemGender;
 //    private String itemTypeNomS;
@@ -77,19 +77,23 @@ public abstract class AbstractPrintDialog<T extends Serializable> extends Dialog
         this.setCloseOnOutsideClick(false);
 
         reportPanel = buildReportPane();
-//        buttonBar = initDialogButtonBar();
+        buttonBar = initDialogButtonBar();
 
         dialogContent = new VerticalLayout();
         dialogContent.getStyle().set("flex", "auto");
         dialogContent.setAlignItems(FlexComponent.Alignment.STRETCH);
+        dialogContent.getStyle()
+                .set("padding-top", "0em")
+                .set("padding-bottom", "0em")
+        ;
 
         dialogContent.add(
-                initHeaderDevider()
+//                initHeaderDevider()
+                initReportToolBar()
                 , initReportInfoBar()
-                , initReportToolBar()
                 , reportPanel
 //                , new Paragraph("")
-//                , buttonBar
+                , buttonBar
         );
 
         this.getElement().getStyle().set("padding", "0");
@@ -160,7 +164,7 @@ public abstract class AbstractPrintDialog<T extends Serializable> extends Dialog
         return reportToolBar;
     }
 
-    public HasComponents getReportInfoBox() {
+    public HasComponents getReportInfoBar() {
         return reportInfoBar;
     };
 
@@ -168,19 +172,22 @@ public abstract class AbstractPrintDialog<T extends Serializable> extends Dialog
         return reportToolBar;
     };
 
+    public HasComponents getHeaderEndBox() {
+        return headerEndBox;
+    };
+
     private Component initHeaderEndBox() {
-        revertAndCloseButton = new Button(REVERT_AND_CLOSE_STR);
-        revertAndCloseButton.addClickListener(e -> revertClicked(true));
+//        revertAndCloseButton = new Button(REVERT_AND_CLOSE_STR);
+//        revertAndCloseButton.addClickListener(e -> revertClicked(true));
 
 //        headerEndBox = new H5();
         headerEndBox = new HorizontalLayout();
-//        headerEndBox.getStyle()
-//                .set("margin-right","1.2em")
-//        ;
-
-        headerEndBox.add(
-                revertAndCloseButton
-        );
+        headerEndBox.getStyle()
+                .set("margin-right","1.2em")
+        ;
+//        headerEndBox.add(
+//                revertAndCloseButton
+//        );
         return headerEndBox;
     }
 
@@ -224,7 +231,7 @@ public abstract class AbstractPrintDialog<T extends Serializable> extends Dialog
         repPane.getStyle()
                 .set("margin-top", "0.2em")
                 .set("margin-bottom", "0.2em");
-        repPane.setHeight(String.valueOf(getSizeInt(this.getHeight()) - 150) + "px");
+        repPane.setHeight(String.valueOf(getSizeInt(this.getHeight()) - 120) + "px");
 //        repPane.getElement().setAttribute("theme", "");
 //        Div div = new Div(repPane);
 //

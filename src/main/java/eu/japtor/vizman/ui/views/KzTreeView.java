@@ -47,7 +47,7 @@ import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.KontFormDialog;
-import eu.japtor.vizman.ui.forms.ReportZakTestDialog;
+import eu.japtor.vizman.ui.forms.ZakTestReportDialog;
 import eu.japtor.vizman.ui.forms.ZakFormDialog;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1630,8 +1630,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //
 //            JRBeanCollectionDataSource jDataSource = new JRBeanCollectionDataSource(getReportData());
 
-//        ReportZakListDialog repZakDlg  = new ReportZakListDialog(zakService);
-        ReportZakTestDialog repZakPlneniDlg  = new ReportZakTestDialog(zakService);
+//        ZakListReportDialog repZakDlg  = new ZakListReportDialog(zakService);
+        ZakTestReportDialog repZakPlneniDlg  = new ZakTestReportDialog(zakService);
         repZakPlneniDlg.openDialog();
 
 //        FastReportBuilder drb = new FastReportBuilder();

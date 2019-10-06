@@ -2,6 +2,7 @@ package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
@@ -21,12 +22,17 @@ import java.util.List;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class ReportZakNaklDialog extends AbstractPrintDialog<Zakr> implements HasLogger {
+public class ZakNaklReportDialog extends AbstractPrintDialog<Zakr> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "1200px";
-    public static final String DIALOG_HEIGHT = "700px";
+    public static final String DIALOG_HEIGHT = "750px";
+    private static final String CLOSE_STR = "Zavřít";
 
     private final static String REPORT_FILE_NAME = "vzm-rep-zak-nakl";
+
+    private HorizontalLayout leftBarPart;
+    private HorizontalLayout rightBarPart;
+    private Button closeButton;
 
     private ZaknService zaknService;
     private Zakr zakr;
@@ -51,7 +57,7 @@ public class ReportZakNaklDialog extends AbstractPrintDialog<Zakr> implements Ha
     ;
 
 
-    public ReportZakNaklDialog(ZaknService zaknService) {
+    public ZakNaklReportDialog(ZaknService zaknService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setDialogTitle("Report: NÁKLADY NA ZAKÁZKU");
 //        getHeaderEndBox().setText("END text");
@@ -67,6 +73,14 @@ public class ReportZakNaklDialog extends AbstractPrintDialog<Zakr> implements Ha
         this.open();
     }
 
+    private void closeDialog() {
+        this.close();
+    }
+
+    private void closeClicked() {
+        closeDialog();
+    }
+
     private void initReportControls() {
 
         deactivateListeners();
@@ -79,8 +93,6 @@ public class ReportZakNaklDialog extends AbstractPrintDialog<Zakr> implements Ha
             expAnchorsBox.add(new ReportExpAnchor(format));
         }
 
-        Button genButton = new Button("Generovat");
-        genButton.addClickListener(event -> generateAndShowReport());
 
 //        zakInfoBox = new HorizontalLayout();
 //        zakInfoBox.getStyle()
@@ -94,24 +106,29 @@ public class ReportZakNaklDialog extends AbstractPrintDialog<Zakr> implements Ha
 //                zakInfoBox
 //        );
 
+//        Button genButton = new Button("Generovat");
+//        genButton.addClickListener(event -> generateAndShowReport());
+
         reportParamBox = new HorizontalLayout();
         reportParamBox.getStyle()
                 .set("margin-top", "0.2em")
-                .set("margin-bottom", "0.2em");
+                .set("margin-bottom", "0.2em")
+        ;
 //        reportParamBox.add(
-//                initRezieParamComponent()
-//                , initPojistParamComponent()
+//                genButton
+                initRezieParamComponent();
+                initPojistParamComponent();
 //        );
-        initRezieParamComponent();
-        initPojistParamComponent();
 
         getReportToolBar().add(
                 reportParamBox
-                , expAnchorsBox
+        );
+
+        getHeaderEndBox().add(
+                expAnchorsBox
         );
 
         report = new ZakNaklReport();
-
         activateListeners();
     }
 
@@ -186,16 +203,34 @@ public class ReportZakNaklDialog extends AbstractPrintDialog<Zakr> implements Ha
     public Component initDialogButtonBar() {
         HorizontalLayout bar = new HorizontalLayout();
 
-//        bar.setClassName("buttons");
-//        bar.setSpacing(false);
-//        bar.setPadding(false);
-//        bar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-//        bar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
-//
-//        bar.add(
-//                leftBarPart
-//                , rightBarPart
-//        );
+        closeButton = new Button(CLOSE_STR);
+        closeButton.setAutofocus(true);
+        closeButton.getElement().setAttribute("theme", "primary");
+        closeButton.addClickListener(e -> closeClicked());
+
+        leftBarPart = new HorizontalLayout();
+        leftBarPart.setSpacing(true);
+
+        rightBarPart = new HorizontalLayout();
+        rightBarPart.setSpacing(true);
+        rightBarPart.add(
+                closeButton
+//                , revertAndCloseButton
+        );
+
+        bar.setClassName("buttons");
+        bar.setSpacing(false);
+        bar.setPadding(false);
+        bar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        bar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
+
+        bar.add(
+                leftBarPart
+                , rightBarPart
+        );
         return bar;
     }
+
+//  --------------------------------------------
+
 }

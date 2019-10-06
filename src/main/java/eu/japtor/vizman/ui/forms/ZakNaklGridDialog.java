@@ -31,35 +31,36 @@ import java.util.Objects;
 public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "1300px";
-    public static final String DIALOG_HEIGHT = "800px";
+    public static final String DIALOG_HEIGHT = "850px";
 //    public static final String DIALOG_HEIGHT = null;
     private static final String CLOSE_STR = "Zavřít";
-
-    private HorizontalLayout leftBarPart;
-    private HorizontalLayout rightBarPart;
-    private Button closeButton;
-    private Button zakNaklRepButton;
-    private TextField rezieParamField;
-    private Label rezieParamLabel;
-    private TextField pojistParamField;
-    private Label pojistParamLabel;
-    private Binder<ZakrListView.ZakrParams> paramsBinder;
-
-    private List<Zakn> currentItemList;
-    private Zakr zakr;
-    private Label zakInfoField;
-
-    Grid<Zakn> grid;
-    private FooterRow sumFooterRow;
-
-    private ReportZakNaklDialog repZakNaklDialog;
 
     public static final String HODIN_COL_KEY = "zakn-bg-hodin";
     public static final String MZDA_COL_KEY = "zakn-bg-mzda";
     public static final String MZDA_POJ_COL_KEY = "zakn-bg-mzda-poj";
 
-    private ZaknService zaknService;
+    private HorizontalLayout leftBarPart;
+    private HorizontalLayout rightBarPart;
+    private Button closeButton;
+    private Button zakNaklRepButton;
+
+    private TextField rezieParamField;
+    private Label rezieParamLabel;
+    private TextField pojistParamField;
+    private Label pojistParamLabel;
     private ZakrListView.ZakrParams zakrParams;
+    private Binder<ZakrListView.ZakrParams> paramsBinder;
+
+    private List<Zakn> currentItemList;
+    private Zakr zakr;
+    private Label zakInfoBox;
+
+    Grid<Zakn> grid;
+    private FooterRow sumFooterRow;
+
+    private ZakNaklReportDialog zakNaklRepDialog;
+    private ZaknService zaknService;
+
 
 
     public ZakNaklGridDialog(ZaknService zaknService) {
@@ -70,24 +71,27 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
         this.zaknService = zaknService;
         this.paramsBinder = new Binder<>();
 
-        repZakNaklDialog  = new ReportZakNaklDialog(zaknService);
+        zakNaklRepDialog = new ZakNaklReportDialog(zaknService);
 
-        getGridInfoBox().add(
-                initZakInfoField()
+        getGridInfoBar().add(
+                initZakInfoBox()
+        );
+
+        getGridToolBar().add(
+                buildGridBarComponent()
         );
 
         getGridContainer().add(
-                buildGridBar()
-                , initGrid()
+                initGrid()
         );
     }
 
-    private Component initZakInfoField() {
-        zakInfoField = new Label();
-        zakInfoField.getStyle()
+    private Component initZakInfoBox() {
+        zakInfoBox = new Label();
+        zakInfoBox.getStyle()
                 .set("margin-top", "0.2em")
                 .set("margin-bottom", "0.2em");
-        return zakInfoField;
+        return zakInfoBox;
     }
 
     //    public void openDialog(LinkedList<PersonWage> personWages) {
@@ -96,8 +100,8 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
 //        this.origItemList = Collections.unmodifiableList(new LinkedList<>(currentItemList));
 
 //        this.itemsChanged = false;
-        this.zakrParams = zakrParams;
         this.zakr = zakr;
+        this.zakrParams = zakrParams;
         paramsBinder.setBean(zakrParams);
 //        paramsBinder.addValueChangeListener(event -> calcButton.setIconDirty());
         initDataAndControls();
@@ -154,6 +158,7 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
         rezieParamField.setWidth("5em");
         rezieParamField.setReadOnly(true);
         rezieParamField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        rezieParamField.getElement().setAttribute("theme", "small");
         rezieParamField.setValueChangeMode(ValueChangeMode.EAGER);
         paramsBinder.forField(rezieParamField)
                 .asRequired("Koeficient režie musí být zadán")
@@ -166,6 +171,7 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     private Component initRezieLabel() {
         rezieParamLabel = new Label("Koef. režie");
         rezieParamLabel.setWidth("5em");
+        rezieParamLabel.getElement().setAttribute("theme", "small");
 //        rezieParamLabel.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
         return rezieParamLabel;
     }
@@ -176,6 +182,7 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
         pojistParamField.setWidth("5em");
         pojistParamField.setReadOnly(true);
         pojistParamField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        pojistParamField.getElement().setAttribute("theme", "small");
         pojistParamField.setValueChangeMode(ValueChangeMode.EAGER);
         paramsBinder.forField(pojistParamField)
                 .asRequired("Koeficient pojištění musí být zadán")
@@ -188,6 +195,7 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     private Component initPojistLabel() {
         pojistParamLabel = new Label("Koef. poj.");
         pojistParamLabel.setWidth("5em");
+        pojistParamLabel.getElement().setAttribute("theme", "small");
 //        rezieParamLabel.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
         return pojistParamLabel;
     }
@@ -218,15 +226,15 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     private void openZakNaklRepDialog() {
 //        zakrParams.setRokZak(zakrGrid.getRokFilterValue());
 //        zakrParams.setSkupina(zakrGrid.getSkupinaFilterValue());
-        repZakNaklDialog.openDialog(zakr, zakrParams);
-        repZakNaklDialog.generateAndShowReport();
+        zakNaklRepDialog.openDialog(zakr, zakrParams);
+        zakNaklRepDialog.generateAndShowReport();
     }
 
 
     private void initDataAndControls() {
         deactivateListeners();
 
-        zakInfoField.setText(zakr.getCkzTextFull());
+        zakInfoBox.setText(zakr.getCkzTextFull());
 
         this.currentItemList = zaknService.fetchByZakId(zakr.getId(), zakrParams);
         grid.setItems(currentItemList);
@@ -264,22 +272,24 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     }
 
 
-    private Component buildGridBar() {
-        HorizontalLayout gridBar = new HorizontalLayout();
-        gridBar.setSpacing(false);
-        gridBar.setPadding(false);
-        gridBar.getStyle().set("marginTop", "0.2em");
+    private Component buildGridBarComponent() {
+        HorizontalLayout gridBarComp = new HorizontalLayout();
+        gridBarComp.setSpacing(false);
+        gridBarComp.setWidthFull();
+//        gridBar.setPadding(false);
+//        gridBar.setAlignItems(FlexComponent.Alignment.END);
+        gridBarComp.setAlignItems(FlexComponent.Alignment.BASELINE);
+        gridBarComp.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+//        gridBar.getStyle().set("marginTop", "0.2em");
 //        gridBar.getStyle().set("margin-left", "-3em");
-        gridBar.setAlignItems(FlexComponent.Alignment.BASELINE);
-        gridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        gridBar.add(
+        gridBarComp.add(
 //                buildTitleComponent()
 //                , new Ribbon()
                 buildGridBarControlsComponent()
                 , new Ribbon()
                 , initZakNaklRepButton()
         );
-        return gridBar;
+        return gridBarComp;
     }
 
     private Component initGrid() {

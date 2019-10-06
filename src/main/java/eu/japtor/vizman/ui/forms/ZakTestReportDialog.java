@@ -22,10 +22,10 @@ import java.util.List;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class ReportZakTestDialog extends AbstractPrintDialog<Zak> implements HasLogger {
+public class ZakTestReportDialog extends AbstractPrintDialog<Zak> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "1200px";
-    public static final String DIALOG_HEIGHT = "700px";
+    public static final String DIALOG_HEIGHT = "750px";
 
     private final static String REPORT_FILE_NAME = "vzm-rep-zak-test";
 
@@ -45,7 +45,7 @@ public class ReportZakTestDialog extends AbstractPrintDialog<Zak> implements Has
     };
 
 
-    public ReportZakTestDialog(ZakService zakService) {
+    public ZakTestReportDialog(ZakService zakService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setDialogTitle("Report: ROZPRACOVANOST ZAKÁZEK");
 //        getHeaderEndBox().setText("END text");

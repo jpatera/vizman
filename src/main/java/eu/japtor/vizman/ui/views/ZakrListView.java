@@ -40,7 +40,7 @@ import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
-import eu.japtor.vizman.ui.forms.ReportZakRozpracDialog;
+import eu.japtor.vizman.ui.forms.ZakRozpracReportDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -74,8 +74,8 @@ public class ZakrListView extends VerticalLayout {
     private TextField pojistParamField;
     private Select<String> rxParamField;
     private Select<String> ryParamField;
-    private Binder<ZakrParams> paramsBinder;
     private ZakrParams zakrParams;
+    private Binder<ZakrParams> paramsBinder;
 
 //    ZakNaklGridDialog zakNaklGridDialog;
 
@@ -145,20 +145,21 @@ public class ZakrListView extends VerticalLayout {
 //    }
 
 
-    private Component initGridBar() {
-        HorizontalLayout gridBar = new HorizontalLayout();
-        gridBar.setSpacing(false);
-        gridBar.setAlignItems(Alignment.END);
-        gridBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
+    private Component buildGridBarComponent() {
+        HorizontalLayout gridBarComp = new HorizontalLayout();
+        gridBarComp.setSpacing(false);
+//        gridBar.setAlignItems(Alignment.END);
+        gridBarComp.setAlignItems(Alignment.BASELINE);
+        gridBarComp.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-        gridBar.add(
+        gridBarComp.add(
                 buildTitleComponent()
                 , new Ribbon()
                 , buildGridBarControlsComponent()
                 , new Ribbon()
                 , initRozpracRepButton()
         );
-        return gridBar;
+        return gridBarComp;
     }
 
     private Component buildTitleComponent() {
@@ -224,6 +225,8 @@ public class ZakrListView extends VerticalLayout {
         kurzParamField = new TextField("Kurz CZK/EUR");
         kurzParamField.setWidth("7em");
         kurzParamField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        kurzParamField.getElement().setAttribute("theme", "small");
+//        kurzParamField.getStyle().set("theme", "icon secondary small");
         kurzParamField.setValueChangeMode(ValueChangeMode.EAGER);
         paramsBinder.forField(kurzParamField)
                 .asRequired("Kurz musí být zadán")
@@ -238,6 +241,8 @@ public class ZakrListView extends VerticalLayout {
         rezieParamField.setWidth("5em");
         rezieParamField.setReadOnly(true);
         rezieParamField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        rezieParamField.getElement().setAttribute("theme", "small");
+//        rezieParamField.getStyle().set("theme", "small");
         rezieParamField.setValueChangeMode(ValueChangeMode.EAGER);
         paramsBinder.forField(rezieParamField)
                 .asRequired("Koeficient režie musí být zadán")
@@ -252,6 +257,8 @@ public class ZakrListView extends VerticalLayout {
         pojistParamField.setWidth("5em");
         pojistParamField.setReadOnly(true);
         pojistParamField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+        pojistParamField.getElement().setAttribute("theme", "small");
+//        pojistParamField.getStyle().set("theme", "small");
         pojistParamField.setValueChangeMode(ValueChangeMode.EAGER);
         paramsBinder.forField(pojistParamField)
                 .asRequired("Koeficient pojištění musí být zadán")
@@ -266,6 +273,8 @@ public class ZakrListView extends VerticalLayout {
         rxParamField.setLabel("RX (od)");
         rxParamField.setWidth("5em");
 //        rxParamField.setEmptySelectionCaption("Vše");
+        rxParamField.getElement().setAttribute("theme", "small");
+//        rxParamField.getStyle().set("theme", "small");
         rxParamField.setEmptySelectionAllowed(true);
         rxParamField.setItems("R0", "R1", "R2", "R3", "R4");
 
@@ -280,6 +289,8 @@ public class ZakrListView extends VerticalLayout {
         ryParamField.setLabel("RY (do)");
         ryParamField.setWidth("5em");
 //        rxParamField.setEmptySelectionCaption("Vše");
+        ryParamField.getElement().setAttribute("theme", "small");
+//        ryParamField.getStyle().set("theme", "small");
         ryParamField.setEmptySelectionAllowed(true);
         ryParamField.setItems("R0", "R1", "R2", "R3", "R4");
 
@@ -304,6 +315,7 @@ public class ZakrListView extends VerticalLayout {
                 calcButton.setIconClean();
             }
         });
+        calcButton.getElement().setAttribute("theme", "small");
         return calcButton;
     }
 
@@ -314,7 +326,6 @@ public class ZakrListView extends VerticalLayout {
                 openRozpracRepDialog();
         });
 //        this.addClassName("view-toolbar__button");
-//        this.getStyle().set("theme", "small");
         rozpracRepButton.getElement().setAttribute("theme", "small secondary");
         return rozpracRepButton;
     }
@@ -326,8 +337,8 @@ public class ZakrListView extends VerticalLayout {
         zakrParams.setArch(zakrGrid.getArchFilterValue());
         zakrParams.setRokZak(zakrGrid.getRokFilterValue());
         zakrParams.setSkupina(zakrGrid.getSkupinaFilterValue());
-        ReportZakRozpracDialog repZakRozpracDlg  = new ReportZakRozpracDialog(zakrService, zakrParams);
-        repZakRozpracDlg.openDialog();
+        ZakRozpracReportDialog repZakRozpracDlg  = new ZakRozpracReportDialog(zakrService, zakrParams);
+        repZakRozpracDlg.openDialog(zakrParams);
         repZakRozpracDlg.generateAndShowReport();
     }
 
@@ -378,7 +389,7 @@ public class ZakrListView extends VerticalLayout {
         gridContainer.setAlignItems(Alignment.STRETCH);
 
         gridContainer.add(
-                initGridBar()
+                buildGridBarComponent()
                 , initZakrGrid(zakrParams)
         );
         return gridContainer;
