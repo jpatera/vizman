@@ -61,7 +61,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
     @Override
     public List<Kont> fetchAll() {
-        return kontRepo.findAllByOrderByRokDescCkontDesc();
+        return kontRepo.findAllByOrderByCkontDescRokDesc();
     }
 
     @Override

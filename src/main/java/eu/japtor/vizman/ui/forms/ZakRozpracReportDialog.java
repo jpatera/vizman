@@ -1,5 +1,6 @@
 package eu.japtor.vizman.ui.forms;
 
+import ar.com.fdvs.dj.domain.constants.Page;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -243,8 +244,7 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
 
     public void generateAndShowReport() {
         deactivateListeners();
-        report.getReportBuilder()
-            .setSubtitle(
+        report.setSubtitleText(
                 "Parametry: Arch=" + (null == archParamField.getValue() ? "Vše" : archParamField.getValue().toString()) +
                 "  Rok zak.=" + (null == rokZakParamField.getValue() ? "Vše" : rokZakParamField.getValue().toString()) +
                 "  Skupina=" + (null == skupinaParamField.getValue() ? "Vše" : skupinaParamField.getValue().toString()) +
@@ -253,11 +253,14 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
                 "  Režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue()) +
                 "  Pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue()) +
                 "  Kurz CZK/EUR=" + (null == kurzParamField.getValue() ? "" : kurzParamField.getValue())
-            )
-//            .setPageSizeAndOrientation(Page.Page_A4_Landscape())
-//            .build()
-        ;
-        report.setItems(itemsSupplier.get());
+        );
+
+        // Tohle nefunguje:
+        // report.getReportBuilder().setProperty("ireport.zoom", "2.0");
+        // report.getReportBuilder().setProperty("net.sf.jasperreports.viewer.zoom", "2");
+
+        report.setItems(itemsSupplier.get());   // ..also builds report if has not been built yet
+
         expAnchorsBox.getChildren()
                 .forEach(anch -> {
                     if (anch.getClass() == ReportExpAnchor.class) {

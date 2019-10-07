@@ -29,7 +29,7 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
     Kont findTopByFolderIgnoreCase(String docdir);
 
-    List<Kont> findAllByOrderByRokDescCkontDesc();
+    List<Kont> findAllByOrderByCkontDescRokDesc();
 
     List<Kont> findAllByRokOrderByCkontDesc(Integer rok);
 
@@ -39,12 +39,12 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
     @Query(value = "SELECT * FROM vizman.kont k WHERE (NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)) "
             + " AND (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont)) "
-            + " ORDER BY ROK DESC, CKONT DESC",
+            + " ORDER BY CKONT DESC, ROK DESC",
                     nativeQuery = true)
     public List<Kont> findHavingAllZaksArchived();
 
     @Query(value = "SELECT * FROM vizman.kont k WHERE NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont) "
-            + " ORDER BY ROK DESC, CKONT DESC",
+            + " ORDER BY CKONT DESC, ROK DESC",
                     nativeQuery = true)
     public List<Kont> findHavingNoZaks();
 
@@ -52,7 +52,7 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 //                    nativeQuery = true)
     @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)) "
             + " OR (NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont)) "
-            + " ORDER BY ROK DESC, CKONT DESC",
+            + " ORDER BY CKONT DESC, ROK DESC",
                     nativeQuery = true)
     public List<Kont> findHavingSomeZaksActive();
 

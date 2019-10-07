@@ -12,7 +12,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public interface ZakrRepo extends JpaRepository<Zakr, Long> {
 
-    List<Zakr> findAllByOrderByRokDescCkontDescCzakDesc();
+    List<Zakr> findAllByOrderByCkontDescCzakDesc();
 
     List<Zakr> findByRokOrderByCkontDescCzakDesc(Integer rok);
 

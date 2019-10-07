@@ -178,7 +178,7 @@ public class ZakBasicListView extends VerticalLayout {
     }
 
     private void loadGridDataAndRebuildFilterFields() {
-        zakList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDesc();
+        zakList = zakBasicRepo.findAllByOrderByCkontDescCzakDesc();
         zakGrid.setItems(zakList);
         zakGrid.setRokFilterItems(zakList.stream()
                 .filter(z -> null != z.getRok())

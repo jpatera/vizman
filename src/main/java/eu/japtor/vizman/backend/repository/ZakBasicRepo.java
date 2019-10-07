@@ -11,7 +11,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public interface ZakBasicRepo extends JpaRepository<ZakBasic, Long> {
 
-    List<ZakBasic> findAllByOrderByRokDescCkontDescCzakDesc();
+    List<ZakBasic> findAllByOrderByCkontDescCzakDesc();
 //    List<ZakBasic> findAll();
 
 //    List<Klient> findByNameLikeIgnoreCase(String username, Sort sort);

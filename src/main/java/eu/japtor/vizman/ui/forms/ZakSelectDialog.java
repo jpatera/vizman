@@ -180,7 +180,7 @@ public class ZakSelectDialog extends Dialog {
     }
 
     private void updateViewContent() {
-        zakBasicList = zakBasicRepo.findAllByOrderByRokDescCkontDescCzakDesc();
+        zakBasicList = zakBasicRepo.findAllByOrderByCkontDescCzakDesc();
         zakGrid.populateGridDataAndRebuildFilterFields(zakBasicList);
         zakGrid.initFilterValues();
         zakGrid.doFilter();

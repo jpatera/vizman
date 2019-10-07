@@ -60,7 +60,7 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
 
     @Override
     public List<Zakr> fetchAllDescOrder(ZakrListView.ZakrParams zakrParams) {
-        List<Zakr> zakrs =  zakrRepo.findAllByOrderByRokDescCkontDescCzakDesc();
+        List<Zakr> zakrs =  zakrRepo.findAllByOrderByCkontDescCzakDesc();
         zakrs.stream()
                 .forEach(zr -> {
                     if (zr.getMena() == Mena.EUR) {
