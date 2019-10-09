@@ -1,6 +1,5 @@
 package eu.japtor.vizman.ui.forms;
 
-import ar.com.fdvs.dj.domain.constants.Page;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -17,8 +16,6 @@ import eu.japtor.vizman.ui.components.ReportExpAnchor;
 import eu.japtor.vizman.ui.views.ZakrListView;
 import org.vaadin.reports.PrintPreviewReport;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -41,9 +38,10 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     private ZakRozpracReport report;
     private HorizontalLayout expAnchorsBox;
     private HorizontalLayout reportParamBox;
-    private Select<Integer> rokZakParamField;
-    private Select<Boolean> archParamField;
-    private Select<String> skupinaParamField;
+    private Select<Boolean> archFilterField;
+    private TextField ckzFilterField;
+    private Select<Integer> rokZakFilterField;
+    private Select<String> skupinaFilterField;
     private Select<String> rxParamField;
     private Select<String> ryParamField;
 //    private Select<Boolean> archFilterRadio;
@@ -52,11 +50,11 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     private TextField kurzParamField;
 
     private SerializableSupplier<List<? extends Zakr>> itemsSupplier = () -> {
-//        if (null == rokZakParamField.getValue()) {
+//        if (null == rokZakFilterField.getValue()) {
             return zakrService.fetchByFiltersDescOrder(zakrParams);
 //            return zakrService.fetchAllDescOrder();
 //        } else {
-//            return zakrService.fetchByRokDescOrder(rokZakParamField.getValue());
+//            return zakrService.fetchByRokDescOrder(rokZakFilterField.getValue());
 //        }
     };
 
@@ -75,9 +73,10 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     public void openDialog(ZakrListView.ZakrParams zakrParams) {
         this.zakrParams = zakrParams;
 
-        archParamField.setValue(zakrParams.getArch());
-        rokZakParamField.setValue(zakrParams.getRokZak());
-        skupinaParamField.setValue(zakrParams.getSkupina());
+        archFilterField.setValue(zakrParams.getArch());
+        ckzFilterField.setValue(zakrParams.getCkz());
+        rokZakFilterField.setValue(zakrParams.getRokZak());
+        skupinaFilterField.setValue(zakrParams.getSkupina());
         rxParamField.setValue(zakrParams.getRx());
         ryParamField.setValue(zakrParams.getRy());
         kurzParamField.setValue(zakrParams.getKurzEur().toString());
@@ -118,6 +117,7 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
 //        reportParamBox.add(
 //                genButton
                 initArchiveParamComponent();
+                initCkzFilterComponent();
                 initZakRokFilterComponent();
                 initSkupinaFilterComponent();
                 initRxFilterComponent();
@@ -140,37 +140,56 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     }
 
     private Component initArchiveParamComponent() {
-        archParamField = buildSelectorParamField();
-        archParamField.setLabel("Arch.");
-        archParamField.setWidth("5em");
-        archParamField.getStyle().set("theme", "small");
-        archParamField.setReadOnly(true);
-        archParamField.setItems(Boolean.valueOf(false), Boolean.valueOf(true));
-        return archParamField;
+        archFilterField = buildSelectorParamField();
+        archFilterField.setLabel("Arch.");
+        archFilterField.setWidth("5em");
+        archFilterField.getStyle().set("theme", "small");
+        archFilterField.setReadOnly(true);
+        archFilterField.setItems(Boolean.valueOf(false), Boolean.valueOf(true));
+        return archFilterField;
+    }
+
+    private Component initCkzFilterComponent() {
+        ckzFilterField = new TextField("ČK/ČZ");
+        ckzFilterField.setWidth("5em");
+        ckzFilterField.getStyle().set("theme", "small");
+        ckzFilterField.setReadOnly(true);
+
+//        Span rezieParamLabel = new Span("Režie:");
+//        HorizontalLayout rezieParamComponent = new HorizontalLayout();
+//        rezieParamComponent.setMargin(false);
+//        rezieParamComponent.setPadding(false);
+//        rezieParamComponent.setAlignItems(FlexComponent.Alignment.CENTER);
+//        rezieParamComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+//        rezieParamComponent.add(
+//                rezieParamLabel
+//                , rezieParamField
+//        );
+        return ckzFilterField;
     }
 
     private Component initZakRokFilterComponent() {
-        rokZakParamField = buildSelectorParamField();
-        rokZakParamField.setLabel("Rok zak.");
-        rokZakParamField.setWidth("5em");
-        rokZakParamField.getStyle().set("theme", "small");
-        rokZakParamField.setReadOnly(true);
+        rokZakFilterField = buildSelectorParamField();
+        rokZakFilterField.setLabel("Rok zak.");
+        rokZakFilterField.setWidth("5em");
+        rokZakFilterField.getStyle().set("theme", "small");
+        rokZakFilterField.setReadOnly(true);
 //        List<Integer> zakRoks = zakrService.fetchZakrRoks();
-//        rokZakParamField.setItems(zakRoks);
+//        rokZakFilterField.setItems(zakRoks);
 //        Integer rokMax = roks.stream().reduce(Integer::max).orElse(null);
 //        Integer rokMax = zakRoks.stream().max(Comparator.naturalOrder()).orElse(null);
-        return rokZakParamField;
+        return rokZakFilterField;
     }
 
     private Component initSkupinaFilterComponent() {
-        skupinaParamField = buildSelectorParamField();
-        skupinaParamField.setLabel("Skupina");
-        skupinaParamField.setWidth("5em");
-        skupinaParamField.getStyle().set("theme", "small");
-        skupinaParamField.setReadOnly(true);
+        skupinaFilterField = buildSelectorParamField();
+        skupinaFilterField.setLabel("Skupina");
+        skupinaFilterField.setWidth("5em");
+        skupinaFilterField.getStyle().set("theme", "small");
+        skupinaFilterField.setReadOnly(true);
 //        List<String> skups = new ArrayList<>(Arrays.asList("1", "2", "TBD!"));
-//        skupinaParamField.setItems(skups);
-        return skupinaParamField;
+//        skupinaFilterField.setItems(skups);
+        return skupinaFilterField;
     }
 
     private Component initRxFilterComponent() {
@@ -245,9 +264,10 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     public void generateAndShowReport() {
         deactivateListeners();
         report.setSubtitleText(
-                "Parametry: Arch=" + (null == archParamField.getValue() ? "Vše" : archParamField.getValue().toString()) +
-                "  Rok zak.=" + (null == rokZakParamField.getValue() ? "Vše" : rokZakParamField.getValue().toString()) +
-                "  Skupina=" + (null == skupinaParamField.getValue() ? "Vše" : skupinaParamField.getValue().toString()) +
+                "Parametry: Arch=" + (null == archFilterField.getValue() ? "Vše" : archFilterField.getValue().toString()) +
+                "  ČK/ČZ=" + (null == ckzFilterField.getValue() ? "Vše" : "*" + ckzFilterField.getValue() + "*") +
+                "  Rok zak.=" + (null == rokZakFilterField.getValue() ? "Vše" : rokZakFilterField.getValue().toString()) +
+                "  Skupina=" + (null == skupinaFilterField.getValue() ? "Vše" : skupinaFilterField.getValue().toString()) +
                 "  rx=" + (null == rxParamField.getValue() ? "" : rxParamField.getValue().toString()) +
                 "  ry=" + (null == ryParamField.getValue() ? "" : ryParamField.getValue().toString()) +
                 "  Režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue()) +

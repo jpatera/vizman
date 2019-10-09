@@ -95,7 +95,7 @@ public class ZakBasicListView extends VerticalLayout {
 //                new GridSortOrder(
 //                        zakGrid.getColumnByKey(ZakBasicGrid.ROK_COL_KEY), SortDirection.DESCENDING)
 //                , new GridSortOrder(
-//                        zakGrid.getColumnByKey(ZakBasicGrid.KZCISLO_COL_KEY), SortDirection.DESCENDING)
+//                        zakGrid.getColumnByKey(ZakBasicGrid.CKZ_COL_KEY), SortDirection.DESCENDING)
 //        );
 //    }
 

@@ -108,7 +108,7 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
 ////                            )
 //                            , "Toto číslo zakázky již existuje, zvol jiné"
 //                    )
-//                    .bind(EvidZak::getCzak, EvidZak::setCzak);
+//                    .bind(EvidZak::getCkz, EvidZak::setCkz);
 //        } else {
             getBinder().forField(czakField)
                     .withValidator(new StringLengthValidator(
@@ -172,7 +172,7 @@ public class ZakEvidFormDialog extends AbstractSimpleEditorDialog<EvidZak> {
 ////                        },
 //                    , "Toto číslo zakázky v rámci zakázky již existuje, zvol jiné"
 //                )
-//                .bind(EvidZak::getCzak, EvidZak::setCzak);
+//                .bind(EvidZak::getCkz, EvidZak::setCkz);
 
         return czakField;
     }

@@ -50,7 +50,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     private static final String RX_REGEX = "[0-9]{1,3}";
 
     // Zak Compact Grid field keys:
-    public static final String KZCISLO_COL_KEY = "zakr-bg-kzcislo";
+    public static final String CKZ_COL_KEY = "zakr-bg-kzcislo";
     public static final String ROK_COL_KEY = "zakr-bg-rok";
     public static final String SKUPINA_COL_KEY = "zakr-bg-skupina";
     public static final String OBJEDNATEL_COL_KEY = "zakr-bg-objednatel";
@@ -77,7 +77,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     private ZakFormDialog zakFormDialog;
     private ZaqaGridDialog zaqaGridDialog;
     private ZakNaklGridDialog zakNaklGridDialog;
-    private TextField kzCisloFilterField;
+    private TextField ckzFilterField;
     private Select<Boolean> archFilterField;
     private Select<Integer> rokFilterField;
     private Select<String> skupinaFilterField;
@@ -85,9 +85,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     private TextField kzTextFilterField;
 
     private Boolean archFilterValue;
+    private String ckzFilterValue;
     private Integer rokFilterValue;
     private String skupinaFilterValue;
-    private String kzCisloFilterValue;
     private String kzTextFilterValue;
     private String objednatelFilterValue;
 
@@ -235,7 +235,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setSortable(true)
-                .setKey(KZCISLO_COL_KEY)
+                .setKey(CKZ_COL_KEY)
         ;
         this.addColumn(Zakr::getRok)
                 .setHeader("Rok")
@@ -374,11 +374,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //        colRP.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR0, Zakr::setR0));
 
         Grid.Column<Zakr> colRpHotovo = this.addColumn(rpHotovoGridValueProvider)
+                .setHeader("Hotovo RP")
                 .setComparator((zakr1, zakr2) -> ObjectUtils.compare(
-//                        zakr1.getRpHotovoByKurz(zakrParams.getKurzEur()), zakr2.getRpHotovoByKurz(zakrParams.getKurzEur())
                         zakr1.getRpHotovoByKurz(), zakr2.getRpHotovoByKurz()
                 ))
-                .setHeader("Hotovo RP")
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setTextAlign(ColumnTextAlign.END)
@@ -389,14 +388,8 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //        this.getDefaultHeaderRow().getCell(colRpHotovo).setComponent(hotovoHeaderLabel);
 
         Grid.Column<Zakr> colRpZbyva = this.addColumn(rpZbyvaByKurzGridValueProvider)
-//                .setComparator((zakr1, zakr2) -> zakr1.getRpZbyva()
-//                        .compareTo(zakr2.getRpZbyva()))
-//                .setComparator(ObjectUtils.compare(zakr.1firstComparable, secondComparable))
                 .setHeader("Zbývá RP")
-//                .setHeader(headerLabel)
-//                .setComparator((p1, p2) -> getRpZbyvaByKurz(p1).compareTo(getRpZbyvaByKurz(p2)))
                 .setComparator((zakr1, zakr2) -> ObjectUtils.compare(
-//                        zakr1.getRpZbyvaByKurz(zakrParams.getKurzEur()), zakr2.getRpZbyvaByKurz(zakrParams.getKurzEur())
                         zakr1.getRpZbyvaByKurz(), zakr2.getRpZbyvaByKurz()
                 ))
                 .setSortable(true)
@@ -534,9 +527,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         filterHeaderRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
                 .setComponent(archFilterField);
 
-        kzCisloFilterField = buildTextFilterField();
-        filterHeaderRow.getCell(this.getColumnByKey(KZCISLO_COL_KEY))
-                .setComponent(kzCisloFilterField);
+        ckzFilterField = buildTextFilterField();
+        filterHeaderRow.getCell(this.getColumnByKey(CKZ_COL_KEY))
+                .setComponent(ckzFilterField);
 
         rokFilterField = buildSelectorFilterField();
         filterHeaderRow.getCell(this.getColumnByKey(ROK_COL_KEY))
@@ -562,10 +555,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         }
     }
 
-    private void updateVysledekSumField() {
+    private void updateHotovoSumField() {
         sumFooterRow
                 .getCell(this.getColumnByKey(FINISHED_COL_KEY))
-                .setText("" + (VzmFormatUtils.moneyFormat.format(calcVysledekSum())));
+                .setText("" + (VzmFormatUtils.moneyFormat.format(calcHotovokSum())));
     }
 
     private void updateZbyvaSumField() {
@@ -580,7 +573,25 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setText("" + (VzmFormatUtils.moneyFormat.format(calcVykonSum())));
     }
 
-    private BigDecimal calcVysledekSum() {
+    private void updateMzdySumField() {
+        sumFooterRow
+                .getCell(this.getColumnByKey(MZDY_COL_KEY))
+                .setText("" + (VzmFormatUtils.moneyFormat.format(calcMzdySum())));
+    }
+
+    private void updateMzdyPojRezSumField() {
+        sumFooterRow
+                .getCell(this.getColumnByKey(MZDY_POJ_REZ_COL_KEY))
+                .setText("" + (VzmFormatUtils.moneyFormat.format(calcMzdyPojRezSum())));
+    }
+
+    private void updateVysledekSumField() {
+        sumFooterRow
+                .getCell(this.getColumnByKey(RESULT_COL_KEY))
+                .setText("" + (VzmFormatUtils.moneyFormat.format(calcVysledekSum())));
+    }
+
+    private BigDecimal calcHotovokSum() {
         return this.getDataProvider()
                 .withConfigurableFilter()
                 .fetch(new Query<>())
@@ -616,9 +627,39 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         ;
     }
 
+    private BigDecimal calcMzdySum() {
+        return this.getDataProvider()
+                .withConfigurableFilter()
+                .fetch(new Query<>())
+                .map(zakr -> zakr.getNaklMzdy())
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+        ;
+    }
+
+    private BigDecimal calcMzdyPojRezSum() {
+        return this.getDataProvider()
+                .withConfigurableFilter()
+                .fetch(new Query<>())
+                .map(zakr -> zakr.calcNaklMzdyPojistRezie(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()))
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+        ;
+    }
+
+    private BigDecimal calcVysledekSum() {
+        return this.getDataProvider()
+                .withConfigurableFilter()
+                .fetch(new Query<>())
+                .map(zakr -> zakr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()))
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+        ;
+    }
+
     private void updateRecCountField() {
         sumFooterRow
-                .getCell(this.getColumnByKey(KZCISLO_COL_KEY))
+                .getCell(this.getColumnByKey(CKZ_COL_KEY))
                 .setText("Počet: " + (calcRecCount()));
     }
 
@@ -1035,10 +1076,13 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     }
 
     private void updateFooterFields() {
-        updateVysledekSumField();
+        updateRecCountField();
+        updateHotovoSumField();
         updateZbyvaSumField();
         updateVykonSumField();
-        updateRecCountField();
+        updateVysledekSumField();
+        updateMzdySumField();
+        updateMzdyPojRezSumField();
     }
 
     public void populateGridDataAndRestoreFilters(List<Zakr> zakrList) {
@@ -1056,18 +1100,18 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         } else {
             archFilterField.setValue(this.initFilterArchValue);
         }
+        ckzFilterField.clear();
         rokFilterField.clear();
         skupinaFilterField.clear();
-        kzCisloFilterField.clear();
         kzTextFilterField.clear();
         objednatelFilterField.clear();
     }
 
     public void saveFilterValues() {
         archFilterValue = archFilterField.getValue();
+        ckzFilterValue = ckzFilterField.getValue();
         rokFilterValue = rokFilterField.getValue();
         skupinaFilterValue = skupinaFilterField.getValue();
-        kzCisloFilterValue = kzCisloFilterField.getValue();
         kzTextFilterValue = kzTextFilterField.getValue();
         objednatelFilterValue = objednatelFilterField.getValue();
     }
@@ -1084,9 +1128,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         } else {
             archFilterField.setValue(archFilterValue);
         }
+        ckzFilterField.setValue(ckzFilterValue);
         rokFilterField.setValue(rokFilterValue);
         skupinaFilterField.setValue(skupinaFilterValue);
-        kzCisloFilterField.setValue(kzCisloFilterValue);
         kzTextFilterField.setValue(kzTextFilterValue);
         objednatelFilterField.setValue(objednatelFilterValue);
     }
@@ -1096,8 +1140,8 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         listDataProvider.clearFilters();
 
         Boolean archFilterValue = archFilterField.getValue();
+        String ckzFilterValue = ckzFilterField.getValue();
         Integer rokFilterValue = rokFilterField.getValue();
-        String kzCisloFilterValue = kzCisloFilterField.getValue();
         String skupinaFilterValue = skupinaFilterField.getValue();
         String objednatelFilterValue = objednatelFilterField.getValue();
         String kzTextFilterValue = kzTextFilterField.getValue();
@@ -1107,14 +1151,14 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                     , arch -> arch.equals(archFilterValue)
             );
         }
+        if (StringUtils.isNotEmpty(ckzFilterValue)) {
+            listDataProvider.addFilter(Zakr::getKzCislo
+                    , ckz -> StringUtils.containsIgnoreCase(ckz, ckzFilterValue)
+            );
+        }
         if (null != rokFilterValue) {
             listDataProvider.addFilter(Zakr::getRok
                     , rok -> rok.equals(rokFilterValue)
-            );
-        }
-        if (StringUtils.isNotEmpty(kzCisloFilterValue)) {
-            listDataProvider.addFilter(Zakr::getKzCislo
-                    , kzc -> StringUtils.containsIgnoreCase(kzc, kzCisloFilterValue)
             );
         }
         if (null != skupinaFilterValue) {
@@ -1188,6 +1232,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
     public Boolean getArchFilterValue() {
         return archFilterValue;
+    }
+
+    public String getCkzFilterValue() {
+        return ckzFilterValue;
     }
 
     public Integer getRokFilterValue() {

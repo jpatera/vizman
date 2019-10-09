@@ -407,21 +407,21 @@ public class Doch extends AbstractGenIdEntity {
 
 //    @Basic
 //    @Column(name = "CZAK")
-//    public String getCzak() {
+//    public String getCkz() {
 //        return czak;
 //    }
 //
-//    public void setCzak(String czak) {
+//    public void setCkz(String czak) {
 //        this.czak = czak;
 //    }
 //
 //    @Basic
 //    @Column(name = "CZAK")
-//    public Integer getCzak() {
+//    public Integer getCkz() {
 //        return czak;
 //    }
 //
-//    public void setCzak(Integer czak) {
+//    public void setCkz(Integer czak) {
 //        this.czak = czak;
 //    }
 //

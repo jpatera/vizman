@@ -379,7 +379,7 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
     }
 
     private boolean deleteItem(PersonWage itemToDelete) {
-//        String ckzfDel = String.format("%s / %s / %s", currentItem.getCkont(), currentItem.getCzak(), currentItem.getCfakt());
+//        String ckzfDel = String.format("%s / %s / %s", currentItem.getCkont(), currentItem.getCkz(), currentItem.getCfakt());
 //        OperationResult lastOperResOrig = lastOperationResult;
         try {
 //            currentItemList.remove(itemToDelete);

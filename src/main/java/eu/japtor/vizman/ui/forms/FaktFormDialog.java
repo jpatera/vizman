@@ -130,7 +130,7 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
 
 //        evidZakOrig = new EvidZak(
 //                currentItem.getKontId()
-//                , currentItem.getCzak()
+//                , currentItem.getCkz()
 //                , currentItem.getText()
 //                , currentItem.getFolder()
 //                , currentItem.getKontFolder()
@@ -232,18 +232,20 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
     private boolean canFakturovat(final Fakt fakt) {
         return (null != dateDuzpField.getValue()
                 && StringUtils.isNotBlank(fakt.getCkont())
-                && StringUtils.isNotBlank(textField.getValue()))
+                && StringUtils.isNotBlank(textField.getValue())
                 && StringUtils.isNotBlank(fakt.getZakText())
                 && StringUtils.isNotBlank(fakt.getKontText())
                 && StringUtils.isNotBlank(castkaField.getValue())
+                && StringUtils.isNotBlank(faktCisloField.getValue())
                 && null != dateDuzpField.getValue()
                 && null != fakt.getMena()
-        ;
+        );
     }
 
 
     private Button initFaktExpButton() {
         faktExpButton = new Button("Export");
+        faktExpButton.addClickListener(event -> faktExpClicked());
         return faktExpButton;
     }
 
@@ -423,7 +425,6 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
         revertAndCloseButton.addClickListener(e -> revertClicked(true));
 
         faktExpButton = initFaktExpButton();
-        faktExpButton.addClickListener(event -> faktExpClicked());
 
         leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);

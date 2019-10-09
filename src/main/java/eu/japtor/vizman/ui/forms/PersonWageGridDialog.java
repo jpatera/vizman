@@ -213,7 +213,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
 //
 ////        evidZakOrig = new EvidZak(
 ////                currentItem.getKontId()
-////                , currentItem.getCzak()
+////                , currentItem.getCkz()
 ////                , currentItem.getText()
 ////                , currentItem.getFolder()
 ////                , currentItem.getKontFolder()
@@ -516,7 +516,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
     }
 
 //    private void deleteClicked() {
-//        String ckzfDel = String.format("%s / %s / %s", currentItem.getCkont(), currentItem.getCzak(), currentItem.getCfakt());
+//        String ckzfDel = String.format("%s / %s / %s", currentItem.getCkont(), currentItem.getCkz(), currentItem.getCfakt());
 //        if (!canDeleteFakt(currentItem)) {
 //            ConfirmDialog
 //                    .createInfo()

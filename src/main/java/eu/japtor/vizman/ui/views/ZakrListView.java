@@ -140,7 +140,7 @@ public class ZakrListView extends VerticalLayout {
 //                new GridSortOrder(
 //                        zakrGrid.getColumnByKey(ZakBasicGrid.ROK_COL_KEY), SortDirection.DESCENDING)
 //                , new GridSortOrder(
-//                        zakrGrid.getColumnByKey(ZakBasicGrid.KZCISLO_COL_KEY), SortDirection.DESCENDING)
+//                        zakrGrid.getColumnByKey(ZakBasicGrid.CKZ_COL_KEY), SortDirection.DESCENDING)
 //        );
 //    }
 
@@ -335,6 +335,7 @@ public class ZakrListView extends VerticalLayout {
 //        List<Zakr> zakrRep2 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataProvider()).getItems();
         zakrGrid.saveFilterValues();
         zakrParams.setArch(zakrGrid.getArchFilterValue());
+        zakrParams.setCkz(zakrGrid.getCkzFilterValue());
         zakrParams.setRokZak(zakrGrid.getRokFilterValue());
         zakrParams.setSkupina(zakrGrid.getSkupinaFilterValue());
         ZakRozpracReportDialog repZakRozpracDlg  = new ZakRozpracReportDialog(zakrService, zakrParams);
@@ -482,7 +483,7 @@ public class ZakrListView extends VerticalLayout {
 //            String ckzEdit = "N/A";
 //            try {
 //                if (null != selectedItem) {
-//                    ckzEdit = String.format("%s / %s", selectedItem.getCkont(), selectedItem.getCzak());
+//                    ckzEdit = String.format("%s / %s", selectedItem.getCkont(), selectedItem.getCkz());
 //                    zakrService.saveZakr(selectedItem, Operation.EDIT);
 //                }
 //                selectedItem = event.getFirstSelectedItem().orElse(null);   // Note: grid selection mode is supposed to be SINGLE
@@ -520,21 +521,16 @@ public class ZakrListView extends VerticalLayout {
     }
 
     public static class ZakrParams {
+
+        String ckz;
+        Integer rokZak;
+        String skupina;
         BigDecimal kurzEur;
         BigDecimal koefRezie;
         BigDecimal koefPojist;
         String rx;
         String ry;
         Boolean arch;
-        Integer rokZak;
-        String skupina;
-
-        public String getSkupina() {
-            return skupina;
-        }
-        public void setSkupina(String skupina) {
-            this.skupina = skupina;
-        }
 
         public Boolean getArch() {
             return arch;
@@ -543,11 +539,25 @@ public class ZakrListView extends VerticalLayout {
             this.arch = arch;
         }
 
+        public String getCkz() {
+            return ckz;
+        }
+        public void setCkz(String ckz) {
+            this.ckz = ckz;
+        }
+
         public Integer getRokZak() {
             return rokZak;
         }
         public void setRokZak(Integer rokZak) {
             this.rokZak = rokZak;
+        }
+
+        public String getSkupina() {
+            return skupina;
+        }
+        public void setSkupina(String skupina) {
+            this.skupina = skupina;
         }
 
         public BigDecimal getKurzEur() {

@@ -249,7 +249,7 @@ public class Zakn implements Serializable {
 //        return ckont;
 //    }
 //
-//    public Integer getCzak() {
+//    public Integer getCkz() {
 //        return czak;
 //    }
 

@@ -368,7 +368,7 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
 
 //    private void updateRecCountField() {
 //        sumFooterRow
-//                .getCell(this.getColumnByKey(KZCISLO_COL_KEY))
+//                .getCell(this.getColumnByKey(CKZ_COL_KEY))
 //                .setText("Počet: " + (calcRecCount()));
 //    }
 

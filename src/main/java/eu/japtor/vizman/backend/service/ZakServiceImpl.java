@@ -72,7 +72,7 @@ public class ZakServiceImpl implements ZakService, HasLogger {
 //    @Override
 //    @Transactional
 //    public Zakr saveZakr(Zakr zakrToSave, Operation oper) throws VzmServiceException {
-//        String kzCis = String.format("%s / %d", zakrToSave.getCkont(), zakrToSave.getCzak());
+//        String kzCis = String.format("%s / %d", zakrToSave.getCkont(), zakrToSave.getCkz());
 //        Zak zakSaved = null;
 //        try {
 ////            kontRepo.flush();

@@ -367,7 +367,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
 //    void finishZakEdit(ZakFormDialog zakFormDialog) {
 //        Zak zakAfter = zakFormDialog.getCurrentItem(); // Modified, just added or just deleted
-//        String ckz = String.format("%s / %s", zakAfter.getCkont(), zakAfter.getCzak());
+//        String ckz = String.format("%s / %s", zakAfter.getCkont(), zakAfter.getCkz());
 //        Operation zakOper = zakFormDialog.getCurrentOperation();
 //        OperationResult zakOperRes = zakFormDialog.getLastOperationResult();
 //        boolean lastZakFaktsChanged = (zakFormDialog.isZakFaktsChanged());
@@ -826,12 +826,12 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //            }
 //
 //            getLogger().info("{} saved: {} / {} [operation: {}]", getCurrentItem().getTyp().name()
-//                    , getCurrentItem().getCkont(), getCurrentItem().getCzak(), operation.name());
+//                    , getCurrentItem().getCkont(), getCurrentItem().getCkz(), operation.name());
 //            return zakSaved;
 //
 //        } catch(Exception e) {
 //            getLogger().error("Error when saving {} {} / {} [operation: {}]", getCurrentItem().getTyp().name()
-//                    , getCurrentItem().getCkont(), getCurrentItem().getCzak(), operation.name());
+//                    , getCurrentItem().getCkont(), getCurrentItem().getCkz(), operation.name());
 //            throw e;
 //        }
     }
@@ -1121,7 +1121,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //            ConfirmDialog
 //                    .createInfo()
 //                    .withCaption("Akvizice -> Zakázka")
-//                    .withMessage("Akvizice " + getCurrentItem().getCkont() + " / " + getCurrentItem().getCzak() + " převedena na zakázku.")
+//                    .withMessage("Akvizice " + getCurrentItem().getCkont() + " / " + getCurrentItem().getCkz() + " převedena na zakázku.")
 //                    .open();
 //            getSaveButton().click();
 //        });
@@ -1129,7 +1129,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 ////        akvToZakButton.addClickListener(event -> {
 ////            EvidZak evidZak = new EvidZak(
 ////                    getCurrentItem().getKontId()
-////                    , getCurrentItem().getCzak()
+////                    , getCurrentItem().getCkz()
 ////                    , getCurrentItem().getText()
 ////                    , getCurrentItem().getFolder()
 ////                    , getCurrentItem().getKontFolder()
@@ -1157,7 +1157,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //        zakEvidButton.addClickListener(event -> {
 //            EvidZak evidZak = new EvidZak(
 //                    getCurrentItem().getKontId()
-//                    , getCurrentItem().getCzak()
+//                    , getCurrentItem().getCkz()
 //                    , getCurrentItem().getText()
 //                    , getCurrentItem().getFolder()
 //                    , getCurrentItem().getKontFolder()

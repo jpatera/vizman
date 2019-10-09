@@ -138,6 +138,17 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     @Autowired
     private CfgPropsCache cfgPropsCache;
 
+//    @Override
+//    public void afterNavigation(AfterNavigationEvent event) {
+//        System.out.println("#### KZ Tree VIEW - after navigation");
+////        assignDataProviderToGridAndSort(inMemoryKzTreeProvider);
+////        inMemoryKzTreeProvider.refreshAll();
+//    }
+//
+//    @Override
+//    protected void onAttach(AttachEvent attachEvent) {
+//        System.out.println("#### KZ Tree VIEW - onAttach");
+//    }
 
     //    class KzText extends HtmlComponent implements KeyNotifier {
     static class KzText extends Paragraph implements KeyNotifier {
@@ -534,7 +545,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //            } else {
 //                return ((KzTreeAware)o).getMena().name();
 ////                return "";
-////                return ((KzTreeAware)o).getCzak().toString();
+////                return ((KzTreeAware)o).getCkz().toString();
 //            }
 //        }
 //    };
@@ -882,10 +893,14 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
 
         initialSortOrder = Arrays.asList(
+//                new GridSortOrder(
+//                        kzTreeGrid.getColumnByKey(ROK_COL_KEY), SortDirection.DESCENDING)
+//                , new GridSortOrder(
+//                        kzTreeGrid.getColumnByKey(CKZ_COL_KEY), SortDirection.DESCENDING)
                 new GridSortOrder(
-                        kzTreeGrid.getColumnByKey(ROK_COL_KEY), SortDirection.DESCENDING)
-                , new GridSortOrder(
                         kzTreeGrid.getColumnByKey(CKZ_COL_KEY), SortDirection.DESCENDING)
+                , new GridSortOrder(
+                        kzTreeGrid.getColumnByKey(ROK_COL_KEY), SortDirection.DESCENDING)
         );
 
 //        ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
@@ -1253,7 +1268,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //
 //        // TODO: ID -> CSS ?
 //        zakGrid.setId("zak-grid");  // .. same ID as is used in shared-styles grid's dom module
-//        zakGrid.addColumn(Zak::getCzak).setHeader("ČZ").setWidth("3em").setResizable(true)
+//        zakGrid.addColumn(Zak::getCkz).setHeader("ČZ").setWidth("3em").setResizable(true)
 //                .setSortProperty("poradi");
 ////        zakGrid.addColumn(new ComponentRenderer<>(this::createOpenDirButton)).setFlexGrow(0);
 //        zakGrid.addColumn(Zak::getRokmeszad).setHeader("Zadáno").setWidth("3em").setResizable(true);
@@ -1265,7 +1280,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //    }
 
 //    private void deleteZakForGrid(Zak zak) {
-//        String ckzDel = String.format("%s / %d", zak.getCkont(), zak.getCzak());
+//        String ckzDel = String.format("%s / %d", zak.getCkont(), zak.getCkz());
 //        try {
 //            boolean zakWasDeleted = zakService.deleteZak(zak);
 //
@@ -1290,7 +1305,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //                ;
 //            }
 //        } catch (Exception e) {
-//            getLogger().error(String.format("Error during deletion ZAKAZKA %s / %d", zak.getCkont(), zak.getCzak()), e);
+//            getLogger().error(String.format("Error during deletion ZAKAZKA %s / %d", zak.getCkont(), zak.getCkz()), e);
 //            ConfirmDialog
 //                    .createError()
 //                    .withCaption("Zrušení zakázky")
@@ -1611,7 +1626,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     }
 
     private void generateZakReport() {
-//        PrintPreviewReport<Zak> report = new PrintPreviewReport<>(Zak.class, "czak", "text", "skupina");
+//        PrintPreviewReport<Zak> report = new PrintPreviewReport<>(Zak.class, "ckz", "text", "skupina");
 //        report.setItems(zakService.fetchAll());
 //        this.add(report);
 
@@ -1620,7 +1635,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //            InputStream in = this.getClass().getResourceAsStream("/reports/Leaf_Grey.jrxml");
 //            JasperDesign jDesign = JRXmlLoader.load(in);
 //
-////            String sql = "select czak, text, skupina from vizman.zak";
+////            String sql = "select ckz, text, skupina from vizman.zak";
 ////            JRDesignQuery newQuery = new JRDesignQuery();
 ////            newQuery.setText(sql);
 //
@@ -1636,7 +1651,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
 //        FastReportBuilder drb = new FastReportBuilder();
 //        try {
-//            drb.addColumn("CZ", "czak", Integer.class.getName(),10)
+//            drb.addColumn("CZ", "ckz", Integer.class.getName(),10)
 //                .addColumn("Text zakazky", "text", String.class.getName(),40)
 //                .addColumn("Skup.", "skupina", String.class.getName(), 4)
 ////                .addGroups(2)
@@ -1679,7 +1694,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         List<Map<String, Object>> result = new ArrayList<>();
         for (Zak zak : zakService.fetchAll()) {
             Map<String, Object> item = new HashMap<>();
-            item.put("czak", zak.getCzak());
+            item.put("ckz", zak.getCzak());
             item.put("text", zak.getText());
             item.put("skupina", zak.getSkupina());
             result.add(item);

@@ -129,7 +129,7 @@ public class ZakBasic implements Serializable, HasItemType, HasArchState {
 //        this.ckont = ckont;
 //    }
 //
-//    public void setCzak(Integer czak) {
+//    public void setCkz(Integer czak) {
 //        this.czak = czak;
 //    }
 //

@@ -300,7 +300,7 @@ public class ZakListReportDialog extends AbstractPrintDialog<Zak> implements Has
 //    }
 //
 //    private void deleteClicked() {
-//        String ckzfDel = String.format("%s / %s / %s", currentItem.getCkont(), currentItem.getCzak(), currentItem.getCfakt());
+//        String ckzfDel = String.format("%s / %s / %s", currentItem.getCkont(), currentItem.getCkz(), currentItem.getCfakt());
 //        if (!canDeleteFakt(currentItem)) {
 //            ConfirmDialog
 //                    .createInfo()

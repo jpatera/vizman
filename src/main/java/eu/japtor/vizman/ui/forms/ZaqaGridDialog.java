@@ -177,7 +177,7 @@ public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogge
 //
 ////        evidZakOrig = new EvidZak(
 ////                currentItem.getKontId()
-////                , currentItem.getCzak()
+////                , currentItem.getCkz()
 ////                , currentItem.getText()
 ////                , currentItem.getFolder()
 ////                , currentItem.getKontFolder()
@@ -494,7 +494,7 @@ public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogge
     }
 
 //    private void deleteClicked() {
-//        String ckzfDel = String.format("%s / %s / %s", currentItem.getCkont(), currentItem.getCzak(), currentItem.getCfakt());
+//        String ckzfDel = String.format("%s / %s / %s", currentItem.getCkont(), currentItem.getCkz(), currentItem.getCfakt());
 //        if (!canDeleteFakt(currentItem)) {
 //            ConfirmDialog
 //                    .createInfo()

@@ -122,7 +122,7 @@ public class VzmFoldersDataProvider extends
 //    private static void addExpectedKontZakSubDirs(TreeData<VzmFile> kontDocTreeData, final VzmFile kontDocDir, final Kont kont) {
 //        List<VzmFile> zakDocDirs = new ArrayList<>();
 //        kont.getZaks().forEach(zak -> {
-//            String expZakFolder = NormalizeDirnamesAndJoin(zak.getCzak().toString(), zak.getText());
+//            String expZakFolder = NormalizeDirnamesAndJoin(zak.getCkz().toString(), zak.getText());
 ////            VzmFile zakDocDir = new VzmFile(getFolderPath(kontDocDir, expZakFolder).toUri(), true);
 //            VzmFileUtils.VzmFile zakDocDir = new VzmFile(getFolderPath(kontDocDir, expZakFolder).toString(), true);
 //            kontDocTreeData.addItem(null, zakDocDir);
