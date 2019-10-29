@@ -7,11 +7,14 @@ import eu.japtor.vizman.backend.entity.Role;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.List;
 
 public interface DochService {
 
     List<Doch> fetchDochForPersonAndDate(Long personId, LocalDate dochDate);
+
+//    List<Doch> fetchRepDochForPersonAndYm(Long personId, YearMonth dochYm);
 
     long countDochForPersonAndDate(Long personId, LocalDate dochDate);
 

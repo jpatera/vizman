@@ -338,9 +338,9 @@ public class ZakrListView extends VerticalLayout {
         zakrParams.setCkz(zakrGrid.getCkzFilterValue());
         zakrParams.setRokZak(zakrGrid.getRokFilterValue());
         zakrParams.setSkupina(zakrGrid.getSkupinaFilterValue());
-        ZakRozpracReportDialog repZakRozpracDlg  = new ZakRozpracReportDialog(zakrService, zakrParams);
-        repZakRozpracDlg.openDialog(zakrParams);
-        repZakRozpracDlg.generateAndShowReport();
+        ZakRozpracReportDialog zakRozpracReportDlg  = new ZakRozpracReportDialog(zakrService, zakrParams);
+        zakRozpracReportDlg.openDialog(zakrParams);
+        zakRozpracReportDlg.generateAndShowReport();
     }
 
     private Component initArchFilterRadio() {

@@ -5,10 +5,14 @@ import ar.com.fdvs.dj.domain.builders.StyleBuilder;
 import ar.com.fdvs.dj.domain.constants.Border;
 import ar.com.fdvs.dj.domain.constants.Font;
 import ar.com.fdvs.dj.domain.constants.HorizontalAlign;
-import ar.com.fdvs.dj.domain.constants.Stretching;
 import ar.com.fdvs.dj.domain.constants.VerticalAlign;
+import ar.com.fdvs.dj.domain.entities.Entity;
+import ar.com.fdvs.dj.domain.entities.conditionalStyle.ConditionStyleExpression;
+import ar.com.fdvs.dj.domain.entities.conditionalStyle.ConditionalStyle;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Map;
 
 import static ar.com.fdvs.dj.domain.constants.Font.ARIAL_MEDIUM_BOLD;
 
@@ -31,6 +35,7 @@ public class VzmFormatReport {
     //    public static final Font GROUP_HEADER_ZAK_FONT_PDF = Font.ARIAL_MEDIUM_BOLD;
     public static final ar.com.fdvs.dj.domain.constants.Font GROUP_HEADER_ZAK_FONT_PDF = ARIAL_MEDIUM_XL_BOLD;
     public static final ar.com.fdvs.dj.domain.constants.Font GROUP_HEADER_USER_FONT_PDF = ARIAL_MEDIUM_XL_BOLD;
+    public static final ar.com.fdvs.dj.domain.constants.Font GROUP_HEADER_WEEK_FONT_PDF = ARIAL_MEDIUM_XL_BOLD;
     public static final ar.com.fdvs.dj.domain.constants.Font SUBTITLE_FONT_PDF = ARIAL_MEDIUM_XL;
     public static final ar.com.fdvs.dj.domain.constants.Font TITLE_FONT_PDF = ar.com.fdvs.dj.domain.constants.Font.ARIAL_BIG_BOLD;
 
@@ -39,6 +44,8 @@ public class VzmFormatReport {
 
     public static final Style DEFAULT_GRID_STYLE;
     public static final String DEFAULT_GRID_STYLE_NAME;
+    public static final Style CENTER_GRID_STYLE;
+    public static final String CENTER_GRID_STYLE_NAME;
 
     public static final Style TITLE_STYLE;
     public static final Style SUBTITLE_STYLE;
@@ -46,6 +53,8 @@ public class VzmFormatReport {
     public static final Style HEADER_STYLE;
     public static final Style GROUP_HEADER_ZAK_STYLE;
     public static final Style GROUP_HEADER_USER_STYLE;
+    public static final Style GROUP_HEADER_DOCH_PERSON_STYLE;
+    public static final Style GROUP_HEADER_WEEK_STYLE;
     public static final Style GROUP_LABEL_STYLE;
 
     public static final String WORK_HOUR_GRID_STYLE_NAME;
@@ -63,6 +72,21 @@ public class VzmFormatReport {
     public static final Style PROC_GRID_STYLE;
     public static final Style PERCENT_GRID_STYLE;
     public static final Style MONEY_GRID_STYLE;
+    public static final Style SHORT_DATE_GRID_STYLE;
+//    public static final Style SHORT_DATE_WEEKEND_GRID_STYLE;
+    public static final Style WEEKEND_BLACK_GRID_STYLE;
+    public static final Style WEEKEND_RED_GRID_STYLE;
+    public static final Style WORKDAY_BLACK_GRID_STYLE;
+    public static final Style WORKDAY_RED_GRID_STYLE;
+    public static final Style WORKDAY_GRID_STYLE;
+    public static final Style WEEKEND_GRID_STYLE;
+    public static final Style BLACK_STYLE;
+    public static final Style RED_STYLE;
+
+    public static ArrayList condWeekendDateStyles = new ArrayList();
+    public static ArrayList condWeekendFromStyles = new ArrayList();
+    public static ArrayList condToStyles = new ArrayList();
+    public static ArrayList condObedStyles = new ArrayList();
 
     static {
         DEFAULT_FONT_PDF.setPdfFontEmbedded(true);
@@ -92,6 +116,15 @@ public class VzmFormatReport {
         DEFAULT_GRID_STYLE = new StyleBuilder(false, DEFAULT_GRID_STYLE_NAME)
                 .setFont(DEFAULT_FONT_PDF)
                 .setHorizontalAlign(HorizontalAlign.LEFT)
+                .setPaddingLeft(3)
+                .setPaddingRight(5)
+                .setBorder(Border.THIN())
+                .build();
+
+        CENTER_GRID_STYLE_NAME = "center-grid-style";
+        CENTER_GRID_STYLE = new StyleBuilder(false, CENTER_GRID_STYLE_NAME)
+                .setFont(DEFAULT_FONT_PDF)
+                .setHorizontalAlign(HorizontalAlign.CENTER)
                 .setPaddingLeft(3)
                 .setPaddingRight(5)
                 .setBorder(Border.THIN())
@@ -135,6 +168,21 @@ public class VzmFormatReport {
                 .setFont(GROUP_HEADER_USER_FONT_PDF)
                 .build();
 
+        GROUP_HEADER_DOCH_PERSON_STYLE = new StyleBuilder(false, "group-header-doch-person-style")
+                .setHorizontalAlign(HorizontalAlign.LEFT)
+                .setPaddingTop(10)
+                .setBorder(Border.NO_BORDER())
+                .setFont(GROUP_HEADER_USER_FONT_PDF)
+                .build();
+
+        GROUP_HEADER_WEEK_STYLE = new StyleBuilder(false, "group-header-week-style")
+                .setHorizontalAlign(HorizontalAlign.LEFT)
+                .setPaddingTop(8)
+                .setBorder(Border.NO_BORDER())
+                .setFont(GROUP_HEADER_WEEK_FONT_PDF)
+                .setPattern("0 týden")
+                .build();
+
         GROUP_LABEL_STYLE = new StyleBuilder(false, "group-label-style")
                 .setFont(Font.ARIAL_MEDIUM)
                 .build();
@@ -155,6 +203,61 @@ public class VzmFormatReport {
                 .setPaddingRight(3)
                 .setPattern("##0;-##0")
                 .build();
+
+        SHORT_DATE_GRID_STYLE = new StyleBuilder(true, "short-date-grid-style")
+                .setParentStyleName(DEFAULT_GRID_STYLE_NAME)
+                .setHorizontalAlign(HorizontalAlign.CENTER)
+                .setPaddingRight(3)
+                .setTransparent(true)
+//                .setPattern("dd.MM")
+                .build();
+
+        WEEKEND_BLACK_GRID_STYLE = new Style();
+        WEEKEND_BLACK_GRID_STYLE.setTextColor(Color.BLACK);
+        WEEKEND_BLACK_GRID_STYLE.setBackgroundColor(new Color(0xFFFACD));
+        WEEKEND_BLACK_GRID_STYLE.setTransparent(false);
+
+        WEEKEND_RED_GRID_STYLE = new Style();
+        WEEKEND_RED_GRID_STYLE.setTextColor(Color.RED);
+        WEEKEND_RED_GRID_STYLE.setBackgroundColor(new Color(0xFFFACD));
+        WEEKEND_RED_GRID_STYLE.setTransparent(false);
+
+        WORKDAY_BLACK_GRID_STYLE = new Style();
+        WORKDAY_BLACK_GRID_STYLE.setTextColor(Color.BLACK);
+        WORKDAY_BLACK_GRID_STYLE.setBackgroundColor(Color.WHITE);
+        WORKDAY_BLACK_GRID_STYLE.setTransparent(false);
+
+        WORKDAY_RED_GRID_STYLE = new Style();
+        WORKDAY_RED_GRID_STYLE.setTextColor(Color.RED);
+        WORKDAY_RED_GRID_STYLE.setBackgroundColor(Color.WHITE);
+        WORKDAY_RED_GRID_STYLE.setTransparent(false);
+
+        WORKDAY_GRID_STYLE = new Style();
+        WORKDAY_GRID_STYLE.setBackgroundColor(Color.WHITE);
+        WORKDAY_GRID_STYLE.setTransparent(false);
+
+        WEEKEND_GRID_STYLE = new Style();
+        WEEKEND_GRID_STYLE.setBackgroundColor(new Color(0xFFFACD));
+        WEEKEND_GRID_STYLE.setTransparent(false);
+
+        condWeekendDateStyles.add(new ConditionalStyle(new WeekendCondition(false), WORKDAY_GRID_STYLE));
+        condWeekendDateStyles.add(new ConditionalStyle(new WeekendCondition(true), WEEKEND_GRID_STYLE));
+
+
+        BLACK_STYLE = new Style();
+        BLACK_STYLE.setTextColor(Color.BLACK);
+//        BLACK_STYLE.setTransparent(false);
+
+        RED_STYLE = new Style();
+        RED_STYLE.setTextColor(Color.RED);
+//        RED_STYLE.setTransparent(false);
+
+//        condWeekendFromStyles.add(new ConditionalStyle(new FromManualCondition(false), RED_STYLE));
+//        condWeekendFromStyles.add(new ConditionalStyle(new FromManualCondition(true), BLACK_STYLE));
+        condWeekendFromStyles.add(new ConditionalStyle(new WeekendFromCondition(false, false), WORKDAY_BLACK_GRID_STYLE));
+        condWeekendFromStyles.add(new ConditionalStyle(new WeekendFromCondition(false, true), WORKDAY_RED_GRID_STYLE));
+        condWeekendFromStyles.add(new ConditionalStyle(new WeekendFromCondition(true, false), WEEKEND_BLACK_GRID_STYLE));
+        condWeekendFromStyles.add(new ConditionalStyle(new WeekendFromCondition(true, true), WEEKEND_RED_GRID_STYLE));
 
         WORK_HOUR_GRID_STYLE_NAME = "work-hour-grid-style";
         WORK_HOUR_GRID_STYLE = new StyleBuilder(true, "work-hour-grid-style")
@@ -212,6 +315,111 @@ public class VzmFormatReport {
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
                 .setPattern("##0;-##0")
                 .build();
+
+    }
+
+    public static class WeekendFromCondition extends ConditionStyleExpression {
+        private static final long serialVersionUID = Entity.SERIAL_VERSION_UID;
+        private boolean weekendExpected;
+        private boolean fromManualExpected;
+
+        public WeekendFromCondition(boolean weekendExpected, boolean fromManualExpected) {
+                this.weekendExpected = weekendExpected;
+                this.fromManualExpected = weekendExpected;
+        }
+
+        @Override
+        public Object evaluate(Map fields, Map variables, Map parameters) {
+            String dateValue;
+            Boolean fromManualValue;
+            Object dateObjValue = fields.get("compositeDate");
+            Object fromObjValue = fields.get("fromManual");
+            if (null == dateObjValue) {
+                return !weekendExpected;
+            } else {
+                dateValue = (String)dateObjValue;
+            }
+            if (null == fromObjValue) {
+                return !fromManualExpected;
+            } else {
+                fromManualValue = (Boolean)fromObjValue;
+            }
+            return !(weekendExpected ^ ((dateValue).toLowerCase().contains("ne") || (dateValue).toLowerCase().contains("so")))
+                    ||
+                   !(fromManualExpected ^ fromManualValue);
+        }
+
+        @Override
+        public String getClassName() {
+            return Boolean.class.getName();
+        }
+
+    }
+
+    public static class WeekendCondition extends ConditionStyleExpression {
+        private static final long serialVersionUID = Entity.SERIAL_VERSION_UID;
+        private boolean weekendExpected;
+        private boolean fromManualExpected;
+
+        public WeekendCondition(boolean weekendExpected) {
+                this.weekendExpected = weekendExpected;
+        }
+
+        @Override
+        public Object evaluate(Map fields, Map variables, Map parameters) {
+            String dateValue;
+            Object objValue = fields.get("compositeDate");
+            if (null == objValue) {
+                return !weekendExpected;
+            } else {
+                dateValue = (String)objValue;
+            }
+            return !(weekendExpected ^ ((dateValue).toLowerCase().contains("ne") || (dateValue).toLowerCase().contains("so")));
+
+//            if (weekendExpected) {
+//                return (dateValue).toLowerCase().contains("ne") || (dateValue).toLowerCase().contains("so");
+//            } else {
+//                return !(dateValue).toLowerCase().contains("ne") && !(dateValue).toLowerCase().contains("so");
+//            }
+        }
+
+        @Override
+        public String getClassName() {
+            return Boolean.class.getName();
+        }
+
+    }
+
+
+    public static class FromManualCondition extends ConditionStyleExpression {
+        private static final long serialVersionUID = Entity.SERIAL_VERSION_UID;
+        private boolean manualExpected;
+
+        public FromManualCondition(boolean manualExpexted) {
+            this.manualExpected = manualExpexted;
+        }
+
+        @Override
+        public Object evaluate(Map fields, Map variables, Map parameters) {
+            Boolean fromManualValue;
+            Object objValue = fields.get("fromManual");
+            if (null == objValue) {
+                return !manualExpected;
+            } else {
+                fromManualValue = (Boolean)objValue;
+            }
+            if (manualExpected) {
+                return fromManualValue;
+            } else {
+                return !fromManualValue;
+            }
+        }
+
+        @Override
+        public String getClassName() {
+            return Boolean.class.getName();
+        }
+
     }
 
 }

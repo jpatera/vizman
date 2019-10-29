@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 public interface DochRepo extends JpaRepository<Doch, Long> {
@@ -52,6 +53,9 @@ public interface DochRepo extends JpaRepository<Doch, Long> {
 //    List<Doch> findDochForPersonAndDate(Long personId, LocalDate dochDate);
     List<Doch> findByPersonIdAndDochDateOrderByCdochDesc(Long personId, LocalDate dochDate);
 
+    @Query(value = "SELECT * FROM VIZMAN.DOCH WHERE PERSON_ID = ?1 AND DOCH_DATE >= ?2  AND DOCH_DATE <= ?3 " +
+            " ORDER BY DOCH_DATE ASC, ID ASC ",  nativeQuery = true)
+    List<Doch> findByPersonIdAndDochYmForReport(Long personId, LocalDate dochDate1, LocalDate dochDate2);
 
     @Query(value = "SELECT TOP 1 DISTINCT DOCH_DATE FROM VIZMAN.DOCH WHERE PERSON_ID = ?1 AND DOCH_DATE < ?2 " +
             " ORDER BY DOCH_DATE DESC ",  nativeQuery = true)

@@ -93,7 +93,7 @@ COMMIT;
 
 DROP VIEW VIZMAN.ZAK_ROZPRAC_VIEW IF EXISTS;
 
-CREATE OR REPLACE FORCE VIEW VIZMAN.ZAK_ROZPRAC_VIEW(
+CREATE OR REPLACE FORCE VIEW VIZMAN.ZAK_ROZPRAC_VIEW (
 	ID, TYP, CKONT, CZAK, ROK, SKUPINA, TEXT_KONT, TEXT_ZAK, MENA, OBJEDNATEL, ARCH, ID_KONT,
 	R0, R1, R2, R3, R4,
 	HONOR_CISTY, HONOR_FAKT, HONOR_SUB
@@ -133,4 +133,68 @@ GROUP BY zak.id
 ORDER BY zak.id desc
 ;
 
+
+----------------------------------------------------------------
+
+COMMIT;
+
+DROP VIEW VIZMAN.DOCH_MES_VIEW IF EXISTS;
+
+CREATE OR REPLACE FORCE VIEW VIZMAN.DOCH_MES_VIEW (
+	ID,
+	PERSON_ID,
+	DOCH_WEEK,
+	DOCH_DATE,
+	FROM_PRACE_START,
+	FROM_MANUAL,
+	TO_PRACE_END,
+	TO_MANUAL,
+	DUR_OBED_SUM,
+	OBED_AUTO,
+	DUR_PRACE_CELK_SUM,
+	DUR_PRACE_WEND_SUM,
+	DUR_LEK_SUM,
+	DUR_DOV_SUM,
+	DUR_NEM_SUM,
+	DUR_VOLNO_SUM
+) AS
+SELECT
+	ROWNUM() AS ID,
+	aa.person_id,
+	aa.doch_week,
+	aa.doch_date,
+	aa.from_prace_start,
+	aa.from_manual,
+	aa.to_prace_end,
+	aa.to_manual,
+	aa.dur_obed_sum,
+	aa.obed_auto,
+	aa.dur_prace_celk_sum,
+	aa.dur_prace_wend_sum,
+	aa.dur_lek_sum,
+	aa.dur_dov_sum,
+	aa.dur_nem_sum,
+	aa.dur_volno_sum
+FROM (
+	SELECT
+		person_ID,
+		DOCH_DATE,
+		extract(WEEK FROM doch_date) AS DOCH_WEEK,
+		min(FROM_TIME) AS FROM_PRACE_START,
+		max(FROM_MANUAL) AS FROM_MANUAL,
+		max(TO_TIME) AS TO_PRACE_END,
+		max(TO_MANUAL) AS TO_MANUAL,
+		sum(CASE WHEN (cin_cin_kod = 'MO') THEN doch_dur WHEN (cin_cin_kod = 'OA') THEN -doch_dur ELSE 0 END) AS dur_obed_sum,
+		max(cin_cin_kod = 'OA') AS obed_auto,
+		sum(CASE WHEN calcprac THEN doch_dur ELSE 0 END) AS dur_prace_celk_sum,
+		sum(CASE WHEN calcprac AND ISO_DAY_OF_WEEK(DOCH_DATE) >= 6 THEN doch_dur ELSE 0 END) AS dur_prace_wend_sum,
+		sum(CASE WHEN cin_cin_kod = 'L' THEN doch_dur ELSE 0 END) AS dur_lek_sum,
+		sum(CASE WHEN cin_cin_kod = 'dc' OR cin_cin_kod = 'dp' THEN doch_dur ELSE 0 END) AS dur_dov_sum,
+		sum(CASE WHEN cin_cin_kod = 'ne' THEN doch_dur ELSE 0 END) AS dur_nem_sum,
+		sum(CASE WHEN cin_cin_kod = 'nv' THEN doch_dur ELSE 0 END) AS dur_volno_sum
+	FROM VIZMAN.DOCH dd
+	GROUP BY PERSON_ID, DOCH_DATE
+) AS aa
+ORDER BY PERSON_ID ASC, DOCH_DATE ASC
+;
 

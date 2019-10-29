@@ -29,6 +29,7 @@ import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.CinRepo;
 import eu.japtor.vizman.backend.repository.PruhRepo;
+import eu.japtor.vizman.backend.service.DochMesService;
 import eu.japtor.vizman.backend.service.DochService;
 import eu.japtor.vizman.backend.service.DochsumService;
 import eu.japtor.vizman.backend.service.PersonService;
@@ -38,6 +39,7 @@ import eu.japtor.vizman.ui.components.Operation;
 import eu.japtor.vizman.ui.components.ReloadButton;
 import eu.japtor.vizman.ui.components.Ribbon;
 import eu.japtor.vizman.ui.forms.DochFormDialog;
+import eu.japtor.vizman.ui.forms.DochMesReportDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
@@ -174,6 +176,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private Clock minuteClock = Clock.tickMinutes(ZoneId.systemDefault());
     private TimeThread timeThread;
 
+    private DochMesReportDialog dochMesReportDialog = null;
+
 //    @Autowired
 //    public DochRepo kontRepo;
 
@@ -185,6 +189,9 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     @Autowired
     public DochService dochService;
+
+    @Autowired
+    public DochMesService dochMesService;
 
     @Autowired
     public DochsumService dochsumService;
@@ -574,10 +581,23 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         ;
 
         dochMonthReportBtn.setText("Měsíční přehled");
-        dochMonthReportBtn.setEnabled(false);
+        dochMonthReportBtn.setEnabled(true);
+        dochMonthReportBtn.addClickListener(event -> {
+                DochParams dochParams = new DochParams();
+                dochParams.setDochYm(YearMonth.of(dochDate.getYear(), dochDate.getMonthValue()));
+                dochParams.setPersonId(dochPerson.getId());
+                if (null == dochMesReportDialog) {
+                    dochMesReportDialog = new DochMesReportDialog(dochMesService);
+                }
+                dochMesReportDialog.openDialog(dochParams);
+                dochMesReportDialog.generateAndShowReport();
+    //            dochMonthreport = new DochMesReport();
+    //            dochMonthreport
+            }
+        );
 
         dochYearReportBtn.setText("Roční přehled");
-        dochYearReportBtn.setEnabled(false);
+        dochYearReportBtn.setEnabled(true);
 
         dochControl.setWidth("30em");
         dochControl.getStyle()
@@ -2503,6 +2523,31 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 Thread.currentThread().interrupt();
                 LOG.debug("Doch clock timer interrupted. Orig.message: {}", e.getMessage() );
             }
+        }
+    }
+
+// -----------------------------------
+
+
+    public static class DochParams {
+
+        YearMonth dochYm;
+        Long personId;
+
+        public YearMonth getDochYm() {
+            return dochYm;
+        }
+
+        public void setDochYm(YearMonth dochYm) {
+            this.dochYm = dochYm;
+        }
+
+        public Long getPersonId() {
+            return personId;
+        }
+
+        public void setPersonId(Long personId) {
+            this.personId = personId;
         }
     }
 }
