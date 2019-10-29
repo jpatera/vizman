@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Map;
 
+import static ar.com.fdvs.dj.domain.constants.Font.PDF_ENCODING_CP1250_Central_European;
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
 
 
@@ -29,7 +30,9 @@ public class DochMesReport extends PrintPreviewReport {
     private AbstractColumn dochWeekCol;
     private AbstractColumn dochDateCol;
     private AbstractColumn fromPraceStartCol;
+//    private AbstractColumn fromManualCol;
     private AbstractColumn toPraceEndCol;
+//    private AbstractColumn toManualCol;
     private AbstractColumn obedCol;
     private AbstractColumn praceCelkCol;
     private AbstractColumn pracDobaCol;
@@ -66,9 +69,10 @@ public class DochMesReport extends PrintPreviewReport {
 //                .setSubtitleHeight(200)
                 .setPrintColumnNames(true)
                 .setHeaderHeight(20)
-
 //                .setSubtitle("Text kontraktu... / Text zakázky...")
                 .setReportLocale(new Locale("cs", "CZ"))
+                .setDefaultEncoding(PDF_ENCODING_CP1250_Central_European)
+//                .setDefaultEncoding("ISO-8859-2")
 //                .setSubtitle("Rok: " + paramRokStr)
 //                .addParameter("PARAM_ROK", String.class.getName())
                 .setMargins(20, 10, 25, 20)
@@ -98,7 +102,9 @@ public class DochMesReport extends PrintPreviewReport {
 //                .addColumn(dochYmCol)
                 .addColumn(dochWeekCol)
                 .addColumn(dochDateCol)
+//                .addColumn(fromManualCol)
                 .addColumn(fromPraceStartCol)
+//                .addColumn(toManualCol)
                 .addColumn(toPraceEndCol)
                 .addColumn(obedCol)
                 .addColumn(pracDobaCol)
@@ -108,6 +114,9 @@ public class DochMesReport extends PrintPreviewReport {
                 .addColumn(nemCol)
                 .addColumn(dovCol)
                 .addColumn(volnoCol)
+
+                .addField("fromManual", Boolean.class.getName())
+                .addField("toManual", Boolean.class.getName())
 
                 // Add groups
                 .addGroup(userGroup)
@@ -353,7 +362,7 @@ public class DochMesReport extends PrintPreviewReport {
                 .setColumnProperty("fullNameAndDochYm", String.class)
                 .setTitle("Jméno, Rok-měs")
                 .setStyle(GROUP_HEADER_DOCH_PERSON_STYLE)
-                .setWidth(150)
+                .setWidth(250)
                 .setFixedWidth(true)
                 .build();
 
@@ -395,14 +404,30 @@ public class DochMesReport extends PrintPreviewReport {
                 .setWidth(50)
                 .build();
 
+//        fromManualCol = ColumnBuilder.getNew()
+//                .setColumnProperty("fromManual", Boolean.class)
+//                .setTitle("Man FROM")
+////                .setStyle(WORK_HOUR_GRID_STYLE)
+////                .addConditionalStyles(condWeekendToStyles)
+//                .setWidth(40)
+//                .build();
+
         toPraceEndCol = ColumnBuilder.getNew()
                 .setColumnProperty("toPraceEnd", LocalTime.class)
                 .setTitle("Do")
 //                .setTextFormatter(shortTimeFmt)
                 .setStyle(WORK_HOUR_GRID_STYLE)
-                .addConditionalStyles(condWeekendFromStyles)
+                .addConditionalStyles(condWeekendToStyles)
                 .setWidth(50)
                 .build();
+
+//        toManualCol = ColumnBuilder.getNew()
+//                .setColumnProperty("toManual", Boolean.class)
+//                .setTitle("Man TO")
+////                .setStyle(WORK_HOUR_GRID_STYLE)
+////                .addConditionalStyles(condWeekendToStyles)
+//                .setWidth(40)
+//                .build();
 
         obedCol = ColumnBuilder.getNew()
                 .setColumnProperty("obedMins", Long.class)

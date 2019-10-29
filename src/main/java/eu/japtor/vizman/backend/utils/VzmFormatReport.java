@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import static ar.com.fdvs.dj.domain.constants.Font.ARIAL_MEDIUM_BOLD;
+import static ar.com.fdvs.dj.domain.constants.Font.PDF_ENCODING_CP1250_Central_European;
 
 public class VzmFormatReport {
     static final Color TOTAL_BG_COLOR = new Color(0xFFF4EE);
@@ -85,6 +86,7 @@ public class VzmFormatReport {
 
     public static ArrayList condWeekendDateStyles = new ArrayList();
     public static ArrayList condWeekendFromStyles = new ArrayList();
+    public static ArrayList condWeekendToStyles = new ArrayList();
     public static ArrayList condToStyles = new ArrayList();
     public static ArrayList condObedStyles = new ArrayList();
 
@@ -259,6 +261,11 @@ public class VzmFormatReport {
         condWeekendFromStyles.add(new ConditionalStyle(new WeekendFromCondition(true, false), WEEKEND_BLACK_GRID_STYLE));
         condWeekendFromStyles.add(new ConditionalStyle(new WeekendFromCondition(true, true), WEEKEND_RED_GRID_STYLE));
 
+        condWeekendToStyles.add(new ConditionalStyle(new WeekendToCondition(false, false), WORKDAY_BLACK_GRID_STYLE));
+        condWeekendToStyles.add(new ConditionalStyle(new WeekendToCondition(false, true), WORKDAY_RED_GRID_STYLE));
+        condWeekendToStyles.add(new ConditionalStyle(new WeekendToCondition(true, false), WEEKEND_BLACK_GRID_STYLE));
+        condWeekendToStyles.add(new ConditionalStyle(new WeekendToCondition(true, true), WEEKEND_RED_GRID_STYLE));
+
         WORK_HOUR_GRID_STYLE_NAME = "work-hour-grid-style";
         WORK_HOUR_GRID_STYLE = new StyleBuilder(true, "work-hour-grid-style")
                 .setParentStyleName(DEFAULT_GRID_STYLE_NAME)
@@ -325,7 +332,7 @@ public class VzmFormatReport {
 
         public WeekendFromCondition(boolean weekendExpected, boolean fromManualExpected) {
                 this.weekendExpected = weekendExpected;
-                this.fromManualExpected = weekendExpected;
+                this.fromManualExpected = fromManualExpected;
         }
 
         @Override
@@ -335,18 +342,56 @@ public class VzmFormatReport {
             Object dateObjValue = fields.get("compositeDate");
             Object fromObjValue = fields.get("fromManual");
             if (null == dateObjValue) {
-                return !weekendExpected;
+                dateValue = "n_o_t__w_e_e_k_e_n_d";
             } else {
                 dateValue = (String)dateObjValue;
             }
             if (null == fromObjValue) {
-                return !fromManualExpected;
+                fromManualValue = false;
             } else {
                 fromManualValue = (Boolean)fromObjValue;
             }
             return !(weekendExpected ^ ((dateValue).toLowerCase().contains("ne") || (dateValue).toLowerCase().contains("so")))
-                    ||
+                    &&
                    !(fromManualExpected ^ fromManualValue);
+        }
+
+        @Override
+        public String getClassName() {
+            return Boolean.class.getName();
+        }
+
+    }
+
+    public static class WeekendToCondition extends ConditionStyleExpression {
+        private static final long serialVersionUID = Entity.SERIAL_VERSION_UID;
+        private boolean weekendExpected;
+        private boolean toManualExpected;
+
+        public WeekendToCondition(boolean weekendExpected, boolean toManualExpected) {
+            this.weekendExpected = weekendExpected;
+            this.toManualExpected = toManualExpected;
+        }
+
+        @Override
+        public Object evaluate(Map fields, Map variables, Map parameters) {
+            String dateValue;
+            Boolean toManualValue;
+            Object dateObjValue = fields.get("compositeDate");
+            Object toObjValue = fields.get("toManual");
+            if (null == dateObjValue) {
+                dateValue = "n_o_t__w_e_e_k_e_n_d";
+            } else {
+                dateValue = (String)dateObjValue;
+            }
+            if (null == toObjValue) {
+                toManualValue = false;
+            } else {
+                toManualValue = (Boolean)toObjValue;
+            }
+            return !(weekendExpected ^ ((dateValue).toLowerCase().contains("ne") || (dateValue).toLowerCase().contains("so")))
+                    &&
+                    !(toManualExpected ^ toManualValue);
         }
 
         @Override

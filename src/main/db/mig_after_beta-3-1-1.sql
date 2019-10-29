@@ -149,14 +149,14 @@ CREATE OR REPLACE FORCE VIEW VIZMAN.DOCH_MES_VIEW (
 	FROM_MANUAL,
 	TO_PRACE_END,
 	TO_MANUAL,
-	DUR_OBED_SUM,
+	DUR_OBED,
 	OBED_AUTO,
-	DUR_PRACE_CELK_SUM,
-	DUR_PRACE_WEND_SUM,
-	DUR_LEK_SUM,
-	DUR_DOV_SUM,
-	DUR_NEM_SUM,
-	DUR_VOLNO_SUM
+	DUR_PRACE_CELK,
+	DUR_PRACE_WEND,
+	DUR_LEK,
+	DUR_DOV,
+	DUR_NEM,
+	DUR_VOLNO
 ) AS
 SELECT
 	ROWNUM() AS ID,
@@ -167,14 +167,14 @@ SELECT
 	aa.from_manual,
 	aa.to_prace_end,
 	aa.to_manual,
-	aa.dur_obed_sum,
+	aa.dur_obed,
 	aa.obed_auto,
-	aa.dur_prace_celk_sum,
-	aa.dur_prace_wend_sum,
-	aa.dur_lek_sum,
-	aa.dur_dov_sum,
-	aa.dur_nem_sum,
-	aa.dur_volno_sum
+	aa.dur_prace_celk,
+	aa.dur_prace_wend,
+	aa.dur_lek,
+	aa.dur_dov,
+	aa.dur_nem,
+	aa.dur_volno
 FROM (
 	SELECT
 		person_ID,
@@ -184,14 +184,14 @@ FROM (
 		max(FROM_MANUAL) AS FROM_MANUAL,
 		max(TO_TIME) AS TO_PRACE_END,
 		max(TO_MANUAL) AS TO_MANUAL,
-		sum(CASE WHEN (cin_cin_kod = 'MO') THEN doch_dur WHEN (cin_cin_kod = 'OA') THEN -doch_dur ELSE 0 END) AS dur_obed_sum,
+		sum(CASE WHEN (cin_cin_kod = 'MO') THEN doch_dur WHEN (cin_cin_kod = 'OA') THEN -doch_dur ELSE 0 END) AS dur_obed,
 		max(cin_cin_kod = 'OA') AS obed_auto,
-		sum(CASE WHEN calcprac THEN doch_dur ELSE 0 END) AS dur_prace_celk_sum,
-		sum(CASE WHEN calcprac AND ISO_DAY_OF_WEEK(DOCH_DATE) >= 6 THEN doch_dur ELSE 0 END) AS dur_prace_wend_sum,
-		sum(CASE WHEN cin_cin_kod = 'L' THEN doch_dur ELSE 0 END) AS dur_lek_sum,
-		sum(CASE WHEN cin_cin_kod = 'dc' OR cin_cin_kod = 'dp' THEN doch_dur ELSE 0 END) AS dur_dov_sum,
-		sum(CASE WHEN cin_cin_kod = 'ne' THEN doch_dur ELSE 0 END) AS dur_nem_sum,
-		sum(CASE WHEN cin_cin_kod = 'nv' THEN doch_dur ELSE 0 END) AS dur_volno_sum
+		sum(CASE WHEN calcprac THEN doch_dur ELSE 0 END) AS dur_prace_celk,
+		sum(CASE WHEN calcprac AND ISO_DAY_OF_WEEK(DOCH_DATE) >= 6 THEN doch_dur ELSE 0 END) AS dur_prace_wend,
+		sum(CASE WHEN cin_cin_kod = 'L' THEN doch_dur ELSE 0 END) AS dur_lek,
+		sum(CASE WHEN cin_cin_kod = 'dc' OR cin_cin_kod = 'dp' THEN doch_dur ELSE 0 END) AS dur_dov,
+		sum(CASE WHEN cin_cin_kod = 'ne' THEN doch_dur ELSE 0 END) AS dur_nem,
+		sum(CASE WHEN cin_cin_kod = 'nv' THEN doch_dur ELSE 0 END) AS dur_volno
 	FROM VIZMAN.DOCH dd
 	GROUP BY PERSON_ID, DOCH_DATE
 ) AS aa

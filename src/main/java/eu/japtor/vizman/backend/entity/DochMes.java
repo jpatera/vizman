@@ -97,6 +97,16 @@ public class DochMes implements Serializable {
         return person;
     }
 
+    @Transient
+    private String monthHourFond;
+
+    public String getMonthHourFond() {
+        return monthHourFond;
+    }
+    public void setMonthHourFond(String monthHourFond) {
+        this.monthHourFond = monthHourFond;
+    }
+
     // Constructor
     // -----------
     public DochMes() {}
@@ -139,7 +149,7 @@ public class DochMes implements Serializable {
     }
     @Transient
     public Long getObedMins() {
-        return durObed.toMinutes();
+        return null == durObed ? null : durObed.toMinutes();
     }
 
     public Boolean getObedAuto() {
@@ -151,7 +161,7 @@ public class DochMes implements Serializable {
     }
     @Transient
     public Long getPracCelkMins() {
-        return durPracCelk.toMinutes();
+        return null == durPracCelk ? null : durPracCelk.toMinutes();
     }
 
     public Duration getDurPracWend() {
@@ -159,7 +169,7 @@ public class DochMes implements Serializable {
     }
     @Transient
     public Long getPracWendMins() {
-        return durPracWend.toMinutes();
+        return null == durPracWend ? null : durPracWend.toMinutes();
     }
 
     public Duration getDurLek() {
@@ -167,7 +177,7 @@ public class DochMes implements Serializable {
     }
     @Transient
     public Long getLekMins() {
-        return durLek.toMinutes();
+        return null == durLek ? null : durLek.toMinutes();
     }
 
     public Duration getDurDov() {
@@ -175,7 +185,7 @@ public class DochMes implements Serializable {
     }
     @Transient
     public Long getDovMins() {
-        return durDov.toMinutes();
+        return null == durDov ? null : durDov.toMinutes();
     }
 
     public Duration getDurNem() {
@@ -183,7 +193,7 @@ public class DochMes implements Serializable {
     }
     @Transient
     public Long getNemMins() {
-        return durNem.toMinutes();
+        return null == durNem ? null : durNem.toMinutes();
     }
 
     public Duration getDurVolno() {
@@ -191,13 +201,14 @@ public class DochMes implements Serializable {
     }
     @Transient
     public Long getVolnoMins() {
-        return durVolno.toMinutes();
+        return null == durVolno ? null : durVolno.toMinutes();
     }
 
 
     @Transient
     public String getFullNameAndDochYm() {
-        return person.getPrijmeni() + " " + person.getJmeno() + ", " + getDochYm();
+        return person.getPrijmeni() + " " + person.getJmeno()
+                + " \u00A0\u00A0\u00A0\u00A0 " + getDochYm() + " \u00A0\u00A0\u00A0\u00A0 Fond: " + getMonthHourFond();
     }
 
 
