@@ -63,8 +63,8 @@ public class DochMesReport extends PrintPreviewReport {
 
         this.getReportBuilder()
                 .setTitle("MĚSÍČNÍ DOCHÁZKA")
-                .setPageSizeAndOrientation(Page.Page_A4_Landscape())
-//                .setPageSizeAndOrientation(Page.Page_A4_Portrait())
+//                .setPageSizeAndOrientation(Page.Page_A4_Landscape())
+                .setPageSizeAndOrientation(Page.Page_A4_Portrait())
                 .setUseFullPageWidth(false)
 //                .setSubtitleHeight(200)
                 .setPrintColumnNames(true)
@@ -117,6 +117,7 @@ public class DochMesReport extends PrintPreviewReport {
 
                 .addField("fromManual", Boolean.class.getName())
                 .addField("toManual", Boolean.class.getName())
+                .addField("sluzMins", Long.class.getName())
 
                 // Add groups
                 .addGroup(userGroup)
@@ -388,9 +389,9 @@ public class DochMesReport extends PrintPreviewReport {
 //                .setColumnProperty("compositeDate", LocalDate.class)
                 .setTitle("Datum")
 //                .setPattern("dd.MM")
-                .addConditionalStyles(condWeekendDateStyles)
                 .setStyle(SHORT_DATE_GRID_STYLE)
-                .setWidth(50)
+                .addConditionalStyles(condWeekendSluzDateStyles)
+                .setWidth(55)
 //                .setTextFormatter(DateTimeFormatter.ofPattern("dd.MM").toFormat())
                 .build();
 
@@ -418,7 +419,7 @@ public class DochMesReport extends PrintPreviewReport {
 //                .setTextFormatter(shortTimeFmt)
                 .setStyle(WORK_HOUR_GRID_STYLE)
                 .addConditionalStyles(condWeekendToStyles)
-                .setWidth(50)
+                .setWidth(45)
                 .build();
 
 //        toManualCol = ColumnBuilder.getNew()
@@ -431,11 +432,11 @@ public class DochMesReport extends PrintPreviewReport {
 
         obedCol = ColumnBuilder.getNew()
                 .setColumnProperty("obedMins", Long.class)
-                .setTitle("Obed")
+                .setTitle("Oběd")
                 .setTextFormatter(hodsMinsFormat)    // ..overrides a time pattern from style
 //                .setCustomExpressionForCalculation(getObedDurAsLongExp())
                 .setStyle(WORK_HOUR_GRID_STYLE)
-                .setWidth(50)
+                .setWidth(45)
                 .build();
 
 //        obedCol = ColumnBuilder.getNew()
@@ -449,10 +450,10 @@ public class DochMesReport extends PrintPreviewReport {
 //
         pracDobaCol = ColumnBuilder.getNew()
                 .setColumnProperty("pracDobaMins", Long.class)
-                .setTitle("Prac.doba")
+                .setTitle("Pr. doba")
                 .setTextFormatter(hodsMinsFormat)
                 .setStyle(WORK_HOUR_GRID_STYLE)
-                .setWidth(50)
+                .setWidth(45)
 //                .setFixedWidth(true)
                 .build();
 
@@ -461,7 +462,7 @@ public class DochMesReport extends PrintPreviewReport {
                 .setTitle("Práce")
                 .setTextFormatter(hodsMinsFormat)
                 .setStyle(WORK_HOUR_GRID_STYLE)
-                .setWidth(50)
+                .setWidth(45)
                 .build();
 
         praceWendCol = ColumnBuilder.getNew()
@@ -469,7 +470,7 @@ public class DochMesReport extends PrintPreviewReport {
                 .setTitle("Víkend")
                 .setTextFormatter(hodsMinsFormat)
                 .setStyle(WORK_HOUR_GRID_STYLE)
-                .setWidth(50)
+                .setWidth(45)
                 .build();
 
         lekCol = ColumnBuilder.getNew()
@@ -485,7 +486,7 @@ public class DochMesReport extends PrintPreviewReport {
                 .setTitle("Dovolená")
                 .setTextFormatter(hodsMinsFormat)
                 .setStyle(WORK_HOUR_GRID_STYLE)
-                .setWidth(50)
+                .setWidth(45)
                 .build();
 
         nemCol = ColumnBuilder.getNew()
@@ -493,7 +494,7 @@ public class DochMesReport extends PrintPreviewReport {
                 .setTitle("Nemoc")
                 .setTextFormatter(hodsMinsFormat)
                 .setStyle(WORK_HOUR_GRID_STYLE)
-                .setWidth(50)
+                .setWidth(45)
                 .build();
 
         volnoCol = ColumnBuilder.getNew()
@@ -501,7 +502,7 @@ public class DochMesReport extends PrintPreviewReport {
                 .setTitle("Volno")
                 .setTextFormatter(hodsMinsFormat)
                 .setStyle(WORK_HOUR_GRID_STYLE)
-                .setWidth(50)
+                .setWidth(45)
                 .build();
     }
 

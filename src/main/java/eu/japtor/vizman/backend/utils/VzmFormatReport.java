@@ -11,6 +11,7 @@ import ar.com.fdvs.dj.domain.entities.conditionalStyle.ConditionStyleExpression;
 import ar.com.fdvs.dj.domain.entities.conditionalStyle.ConditionalStyle;
 
 import java.awt.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -77,14 +78,17 @@ public class VzmFormatReport {
 //    public static final Style SHORT_DATE_WEEKEND_GRID_STYLE;
     public static final Style WEEKEND_BLACK_GRID_STYLE;
     public static final Style WEEKEND_RED_GRID_STYLE;
+    public static final Style WEEKEND_MAGENTA_GRID_STYLE;
     public static final Style WORKDAY_BLACK_GRID_STYLE;
     public static final Style WORKDAY_RED_GRID_STYLE;
+    public static final Style WORKDAY_MAGENTA_GRID_STYLE;
     public static final Style WORKDAY_GRID_STYLE;
     public static final Style WEEKEND_GRID_STYLE;
     public static final Style BLACK_STYLE;
     public static final Style RED_STYLE;
 
-    public static ArrayList condWeekendDateStyles = new ArrayList();
+//    public static ArrayList condWeekendDateStyles = new ArrayList();
+    public static ArrayList condWeekendSluzDateStyles = new ArrayList();
     public static ArrayList condWeekendFromStyles = new ArrayList();
     public static ArrayList condWeekendToStyles = new ArrayList();
     public static ArrayList condToStyles = new ArrayList();
@@ -224,6 +228,11 @@ public class VzmFormatReport {
         WEEKEND_RED_GRID_STYLE.setBackgroundColor(new Color(0xFFFACD));
         WEEKEND_RED_GRID_STYLE.setTransparent(false);
 
+        WEEKEND_MAGENTA_GRID_STYLE = new Style();
+        WEEKEND_MAGENTA_GRID_STYLE.setTextColor(Color.MAGENTA);
+        WEEKEND_MAGENTA_GRID_STYLE.setBackgroundColor(new Color(0xFFFACD));
+        WEEKEND_MAGENTA_GRID_STYLE.setTransparent(false);
+
         WORKDAY_BLACK_GRID_STYLE = new Style();
         WORKDAY_BLACK_GRID_STYLE.setTextColor(Color.BLACK);
         WORKDAY_BLACK_GRID_STYLE.setBackgroundColor(Color.WHITE);
@@ -234,6 +243,11 @@ public class VzmFormatReport {
         WORKDAY_RED_GRID_STYLE.setBackgroundColor(Color.WHITE);
         WORKDAY_RED_GRID_STYLE.setTransparent(false);
 
+        WORKDAY_MAGENTA_GRID_STYLE = new Style();
+        WORKDAY_MAGENTA_GRID_STYLE.setTextColor(Color.MAGENTA);
+        WORKDAY_MAGENTA_GRID_STYLE.setBackgroundColor(Color.WHITE);
+        WORKDAY_MAGENTA_GRID_STYLE.setTransparent(false);
+
         WORKDAY_GRID_STYLE = new Style();
         WORKDAY_GRID_STYLE.setBackgroundColor(Color.WHITE);
         WORKDAY_GRID_STYLE.setTransparent(false);
@@ -242,8 +256,12 @@ public class VzmFormatReport {
         WEEKEND_GRID_STYLE.setBackgroundColor(new Color(0xFFFACD));
         WEEKEND_GRID_STYLE.setTransparent(false);
 
-        condWeekendDateStyles.add(new ConditionalStyle(new WeekendCondition(false), WORKDAY_GRID_STYLE));
-        condWeekendDateStyles.add(new ConditionalStyle(new WeekendCondition(true), WEEKEND_GRID_STYLE));
+//        condWeekendDateStyles.add(new ConditionalStyle(new WeekendCondition(false), WORKDAY_GRID_STYLE));
+//        condWeekendDateStyles.add(new ConditionalStyle(new WeekendCondition(true), WEEKEND_GRID_STYLE));
+        condWeekendSluzDateStyles.add(new ConditionalStyle(new WeekendSluzDateCondition(false, false), WORKDAY_BLACK_GRID_STYLE));
+        condWeekendSluzDateStyles.add(new ConditionalStyle(new WeekendSluzDateCondition(false, true), WORKDAY_MAGENTA_GRID_STYLE));
+        condWeekendSluzDateStyles.add(new ConditionalStyle(new WeekendSluzDateCondition(true, false), WEEKEND_BLACK_GRID_STYLE));
+        condWeekendSluzDateStyles.add(new ConditionalStyle(new WeekendSluzDateCondition(true, true), WEEKEND_MAGENTA_GRID_STYLE));
 
 
         BLACK_STYLE = new Style();
@@ -322,6 +340,44 @@ public class VzmFormatReport {
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
                 .setPattern("##0;-##0")
                 .build();
+
+    }
+
+    public static class WeekendSluzDateCondition extends ConditionStyleExpression {
+        private static final long serialVersionUID = Entity.SERIAL_VERSION_UID;
+        private boolean weekendExpected;
+        private boolean sluzExpected;
+
+        public WeekendSluzDateCondition(boolean weekendExpected, boolean sluzExpected) {
+            this.weekendExpected = weekendExpected;
+            this.sluzExpected = sluzExpected;
+        }
+
+        @Override
+        public Object evaluate(Map fields, Map variables, Map parameters) {
+            String dateValue;
+            Boolean isSluz;
+            Object dateObjValue = fields.get("compositeDate");
+            Object sluzMinsObjValue = fields.get("sluzMins");
+            if (null == dateObjValue) {
+                dateValue = "n_o_t__w_e_e_k_e_n_d";
+            } else {
+                dateValue = (String)dateObjValue;
+            }
+            if (null == sluzMinsObjValue) {
+                isSluz = false;
+            } else {
+                isSluz = (null != sluzMinsObjValue && ((Long)sluzMinsObjValue).compareTo(0L) > 0);
+            }
+            return !(weekendExpected ^ ((dateValue).toLowerCase().contains("ne") || (dateValue).toLowerCase().contains("so")))
+                    &&
+                    !(sluzExpected ^ isSluz);
+        }
+
+        @Override
+        public String getClassName() {
+            return Boolean.class.getName();
+        }
 
     }
 

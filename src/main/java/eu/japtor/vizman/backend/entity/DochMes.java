@@ -89,6 +89,10 @@ public class DochMes implements Serializable {
     @Column(name = "DUR_VOLNO")
     private Duration durVolno;
 
+    @Basic
+    @Column(name = "DUR_SLUZ")
+    private Duration durSluz;
+
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="PERSON_ID", unique=true, nullable=true, insertable=false, updatable=false)
     private Person person;
@@ -202,6 +206,14 @@ public class DochMes implements Serializable {
     @Transient
     public Long getVolnoMins() {
         return null == durVolno ? null : durVolno.toMinutes();
+    }
+
+    public Duration getDurSluz() {
+        return durSluz;
+    }
+    @Transient
+    public Long getSluzMins() {
+        return null == durSluz ? null : durSluz.toMinutes();
     }
 
 

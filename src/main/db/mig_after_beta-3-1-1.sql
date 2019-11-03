@@ -156,7 +156,8 @@ CREATE OR REPLACE FORCE VIEW VIZMAN.DOCH_MES_VIEW (
 	DUR_LEK,
 	DUR_DOV,
 	DUR_NEM,
-	DUR_VOLNO
+	DUR_VOLNO,
+	DUR_SLUZ
 ) AS
 SELECT
 	ROWNUM() AS ID,
@@ -174,7 +175,8 @@ SELECT
 	aa.dur_lek,
 	aa.dur_dov,
 	aa.dur_nem,
-	aa.dur_volno
+	aa.dur_volno,
+	aa.dur_sluz
 FROM (
 	SELECT
 		person_ID,
@@ -191,7 +193,8 @@ FROM (
 		sum(CASE WHEN cin_cin_kod = 'L' THEN doch_dur ELSE 0 END) AS dur_lek,
 		sum(CASE WHEN cin_cin_kod = 'dc' OR cin_cin_kod = 'dp' THEN doch_dur ELSE 0 END) AS dur_dov,
 		sum(CASE WHEN cin_cin_kod = 'ne' THEN doch_dur ELSE 0 END) AS dur_nem,
-		sum(CASE WHEN cin_cin_kod = 'nv' THEN doch_dur ELSE 0 END) AS dur_volno
+		sum(CASE WHEN cin_cin_kod = 'nv' THEN doch_dur ELSE 0 END) AS dur_volno,
+		sum(CASE WHEN cin_cin_kod = 'SC' THEN doch_dur ELSE 0 END) AS dur_sluz
 	FROM VIZMAN.DOCH dd
 	GROUP BY PERSON_ID, DOCH_DATE
 ) AS aa
