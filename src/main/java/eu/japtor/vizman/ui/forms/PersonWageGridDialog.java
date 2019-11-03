@@ -2,6 +2,7 @@ package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.notification.Notification;
@@ -9,6 +10,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.function.ValueProvider;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.PersonService;
@@ -65,7 +67,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
     Grid<PersonWage> personWageGrid;
     private Button newItemButton;
     private FlexLayout titleComponent;
-    private boolean personWagesChanged = false;
+//    private boolean personWagesChanged = false;
 
     private WageService wageService;
     private PersonService personService;
@@ -116,23 +118,23 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
     }
 
 
-    void finishWageEdit(WageFormDialog wageFormDialog) {
-        PersonWage wageAfter = wageFormDialog.getCurrentItem(); // Modified, just added or just deleted
-        Operation wageOper = wageFormDialog.getCurrentOperation();
-        OperationResult wageOperRes = wageFormDialog.getLastOperationResult();
+    private void finishWageEdit(WageFormDialog wageFormDialog) {
+        PersonWage wageModified = wageFormDialog.getCurrentItem(); // Modified, just added or just deleted
+        Operation oper = wageFormDialog.getCurrentOperation();
+        OperationResult operResult = wageFormDialog.getLastOperationResult();
 
-        if (OperationResult.NO_CHANGE != wageOperRes) {
-            personWagesChanged = true;
-        }
-        PersonWage wageItemOrig = wageFormDialog.getOrigItem();
+//        if (OperationResult.NO_CHANGE != operResult) {
+//            personWagesChanged = true;
+//        }
+        PersonWage itemOrig = wageFormDialog.getOrigItem();
 
-        syncFormGridAfterWageEdit(wageAfter, wageOper, wageOperRes, wageItemOrig);
+        syncFormGridAfterWageEdit(wageModified, oper, operResult, itemOrig);
 
-        if (OperationResult.ITEM_SAVED == wageOperRes) {
+        if (OperationResult.ITEM_SAVED == operResult) {
             Notification.show(String.format("Mzda uložena")
                     , 2500, Notification.Position.TOP_CENTER);
 
-        } else if (OperationResult.ITEM_DELETED == wageOperRes) {
+        } else if (OperationResult.ITEM_DELETED == operResult) {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Editace mzdy")
@@ -141,7 +143,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
         }
     }
 
-    private void syncFormGridAfterWageEdit(PersonWage personWageAfter, Operation wageOper
+    private void syncFormGridAfterWageEdit(PersonWage personWageModified, Operation wageOper
             , OperationResult wageOperRes, PersonWage wageItemOrig) {
 
         if (NO_CHANGE == wageOperRes) {
@@ -152,7 +154,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
         personWageGrid.getDataCommunicator().getKeyMapper().removeAll();
         personWageGrid.setItems(person.getWages());
         personWageGrid.getDataProvider().refreshAll();
-        personWageGrid.select(personWageAfter);
+//        personWageGrid.select(personWageModified);
     }
 
 
@@ -183,7 +185,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
 
 //        this.origItemList = Collections.unmodifiableList(new LinkedList<>(currentItemList));
 
-        this.personWagesChanged = false;
+//        this.personWagesChanged = false;
         this.person = person;
         initDataAndControls();
         this.origItemList = Collections.unmodifiableList(this.currentItemList);
@@ -305,10 +307,10 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
             YearMonth ymNow = YearMonth.now();
             YearMonth ymFromNew;
             if (null == ymToLast) {
-                if (ymNow.compareTo(ymFromLast) > 0) {
+                if (ymNow.compareTo(ymFromLast.plusMonths(1)) > 0) {
                     ymFromNew = ymNow;
                 } else {
-                    ymFromNew = ymFromLast.plusMonths(1);
+                    ymFromNew = ymFromLast.plusMonths(2);
                 }
             } else {
                 if (ymNow.compareTo(ymToLast) > 0) {
@@ -318,10 +320,12 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
                 }
             }
 
-            PersonWage newPersonWage = new PersonWage();
+            PersonWage newPersonWage = new PersonWage(person);
             newPersonWage.setYmFrom(ymFromNew);
 
             wageFormDialog.openDialog(newPersonWage
+                        , getLastWage()
+                        , null
                         , person
                         , Operation.ADD
 //                        , "ZADÁNÍ SAZBY"
@@ -332,7 +336,6 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
         });
         return newItemButton;
     }
-
 
     private Component initPersonWageGrid() {
         personWageGrid = new Grid<>();
@@ -361,43 +364,51 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
 //        ;
         personWageGrid.addColumn(new ComponentRenderer<>(this::buildZakOpenBtn))
                 .setFlexGrow(0)
+                .setWidth("3em")
+                .setTextAlign(ColumnTextAlign.CENTER)
                 .setKey(WAGE_EDIT_COL_KEY)
         ;
-        personWageGrid.addColumn(PersonWage::getTariff)
+        personWageGrid.addColumn(tariffGridValueProvider)
                 .setHeader("Sazba")
                 .setResizable(true)
-                .setWidth("10em")
+                .setWidth("7em")
+                .setTextAlign(ColumnTextAlign.CENTER)
                 .setFlexGrow(0)
         ;
         personWageGrid.addColumn(PersonWage::getYmFrom)
                 .setHeader("Platnost od")
-                .setWidth("10em")
+                .setWidth("8em")
+                .setTextAlign(ColumnTextAlign.CENTER)
                 .setFlexGrow(0)
                 .setResizable(true)
         ;
         personWageGrid.addColumn(PersonWage::getYmTo)
                 .setHeader("Platnost do")
-                .setWidth("10em")
+                .setWidth("8em")
+                .setTextAlign(ColumnTextAlign.CENTER)
                 .setFlexGrow(0)
                 .setResizable(true)
         ;
-//        personWageGrid.addColumn(new ComponentRenderer<>(this::buildZakOpenBtn))
-//                .setFlexGrow(0)
-//                .setKey(PERSON_WAGE_EDIT_COL_KEY)
-//        ;
-//        personWageGrid.addColumn(new ComponentRenderer<>(VzmFormatUtils::getColoredTextComponent))
-//                .setHeader("Text")
-//                .setFlexGrow(1)
-//                .setResizable(true)
-//        ;
 
         return personWageGrid;
     }
 
+    public ValueProvider<PersonWage, String> tariffGridValueProvider = wage -> {
+        if (null == wage.getTariff()) {
+            return "";
+        } else {
+            return VzmFormatUtils.moneyFormat.format(wage.getTariff());
+        }
+    };
 
     private Component buildZakOpenBtn(PersonWage wage) {
         return new GridItemEditBtn(event -> {
-                wageFormDialog.openDialog(wage, wage.getPerson(), Operation.EDIT, null, null);
+                wageFormDialog.openDialog(
+                        wage
+                        , getWageBefore(wage)
+                        , getWageAfter(wage)
+                        , wage.getPerson()
+                        , Operation.EDIT, null, null);
             }, VzmFormatUtils.getItemTypeColorName(wage.getTyp())
         );
     }
@@ -621,6 +632,34 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
 
     private YearMonth getLastYmFrom() {
         return currentItemList.get(0).getYmFrom();
+    }
+
+    private PersonWage getLastWage() {
+        return currentItemList.get(0);
+    }
+
+    private PersonWage getWageBefore(PersonWage currentWage) {
+        if (null == currentItemList || currentItemList.size() == 0) {
+            return null;
+        }
+        for (PersonWage wage : currentItemList) {
+            if (wage.getYmFrom().compareTo(currentWage.getYmFrom()) < 0) {
+                return wage;
+            }
+        }
+        return null;
+    }
+
+    private PersonWage getWageAfter(PersonWage currentWage) {
+        if (null == currentItemList || currentItemList.size() == 0) {
+            return null;
+        }
+        for (int i = currentItemList.size(); i-- > 0; ) {
+            if (currentItemList.get(i).getYmFrom().compareTo(currentWage.getYmFrom()) > 0) {
+                return currentItemList.get(i);
+            }
+        }
+        return null;
     }
 
 }

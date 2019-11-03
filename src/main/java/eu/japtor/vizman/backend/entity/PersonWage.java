@@ -59,8 +59,13 @@ public class PersonWage extends AbstractGenIdEntity implements HasItemType {
 
 
 
-  public PersonWage() {
-    super();
+  PersonWage() {
+      this(null);
+  }
+
+  public PersonWage(Person person) {
+      super();
+      this.person = person;
   }
 
 

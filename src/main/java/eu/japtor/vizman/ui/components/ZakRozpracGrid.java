@@ -761,7 +761,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                     this.itemSaver.accept(editedItem, Operation.EDIT);
                     updateFooterFields();
 
-//                    rpHotovoGridValueProvider.apply(editedItem);
+//                    tariffGridValueProvider.apply(editedItem);
                 }
             }
 //            editedItem = event.getFirstSelectedItem().orElse(null);   // Note: grid selection mode is supposed to be SINGLE
@@ -856,7 +856,6 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     }
 
     private ValueProvider<Zakr, String> rpZbyvaByKurzGridValueProvider = zakr -> {
-//        BigDecimal rpZbyvaByKurz = zakr.getRpZbyvaByKurz(zakrParams.getKurzEur());
         BigDecimal rpZbyvaByKurz = zakr.getRpZbyvaByKurz();
         if (null == rpZbyvaByKurz) {
             return "";
@@ -864,36 +863,15 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             return VzmFormatUtils.moneyFormat.format(rpZbyvaByKurz);
         }
     };
-//    private  BigDecimal getRpZbyvaByKurz(Zakr zakr) {
-//        BigDecimal rpZbyva = zakr.getRpZbyva();
-//        if (null == rpZbyva) {
-//            return null;
-//        } else {
-//            return zakr.getMena() == EUR ?
-//                    rpZbyva.multiply(zakrParams.getKurzEur()) :
-//                    rpZbyva;
-//        }
-//    }
 
     public ValueProvider<Zakr, String> rpHotovoGridValueProvider = zakr -> {
         if (null == zakr.getRpHotovo()) {
             return "";
         } else {
-//            BigDecimal rpVysledek = zakr.getRpHotovoByKurz(zakrParams.getKurzEur());
             BigDecimal rpVysledek = zakr.getRpHotovoByKurz();
             return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
         }
     };
-//    private  BigDecimal getRpHotovokByKurz(Zakr zakr) {
-//        BigDecimal rpHotovo = zakr.getRpHotovo();
-//        if (null == rpHotovo) {
-//            return null;
-//        } else {
-//            return zakr.getMena() == EUR ?
-//                    rpHotovo.multiply(zakrParams.getKurzEur()) :
-//                    rpHotovo;
-//        }
-//    }
 
     private ValueProvider<Zakr, String> vysledekGridValueProvider = zakr -> {
             BigDecimal vysledek = zakr.getVysledekByKurz();

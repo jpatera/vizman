@@ -38,7 +38,7 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
 
     private HorizontalLayout leftBarPart;
 
-    private TextField tarifffField;
+    private TextField tariffField;
 //    private DatePicker ymFromField;
     private TextField ymFromField;
     private TextField ymToField;
@@ -52,15 +52,18 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
 //    );
 
     private Binder<PersonWage> binder = new Binder<>();
+    private Registration binderChangeListener = null;
+
 //    private PersonWage currentItem;
 //    private PersonWage origItem;
     private Operation currentOperation;
     private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
 
-    private Registration binderChangeListener = null;
 
     private WageService wageService;
-    private Person person;
+//    private Person person;
+    private PersonWage wageBefore;
+    private PersonWage wageAfter;
 
 //    private final VerticalLayout roleGridContainer;
 //    private Grid<Role> roleTwinGrid;
@@ -76,18 +79,14 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
     public WageFormDialog(final WageService wageService) {
 //        super("800px", "600px", false, false, itemSaver, itemDeleter, false);
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
-        this.wageService = wageService;
         setItemNames(ItemType.WAGE);
+
+        this.wageService = wageService;
 
 //        getFormLayout().setResponsiveSteps(
 //                new FormLayout.ResponsiveStep("0", 1),
 //                new FormLayout.ResponsiveStep("10em", 2),
 //                new FormLayout.ResponsiveStep("12em", 3));
-
-//        this.klientService = klientService;
-
-//        tarifffField = new TextField("Sazba");
-//        ymFromField = new DatePicker("Od");
 
         getFormLayout().add(
             initTariffField()
@@ -95,18 +94,19 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
             , initYmFromField()
             , initYmToField()
         );
-
     }
 
     public void openDialog(
-            PersonWage wage, Person person, Operation operation
+            PersonWage wage, PersonWage wageBefore, PersonWage wageAfter, Person person, Operation operation
             , String titleItemNameText, String titleEndText
     ){
 
         this.currentOperation = operation;
-        this.person = person;
+//        this.person = person;
         setCurrentItem(wage);
         setOrigItem(wage);
+        this.wageBefore = wageBefore;
+        this.wageAfter = wageAfter;
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -119,7 +119,7 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
 //        pruhYmSelector.setValue(null);
 //        pruhYmSelector.setItems(calymYmList);
 
-        initWageDataAndControls(getCurrentItem(), currentOperation);
+        initDataAndControls(getCurrentItem(), currentOperation);
         this.open();
     }
 
@@ -159,8 +159,12 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
         );
     }
 
+    private void adjustControlsOperability(final boolean hasChanges) {
+        saveAndCloseButton.setEnabled(hasChanges);
+        revertButton.setEnabled(hasChanges);
+    }
 
-    private void initWageDataAndControls(final PersonWage item, final Operation operation) {
+    private void initDataAndControls(final PersonWage item, final Operation operation) {
 
         deactivateListeners();
 
@@ -193,11 +197,6 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
 //        saveButton.setEnabled(false);
         revertButton.setEnabled(false);
         deleteAndCloseButton.setEnabled(currentOperation.isDeleteEnabled() && canDeleteItem(getCurrentItem()));
-    }
-
-    private void adjustControlsOperability(final boolean hasChanges) {
-        saveAndCloseButton.setEnabled(hasChanges);
-        revertButton.setEnabled(hasChanges);
     }
 
 //    private Component initYmFromSelector() {
@@ -246,8 +245,13 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
 
         binder.forField(ymFromField)
                 .withNullRepresentation("")
-                .withValidator(ym -> (null != ym)
+                .withValidator(ymFrom -> (null != ymFrom)
                         ,"Platnost od musí být zadána")
+                .withValidator(ymFrom -> (null == wageBefore)
+                                || (null == wageBefore.getYmTo())
+                                || (null != ymFrom && ymFrom.compareTo(wageBefore.getYmTo().toString()) > 0)
+                        ,"Platnost OD nesmí být dřívější než platnost DO předchozího záznamu")
+
                 .withConverter(
                         new VzmFormatUtils.ValidatedIntegerYearMonthConverter())
                 .bind(PersonWage::getYmFrom, PersonWage::setYmFrom)
@@ -271,6 +275,16 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
                 .withNullRepresentation("")
 //                .withValidator(ym -> (null != ym)
 //                        ,"Platnost do musí být zadána")
+                .withValidator(ymTo -> (null != wageAfter) || (null == ymTo)
+                                || (null != ymTo && ymTo.compareTo(ymFromField.getValue()) > 0)
+//                                ((null == wageAfter) && (null == ym) || (null != ym && ym.compareTo(ymFromField.getValue())) > 0)
+                        ,"Platnost DO musí být buď prázdná nebo pozdější než platnost OD")
+                .withValidator(ymTo -> (null == wageAfter)
+                                || (null != ymTo && ymTo.compareTo(ymFromField.getValue()) > 0)
+                        ,"Platnost DO musí být pozdější než platnost OD")
+                .withValidator(ymTo -> (null == wageAfter)
+                                || (null != ymTo && ymTo.compareTo(wageAfter.getYmFrom().toString()) < 0)
+                        ,"Platnost DO nesmí být pozdější než platnost OD následujícího záznamu")
                 .withConverter(new VzmFormatUtils.ValidatedIntegerYearMonthConverter())
                 .bind(PersonWage::getYmTo, PersonWage::setYmTo);
 
@@ -283,16 +297,16 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
 
 
     private Component initTariffField() {
-        tarifffField = new TextField("Sazba [CZK/hod]");
-        tarifffField.setValueChangeMode(ValueChangeMode.EAGER);
-        binder.forField(tarifffField)
+        tariffField = new TextField("Sazba [CZK/hod]");
+        tariffField.setValueChangeMode(ValueChangeMode.EAGER);
+        binder.forField(tariffField)
                 .withNullRepresentation("")
                 .withValidator(tar -> (null != tar)
                         ,"Sazba musí být zadána")
                 .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
                 .bind(PersonWage::getTariff, PersonWage::setTariff);
 
-        return tarifffField;
+        return tariffField;
     }
 
 
@@ -342,7 +356,7 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
                     .withCaption("Zrušení sazby")
                     .withMessage(String.format("Zrušit sazbu ?"))
                     .withOkButton(() -> {
-                                if (deleteWage(getCurrentItem())) {
+                                if (deleteItem(getCurrentItem())) {
                                     closeDialog();
                                 }
                             }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT")
@@ -355,7 +369,7 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
         }
     }
 
-    private boolean deleteWage(PersonWage itemToDelete) {
+    private boolean deleteItem(PersonWage itemToDelete) {
         OperationResult lastOperResOrig = lastOperationResult;
         try {
             wageService.deleteWage(itemToDelete);
@@ -376,25 +390,6 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
 
     private boolean canDeleteItem(final PersonWage itemToDelete) {
         return true;
-    }
-
-    private boolean deleteItem(PersonWage itemToDelete) {
-//        String ckzfDel = String.format("%s / %s / %s", currentItem.getCkont(), currentItem.getCkz(), currentItem.getCfakt());
-//        OperationResult lastOperResOrig = lastOperationResult;
-        try {
-//            currentItemList.remove(itemToDelete);
-//            lastOperationResult = OperationResult.ITEM_DELETED;
-            return true;
-        } catch (VzmServiceException e) {
-//            this.lastOperationResult = lastOperResOrig;
-            ConfirmDialog
-                    .createWarning()
-                    .withCaption("Zrušení sazby.")
-                    .withMessage(String.format("Sazbu se nepodařilo zrušit."))
-                    .open()
-            ;
-            return false;
-        }
     }
 
     private void showSaveErrMessage() {
@@ -480,9 +475,10 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
             return;
         }
         try {
-            getCurrentItem().setPerson(person);
-            saveWage(getCurrentItem());
+            getCurrentItem().setPerson(getCurrentItem().getPerson());
             binder.writeBeanIfValid(getCurrentItem());
+            saveWage(getCurrentItem());
+            binder.readBean(getCurrentItem());
             if (closeAfterSave) {
                 closeDialog();
 //            } else {
@@ -503,12 +499,31 @@ public class WageFormDialog extends AbstractFormDialog<PersonWage> {
                     .open();
             return false;
         }
-        if (!wageService.hasValidDates(getCurrentItem(), person.getId())) {
-            setCurrentItem(getOrigItem());
+        if (!wageService.hasValidDates(getCurrentItem(), getCurrentItem().getId())) {
+//            setCurrentItem(getOrigItem());
             ConfirmDialog
                     .createWarning()
                     .withCaption("Editace mzdy")
                     .withMessage("Mzdu nelze uložit, zadaná platnost je již obsazena jinou mzdou.")
+                    .open();
+            return false;
+        }
+        if (null != wageBefore && null == wageBefore.getYmTo()
+                && wageBefore.getYmFrom().plusMonths(2).compareTo(getCurrentItem().getYmFrom()) > 0) {
+//            setCurrentItem(getOrigItem());
+            ConfirmDialog
+                    .createWarning()
+                    .withCaption("Editace mzdy")
+                    .withMessage("Mzdu nelze uložit, platnost OD musí být nejméně dva měsíce po předchozí platnosti OD.")
+                    .open();
+            return false;
+        }
+        if (null != wageAfter && null == getCurrentItem().getYmFrom()) {
+//            setCurrentItem(getOrigItem());
+            ConfirmDialog
+                    .createWarning()
+                    .withCaption("Editace mzdy")
+                    .withMessage("Mzdu nelze uložit, platnost DO může být prázdná jen u posledního záznamu.")
                     .open();
             return false;
         }

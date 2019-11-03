@@ -44,12 +44,12 @@ public class WageServiceImpl extends AbstractSortableService implements WageServ
 
     @Override
     @Transactional
-    public PersonWage saveWage(PersonWage personWageToSave, Operation oper) {
+    public PersonWage saveWage(PersonWage wageToSave, Operation oper) {
         try {
 
-            PersonWage lastWage = wageRepo.findPersonLastWage(personWageToSave.getPerson().getId());
-            PersonWage wageSaved = wageRepo.save(personWageToSave);
-            if (null != lastWage && null == lastWage.getYmTo()) {
+            PersonWage lastWage = wageRepo.findPersonLastWage(wageToSave.getPerson().getId());
+            PersonWage wageSaved = wageRepo.save(wageToSave);
+            if (null != lastWage && null != wageSaved && lastWage != wageSaved && null == lastWage.getYmTo()) {
                 lastWage.setYmTo(wageSaved.getYmFrom().minusMonths(1));
             }
             getLogger().info("{} saved: [operation: {}]"
@@ -57,19 +57,19 @@ public class WageServiceImpl extends AbstractSortableService implements WageServ
             return wageSaved;
         } catch (Exception e) {
             String errMsg = "Error while saving {} : [operation: {}]";
-            getLogger().error(errMsg, personWageToSave.getTyp().name(), oper.name(), e);
+            getLogger().error(errMsg, wageToSave.getTyp().name(), oper.name(), e);
             throw new VzmServiceException(errMsg);
         }
     }
 
     @Override
-    public boolean deleteWage(PersonWage wage) {
+    public boolean deleteWage(PersonWage wageToDelete) {
         try {
-            wageRepo.deleteById(wage.getId());
-            getLogger().info("{} deleted: for user ID {}", wage.getTyp().name(), wage.getPerson().getId());
+            wageRepo.deleteById(wageToDelete.getId());
+            getLogger().info("{} deleted: for user ID {}", wageToDelete.getTyp().name(), wageToDelete.getPerson().getId());
         } catch (Exception e) {
             String errMsg = "Error while deleting {} : for user ID {}";
-            getLogger().error(errMsg, wage.getTyp().name(), wage.getPerson().getId(), e);
+            getLogger().error(errMsg, wageToDelete.getTyp().name(), wageToDelete.getPerson().getId(), e);
             return false;
         }
         return true;

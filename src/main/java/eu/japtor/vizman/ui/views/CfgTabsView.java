@@ -29,7 +29,7 @@ import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.ExtendedPagedTabs;
-import eu.japtor.vizman.ui.forms.PersonEditorDialog;
+import eu.japtor.vizman.ui.forms.PersonFormDialog;
 import eu.japtor.vizman.ui.forms.CfgPropsForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.stefan.fullcalendar.Entry;
@@ -57,7 +57,7 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
     private final H3 cfgTabsHeader = new H3(TITLE_CFG);
 //    private final Grid<Person> grid = new Grid<>();
 
-    private PersonEditorDialog personEditForm;
+    private PersonFormDialog personEditForm;
     private FullCalendar cal = FullCalendarBuilder.create().build();
     private VerticalLayout curr = new VerticalLayout();
 
@@ -82,7 +82,7 @@ public class CfgTabsView extends VerticalLayout implements BeforeEnterObserver {
     public void init() {
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
 
-//        personEditForm = new PersonEditorDialog(
+//        personEditForm = new PersonFormDialog(
 //                this::savePerson, this::deletePerson, personService);
 //
 //        addSearchBar();

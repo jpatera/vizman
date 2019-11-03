@@ -390,6 +390,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
 //                .findFirst().orElse(null);
     }
 
+    // TODO: predelat do cache v calymRepo (viz tez DochMesServiceImpl)
     private  BigDecimal getFondFromCalymList(final YearMonth ym) {
         if (null == calymList) {
             return null;

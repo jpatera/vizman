@@ -218,7 +218,7 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
 
         kontGrid.setDataProvider(kontDataProvider);
 
-//        personEditForm = new PersonEditorDialog(
+//        personEditForm = new PersonFormDialog(
 //                this::savePerson, this::deletePerson, personService, roleService.fetchAllRoles(), passwordEncoder);
 
     }

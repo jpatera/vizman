@@ -2,9 +2,11 @@ package eu.japtor.vizman.backend.service;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
+import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.entity.PersonState;
 import eu.japtor.vizman.backend.repository.PersonRepo;
+import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
@@ -13,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
-public class PersonServiceImpl extends AbstractSortableService implements PersonService {
+public class PersonServiceImpl extends AbstractSortableService implements PersonService, HasLogger {
 
     private final PersonRepo personRepo;
     private static final List<QuerySortOrder> DEFAULT_SORT_ORDER =
@@ -57,13 +59,31 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
     }
 
     @Override
-    public Person savePerson(Person person) {
-        return personRepo.save(person);
+    public Person savePerson(Person personToSave, Operation oper) {
+        try {
+            Person personSaved = personRepo.save(personToSave);
+            getLogger().info("{} saved: [operation: {}]"
+                    , personSaved.getTyp().name(), oper.name());
+
+            return personSaved;
+        } catch (Exception e) {
+            String errMsg = "Error while saving {} : [operation: {}]";
+            getLogger().error(errMsg, personToSave.getTyp().name(), oper.name(), e);
+            throw new VzmServiceException(errMsg);
+        }
     }
 
     @Override
-    public void deletePerson(Person person) {
-        personRepo.delete(person);
+    public boolean deletePerson(Person personToDelete) {
+        try {
+            personRepo.delete(personToDelete);
+            getLogger().info("{} deleted: {}", personToDelete.getTyp().name(), personToDelete.getUsername());
+        } catch (Exception e) {
+            String errMsg = "Error while deleting {} : for user ID {}";
+            getLogger().error(errMsg, personToDelete.getTyp().name(), personToDelete.getUsername(), e);
+            return false;
+        }
+        return true;
     }
 
     /**

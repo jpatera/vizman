@@ -59,6 +59,7 @@ public class DochMesServiceImpl implements DochMesService, HasLogger {
         return dochMesRecs;
     }
 
+    // TODO: predelat do cache v calymRepo (viz tez PruhView)
     private  BigDecimal getFondFromCalymList(final YearMonth ym) {
         if (null == calymList) {
             return null;

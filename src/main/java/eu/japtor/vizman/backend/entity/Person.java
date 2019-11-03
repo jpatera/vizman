@@ -14,7 +14,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "PERSON")
-public class Person extends AbstractGenIdEntity {
+public class Person extends AbstractGenIdEntity implements HasItemType {
 
     public static final GrammarGender GENDER = GrammarGender.MASCULINE;
 //    public static final String NOMINATIVE_SINGULAR = "Uživatel";
@@ -23,6 +23,12 @@ public class Person extends AbstractGenIdEntity {
 //    public static final String GENITIVE_PLURAL = "Uživatelů";
 //    public static final String ACCUSATIVE_SINGULAR = "Uživatele";
 //    public static final String ACCUSATIVE_PLURAL = "Uživatele";
+
+    @Override
+    @Transient
+    public ItemType getTyp() {
+        return ItemType.PERSON;
+    }
 
     @Column(name="STATE")
     @Enumerated(EnumType.STRING)

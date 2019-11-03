@@ -3,6 +3,7 @@ package eu.japtor.vizman.backend.service;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.entity.PersonState;
+import eu.japtor.vizman.ui.components.Operation;
 
 import java.util.List;
 
@@ -10,9 +11,9 @@ public interface PersonService {
 
     Person fetchOne(Long id);
 
-    Person savePerson(Person person);
+    Person savePerson(Person person, Operation oper);
 
-    void deletePerson(Person person);
+    boolean deletePerson(Person person);
 
     Person getByUsername(String username);
 

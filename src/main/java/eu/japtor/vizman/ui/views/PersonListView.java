@@ -39,7 +39,8 @@ import eu.japtor.vizman.backend.service.WageService;
 import eu.japtor.vizman.backend.service.RoleService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.*;
-import eu.japtor.vizman.ui.forms.PersonEditorDialog;
+import eu.japtor.vizman.ui.forms.PersonFormDialog;
+import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -47,6 +48,7 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 
 import static eu.japtor.vizman.app.security.SecurityUtils.isWagesAccessGranted;
+import static eu.japtor.vizman.ui.components.OperationResult.NO_CHANGE;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
 //@Route(value = ROUTE_PERSON, layout = MainView.class)
@@ -59,7 +61,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 @UIScope    // Without this annotation browser refresh throws exception
 public class PersonListView extends VerticalLayout implements BeforeEnterObserver {
 
-    private PersonEditorDialog personEditForm;
+    private PersonFormDialog personFormDialog;
 //    private final SearchField searchField;
     private final Button newItemButton;
     private final Button reloadViewButton;
@@ -93,7 +95,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 //        );
 
         newItemButton = new NewItemButton("Nový uživatel",
-                event -> personEditForm.open(new Person(), Operation.ADD, "")
+                event -> personFormDialog.openDialog(new Person(), Operation.ADD)
         );
 
         reloadViewButton = new ReloadButton("Inicializovat tabulku",
@@ -164,21 +166,25 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 
         personGrid.setDataProvider(personDataProvider);
 
-        personEditForm = new PersonEditorDialog(
-                this::savePerson
-                , this::deletePerson
-                , personService
+        personFormDialog = new PersonFormDialog (
+                personService
                 , wageService
                 , roleService.fetchAllRoles()
                 , passwordEncoder
         );
+        personFormDialog.addOpenedChangeListener(event -> {
+            if (!event.isOpened()) {
+                finishPersonEdit((PersonFormDialog) event.getSource());
+            }
+        });
+
 //        initPersonGrid();
 
 //        updateGridContent();
 
-//        super(EntityUtil.getName(Person.class), personEditForm);
+//        super(EntityUtil.getName(Person.class), personFormDialog);
 //        this.presenter = presenter;
-//        personEditForm.setBinder(binder);
+//        personFormDialog.setBinder(binder);
 //        setupEventListeners();
     }
 
@@ -260,9 +266,9 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         return personGrid;
     }
 
+
     private Button buildEditBtn(Person person) {
-        Button editBtn = new GridItemEditBtn(event -> personEditForm.open(
-                person, Operation.EDIT, ""));
+        Button editBtn = new GridItemEditBtn(event -> personFormDialog.openDialog(person, Operation.EDIT));
         return editBtn;
     }
 
@@ -331,18 +337,52 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
 //        personDataProvider.refreshItem(personToRefresh);
     }
 
-
-    private void savePerson(Person person, Operation operation) {
-        Person newInstance = personService.savePerson(person);
-        personGrid.getDataProvider().refreshItem(newInstance);
-        Notification.show(
-                "Změny uživatele uloženy", 2000, Notification.Position.BOTTOM_END);
-    }
-
     private void deletePerson(Person person) {
         personService.deletePerson(person);
         personGrid.getDataCommunicator().getKeyMapper().removeAll();
         personGrid.getDataProvider().refreshAll();
         Notification.show("Uživatel zrušen.", 2000, Notification.Position.BOTTOM_END);
     }
+
+    void finishPersonEdit(PersonFormDialog personFormDialog) {
+        Person itemModified = personFormDialog.getCurrentItem(); // Modified, just added or just deleted
+        Operation oper = personFormDialog.getCurrentOperation();
+        OperationResult operResult = personFormDialog.getLastOperationResult();
+
+//        if (NO_CHANGE != operResult) {
+//            personChanged = true;
+//        }
+        Person itemOrig = personFormDialog.getOrigItem();
+
+        syncGridAfterPersonEdit(itemModified, oper, operResult, itemOrig);
+
+        if (OperationResult.ITEM_SAVED == operResult) {
+            Notification.show(String.format("Uživatel uložen")
+                    , 2500, Notification.Position.TOP_CENTER);
+
+        } else if (OperationResult.ITEM_DELETED == operResult) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Editace uživatele")
+                    .withMessage(String.format("Uživatel zrušen."))
+                    .open();
+        }
+    }
+
+    private void syncGridAfterPersonEdit(Person itemModified, Operation oper
+            , OperationResult operRes, Person itemOrig) {
+
+//        if (NO_CHANGE == operRes) {
+//            return;
+//        }
+
+//        Person person = personService.fetchOne(itemModified.getId());
+        personGrid.getDataCommunicator().getKeyMapper().removeAll();
+//        personGrid.setItems(person.getWages());
+        personGrid.getDataProvider().refreshAll();
+//        personWageGrid.select(personWageModified);
+    }
+
 }
+
+

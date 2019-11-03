@@ -451,7 +451,7 @@ public class ZakrListView extends VerticalLayout {
 //        zakrGrid.getDataCommunicator().getDataProvider().refreshAll();
 
 
-//        zakrGrid.rpHotovoGridValueProvider.apply(savedItem);
+//        zakrGrid.tariffGridValueProvider.apply(savedItem);
 //        zakrGrid.getDataProvider().refreshAll();
 //        zakrList = zakrService.fetchAllDescOrder();
 //        zakrGrid.setItems(zakrList);

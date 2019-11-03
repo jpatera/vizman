@@ -293,7 +293,7 @@ public class VzmFileUtils implements HasLogger {
                 return Stream.empty();
             }
             File[] files = parent.listFiles();
-            if (files.length == 0) {
+            if (null == files || files.length == 0) {
                 return Stream.empty();
             }
             return Stream.of(parent.listFiles())
