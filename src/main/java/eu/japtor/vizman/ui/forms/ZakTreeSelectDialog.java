@@ -21,12 +21,10 @@ import eu.japtor.vizman.backend.entity.KzTreeAware;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.entity.ZakBasic;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
-import eu.japtor.vizman.backend.repository.ZakRepo;
-import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Ribbon;
-import eu.japtor.vizman.ui.components.ZakBasicGrid;
+import eu.japtor.vizman.ui.components.ZakSimpleGrid;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -35,7 +33,6 @@ import org.springframework.context.annotation.Scope;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 
 @SpringComponent
@@ -197,7 +194,7 @@ public class ZakTreeSelectDialog extends Dialog {
         gridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
 
         gridContainer.add(initKzToolBar());
-        zakGrid = new ZakBasicGrid(true, null, null, false, Boolean.FALSE);
+        zakGrid = new ZakSimpleGrid(true, null, null, false, Boolean.FALSE);
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 //        gridContainer.add(initKzTreeGrid());

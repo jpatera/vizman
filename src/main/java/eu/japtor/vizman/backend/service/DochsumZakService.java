@@ -31,4 +31,6 @@ public interface DochsumZakService {
             , int pruhDayMax
             , List<PruhZak> pruhZaks
     );
+
+    void recalcMzdyForPerson(Long personId);
 }

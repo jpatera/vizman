@@ -17,11 +17,13 @@ package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.shared.communication.PushMode;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.ui.MainView;
@@ -47,7 +49,10 @@ public class ToolsTabsView extends VerticalLayout implements BeforeEnterObserver
 
 
     @Autowired
-    DirTreeView dirTreeView;
+    ToolsDirTreeView toolsDirTreeView;
+
+    @Autowired
+    ToolsMzdyView toolsMzdyView;
 
 
     @PostConstruct
@@ -61,8 +66,10 @@ public class ToolsTabsView extends VerticalLayout implements BeforeEnterObserver
 //        container.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         ExtendedPagedTabs toolsExtTabs = new ExtendedPagedTabs();
         Tab tabDirs = new Tab("Adresáře");
+        Tab tabMzdy = new Tab("Mzdy");
 
-        toolsExtTabs.add(dirTreeView, tabDirs);
+        toolsExtTabs.add(toolsDirTreeView, tabDirs);
+        toolsExtTabs.add(toolsMzdyView, tabMzdy);
 //        toolsExtTabs.add(curr, tabCurr);
 
 //        MemoryBuffer buffer = new MemoryBuffer();

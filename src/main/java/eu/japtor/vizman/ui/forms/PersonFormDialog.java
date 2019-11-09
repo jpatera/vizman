@@ -16,6 +16,7 @@ import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.entity.Role;
+import eu.japtor.vizman.backend.service.DochsumZakService;
 import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.service.VzmServiceException;
 import eu.japtor.vizman.backend.service.WageService;
@@ -71,6 +72,7 @@ public class PersonFormDialog extends AbstractFormDialog<Person> {
     private PersonWageGridDialog personWageGridDialog;
     private PersonService personService;
     private WageService wageService;
+    private DochsumZakService dochsumZakService;
 
     private Set<Role> rolesPool;
 
@@ -95,6 +97,7 @@ public class PersonFormDialog extends AbstractFormDialog<Person> {
 //                            PasswordEncoder passwordEncoder)
     public PersonFormDialog(PersonService personService,
                             WageService wageService,
+                            DochsumZakService dochsumZakService,
                             List<Role> allRoles,
                             PasswordEncoder passwordEncoder)
     {
@@ -105,10 +108,11 @@ public class PersonFormDialog extends AbstractFormDialog<Person> {
 
         this.personService = personService;
         this.wageService = wageService;
+        this.dochsumZakService = dochsumZakService;
         this.rolesPool = new HashSet<>(allRoles);
         this.passwordEncoder = passwordEncoder;
 
-        personWageGridDialog  = new PersonWageGridDialog(wageService, personService);
+        personWageGridDialog  = new PersonWageGridDialog(wageService, personService, dochsumZakService);
         personWageGridDialog.addOpenedChangeListener(event -> {
             if (!event.isOpened()) {
                 finishWageGridEdit();

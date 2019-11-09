@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class ZakBasicGrid extends Grid<ZakBasic> {
+public class ZakSimpleGrid extends Grid<ZakBasic> {
 
     // Zak Compact Grid field keys:
     public static final String KZCISLO_COL_KEY = "zak-bg-kzcislo";
@@ -51,7 +51,7 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
 
     HeaderRow filterRow;
 
-    public ZakBasicGrid(
+    public ZakSimpleGrid(
             boolean selectFieldVisible
             , Function<ZakBasic, Boolean> checkBoxEnabler
             , Consumer<Integer> selectionChanger
@@ -67,7 +67,9 @@ public class ZakBasicGrid extends Grid<ZakBasic> {
 //        Grid<Zak> zakGrid = new Grid<>();
         this.getStyle().set("marginTop", "0.5em");
         this.setColumnReorderingAllowed(true);
+        this.setMultiSort(false);
         this.setSelectionMode(Grid.SelectionMode.SINGLE);
+        this.setId("zak-simple-grid");  // .. same ID as is used in shared-styles grid's dom module
 
 //        zakGrid.getElement().addEventListener("keypress", e -> {
 //            JsonObject eventData = e.getEventData();

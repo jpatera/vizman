@@ -248,4 +248,11 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
         }
     }
 
+    @Override
+    @Transactional
+    public void recalcMzdyForPerson(Long personId) {
+        dochsumZakRepo.adjustSazbaByPerson(personId);
+        dochsumZakRepo.adjustMzdaByPerson(personId);
+    }
+
 }

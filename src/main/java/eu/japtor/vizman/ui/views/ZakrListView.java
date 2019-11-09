@@ -138,9 +138,9 @@ public class ZakrListView extends VerticalLayout {
 //    private Component buildInitGridToolBar() {
 //        initialSortOrder = Arrays.asList(
 //                new GridSortOrder(
-//                        zakrGrid.getColumnByKey(ZakBasicGrid.ROK_COL_KEY), SortDirection.DESCENDING)
+//                        zakrGrid.getColumnByKey(ZakSimpleGrid.ROK_COL_KEY), SortDirection.DESCENDING)
 //                , new GridSortOrder(
-//                        zakrGrid.getColumnByKey(ZakBasicGrid.CKZ_COL_KEY), SortDirection.DESCENDING)
+//                        zakrGrid.getColumnByKey(ZakSimpleGrid.CKZ_COL_KEY), SortDirection.DESCENDING)
 //        );
 //    }
 

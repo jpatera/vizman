@@ -290,8 +290,11 @@ public class VzmFormatUtils {
                 return Result.ok(null);
             }
             try {
+                if (str.length() != 7) {
+                    return Result.error(errorMessage);
+                }
                 int year = Integer.valueOf(str.substring(0, 4));
-                int month = Integer.valueOf(str.substring(5,7));
+                int month = Integer.valueOf(str.substring(5, 7));
                 if (year < 2000 || year >= 2100) {
                     return Result.error(errorMessage + " (rok musí být mezi 2000-2099)");
                 }

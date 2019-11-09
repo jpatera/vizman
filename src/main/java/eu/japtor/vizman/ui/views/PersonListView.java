@@ -24,7 +24,9 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -34,6 +36,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Person;
+import eu.japtor.vizman.backend.service.DochsumZakService;
 import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.service.WageService;
 import eu.japtor.vizman.backend.service.RoleService;
@@ -45,15 +48,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.PostConstruct;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static eu.japtor.vizman.app.security.SecurityUtils.isWagesAccessGranted;
-import static eu.japtor.vizman.ui.components.OperationResult.NO_CHANGE;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
-//@Route(value = ROUTE_PERSON, layout = MainView.class)
-//@PageTitle(PAGE_TITLE_PERSON)
-//@Tag(TAG_PERSON)
+
 @Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL
         , Perm.PERSON_BASIC_READ, Perm.PERSON_EXT_READ
 })
@@ -61,18 +63,24 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 @UIScope    // Without this annotation browser refresh throws exception
 public class PersonListView extends VerticalLayout implements BeforeEnterObserver {
 
+    private static final String RADIO_PERSON_VISIBLE = "Viditelní";
+    private static final String RADIO_PERSON_HIDDEN = "Skrytí";
+    private static final String RADIO_PERSON_ALL = "Všichni";
+    private RadioButtonGroup<String> hiddenFilterRadio;
+
     private PersonFormDialog personFormDialog;
-//    private final SearchField searchField;
     private final Button newItemButton;
     private final Button reloadViewButton;
     private Grid<Person> personGrid;
-
 
     @Autowired
     public PersonService personService;
 
     @Autowired
     public WageService wageService;
+
+    @Autowired
+    public DochsumZakService dochsumZakService;
 
     @Autowired
     public RoleService roleService;
@@ -169,6 +177,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         personFormDialog = new PersonFormDialog (
                 personService
                 , wageService
+                , dochsumZakService
                 , roleService.fetchAllRoles()
                 , passwordEncoder
         );
@@ -193,6 +202,60 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
         // Navigation first gos here, then to the beforeEnter of MainView
 //        System.out.println("###  ZaklListView.beforeEnter");
     }
+
+// ----------------------------------
+
+    private Component initArchFilterRadio() {
+        hiddenFilterRadio = new RadioButtonGroup<>();
+        hiddenFilterRadio.setItems(RADIO_PERSON_VISIBLE, RADIO_PERSON_HIDDEN, RADIO_PERSON_ALL);
+        hiddenFilterRadio.getStyle().set("alignItems", "center");
+        hiddenFilterRadio.getStyle().set("theme", "small");
+//        hiddenFilterRadio.addValueChangeListener(event -> loadViewContent());
+        return hiddenFilterRadio;
+    }
+
+//    private void loadViewContent() {
+//        loadGridDataAndRebuildFilterFields();
+//        personGrid.initFilterValues();
+//        personGrid.doFilter();
+//        personGrid.getDataProvider().refreshAll();
+//    }
+//
+//    private void loadGridDataAndRebuildFilterFields() {
+//        personList = personRepo.findAllByOrderByCkontDescCzakDesc();
+//        personGrid.setItems(persList);
+//        personGrid.setRokFilterItems(persList.stream()
+//                .filter(z -> null != z.getRok())
+//                .map(Person::getRok)
+//                .distinct().collect(Collectors.toCollection(LinkedList::new))
+//        );
+//        personGrid.setSkupinaFilterItems(persList.stream()
+//                .map(Person::getSkupina)
+//                .filter(s -> null != s)
+//                .distinct().collect(Collectors.toCollection(LinkedList::new))
+//        );
+//        personGrid.setHiddenFilterItems(persList.stream()
+//                .map(Person::getHidden)
+//                .filter(a -> null != a)
+//                .distinct().collect(Collectors.toCollection(LinkedList::new))
+//        );
+//    }
+//
+//    public void initFilterValues() {
+//        ((ListDataProvider<Person>) this.getDataProvider()).clearFilters();
+//        if (null == this.initFilterArchValue) {
+//            archFilterField.clear();
+//        } else {
+//            archFilterField.setValue(this.initFilterArchValue);
+//        }
+//        rokFilterField.clear();
+//        skupinaFilterField.clear();
+//        kzCisloFilterField.clear();
+//        kzTextFilterField.clear();
+//        objednatelFilterField.clear();
+//    }
+
+// ----------------------------------
 
     private VerticalLayout buildGridContainer() {
         VerticalLayout gridContainer = new VerticalLayout();

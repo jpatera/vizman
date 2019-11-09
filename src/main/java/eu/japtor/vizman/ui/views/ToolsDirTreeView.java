@@ -65,7 +65,7 @@ import static eu.japtor.vizman.backend.utils.VzmFormatUtils.vzmFileIconStyleProv
 })
 @SpringComponent
 @UIScope    // Without this annotation browser refresh throws exception
-public class DirTreeView extends VerticalLayout  implements HasLogger {
+public class ToolsDirTreeView extends VerticalLayout  implements HasLogger {
 
     private static final String RADIO_DIRS_EXISTING = "Existující";
     private static final String RADIO_DIRS_MISSING = "Chybějící";
@@ -90,7 +90,7 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
 
 
     @Autowired
-    public DirTreeView() {
+    public ToolsDirTreeView() {
         initView();
     }
 
@@ -116,10 +116,10 @@ public class DirTreeView extends VerticalLayout  implements HasLogger {
 
         this.add(buildGridContainer());
         VzmFileUtils.VzmFile rootFile = new VzmFileUtils.VzmFile(cfgPropsCache.getDocRootServer(), true, VzmFolderType.ROOT, 0);
-        folderGrid.setDataProvider(new FileSystemDataProvider(rootFile));
+//        folderGrid.setDataProvider(new FileSystemDataProvider(rootFile));
 
-        dirFilterRadio.addValueChangeListener(event -> updateFolderViewContent());
         dirFilterRadio.setValue(RADIO_DIRS_EXISTING);
+        dirFilterRadio.addValueChangeListener(event -> updateFolderViewContent());
     }
 
 

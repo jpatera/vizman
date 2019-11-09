@@ -13,6 +13,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.service.DochsumZakService;
 import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.service.WageService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
@@ -71,12 +72,14 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
 
     private WageService wageService;
     private PersonService personService;
+    private DochsumZakService dochsumZakService;
 //    private CfgPropsCache cfgPropsCache;
 
 
     public PersonWageGridDialog(
             WageService wageService
             , PersonService personService
+            , DochsumZakService dochsumZakService
 //            , CfgPropsCache cfgPropsCache
     ) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
@@ -85,6 +88,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
 
         this.personService = personService;
         this.wageService = wageService;
+        this.dochsumZakService = dochsumZakService;
 //        this.cfgPropsCache = cfgPropsCache;
 
 
@@ -202,6 +206,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
     }
 
     private void closeDialog() {
+        dochsumZakService.recalcMzdyForPerson(person.getId());
         this.close();
     }
 

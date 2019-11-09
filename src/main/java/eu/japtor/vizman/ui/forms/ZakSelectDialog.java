@@ -28,7 +28,7 @@ public class ZakSelectDialog extends Dialog {
 
     private List<Long> pruhZakIdList = new ArrayList<>();
     private List<ZakBasic> zakBasicList;
-    private ZakBasicGrid zakGrid;
+    private ZakSimpleGrid zakGrid;
 
     VerticalLayout mainPanel;
     HorizontalLayout buttonBar;
@@ -144,7 +144,7 @@ public class ZakSelectDialog extends Dialog {
     }
 
     private Component initZakGrid(Consumer<Integer> selectionChanger) {
-        zakGrid = new ZakBasicGrid(true, checkBoxEnabler, selectionChanger, false, Boolean.FALSE);
+        zakGrid = new ZakSimpleGrid(true, checkBoxEnabler, selectionChanger, false, Boolean.FALSE);
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.NONE);
         return zakGrid;

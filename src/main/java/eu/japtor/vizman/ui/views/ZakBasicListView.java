@@ -34,7 +34,7 @@ import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.ReloadButton;
 import eu.japtor.vizman.ui.components.Ribbon;
 import eu.japtor.vizman.ui.components.GridTitle;
-import eu.japtor.vizman.ui.components.ZakBasicGrid;
+import eu.japtor.vizman.ui.components.ZakSimpleGrid;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -54,17 +54,18 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 // ###***
 public class ZakBasicListView extends VerticalLayout {
 
-    private List<ZakBasic> zakList;
-    private ZakBasicGrid zakGrid;
-    private List<GridSortOrder<ZakBasic>> initialSortOrder;
-
     private static final String RADIO_KONT_ACTIVE = "Aktivní";
     private static final String RADIO_KONT_ARCH = "Archivované";
     private static final String RADIO_KONT_ALL = "Všechny";
     private RadioButtonGroup<String> archFilterRadio;
 
+    private List<ZakBasic> zakList;
+    private ZakSimpleGrid zakGrid;
+    private List<GridSortOrder<ZakBasic>> initialSortOrder;
+
     @Autowired
     public ZakBasicRepo zakBasicRepo;
+
 
     public ZakBasicListView() {
         initView();
@@ -83,7 +84,7 @@ public class ZakBasicListView extends VerticalLayout {
 
     @PostConstruct
     public void postInit() {
-        loadInitialViewContent();
+        loadViewContent();
         // TODO: inital sort order markers
         //        zakGrid.sort(initialSortOrder);
         //        UI.getCurrent().getPage().executeJavaScript("document.querySelectorAll(\"vaadin-grid-sorter\")[1].click()");
@@ -93,9 +94,9 @@ public class ZakBasicListView extends VerticalLayout {
 //    private Component buildInitinitGridToolBar() {
 //        initialSortOrder = Arrays.asList(
 //                new GridSortOrder(
-//                        zakGrid.getColumnByKey(ZakBasicGrid.ROK_COL_KEY), SortDirection.DESCENDING)
+//                        zakGrid.getColumnByKey(ZakSimpleGrid.ROK_COL_KEY), SortDirection.DESCENDING)
 //                , new GridSortOrder(
-//                        zakGrid.getColumnByKey(ZakBasicGrid.CKZ_COL_KEY), SortDirection.DESCENDING)
+//                        zakGrid.getColumnByKey(ZakSimpleGrid.CKZ_COL_KEY), SortDirection.DESCENDING)
 //        );
 //    }
 
@@ -115,7 +116,7 @@ public class ZakBasicListView extends VerticalLayout {
         titleComponent.add(
                 new GridTitle(ItemNames.getNomP(ItemType.ZAK))
                 , new Ribbon()
-                , new ReloadButton(event -> loadInitialViewContent())
+                , new ReloadButton(event -> loadViewContent())
         );
 
         gridToolBar.add(
@@ -133,7 +134,7 @@ public class ZakBasicListView extends VerticalLayout {
 //        buttonShowArchive.addValueChangeListener(event -> setArchiveFilter(event));
         archFilterRadio.getStyle().set("alignItems", "center");
         archFilterRadio.getStyle().set("theme", "small");
-        archFilterRadio.addValueChangeListener(event -> loadInitialViewContent());
+        archFilterRadio.addValueChangeListener(event -> loadViewContent());
         return archFilterRadio;
     }
 
@@ -152,7 +153,7 @@ public class ZakBasicListView extends VerticalLayout {
 
 
     private Component initZakGrid() {
-        zakGrid = new ZakBasicGrid(false, null, null,true, null);
+        zakGrid = new ZakSimpleGrid(false, null, null,true, null);
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         return zakGrid;
@@ -170,7 +171,7 @@ public class ZakBasicListView extends VerticalLayout {
 //        }
 //    }
 
-    private void loadInitialViewContent() {
+    private void loadViewContent() {
         loadGridDataAndRebuildFilterFields();
         zakGrid.initFilterValues();
         zakGrid.doFilter();
