@@ -193,12 +193,12 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
 //                            query.getSortOrders());
 //                    return persons.stream();
 //                },
-//                query -> (int) personService.countByFilter(query.getFilter().orElse(null))
+//                query -> (int) personService.countBySearchFilter(query.getFilter().orElse(null))
 //        );
 //
-//        ConfigurableFilterDataProvider<Person, Void, String> personDataProvider = personDataProv.withConfigurableFilter();
+//        ConfigurableFilterDataProvider<Person, Void, String> filterawarePersonDataProvider = personDataProv.withConfigurableFilter();
 //
-//        personGrid.setDataProvider(personDataProvider);
+//        personGrid.setDataProvider(filterawarePersonDataProvider);
 //
 
 
@@ -242,7 +242,7 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
     }
 
     private void updateGridContent() {
-//        personDataProvider.refreshAll();
+//        filterawarePersonDataProvider.refreshAll();
 //        grid.setItems(service.findAll())
 
 //        personGrid.getDataProvider().fetch();
@@ -254,25 +254,25 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
 
 //        List<Person> personList = personService.fetchBySearchFilter(searchField.getStringValue());
 
-//        ListDataProvider<Person> personDataProvider =
+//        ListDataProvider<Person> filterawarePersonDataProvider =
 //                DataProvider.ofCollection(personService.fetchBySearchFilter(searchField.getStringValue()));
 //
-//        personDataProvider.setSortOrder(Person::getUsername,
+//        filterawarePersonDataProvider.setSortOrder(Person::getUsername,
 //                SortDirection.ASCENDING);
 
 //        personGrid.setItems(personList);
 //        personGrid.setDataProvider(filteredDataProvider);
 //        personGrid.setDataProvider(SpringDataProviderBuilder.forRepository(personRepo));
-//        personGrid.setDataProvider(personDataProvider);
+//        personGrid.setDataProvider(filterawarePersonDataProvider);
     }
 
 
     private void reloadView() {
-//        personDataProvider.clearFilters();
-//        personDataProvider.refreshAll();
+//        filterawarePersonDataProvider.clearFilters();
+//        filterawarePersonDataProvider.refreshAll();
         roleGrid.getDataProvider().refreshAll();
 
-        //        personDataProvider.refreshItem(personToRefresh);
+        //        filterawarePersonDataProvider.refreshItem(personToRefresh);
     }
 
 

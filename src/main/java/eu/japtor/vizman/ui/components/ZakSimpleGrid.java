@@ -35,7 +35,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
 //    Grid<Zak> zakGrid;
 
     TextField kzCisloFilterField;
-    Select<Boolean> archFilterField;
+    FilterSelectionField<Boolean> archFilterField;
     Select<Integer> rokFilterField;
     Select<String> skupinaFilterField;
     TextField objednatelFilterField;
@@ -56,8 +56,8 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
             , Function<ZakBasic, Boolean> checkBoxEnabler
             , Consumer<Integer> selectionChanger
             , boolean archFieldVisible
-            , Boolean initFilterArchValue) {
-
+            , Boolean initFilterArchValue
+    ) {
         this.initFilterArchValue = initFilterArchValue;
         this.checkBoxEnabler = checkBoxEnabler;
         this.archFieldVisible = archFieldVisible;
@@ -158,7 +158,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
 
         filterRow = this.appendHeaderRow();
 
-        archFilterField = buildSelectionFilterField();
+        archFilterField = buildArchFilterField();
 //        archFilterField.setItemLabelGenerator(this::archFilterLabelGenerator);
         archFilterField.setTextRenderer(this::archFilterLabelGenerator);
         filterRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
@@ -228,6 +228,12 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         return selectFilterField;
     }
 
+    private <T> FilterSelectionField buildArchFilterField() {
+        archFilterField = new FilterSelectionField<>();
+        archFilterField.addValueChangeListener(event -> doFilter());
+        return archFilterField;
+    }
+
     private String archFilterLabelGenerator(Boolean arch) {
         if  (null == arch) {
             return "Vše";
@@ -255,7 +261,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         );
     }
 
-    public void initFilterValues() {
+    public void setInitialFilterValues() {
         ((ListDataProvider<ZakBasic>) this.getDataProvider()).clearFilters();
         if (null == this.initFilterArchValue) {
             archFilterField.clear();
@@ -347,7 +353,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     });
 
     public void setArchFilterItems(final List<Boolean> archItems) {
-        archFilterField = buildSelectionFilterField();
+        archFilterField = buildArchFilterField();
         filterRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
                 .setComponent(archFilterField);
         archFilterField.setItems(archItems);

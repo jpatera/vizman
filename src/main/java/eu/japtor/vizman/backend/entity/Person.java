@@ -59,7 +59,7 @@ public class Person extends AbstractGenIdEntity implements HasItemType {
     private LocalDate vystup;
 
     @Column(name="SAZBA")
-    private BigDecimal sazba = BigDecimal.ZERO;
+    private BigDecimal sazba;
 
     @OneToMany(mappedBy = "person",
             fetch = FetchType.EAGER, cascade = CascadeType.REFRESH, orphanRemoval = false)
@@ -104,6 +104,19 @@ public class Person extends AbstractGenIdEntity implements HasItemType {
 
     public Person() {
         roles = new HashSet<>();
+    }
+
+    public static Person getEmptyInstance() {
+        Person p = new Person();
+        p.setState(null);
+        p.setHidden(null);
+        p.setLoginEnabled(null);
+        p.setUsername(null);
+        p.setPassword(null);
+        p.setJmeno(null);
+        p.setPrijmeni(null);
+        p.setWages(null);
+        return p;
     }
 
     public PersonState getState() {

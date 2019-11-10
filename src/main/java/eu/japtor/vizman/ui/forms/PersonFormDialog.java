@@ -2,6 +2,7 @@ package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -60,6 +61,7 @@ public class PersonFormDialog extends AbstractFormDialog<Person> {
     private TextField jmenoField;
     private TextField prijmeniField;
 
+    private Checkbox hiddenField;
     private TextField sazbaCurrentField;
     private TextField ymFromCurrentField;
     private TextField blindSazbaCurrentField;
@@ -139,7 +141,9 @@ public class PersonFormDialog extends AbstractFormDialog<Person> {
 //                new FormLayout.ResponsiveStep("12em", 3));
 
         getFormLayout().add (
-                initUsernameField()
+                initHiddenField()
+                , new Span("")
+                , initUsernameField()
                 , initPasswordField()
                 , initJmenoField()
                 , initPrijmeniField()
@@ -341,14 +345,20 @@ public class PersonFormDialog extends AbstractFormDialog<Person> {
 //        roleTwinGrid.addColumn(Role::getDescription).setHeader("Popis").setWidth("8em").setResizable(true);
 //    }
 
-//    private void addStatusField() {
-//        statusField.setDataProvider(DataProvider.ofItems(PersonState.values()));
-//        getFormLayout().add(statusField);
-//        getBinder().forField(statusField)
-////                .withConverter(
-////                        new StringToIntegerConverter("Must be a number"))
-//                .bind(Person::getStatus, Person::setStatus);
-//    }
+    private Checkbox initHiddenField() {
+        hiddenField = new Checkbox("Skrytý");
+        binder.forField(hiddenField)
+//                .withConverter(Boolean::trim, String::trim)
+//                .withValidator(new StringLengthValidator(
+//                        "Uživatelské jméno musí obsahovat aspoň 3 znamky",
+//                        3, null))
+//                .withValidator(
+//                        username -> (currentOperation != Operation.ADD) ?
+//                                true : personService.getByUsername(username) == null,
+//                        "Uživatel s tímto jménem již existuje, zvol jiné jméno")
+                .bind(Person::getHidden, Person::setHidden);
+        return hiddenField;
+    }
 
     private Component initUsernameField() {
         usernameField = new TextField("Přihlašovací jméno");

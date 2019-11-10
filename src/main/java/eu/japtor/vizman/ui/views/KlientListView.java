@@ -104,7 +104,7 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
     @PostConstruct
     public void init() {
 
-////        DataProvider<Person, Person> personDataProvider = DataProvider.fromFilteringCallbacks(
+////        DataProvider<Person, Person> filterawarePersonDataProvider = DataProvider.fromFilteringCallbacks(
 //        DataProvider<Klient, String> klientDataProvider = DataProvider.fromFilteringCallbacks(
 //                query -> {
 //                    query.getOffset();
@@ -122,7 +122,7 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
 ////                            .take(query.getLimit())
 ////                    query.getFilter().orElse(null),
 //                },
-//                query -> (int) klientService.countByFilter(query.getFilter().orElse(null))
+//                query -> (int) klientService.countBySearchFilter(query.getFilter().orElse(null))
 //        );
 // ------------------------------
 
@@ -222,7 +222,11 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
         toolBarItem.setDefaultVerticalComponentAlignment(Alignment.CENTER);
 
         Ribbon ribbon = new Ribbon();
-        viewToolBar.add(viewTitle, ribbon, toolBarItem);
+        viewToolBar.add(
+                viewTitle
+                , ribbon
+                , toolBarItem
+        );
         viewToolBar.expand(ribbon);
 
         return viewToolBar;

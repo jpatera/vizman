@@ -19,9 +19,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.progressbar.ProgressBar;
-import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.component.progressbar.ProgressBarVariant;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.HasLogger;
@@ -53,6 +53,7 @@ public class ToolsMzdyView extends VerticalLayout  implements HasLogger {
 //    private RadioButtonGroup<String> dirFilterRadio;
 
     ProgressBar recalcProgressBar;
+    TextField messageField;
 
 
     @Autowired
@@ -88,23 +89,26 @@ public class ToolsMzdyView extends VerticalLayout  implements HasLogger {
 
     private VerticalLayout buildMonitorContainer() {
         VerticalLayout monitorContainer = new VerticalLayout();
-        monitorContainer.setClassName("control-container");
+        monitorContainer.setClassName("monitor-container");
         monitorContainer.getStyle().set("marginTop", "0.5em");
         monitorContainer.setAlignItems(Alignment.STRETCH);
 
         monitorContainer.add(buildControlToolBar());
-        monitorContainer.add(initRecalcProgressBar());
+//        HorizontalLayout progressContainer = new HorizontalLayout();
+//        progressContainer.add(
+//                initMzdyRecalcButton()
+//                , initRecalcProgressBar()
+//                , initMessageField()
+//        );
+        monitorContainer.add(
+//                progressContainer
+                initMzdyRecalcButton()
+                , initRecalcProgressBar()
+                , initMessageField()
+
+        );
         return monitorContainer;
     }
-
-    private Component initRecalcProgressBar() {
-        recalcProgressBar = new ProgressBar(0, 100, 0);
-        recalcProgressBar.setHeight("30px");
-        recalcProgressBar.setWidth("300px");
-        recalcProgressBar.setId("mzdy-recalc-progress-bar");
-        return recalcProgressBar;
-    }
-
 
     private Component buildControlToolBar() {
 
@@ -125,13 +129,13 @@ public class ToolsMzdyView extends VerticalLayout  implements HasLogger {
         titleComponent.add(
                 new GridTitle("PŘEPOČET MEZD")
                 , new Ribbon()
-                , initReloadButton()
+//                , initReloadButton()
         );
 
         controlToolBar.add(
                 titleComponent
-                , new Ribbon()
-                , initMzdyRecalcButton()
+//                , new Ribbon()
+//                , initMzdyRecalcButton()
         );
         return controlToolBar;
     }
@@ -157,7 +161,25 @@ public class ToolsMzdyView extends VerticalLayout  implements HasLogger {
         mzdyRecalcButton = new Button("Přepočítat mzdy dle mzdových tabulek", event -> {
             recalcMzdyForPersons();
         });
+        mzdyRecalcButton.getElement().setAttribute("theme", "primary");
+        mzdyRecalcButton.setWidth("400px");
         return mzdyRecalcButton;
+    }
+
+    private Component initRecalcProgressBar() {
+        recalcProgressBar = new ProgressBar(0, 100, 0);
+        recalcProgressBar.setHeight("30px");
+        recalcProgressBar.setWidth("400px");
+        recalcProgressBar.setId("mzdy-recalc-progress-bar");
+        recalcProgressBar.addThemeVariants(ProgressBarVariant.LUMO_SUCCESS);
+        return recalcProgressBar;
+    }
+
+    private Component initMessageField() {
+        messageField = new TextField("Přepočítává se: ");
+        messageField.setWidth("400px");
+        messageField.setId("mzdy-recalc-message-field");
+        return messageField;
     }
 
     private void recalcMzdyForPersons() {
@@ -165,12 +187,17 @@ public class ToolsMzdyView extends VerticalLayout  implements HasLogger {
         int personCount = persons.size();
         int personNum = 1;
         double barMax = recalcProgressBar.getMax();
+        mzdyRecalcButton.setEnabled(false);
         for (Person person : persons) {
+            messageField.setValue(person.getPrijmeni());
             recalcProgressBar.setValue(
                     Math.min(barMax, personNum * barMax / personCount));
             this.getUI().ifPresent(ui -> ui.push());
             dochsumZakService.recalcMzdyForPerson(person.getId());
             personNum++;
         }
+        recalcProgressBar.setValue(0);
+        messageField.setValue("PŘEPOČET DOKONČEN");
+        mzdyRecalcButton.setEnabled(true);
     }
 }

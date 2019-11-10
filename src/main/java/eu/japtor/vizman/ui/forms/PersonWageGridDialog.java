@@ -18,6 +18,7 @@ import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.service.WageService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.*;
+import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 
 import java.time.YearMonth;
@@ -35,17 +36,15 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
 
     public static final String WAGE_EDIT_COL_KEY = "wage-edit-col-key";
 
-//    private final static String DELETE_STR = "Zrušit";
-//    private final static String REVERT_STR = "Vrátit změny";
-//    private final static String REVERT_AND_CLOSE_STR = "Zpět";
-//    private final static String SAVE_AND_CLOSE_STR = "Uložit a zavřít";
     private final static String CLOSE_STR = "Zavřít";
+    private final static String CLOSE_AND_RECALC_STR = "Zavřít a přepočítat";
 
 //    private Button revertButton;
 //    private Button saveAndCloseButton;
 //    private Button revertAndCloseButton;
 //    private Button deleteAndCloseButton;
     private Button closeButton;
+    private Button closeAndRecalcButton;
     private HorizontalLayout leftBarPart;
     private HorizontalLayout rightBarPart;
 
@@ -205,9 +204,25 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
         this.open();
     }
 
+
     private void closeDialog() {
-        dochsumZakService.recalcMzdyForPerson(person.getId());
-        this.close();
+        ConfirmDialog.createInfo()
+                .withCaption("Přepočítání mezd")
+                .withMessage("Budou nastaveny saby v proužkách a přepočítány mzdy podle aktuální tabulky.")
+                .withOkButton(() -> {
+                        dochsumZakService.recalcMzdyForPerson(person.getId());
+                        this.close();
+                    }
+                )
+                .open()
+//    }, ButtonOption.focus(), ButtonOption.caption("ZRUŠIT"))
+//            .withCancelButton(ButtonOption.caption("ZPĚT"))
+//            .open()
+
+        ;
+//        return;
+//        dochsumZakService.recalcMzdyForPerson(person.getId());
+//        this.close();
     }
 
     private void initDataAndControls() {
@@ -453,8 +468,13 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
 
         closeButton = new Button(CLOSE_STR);
         closeButton.setAutofocus(true);
-        closeButton.getElement().setAttribute("theme", "primary");
-        closeButton.addClickListener(e -> saveClicked(true));
+        closeButton.getElement().setAttribute("theme", "secondary");
+        closeButton.addClickListener(e -> closeClicked(true));
+
+        closeAndRecalcButton = new Button(CLOSE_AND_RECALC_STR);
+        closeAndRecalcButton.setAutofocus(true);
+        closeAndRecalcButton.getElement().setAttribute("theme", "primary");
+        closeAndRecalcButton.addClickListener(e -> closeAndRecalcClicked(true));
 
 //        saveAndCloseButton = new Button(SAVE_AND_CLOSE_STR);
 //        saveAndCloseButton.setAutofocus(true);
@@ -487,8 +507,8 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
         rightBarPart = new HorizontalLayout();
         rightBarPart.setSpacing(true);
         rightBarPart.add(
-                closeButton
-//                , revertAndCloseButton
+                closeAndRecalcButton
+                , closeButton
         );
 
 //        buttonBar.getStyle().set("margin-top", "0.2em");
@@ -515,20 +535,16 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
 //        }
 //    }
 
-    private void saveClicked(boolean closeAfterSave) {
-//        if (!isWageListValid()) {
-//            return;
-//        }
-//        try {
-////            currentItem = saveFakt(currentItem);
-            if (closeAfterSave) {
-                closeDialog();
-////            } else {
-////                initFaktDataAndControls(currentItem, currentOperation);
-            }
-//        } catch (VzmServiceException e) {
-//            showSaveErrMessage();
-//        }
+    private void closeClicked(boolean closeAfterSave) {
+        if (closeAfterSave) {
+            this.close();
+        }
+    }
+
+    private void closeAndRecalcClicked(boolean closeAfterSave) {
+        if (closeAfterSave) {
+            closeDialog();
+        }
     }
 
 //    private void deleteClicked() {

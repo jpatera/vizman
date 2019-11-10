@@ -182,7 +182,7 @@ public class ZakSelectDialog extends Dialog {
     private void updateViewContent() {
         zakBasicList = zakBasicRepo.findAllByOrderByCkontDescCzakDesc();
         zakGrid.populateGridDataAndRebuildFilterFields(zakBasicList);
-        zakGrid.initFilterValues();
+        zakGrid.setInitialFilterValues();
         zakGrid.doFilter();
         zakGrid.setSelCount(0);
         addZaksButton.setEnabled(zakGrid.getSelCount() > 0);

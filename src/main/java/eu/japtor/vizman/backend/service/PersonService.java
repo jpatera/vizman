@@ -25,5 +25,35 @@ public interface PersonService {
 
     List<Person> fetchBySearchFilter(String serachString, List<QuerySortOrder> sortOrders);
 
-    long countByFilter(String filter);
+    List<Person> fetchByPersonFilter(PersonFilter personFilter, List<QuerySortOrder> sortOrders);
+
+    long countBySearchFilter(String searchFilter);
+
+    long countByPersonFilter(PersonFilter personFilter);
+
+    class PersonFilter {
+        Boolean hidden;
+        String username;
+
+        public PersonFilter(Boolean hidden, String username) {
+            this.hidden = hidden;
+            this.username = username;
+        }
+
+        public Boolean getHidden() {
+            return hidden;
+        }
+
+        public void setHidden(Boolean hidden) {
+            this.hidden = hidden;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+    }
 }

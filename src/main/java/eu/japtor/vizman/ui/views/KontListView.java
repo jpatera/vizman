@@ -191,7 +191,7 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
 ////                            .take(query.getLimit())
 ////                    query.getFilter().orElse(null),
 //                },
-//                query -> (int) kontService.countByFilter(query.getFilter().orElse(null))
+//                query -> (int) kontService.countBySearchFilter(query.getFilter().orElse(null))
 //        );
 
         kontDataProvider = new ListDataProvider<>((Collection<Kont>) kontService.fetchAll());
@@ -213,7 +213,7 @@ public class KontListView extends VerticalLayout implements BeforeEnterObserver 
 ////                            .take(query.getLimit())
 ////                    query.getFilter().orElse(null),
 //                },
-//                query -> (int) kontService.countByFilter(query.getFilter().orElse(null))
+//                query -> (int) kontService.countBySearchFilter(query.getFilter().orElse(null))
 //        );
 
         kontGrid.setDataProvider(kontDataProvider);

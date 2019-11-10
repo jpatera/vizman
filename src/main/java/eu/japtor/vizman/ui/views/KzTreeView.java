@@ -1101,7 +1101,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 ////                            .take(query.getLimit())
 ////                    query.getFilter().orElse(null),
 //                },
-//                query -> (int) kontService.countByFilter(query.getFilter().orElse(null))
+//                query -> (int) kontService.countBySearchFilter(query.getFilter().orElse(null))
 //        );
 
 
@@ -1127,7 +1127,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 ////                            .take(query.getLimit())
 ////                    query.getFilter().orElse(null),
 //                },
-//                query -> (int) kontService.countByFilter(query.getFilter().orElse(null))
+//                query -> (int) kontService.countBySearchFilter(query.getFilter().orElse(null))
 //        );
 
 //        treeGrid.setDataProvider(kontDataProvider);
@@ -1560,7 +1560,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //            kzTreeGrid.getSelectionModel().select(itemForSelection);
 //        }
 
-//        kzTreeGrid.initFilterValues();
+//        kzTreeGrid.setInitialFilterValues();
 //        kzTreeGrid.doFilter();
 //        kzTreeGrid.getDataProvider().refreshAll();
 //    }

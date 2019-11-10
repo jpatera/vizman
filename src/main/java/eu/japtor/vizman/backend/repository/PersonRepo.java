@@ -4,12 +4,13 @@ import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.entity.PersonState;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.QueryByExampleExecutor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Transactional(readOnly = true)
-public interface PersonRepo extends JpaRepository<Person, Long>, PersonRepoCustom {
+public interface PersonRepo extends JpaRepository<Person, Long>, QueryByExampleExecutor<Person>, PersonRepoCustom {
 
         Person findTopByUsernameIgnoreCase(String username);
 

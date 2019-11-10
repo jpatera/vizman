@@ -22,5 +22,5 @@ public interface WageService {
 
 //    long countAll();
 
-//    long countByFilter(String filter);
+//    long countBySearchFilter(String filter);
 }

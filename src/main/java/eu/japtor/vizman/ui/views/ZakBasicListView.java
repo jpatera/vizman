@@ -50,8 +50,6 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
         Perm.ZAK_BASIC_READ, Perm.ZAK_BASIC_MODIFY,
         Perm.ZAK_EXT_READ, Perm.ZAK_EXT_MODIFY
 })
-//public class ZakEvalListView extends Div implements BeforeEnterObserver {
-// ###***
 public class ZakBasicListView extends VerticalLayout {
 
     private static final String RADIO_KONT_ACTIVE = "Aktivní";
@@ -62,6 +60,7 @@ public class ZakBasicListView extends VerticalLayout {
     private List<ZakBasic> zakList;
     private ZakSimpleGrid zakGrid;
     private List<GridSortOrder<ZakBasic>> initialSortOrder;
+    private ReloadButton reloadButton;
 
     @Autowired
     public ZakBasicRepo zakBasicRepo;
@@ -73,12 +72,13 @@ public class ZakBasicListView extends VerticalLayout {
 
     private void initView() {
         this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+//        this.setAlignItems(Alignment.STRETCH);
 //        setHeight("90%");
 //        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
         this.setPadding(false);
         this.setMargin(false);
         this.add(
-                initGridContainer()
+                buildGridContainer()
         );
     }
 
@@ -101,12 +101,25 @@ public class ZakBasicListView extends VerticalLayout {
 //    }
 
 
-    private Component initGridToolBar() {
+    private Component buildGridToolBar() {
         HorizontalLayout gridToolBar = new HorizontalLayout();
+//        gridToolBar.setWidth("100%");
+//        gridToolBar.setPadding(true);
         gridToolBar.setSpacing(false);
         gridToolBar.setAlignItems(Alignment.END);
         gridToolBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
+        gridToolBar.add(
+                buildTitleComponent()
+                , new Ribbon()
+//                , archFilterComponent
+                , new Ribbon()
+                , new Span("")
+        );
+        return gridToolBar;
+    }
+
+    private Component buildTitleComponent() {
         HorizontalLayout titleComponent = new HorizontalLayout();
         titleComponent.setMargin(false);
         titleComponent.setPadding(false);
@@ -116,16 +129,13 @@ public class ZakBasicListView extends VerticalLayout {
         titleComponent.add(
                 new GridTitle(ItemNames.getNomP(ItemType.ZAK))
                 , new Ribbon()
-                , new ReloadButton(event -> loadViewContent())
+                , initReloadButton()
         );
+        return titleComponent;
+    }
 
-        gridToolBar.add(
-                titleComponent
-                , new Ribbon()
-//                , archFilterComponent
-                , new Ribbon()
-                , new Span(""));
-        return gridToolBar;
+    private Component initReloadButton() {
+        return reloadButton = new ReloadButton(event -> loadViewContent());
     }
 
     private Component initArchFilterRadio() {
@@ -138,14 +148,14 @@ public class ZakBasicListView extends VerticalLayout {
         return archFilterRadio;
     }
 
-    private Component initGridContainer() {
+    private Component buildGridContainer() {
         VerticalLayout gridContainer = new VerticalLayout();
         gridContainer.setClassName("view-container");
         gridContainer.getStyle().set("marginTop", "0.5em");
         gridContainer.setAlignItems(Alignment.STRETCH);
 
         gridContainer.add(
-                initGridToolBar()
+                buildGridToolBar()
                 ,initZakGrid()
         );
         return gridContainer;
@@ -173,7 +183,7 @@ public class ZakBasicListView extends VerticalLayout {
 
     private void loadViewContent() {
         loadGridDataAndRebuildFilterFields();
-        zakGrid.initFilterValues();
+        zakGrid.setInitialFilterValues();
         zakGrid.doFilter();
         zakGrid.getDataProvider().refreshAll();
     }
