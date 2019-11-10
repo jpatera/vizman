@@ -167,7 +167,7 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
             probe.setUsername(personFilter.getUsername());
 //            example.setHidden(personFilter.getHidden());
             ExampleMatcher matcher = ExampleMatcher.matching()
-                    .withMatcher("username", new ExampleMatcher.GenericPropertyMatcher().contains())
+                    .withMatcher("username", new ExampleMatcher.GenericPropertyMatcher().startsWith())
                     .withMatcher("hidden", new ExampleMatcher.GenericPropertyMatcher().exact())
 //                    .withIgnorePaths("lastname")
 //                    .withIncludeNullValues()
