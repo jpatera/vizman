@@ -3,6 +3,7 @@ package eu.japtor.vizman.backend.entity;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "CFGPROP")
@@ -26,6 +27,11 @@ public class CfgProp extends AbstractGenIdEntity {
     @Column(name = "RO")
     private Boolean ro;
 
+    @Column(name = "TYPE")
+    private String type;
+
+    @Column(name = "VALUE_DECIMAL")
+    private BigDecimal valueDecimal;
 
     public String getName() {
         return name;
@@ -73,5 +79,21 @@ public class CfgProp extends AbstractGenIdEntity {
 
     protected void setRo(Boolean ro) {
         this.ro = ro;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public BigDecimal getValueDecimal() {
+        return valueDecimal;
+    }
+
+    public void setValueDecimal(BigDecimal valueDecimal) {
+        this.valueDecimal = valueDecimal;
     }
 }

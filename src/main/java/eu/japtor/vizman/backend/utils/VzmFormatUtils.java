@@ -16,6 +16,7 @@ import eu.japtor.vizman.backend.entity.Fakt;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.PersonWage;
 import eu.japtor.vizman.backend.entity.Zak;
+import eu.japtor.vizman.backend.service.VzmServiceException;
 import eu.japtor.vizman.ui.components.Ribbon;
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,7 +41,7 @@ public class VzmFormatUtils {
     public static final NumberFormat procFormat = getDecFormat(Locale.getDefault(), 3, 1);
     public static final NumberFormat procIntFormat = getDecFormat(Locale.getDefault(), 3,0);
     public static final NumberFormat decHodFormat = getDecFormat(Locale.getDefault(), 4,1);
-    public static final NumberFormat kurzFormat = getDecFormat(Locale.getDefault(), 4, 2);
+    public static final NumberFormat dec2Format = getDecFormat(Locale.getDefault(), 10, 2);
 //    public final static NumberFormat moneyFormat = new MoneyFormat();
 //    public final static NumberFormat yearFormat = new YearFormat();
 //    public static final StringToBigDecimalConverter bigDecimalMoneyConverter;
@@ -498,112 +499,6 @@ public class VzmFormatUtils {
         return format;
     }
 
-
-
-//    private static NumberFormat getPercentFormat(Locale locale) {
-//        if(null == locale) {
-//            locale = Locale.getDefault();
-//        }
-//        NumberFormat format = NumberFormat.getInstance(locale);
-//        if (format instanceof DecimalFormat) {
-//            format.setGroupingUsed(false);
-//            format.setMinimumFractionDigits(1);
-//            format.setMaximumFractionDigits(1);
-//        }
-//        return format;
-//    }
-
-//    private static NumberFormat getYearFormat(Locale locale) {
-//        if(null == locale) {
-//            locale = Locale.getDefault();
-//        }
-//        NumberFormat format = NumberFormat.getInstance(locale);
-//        if (format instanceof DecimalFormat) {
-//            format.setGroupingUsed(false);
-//            format.setMinimumFractionDigits(0);
-//            format.setMaximumFractionDigits(0);
-//        }
-//        return format;
-//    }
-
-////    public static class NumberFormat extends DecimalFormat {
-//    public static NumberFormat getMoneyFormat(Locale locale) {
-//
-////        public static NumberFormat getInstance (Locale locale) {
-//            if(null == locale) {
-//                locale = Locale.getDefault();
-//            }
-//            NumberFormat format = NumberFormat.getInstance(locale);
-//            if (format instanceof DecimalFormat) {
-//                format.setGroupingUsed(true);
-//                format.setMinimumFractionDigits(2);
-//                format.setMaximumFractionDigits(2);
-//            }
-//            return format;
-////        }
-//
-//////        public MoneyFormat (Locale locale) {
-////        public MoneyFormat (Locale locale) {
-////            super();
-////
-////            if (locale == null) {
-////                locale = Locale.getDefault();
-////            }
-////
-////            return NumberFormat.getNumberInstance(locale);
-////
-//////        moneyFormat = DecimalFormat.getInstance();
-//////        if (moneyFormat instanceof DecimalFormat) {
-//////            ((DecimalFormat)moneyFormat).setParseBigDecimal(true);
-//////        }
-//////            NumberFormat numberFormat = NumberFormat.getInstance(locale);
-////
-////            this.setGroupingUsed(true);
-////            this.setMinimumFractionDigits(2);
-////            this.setMaximumFractionDigits(2);
-////        }
-//    }
-
-//    public static class YearFormat extends DecimalFormat {
-//
-//        public YearFormat () {
-//            super();
-//            this.setGroupingUsed(false);
-//            this.setMinimumFractionDigits(0);
-//            this.setMaximumFractionDigits(0);
-//        }
-//    }
-
-//    public static class MoneyCellRenderer
-//            extends ComponentRenderer<COMPONENT extends Component, SOURCE> extends Renderer<SOURCE>(
-//
-//            public MoneyCellRenderer(SerializableSupplier<COMPONENT> componentSupplier, SerializableBiConsumer<COMPONENT, SOURCE> itemConsumer> componentFunction) {
-//                super();
-//            }
-//            zak -> {
-//                Div comp = new Div();
-////            if (ItemType.KONT == kontZak.getTyp()) {
-//////            comp.getStyle().set("color", "darkmagenta");
-//////            return new Emphasis(kontZak.getHonorar().toString());
-////                comp.getElement().appendChild(ElementFactory.createEmphasis(kontZak.getHonorar().toString()));
-////                comp.getStyle()
-//////                    .set("color", "red")
-//////                    .set("text-indent", "1em");
-//////                        .set("padding-right", "1em")
-////                ;
-////            } else {
-//                if ((null != zak) && (zak.getHonorar().compareTo(BigDecimal.ZERO) < 0)) {
-//                    comp.getStyle()
-//                            .set("color", "red")
-//        //                            .set("text-indent", "1em")
-//                    ;
-//            }
-//    //                comp.getElement().appendChild(ElementFactory.createSpan(numFormat.format(kontZak.getHonorar())));
-//            comp.setText(VzmFormatUtils.moneyFormat.format(zak.getHonorar()));
-//    //            }
-//            return comp;
-//    });
-
     public static HtmlComponent getDecHodComponent(BigDecimal number) {
         Div comp = new Div();
         String color = "black";
@@ -753,58 +648,12 @@ public class VzmFormatUtils {
         return zakFaktFlags;
     }
 
-
-//    public static Span styleGreyFlag(Span flag) {
-//        flag.getElement().getStyle()
-//                .set("height", "15px")
-////                .set("min-height", "15px")
-//                .set("width", "15px")
-////                .set("min-width", "15px")
-//                .set("padding-right","0.2em")
-//                .set("padding-left","0.2em")
-//                .set("padding-top","0.2em")
-//                .set("padding-bottom","0.2em")
-////                .set("border", "1px solid black")
-//                .set("color", "black")
-//                .set("background-color", "silver")
-//                .set("border-radius", "3px")
-//        ;
-//        return flag;
-//    }
-
-//    public static Span styleRedFlag(Span flag) {
-////         Style stl = text.getElement().getStyle();
-////            position: absolute;
-////        flag.getElement().getStyle().set("display", "inline-flex");
-////            align-items: center;
-////            justify-content: center;
-//        flag.getElement().getStyle()
-//                .set("height", "15px")
-////                .set("min-height", "15px")
-//                .set("width", "15px")
-////                .set("min-width", "15px")
-////                .set("font-size","var(--lumo-font-size-l)")
-////                .set("font-weight","600")
-//                .set("padding-right","0.2em")
-//                .set("padding-left","0.2em")
-//                .set("padding-top","0.2em")
-//                .set("padding-bottom","0.2em")
-//                .set("border", "1px solid black")
-//        ;
-//        ;
-////            min-width: 8px;
-////            padding: 0 6px;
-////            background: var(--lumo-base-color);
-//        flag.getElement().getStyle().set("color", "black");
-//        flag.getElement().getStyle().set("background-color", "pink");
-////            top: -10px;
-////            left: -10px;
-//        flag.getElement().getStyle().set("border-radius", "3px");
-////            margin: 0;
-////            font-size: 12px;
-////            font-weight: 500;
-////            box-shadow: 0 0 0 1px var(--lumo-contrast-20pct);
-//        return flag;
-//    }
-
+    public static BigDecimal stringLocalToBigDecimal(String numStr) {
+        try {
+            return new BigDecimal(dec2Format.parse(numStr).toString());
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new VzmServiceException("Chyba v převodu formátu čísla");
+        }
+    }
 }

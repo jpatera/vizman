@@ -1222,6 +1222,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
                     pzEditor.getItem().setHod(day
                             , StringUtils.isBlank(event.getValue()) ?
                                     null : new BigDecimal(event.getValue().replaceAll(",", ".")));
+//                                    null : stringLocalToBigDecimal(event.getValue()));    // ..here is some problem when saving pruh
                     pzEditorBinder.writeBean(pzEditor.getItem());
 //                    col.setFooter(buildDayHodSumComp(getDayZakMissingHods(getDayZakHodSum(day), getDaySumHodSum(day))));
 //                    BigDecimal missingHods = getDayZakMissingHods(getDayZakHodSum(day), getDaySumHodSum(day));

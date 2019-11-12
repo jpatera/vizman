@@ -9,9 +9,9 @@ public class AppCfg {
     private String appProjRootServer;
     private String appDocRootLocal;
     private String appDocRootServer;
-    private String appKoefRezie;
-    private String appKoefPojist;
-    private String appKurzCzkEur;
+    private BigDecimal appKoefRezie;
+    private BigDecimal appKoefPojist;
+    private BigDecimal appKurzCzkEur;
 
     public String getAppLocale() {
         return appLocale;
@@ -48,24 +48,24 @@ public class AppCfg {
         this.appDocRootServer = appDocRootServer;
     }
 
-    public String getAppKoefRezie() {
+    public BigDecimal getAppKoefRezie() {
         return appKoefRezie;
     }
-    public void setAppKoefRezie(String appKoefRezie) {
+    public void setAppKoefRezie(BigDecimal appKoefRezie) {
         this.appKoefRezie = appKoefRezie;
     }
 
-    public String getAppKoefPojist() {
+    public BigDecimal getAppKoefPojist() {
         return appKoefPojist;
     }
-    public void setAppKoefPojist(String appKoefPojist) {
+    public void setAppKoefPojist(BigDecimal appKoefPojist) {
         this.appKoefPojist = appKoefPojist;
     }
 
-    public String getAppKurzCzkEur() {
+    public BigDecimal getAppKurzCzkEur() {
         return appKurzCzkEur;
     }
-    public void setAppKurzCzkEur(String appKurzCzkEur) {
+    public void setAppKurzCzkEur(BigDecimal appKurzCzkEur) {
         this.appKurzCzkEur = appKurzCzkEur;
     }
 }

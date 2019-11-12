@@ -54,8 +54,8 @@ public class CfgPropsCacheImpl implements CfgPropsCache {
 
     @Override
     public BigDecimal getBigDecimalValue(final String propName) {
-        return new BigDecimal(propsByName.get(propName).getValue());
-//        return (BigDecimal)(propsByName.get(propName).getValue());
+//        return new BigDecimal(propsByName.get(propName).getValue());
+        return propsByName.get(propName).getValueDecimal();
     }
 
     @Override

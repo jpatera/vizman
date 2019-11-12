@@ -8,8 +8,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.AppCfg;
@@ -20,13 +20,21 @@ import eu.japtor.vizman.backend.entity.CfgProp;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.repository.CfgPropRepo;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.OkDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
+
+import static eu.japtor.vizman.backend.utils.VzmFormatUtils.dec2Format;
+import static eu.japtor.vizman.backend.utils.VzmFormatUtils.stringLocalToBigDecimal;
+import static eu.japtor.vizman.ui.util.VizmanConst.CZ_LOCALE;
 
 
 @Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL
@@ -86,9 +94,8 @@ public class CfgPropsForm extends VerticalLayout implements HasLogger {
                 field.setId(propName);
                 field.setReadOnly(cfgProp.getRo());
                 field.setWidth("20em");
-                field.setWidth("20em");
 //                field.setLabel(cfgProp.getLabel());
-                populateBeanAndBindField(cfgPropName, cfgProp.getValue(), field);
+                populateBeanAndBindField(cfgPropName, cfgProp.getValue(), cfgProp.getValueDecimal(), field);
                 fieldMap.put(propName, field);
             }
         }
@@ -146,7 +153,11 @@ public class CfgPropsForm extends VerticalLayout implements HasLogger {
         TextField field = fieldMap.get(propName);
         CfgProp cfgProp = cfgPropRepo.findByName(propName);
         if (null != field && null != cfgProp) {
-            cfgProp.setValue(field.getValue());
+            if (cfgProp.getType().equals("DECIMAL")) {
+                cfgProp.setValueDecimal(stringLocalToBigDecimal(field.getValue()));
+            } else {
+                cfgProp.setValue(field.getValue());
+            }
             try {
                 cfgPropRepo.saveAndFlush(cfgProp);
 //                Notification.show("Nastavení aplikace uloženo.", 3000, Notification.Position.MIDDLE);
@@ -159,44 +170,62 @@ public class CfgPropsForm extends VerticalLayout implements HasLogger {
         return cfgProp;
     }
 
-    private void populateBeanAndBindField(CfgPropName cfgPropName, String value, TextField field) {
+    private void populateBeanAndBindField(CfgPropName cfgPropName, String value, BigDecimal valueDecimal, TextField field) {
 
         switch (cfgPropName) {
             case APP_LOCALE:
                 appCfg.setAppLocale(value);
+                field.setWidth("12em");
                 binder.forField(field).bind(AppCfg::getAppLocale, null);
                 break;
             case APP_DOC_ROOT_LOCAL:
                 appCfg.setAppDocRootLocal(value);
+                field.setWidth("30em");
                 binder.forField(field).bind(AppCfg::getAppDocRootLocal, AppCfg::setAppDocRootLocal);
                 break;
             case APP_DOC_ROOT_SERVER:
                 appCfg.setAppDocRootServer(value);
+                field.setWidth("30em");
                 binder.forField(field).bind(AppCfg::getAppDocRootServer, AppCfg::setAppDocRootServer);
                 break;
             case APP_PROJ_ROOT_LOCAL:
                 appCfg.setAppProjRootLocal(value);
+                field.setWidth("30em");
                 binder.forField(field).bind(AppCfg::getAppProjRootLocal, AppCfg::setAppProjRootLocal);
                 break;
             case APP_PROJ_ROOT_SERVER:
                 appCfg.setAppProjRootServer(value);
+                field.setWidth("30em");
                 binder.forField(field).bind(AppCfg::getAppProjRootServer, AppCfg::setAppProjRootServer);
                 break;
-            case APP_KOEF_POJIST:
-                appCfg.setAppKoefPojist(value);
-                binder.forField(field).bind(AppCfg::getAppKoefPojist, AppCfg::setAppKoefPojist);
-                break;
             case APP_KOEF_REZIE:
-                appCfg.setAppKoefRezie(value);
-                binder.forField(field).bind(AppCfg::getAppKoefRezie, AppCfg::setAppKoefRezie);
+                appCfg.setAppKoefRezie(valueDecimal);
+                field.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+                field.setWidth("8em");
+                binder.forField(field)
+                        .asRequired("Koeficient režie musí být zadán")
+                        .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
+                        .bind(AppCfg::getAppKoefRezie, AppCfg::setAppKoefRezie)
+                ;
+                break;
+            case APP_KOEF_POJIST:
+                appCfg.setAppKoefPojist(valueDecimal);
+                field.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+                field.setWidth("8em");
+                binder.forField(field)
+                        .asRequired("Koeficient  pojištění musí být zadán")
+                        .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
+                        .bind(AppCfg::getAppKoefPojist, AppCfg::setAppKoefPojist)
+                ;
                 break;
             case APP_KURZ_CZK_EUR:
-                appCfg.setAppKurzCzkEur(value);
-                binder.forField(field).bind(AppCfg::getAppKurzCzkEur, AppCfg::setAppKurzCzkEur);
-//                binder.forField(field)
-//                        .asRequired("Kurz musí být zadán")
-//                        .withConverter(new StringToBigDecimalConverter("Špatný formát"))
-//                        .bind(AppCfg::getAppKurzCzkEur, AppCfg::setAppKurzCzkEur);
+                appCfg.setAppKurzCzkEur(valueDecimal);
+                field.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+                field.setWidth("8em");
+                binder.forField(field)
+                        .asRequired("Kurz musí být zadán")
+                        .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
+                        .bind(AppCfg::getAppKurzCzkEur, AppCfg::setAppKurzCzkEur);
                 break;
         }
     }
