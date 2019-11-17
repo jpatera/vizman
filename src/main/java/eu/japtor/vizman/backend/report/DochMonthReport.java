@@ -23,7 +23,7 @@ import static ar.com.fdvs.dj.domain.constants.Font.PDF_ENCODING_CP1250_Central_E
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
 
 
-public class DochMesReport extends PrintPreviewReport {
+public class DochMonthReport extends PrintPreviewReport {
 
     private AbstractColumn fullNameAndDochYmCol;
 //    private AbstractColumn dochYmCol;
@@ -50,7 +50,7 @@ public class DochMesReport extends PrintPreviewReport {
     private HodsMinsDJFormatter hodsMinsDJFormatter;
     private WeekFormat weekFormat;
 
-    public DochMesReport() {
+    public DochMonthReport() {
         super();
 
         shortDurFormat = new ShortDurFormat();

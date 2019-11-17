@@ -29,7 +29,7 @@ import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.CinRepo;
 import eu.japtor.vizman.backend.repository.PruhRepo;
-import eu.japtor.vizman.backend.service.DochMesService;
+import eu.japtor.vizman.backend.service.DochYearMonthService;
 import eu.japtor.vizman.backend.service.DochService;
 import eu.japtor.vizman.backend.service.DochsumService;
 import eu.japtor.vizman.backend.service.PersonService;
@@ -39,7 +39,8 @@ import eu.japtor.vizman.ui.components.Operation;
 import eu.japtor.vizman.ui.components.ReloadButton;
 import eu.japtor.vizman.ui.components.Ribbon;
 import eu.japtor.vizman.ui.forms.DochFormDialog;
-import eu.japtor.vizman.ui.forms.DochMesReportDialog;
+import eu.japtor.vizman.ui.forms.DochMonthReportDialog;
+import eu.japtor.vizman.ui.forms.DochYearReportDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
@@ -58,6 +59,8 @@ import java.util.*;
 import static eu.japtor.vizman.app.security.SecurityUtils.canViewOtherUsers;
 import static eu.japtor.vizman.backend.entity.Pruh.PRUH_STATE_LOCKED;
 import static eu.japtor.vizman.backend.entity.Pruh.PRUH_STATE_UNLOCKED;
+import static eu.japtor.vizman.backend.service.CfgPropsCacheImpl.PRAC_DOBA_END;
+import static eu.japtor.vizman.backend.service.CfgPropsCacheImpl.PRAC_DOBA_START;
 import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_DOCH;
 
 @Route(value = ROUTE_DOCH, layout = MainView.class)
@@ -176,7 +179,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private Clock minuteClock = Clock.tickMinutes(ZoneId.systemDefault());
     private TimeThread timeThread;
 
-    private DochMesReportDialog dochMesReportDialog = null;
+    private DochMonthReportDialog dochMonthReportDialog = null;
+    private DochYearReportDialog dochYearReportDialog = null;
 
 //    @Autowired
 //    public DochRepo kontRepo;
@@ -191,7 +195,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     public DochService dochService;
 
     @Autowired
-    public DochMesService dochMesService;
+    public DochYearMonthService dochYearMonthService;
 
     @Autowired
     public DochsumService dochsumService;
@@ -584,20 +588,35 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         dochMonthReportBtn.setEnabled(true);
         dochMonthReportBtn.addClickListener(event -> {
                 DochParams dochParams = new DochParams();
-                dochParams.setDochYm(YearMonth.of(dochDate.getYear(), dochDate.getMonthValue()));
                 dochParams.setPersonId(dochPerson.getId());
-                if (null == dochMesReportDialog) {
-                    dochMesReportDialog = new DochMesReportDialog(dochMesService);
+                dochParams.setDochYm(YearMonth.of(dochDate.getYear(), dochDate.getMonthValue()));
+                if (null == dochMonthReportDialog) {
+                    dochMonthReportDialog = new DochMonthReportDialog(dochYearMonthService);
                 }
-                dochMesReportDialog.openDialog(dochParams);
-                dochMesReportDialog.generateAndShowReport();
-    //            dochMonthreport = new DochMesReport();
+                dochMonthReportDialog.openDialog(dochParams);
+                dochMonthReportDialog.generateAndShowReport();
+    //            dochMonthreport = new DochMonthReport();
     //            dochMonthreport
             }
         );
 
         dochYearReportBtn.setText("Roční přehled");
         dochYearReportBtn.setEnabled(true);
+        dochYearReportBtn.addClickListener(event -> {
+                DochParams dochParams = new DochParams();
+                dochParams.setPersonId(dochPerson.getId());
+                dochParams.setDochYear(dochDate.getYear());
+                dochParams.setDochYmStart(YearMonth.of(dochDate.getYear(), 1));
+                dochParams.setDochYmEnd(YearMonth.of(dochDate.getYear(), 12));
+                if (null == dochYearReportDialog) {
+                    dochYearReportDialog = new DochYearReportDialog(dochYearMonthService);
+                }
+                dochYearReportDialog.openDialog(dochParams);
+                dochYearReportDialog.generateAndShowReport();
+                //            dochMonthreport = new DochMonthReport();
+                //            dochMonthreport
+            }
+        );
 
         dochControl.setWidth("30em");
         dochControl.getStyle()
@@ -1506,8 +1525,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     }
 
     private Duration sumOfDochPracProductive() {
-        LocalTime pracProdTimeMin = LocalTime.of(7, 0);
-        LocalTime pracProdTimeMax = LocalTime.of(18, 0);
+        LocalTime pracProdTimeMin = PRAC_DOBA_START;
+        LocalTime pracProdTimeMax = PRAC_DOBA_END;
         Duration durPracProd = Duration.ZERO;
         LocalTime timeFromProd;
         LocalTime timeToProd;
@@ -2531,8 +2550,11 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     public static class DochParams {
 
-        YearMonth dochYm;
         Long personId;
+        YearMonth dochYm;
+        Integer dochYear;
+        YearMonth dochYmStart;
+        YearMonth dochYmEnd;
 
         public YearMonth getDochYm() {
             return dochYm;
@@ -2548,6 +2570,30 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
         public void setPersonId(Long personId) {
             this.personId = personId;
+        }
+
+        public Integer getDochYear() {
+            return dochYear;
+        }
+
+        public void setDochYear(Integer dochYear) {
+            this.dochYear = dochYear;
+        }
+
+        public YearMonth getDochYmStart() {
+            return dochYmStart;
+        }
+
+        public void setDochYmStart(YearMonth dochYmStart) {
+            this.dochYmStart = dochYmStart;
+        }
+
+        public YearMonth getDochYmEnd() {
+            return dochYmEnd;
+        }
+
+        public void setDochYmEnd(YearMonth dochYmEnd) {
+            this.dochYmEnd = dochYmEnd;
         }
     }
 }

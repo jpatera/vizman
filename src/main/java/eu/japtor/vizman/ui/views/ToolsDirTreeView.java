@@ -115,7 +115,7 @@ public class ToolsDirTreeView extends VerticalLayout  implements HasLogger {
         initGenMissingFoldersButton();
 
         this.add(buildGridContainer());
-        VzmFileUtils.VzmFile rootFile = new VzmFileUtils.VzmFile(cfgPropsCache.getDocRootServer(), true, VzmFolderType.ROOT, 0);
+//        VzmFileUtils.VzmFile rootFile = new VzmFileUtils.VzmFile(cfgPropsCache.getDocRootServer(), true, VzmFolderType.ROOT, 0);
 //        folderGrid.setDataProvider(new FileSystemDataProvider(rootFile));
 
         dirFilterRadio.setValue(RADIO_DIRS_EXISTING);

@@ -3,6 +3,7 @@ package eu.japtor.vizman.backend.service;
 import eu.japtor.vizman.backend.entity.CfgProp;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
 
 public interface CfgPropsCache {
 
@@ -14,6 +15,4 @@ public interface CfgPropsCache {
     String getProjRootServer();
     String getDocRootLocal();
     String getProjRootLocal();
-
-
 }

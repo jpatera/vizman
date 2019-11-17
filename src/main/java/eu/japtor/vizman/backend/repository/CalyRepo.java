@@ -6,5 +6,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 //@Transactional(readOnly = true)
 public interface CalyRepo extends JpaRepository<Caly, Long> {
 
-
 }

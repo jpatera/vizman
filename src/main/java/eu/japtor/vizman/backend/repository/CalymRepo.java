@@ -8,5 +8,4 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public interface CalymRepo extends JpaRepository<Calym, Long> {
 
-
 }

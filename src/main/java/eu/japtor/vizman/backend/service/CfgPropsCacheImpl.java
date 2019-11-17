@@ -7,12 +7,16 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Component
 public class CfgPropsCacheImpl implements CfgPropsCache {
+
+    public static final LocalTime PRAC_DOBA_START = LocalTime.of(8, 0, 0);
+    public static final LocalTime PRAC_DOBA_END = LocalTime.of(18, 0, 0);
 
     private Map<String, CfgProp> propsByName = new HashMap<>();
     private List<CfgProp> propList;
@@ -77,6 +81,5 @@ public class CfgPropsCacheImpl implements CfgPropsCache {
     public String getDocRootLocal() {
         return getStringValue("app.document.root.local");
     }
-
 
 }

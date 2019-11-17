@@ -31,8 +31,7 @@ public class FileSystemDataProvider extends
         }
 
         @Override
-        public int getChildCount(
-                HierarchicalQuery<VzmFileUtils.VzmFile, FilenameFilter> query) {
+        public int getChildCount(HierarchicalQuery<VzmFileUtils.VzmFile, FilenameFilter> query) {
             return (int) fetchChildren(query).count();
         }
 

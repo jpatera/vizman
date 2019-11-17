@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "CALY")
 public class Caly extends AbstractGenIdEntity {
+  public static final String SORT_PROP_YR = "yr";
 
   @Basic
   @Column(name = "YR")

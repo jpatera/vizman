@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
+import eu.japtor.vizman.backend.service.CfgPropsCacheImpl;
 import org.hibernate.annotations.Immutable;
 
 import javax.persistence.*;
@@ -14,12 +15,9 @@ import java.time.format.DateTimeFormatter;
 //@ReadOnly
 @Entity
 @Table(name = "DOCH_MES_VIEW")
-public class DochMes implements Serializable {
+public class DochMonth implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    private static final LocalTime pracDobaStart = LocalTime.of(8, 0, 0);
-    private static final LocalTime pracDobaEnd = LocalTime.of(18, 0, 0);
 
     @Id
     @Column(name = "ID", updatable = false, nullable = false)
@@ -102,18 +100,18 @@ public class DochMes implements Serializable {
     }
 
     @Transient
-    private String monthHourFond;
+    private String monthFondHours;
 
-    public String getMonthHourFond() {
-        return monthHourFond;
+    public String getMonthFondHours() {
+        return monthFondHours;
     }
-    public void setMonthHourFond(String monthHourFond) {
-        this.monthHourFond = monthHourFond;
+    public void setMonthFondHours(String monthFondHours) {
+        this.monthFondHours = monthFondHours;
     }
 
     // Constructor
     // -----------
-    public DochMes() {}
+    public DochMonth() {}
 
 
     public Long getId() {
@@ -220,7 +218,7 @@ public class DochMes implements Serializable {
     @Transient
     public String getFullNameAndDochYm() {
         return person.getPrijmeni() + " " + person.getJmeno()
-                + " \u00A0\u00A0\u00A0\u00A0 " + getDochYm() + " \u00A0\u00A0\u00A0\u00A0 Fond: " + getMonthHourFond();
+                + " \u00A0\u00A0\u00A0\u00A0 " + getDochYm() + " \u00A0\u00A0\u00A0\u00A0 Fond: " + getMonthFondHours();
     }
 
 
@@ -239,10 +237,10 @@ public class DochMes implements Serializable {
         if (null == fromPraceStart || null == toPraceEnd || dochDate.getDayOfWeek().getValue() >= 6) {
             return null;
         }
-        Duration durBeforeStart = pracDobaStart.isAfter(fromPraceStart) ?
-                Duration.between(fromPraceStart, pracDobaStart) : Duration.ZERO;
-        Duration durAfterEnd = pracDobaEnd.isBefore(toPraceEnd) ?
-                Duration.between(pracDobaEnd, toPraceEnd) : Duration.ZERO;
+        Duration durBeforeStart = CfgPropsCacheImpl.PRAC_DOBA_START.isAfter(fromPraceStart) ?
+                Duration.between(fromPraceStart, CfgPropsCacheImpl.PRAC_DOBA_START) : Duration.ZERO;
+        Duration durAfterEnd = CfgPropsCacheImpl.PRAC_DOBA_END.isBefore(toPraceEnd) ?
+                Duration.between(CfgPropsCacheImpl.PRAC_DOBA_END, toPraceEnd) : Duration.ZERO;
         Duration deadTime = durPracCelk.minus(durBeforeStart).minus(durAfterEnd);
         return deadTime.compareTo(Duration.ZERO) > 0 ? deadTime.toMinutes() : Duration.ZERO.toMinutes();
     }

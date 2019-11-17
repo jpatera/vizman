@@ -11,7 +11,6 @@ import java.util.List;
 
 public interface DochsumRepo extends JpaRepository<Dochsum, Long> {
 
-//    List<Dochsum> findByPersonIdAndDsYm(Long personId, YearMonth dsYm);
     List<Dochsum> findByPersonIdAndDsYm(Long personId, YearMonth dsYm);
 
     long countByPersonIdAndDsYm(Long personId, YearMonth dsYm);

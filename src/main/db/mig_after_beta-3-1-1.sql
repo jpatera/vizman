@@ -201,3 +201,55 @@ FROM (
 ORDER BY PERSON_ID ASC, DOCH_DATE ASC
 ;
 
+----------------------------------------------------------------
+
+COMMIT;
+
+DROP VIEW VIZMAN.DOCH_ROK_VIEW IF EXISTS;
+
+CREATE OR REPLACE FORCE VIEW VIZMAN.DOCH_ROK_VIEW (
+	ID,
+	PERSON_ID,
+	DOCH_YM,
+	DUR_PRACE_CELK,
+	DUR_PRACE_WEND,
+	DUR_LEK,
+	DUR_DOV,
+	DUR_NEM,
+	DUR_VOLNO,
+	DUR_SLUZ
+) AS
+SELECT
+	ROWNUM() AS ID,
+	aa.person_id,
+	aa.doch_ym,
+	aa.dur_prace_celk,
+	aa.dur_prace_wend,
+	aa.dur_lek,
+	aa.dur_dov,
+	aa.dur_nem,
+	aa.dur_volno,
+	aa.dur_sluz
+FROM (
+	SELECT
+		person_ID,
+		(EXTRACT(YEAR FROM DOCH_DATE) * 100) + EXTRACT(MONTH FROM DOCH_DATE) AS DOCH_YM,
+		sum(CASE WHEN calcprac THEN doch_dur ELSE 0 END) AS dur_prace_celk,
+		sum(CASE WHEN calcprac AND ISO_DAY_OF_WEEK(DOCH_DATE) >= 6 THEN doch_dur ELSE 0 END) AS dur_prace_wend,
+		sum(CASE WHEN cin_cin_kod = 'L' THEN doch_dur ELSE 0 END) AS dur_lek,
+		sum(CASE WHEN cin_cin_kod = 'dc' OR cin_cin_kod = 'dp' THEN doch_dur ELSE 0 END) AS dur_dov,
+		sum(CASE WHEN cin_cin_kod = 'ne' THEN doch_dur ELSE 0 END) AS dur_nem,
+		sum(CASE WHEN cin_cin_kod = 'nv' THEN doch_dur ELSE 0 END) AS dur_volno,
+		sum(CASE WHEN cin_cin_kod = 'SC' THEN doch_dur ELSE 0 END) AS dur_sluz
+	FROM VIZMAN.DOCH dd
+	GROUP BY PERSON_ID, DOCH_YM
+) AS aa
+ORDER BY PERSON_ID ASC, DOCH_YM ASC
+;
+
+select
+(EXTRACT(YEAR FROM DOCH_DATE) * 100) + EXTRACT(MONTH FROM DOCH_DATE)
+-- + EXTRACT(MONTH FROM DOCH_DATE)) AS DOCH_YM
+FROM vizman.DOCH
+;
+

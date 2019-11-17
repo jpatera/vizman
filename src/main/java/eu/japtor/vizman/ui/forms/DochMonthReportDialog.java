@@ -7,9 +7,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.function.SerializableSupplier;
 import eu.japtor.vizman.app.HasLogger;
-import eu.japtor.vizman.backend.entity.DochMes;
-import eu.japtor.vizman.backend.report.DochMesReport;
-import eu.japtor.vizman.backend.service.DochMesService;
+import eu.japtor.vizman.backend.entity.DochMonth;
+import eu.japtor.vizman.backend.report.DochMonthReport;
+import eu.japtor.vizman.backend.service.DochYearMonthService;
 import eu.japtor.vizman.ui.components.AbstractPrintDialog;
 import eu.japtor.vizman.ui.components.ReportExpAnchor;
 import eu.japtor.vizman.ui.views.DochView;
@@ -20,7 +20,7 @@ import java.util.List;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class DochMesReportDialog extends AbstractPrintDialog<DochMes> implements HasLogger {
+public class DochMonthReportDialog extends AbstractPrintDialog<DochMonth> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "1200px";
     public static final String DIALOG_HEIGHT = "750px";
@@ -32,26 +32,26 @@ public class DochMesReportDialog extends AbstractPrintDialog<DochMes> implements
     private HorizontalLayout rightBarPart;
     private Button closeButton;
 
-    private DochMesService dochMesService;
+    private DochYearMonthService dochYearMonthService;
     private DochView.DochParams dochParams;
-    private DochMesReport report;
+    private DochMonthReport report;
     private HorizontalLayout expAnchorsBox;
     private HorizontalLayout reportParamBox;
     private TextField dochUserParamField;
     private TextField dochYmParamField;
 
-    private SerializableSupplier<List<? extends DochMes>> itemsSupplier = () -> {
+    private SerializableSupplier<List<? extends DochMonth>> itemsSupplier = () -> {
 //          zaknService.fetchByZakId(zakr.getId(), zakrParams)
-            return dochMesService.fetchRepDochMesForPersonAndYm(dochParams.getPersonId(), dochParams.getDochYm());
+            return dochYearMonthService.fetchRepDochMonthForPersonAndYm(dochParams.getPersonId(), dochParams.getDochYm());
         }
     ;
 
 
-    public DochMesReportDialog(DochMesService dochMesService) {
+    public DochMonthReportDialog(DochYearMonthService dochYearMonthService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setDialogTitle("Report: MĚSÍČNÍ DOCHÁZKA");
 //        getHeaderEndBox().setText("END text");
-        this.dochMesService = dochMesService;
+        this.dochYearMonthService = dochYearMonthService;
         initReportControls();
     }
 
@@ -99,7 +99,7 @@ public class DochMesReportDialog extends AbstractPrintDialog<DochMes> implements
                 expAnchorsBox
         );
 
-        report = new DochMesReport();
+        report = new DochMonthReport();
         activateListeners();
     }
 
