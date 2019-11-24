@@ -395,6 +395,12 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         return StringUtils.isBlank(result) ? null : result;
     }
 
+    @Transient
+    public String getKzCisloTextForRep() {
+        return "Zakázka: " + getKzCislo()
+                + " \u00A0\u00A0\u00A0\u00A0 Měna: " + getMena().toString();
+    }
+
 
     @Override
     @Transient

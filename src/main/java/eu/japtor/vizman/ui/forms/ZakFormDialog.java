@@ -7,6 +7,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
@@ -26,10 +27,12 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 // import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.bean.EvidZak;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.report.ZakReport;
 import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFileUtils;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
@@ -38,10 +41,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.util.CollectionUtils;
+import org.vaadin.reports.PrintPreviewReport;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 
 import static eu.japtor.vizman.backend.utils.VzmFileUtils.*;
@@ -104,6 +109,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private List<GridSortOrder<VzmFileUtils.VzmFile>> initialZakDocSortOrder;
 
     private Grid<Fakt> faktGrid;
+    private Button zakReportButton;
     private Button newFaktButton;
     private Button newSubButton;
     private FlexLayout faktGridTitleComponent;
@@ -112,7 +118,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private FaktFormDialog faktFormDialog;
     private SubFormDialog subFormDialog;
     private FileViewerDialog fileViewerDialog;
-
+    private ZakReportDialog zakReportDialog;
 
 //    private Button saveButton;
     private Button revertButton;
@@ -334,6 +340,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         saveAndCloseButton.setEnabled(false);
 //        saveButton.setEnabled(false);
         revertButton.setEnabled(false);
+        zakReportButton.setEnabled(!readonly);
         newFaktButton.setEnabled(!readonly);
         newSubButton.setEnabled(!readonly);
         deleteAndCloseButton.setEnabled(!readonly && currentOperation.isDeleteEnabled() && canDeleteZak(currentItem));
@@ -350,6 +357,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         saveAndCloseButton.setEnabled(!readonly && hasChanges && isValid);
 //        saveButton.setEnabled(!readonly && hasChanges && isValid);
         revertButton.setEnabled(!readonly && hasChanges);
+        zakReportButton.setEnabled(!readonly && isValid);
         newFaktButton.setEnabled(!readonly && isValid);
         newSubButton.setEnabled(!readonly && isValid);
 
@@ -585,6 +593,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             deleteAndCloseButton.setEnabled(false);
             saveAndCloseButton.setEnabled(false);
             akvToZakButton.setEnabled(false);
+            zakReportButton.setEnabled(false);
             newSubButton.setEnabled(false);
             newFaktButton.setEnabled(false);
         }
@@ -1597,9 +1606,11 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 initFaktGridTitleComponent(),
                 new Ribbon(),
                 new FlexLayout(
-                    initNewFaktButton(),
-                    new Ribbon(),
-                    initNewSubButton()
+                        initZakReportButton(),
+                        new Ribbon(),
+                        initNewFaktButton(),
+                        new Ribbon(),
+                        initNewSubButton()
                 )
         );
         return faktGridBar;
@@ -1749,5 +1760,26 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         } else {
             return new Span();
         }
+    }
+
+
+//    ZakReport zakReport;
+//    private final static String REPORT_FILE_NAME = "vzm-rep-zak";
+
+
+    private Component initZakReportButton() {
+
+        zakReportButton = new Button("Report");
+        zakReportButton.addClickListener(event -> {
+                if (null == zakReportDialog) {
+                    zakReportDialog = new ZakReportDialog();
+                }
+                zakReportDialog.openDialog(currentItem);
+                zakReportDialog.generateAndShowReport();
+        });
+        zakReportButton.setEnabled(true);
+
+        zakReportButton.getElement().setAttribute("theme", "small secondary");
+        return zakReportButton;
     }
 }

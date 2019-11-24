@@ -2,43 +2,40 @@ package eu.japtor.vizman.backend.utils;
 
 import ar.com.fdvs.dj.domain.Style;
 import ar.com.fdvs.dj.domain.builders.StyleBuilder;
-import ar.com.fdvs.dj.domain.constants.Border;
+import ar.com.fdvs.dj.domain.constants.*;
 import ar.com.fdvs.dj.domain.constants.Font;
-import ar.com.fdvs.dj.domain.constants.HorizontalAlign;
-import ar.com.fdvs.dj.domain.constants.VerticalAlign;
 import ar.com.fdvs.dj.domain.entities.Entity;
 import ar.com.fdvs.dj.domain.entities.conditionalStyle.ConditionStyleExpression;
 import ar.com.fdvs.dj.domain.entities.conditionalStyle.ConditionalStyle;
 
 import java.awt.*;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Map;
 
 import static ar.com.fdvs.dj.domain.constants.Font.ARIAL_MEDIUM_BOLD;
-import static ar.com.fdvs.dj.domain.constants.Font.PDF_ENCODING_CP1250_Central_European;
 
 public class VzmFormatReport {
     static final Color TOTAL_BG_COLOR = new Color(0xFFF4EE);
     static final Color GROUP_SUM_BG_COLOR = new Color(0xEEF4FF);
     static final Color HEADER_BG_COLOR = new Color(0xF4F4F4);
 
-    public static final ar.com.fdvs.dj.domain.constants.Font ARIAL_MEDIUM_XL = new ar.com.fdvs.dj.domain.constants.Font(11, ar.com.fdvs.dj.domain.constants.Font._FONT_ARIAL, false, false, false);
-    public static final ar.com.fdvs.dj.domain.constants.Font ARIAL_MEDIUM_XL_BOLD = new ar.com.fdvs.dj.domain.constants.Font(11, ar.com.fdvs.dj.domain.constants.Font._FONT_ARIAL, true, false, false);
-    public static final ar.com.fdvs.dj.domain.constants.Font ARIAL_MEDIUM_XXL_BOLD = new ar.com.fdvs.dj.domain.constants.Font(12, ar.com.fdvs.dj.domain.constants.Font._FONT_ARIAL, true, false, false);
+    public static final ar.com.fdvs.dj.domain.constants.Font ARIAL_XL = new ar.com.fdvs.dj.domain.constants.Font(11, ar.com.fdvs.dj.domain.constants.Font._FONT_ARIAL, false, false, false);
+    public static final ar.com.fdvs.dj.domain.constants.Font ARIAL_XL_BOLD = new ar.com.fdvs.dj.domain.constants.Font(11, ar.com.fdvs.dj.domain.constants.Font._FONT_ARIAL, true, false, false);
+    public static final ar.com.fdvs.dj.domain.constants.Font ARIAL_XXL_BOLD = new ar.com.fdvs.dj.domain.constants.Font(13, ar.com.fdvs.dj.domain.constants.Font._FONT_ARIAL, true, false, false);
 
     //    public static final ar.com.fdvs.dj.domain.constants.Font DEFAULT_FONT_PDF = ar.com.fdvs.dj.domain.constants.Font.ARIAL_MEDIUM;
     public static final ar.com.fdvs.dj.domain.constants.Font DEFAULT_FONT_PDF = Font.ARIAL_SMALL;
 
-    //    public static final ar.com.fdvs.dj.domain.constants.Font HEADER_FONT_PDF = ARIAL_MEDIUM_XL_BOLD;
-    // public static final ar.com.fdvs.dj.domain.constants.Font HEADER_FONT_PDF = ARIAL_MEDIUM_XL;
+    //    public static final ar.com.fdvs.dj.domain.constants.Font HEADER_FONT_PDF = ARIAL_XL_BOLD;
+    // public static final ar.com.fdvs.dj.domain.constants.Font HEADER_FONT_PDF = ARIAL_XL;
     public static final ar.com.fdvs.dj.domain.constants.Font HEADER_FONT_PDF = Font.ARIAL_SMALL_BOLD;
 
     //    public static final Font GROUP_HEADER_ZAK_FONT_PDF = Font.ARIAL_MEDIUM_BOLD;
-    public static final ar.com.fdvs.dj.domain.constants.Font GROUP_HEADER_ZAK_FONT_PDF = ARIAL_MEDIUM_XL_BOLD;
-    public static final ar.com.fdvs.dj.domain.constants.Font GROUP_HEADER_USER_FONT_PDF = ARIAL_MEDIUM_XL_BOLD;
-    public static final ar.com.fdvs.dj.domain.constants.Font GROUP_HEADER_WEEK_FONT_PDF = ARIAL_MEDIUM_XL_BOLD;
-    public static final ar.com.fdvs.dj.domain.constants.Font SUBTITLE_FONT_PDF = ARIAL_MEDIUM_XL;
+    public static final ar.com.fdvs.dj.domain.constants.Font GROUP_HEADER_FONT_PDF = ARIAL_XL_BOLD;
+    public static final ar.com.fdvs.dj.domain.constants.Font GROUP_HEADER_ZAK_FONT_PDF = ARIAL_XL_BOLD;
+    public static final ar.com.fdvs.dj.domain.constants.Font GROUP_HEADER_USER_FONT_PDF = ARIAL_XL_BOLD;
+    public static final ar.com.fdvs.dj.domain.constants.Font GROUP_HEADER_WEEK_FONT_PDF = ARIAL_XL_BOLD;
+    public static final ar.com.fdvs.dj.domain.constants.Font SUBTITLE_FONT_PDF = ARIAL_XL;
     public static final ar.com.fdvs.dj.domain.constants.Font TITLE_FONT_PDF = ar.com.fdvs.dj.domain.constants.Font.ARIAL_BIG_BOLD;
 
     public static final String DEFAULT_STYLE_NAME;
@@ -50,9 +47,11 @@ public class VzmFormatReport {
     public static final String CENTER_GRID_STYLE_NAME;
 
     public static final Style TITLE_STYLE;
+    public static final Style XXL_STYLE;
     public static final Style SUBTITLE_STYLE;
 
     public static final Style HEADER_STYLE;
+    public static final Style GROUP_HEADER_STYLE;
     public static final Style GROUP_HEADER_ZAK_STYLE;
     public static final Style GROUP_HEADER_USER_STYLE;
     public static final Style GROUP_HEADER_DOCH_PERSON_STYLE;
@@ -141,6 +140,11 @@ public class VzmFormatReport {
                 .setFont(TITLE_FONT_PDF)
                 .build();
 
+        XXL_STYLE = new StyleBuilder(true,"xxl-style")
+                .setParentStyleName(DEFAULT_STYLE_NAME)
+                .setFont(ARIAL_XXL_BOLD)
+                .build();
+
         SUBTITLE_STYLE = new StyleBuilder(true, "subtitle-style")
                 .setParentStyleName(DEFAULT_STYLE_NAME)
                 .setFont(SUBTITLE_FONT_PDF)
@@ -158,6 +162,15 @@ public class VzmFormatReport {
 //                .setStretching(Stretching.RELATIVE_TO_BAND_HEIGHT)
                 .setBackgroundColor(HEADER_BG_COLOR)
                 .setTransparent(false)
+                .build();
+
+        GROUP_HEADER_STYLE = new StyleBuilder(false, "group-header-style")
+                .setHorizontalAlign(HorizontalAlign.LEFT)
+                .setBorder(Border.NO_BORDER())
+//                .setPaddingTop(8)
+//                .setPaddingBottom(124)
+                .setStretching(Stretching.RELATIVE_TO_BAND_HEIGHT)
+                .setFont(GROUP_HEADER_FONT_PDF)
                 .build();
 
         GROUP_HEADER_ZAK_STYLE = new StyleBuilder(false, "group-header-zak-style")

@@ -1403,7 +1403,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 , archFilterComponent
                 , new Ribbon()
                 , initNewKontButton()
-                , initZakRepButton()
+//                , initZakRepButton()
         );
 //        kzToolBar.expand(ribbonExp);
 
