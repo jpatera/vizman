@@ -37,11 +37,12 @@ import static eu.japtor.vizman.backend.utils.VzmFormatUtils.stringLocalToBigDeci
 import static eu.japtor.vizman.ui.util.VizmanConst.CZ_LOCALE;
 
 
-@Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL
-})
+@Permissions(
+        {Perm.VIEW_ALL, Perm.MODIFY_ALL}
+)
 @SpringComponent
 @UIScope
-public class CfgPropsForm extends VerticalLayout implements HasLogger {
+public class CfgPropsFormView extends VerticalLayout implements HasLogger {
 
     private Map<String, TextField> fieldMap = new LinkedHashMap<>();
     private Binder<AppCfg> binder = new Binder<>();
@@ -56,7 +57,7 @@ public class CfgPropsForm extends VerticalLayout implements HasLogger {
     public CfgPropsCache cfgPropsCache;
 
 
-    public CfgPropsForm() {
+    public CfgPropsFormView() {
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         setAlignItems(Alignment.STRETCH);
 //        this.setWidth("100%");

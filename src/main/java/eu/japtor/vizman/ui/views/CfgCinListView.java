@@ -34,7 +34,7 @@ import javax.annotation.PostConstruct;
 })
 @SpringComponent
 @UIScope
-public class CinListView extends VerticalLayout {
+public class CfgCinListView extends VerticalLayout {
 
     private Grid<Cin> cinGrid;
     private final VerticalLayout gridContainer;
@@ -43,7 +43,7 @@ public class CinListView extends VerticalLayout {
     public CinRepo cinRepo;
 
     @Autowired
-    public CinListView() {
+    public CfgCinListView() {
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         setAlignItems(Alignment.STRETCH);
 

@@ -49,7 +49,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.TITLE_PERSON;
 })
 @SpringComponent
 @UIScope    // Without this annotation browser refresh throws exception
-public class RoleListView extends VerticalLayout implements BeforeEnterObserver {
+public class CfgRoleListView extends VerticalLayout implements BeforeEnterObserver {
 
     private RoleEditorDialog roleEditForm;
 //    private final TextField searchField;
@@ -64,7 +64,7 @@ public class RoleListView extends VerticalLayout implements BeforeEnterObserver 
     public RoleService roleService;
 
     @Autowired
-    public RoleListView() {
+    public CfgRoleListView() {
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         setAlignItems(Alignment.STRETCH);
 

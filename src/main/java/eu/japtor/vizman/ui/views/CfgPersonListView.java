@@ -54,7 +54,7 @@ import java.util.List;
 })
 @SpringComponent
 @UIScope    // Without this annotation browser refresh throws exception
-public class PersonListView extends VerticalLayout implements BeforeEnterObserver {
+public class CfgPersonListView extends VerticalLayout implements BeforeEnterObserver {
 
     private static final String RADIO_PERSON_VISIBLE = "Viditelní";
     private static final String RADIO_PERSON_HIDDEN = "Skrytí";
@@ -85,7 +85,7 @@ public class PersonListView extends VerticalLayout implements BeforeEnterObserve
     public PasswordEncoder passwordEncoder;
 
     @Autowired
-    public PersonListView() {
+    public CfgPersonListView() {
         initView();
     }
 

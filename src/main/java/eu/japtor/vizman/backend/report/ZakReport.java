@@ -1,8 +1,6 @@
 package eu.japtor.vizman.backend.report;
 
 import ar.com.fdvs.dj.domain.AutoText;
-import ar.com.fdvs.dj.domain.CustomExpression;
-import ar.com.fdvs.dj.domain.DJValueFormatter;
 import ar.com.fdvs.dj.domain.builders.ColumnBuilder;
 import ar.com.fdvs.dj.domain.builders.GroupBuilder;
 import ar.com.fdvs.dj.domain.constants.GroupLayout;
@@ -14,11 +12,7 @@ import eu.japtor.vizman.backend.entity.ItemType;
 import org.vaadin.reports.PrintPreviewReport;
 
 import java.math.BigDecimal;
-import java.text.FieldPosition;
-import java.text.ParsePosition;
-import java.time.Duration;
 import java.util.Locale;
-import java.util.Map;
 
 import static ar.com.fdvs.dj.domain.constants.Font.PDF_ENCODING_CP1250_Central_European;
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
@@ -45,10 +39,8 @@ public class ZakReport extends PrintPreviewReport {
 
         this.getReportBuilder()
                 .setTitle("ZAKÁZKA")
-//                .setPageSizeAndOrientation(Page.Page_A4_Landscape())
                 .setPageSizeAndOrientation(Page.Page_A4_Landscape())
                 .setUseFullPageWidth(false)
-//                .setSubtitleHeight(200)
                 .setPrintColumnNames(true)
 //                .setHeaderHeight(20)
 //                .setSubtitle("Text kontraktu... / Text zakázky...")
@@ -112,7 +104,6 @@ public class ZakReport extends PrintPreviewReport {
                 .setColumnProperty("typ", ItemType.class)
                 .setTitle("Typ")
                 .setStyle(DEFAULT_GRID_STYLE)
-//                .setStyle(GROUP_HEADER_DOCH_PERSON_STYLE)
                 .setWidth(50)
                 .setFixedWidth(true)
                 .build()
@@ -160,38 +151,5 @@ public class ZakReport extends PrintPreviewReport {
                 .setGroupLayout(GroupLayout.VALUE_IN_HEADER)
                 .build()
         ;
-    }
-
-
-    public void setSubtitleText(String subtitleText) {
-        this.getReportBuilder().setSubtitle(subtitleText);
-    }
-
-
-    // Following expressions should work, but there is probably a bug in Vaadin component
-    private CustomExpression getFormattedDuration() {
-        return new CustomExpression() {
-            @Override
-            public Object evaluate(Map fields, Map variables, Map parameters) {
-                return "aaa:bbb";
-            }
-            @Override
-            public String getClassName() {
-                return Duration.class.getName();
-            }
-        };
-    }
-
-    private CustomExpression getCalcZakId2() {
-        return new CustomExpression() {
-            @Override
-            public Object evaluate(Map fields, Map variables, Map parameters) {
-                return fields.get("zakId");
-            }
-            @Override
-            public String getClassName() {
-                return Long.class.getName();
-            }
-        };
     }
 }

@@ -61,8 +61,9 @@ import static eu.japtor.vizman.backend.utils.VzmFormatUtils.vzmFileIconStyleProv
 //@Route(value = ROUTE_PERSON, layout = MainView.class)
 //@PageTitle(PAGE_TITLE_PERSON)
 //@Tag(TAG_PERSON)
-@Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL
-})
+@Permissions(
+        {Perm.VIEW_ALL, Perm.MODIFY_ALL}
+)
 @SpringComponent
 @UIScope    // Without this annotation browser refresh throws exception
 public class ToolsDirTreeView extends VerticalLayout  implements HasLogger {
