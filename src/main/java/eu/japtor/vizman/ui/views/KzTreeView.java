@@ -390,7 +390,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //                .fetchChildren(new HierarchicalQuery(null, modKont));
 //        List<KzTreeAware> zaks = zakStream.collect(Collectors.toList());
 //        ((KzTreeAware)modKont).getNodes() Zaks(zaks);
-//        Stream<KzTreeAware> stream = kzTreeGrid.getDataProvider().fetch(new Query<>(kz -> kz.getItemId().equals(modKont.getItemId())));
+//        Stream<KzTreeAware> stream = kzTreeGrid.getDataProvider().fetch(new Query<>(kz -> kz.getNodeId().equals(modKont.getNodeId())));
 
 
 //        Stream<KzTreeAware> stream = kzTreeGrid.getDataProvider().fetch(new HierarchicalQuery(null, modKont));

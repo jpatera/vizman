@@ -191,7 +191,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
     public PersonWageRepo personWageRepo;
 
     @Autowired
-    public CalyHolService calyHolService;
+    public CalService calService;
 
 
     public PruhView() {
@@ -572,7 +572,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
                 if (null != pruhYm) {
                     LocalDate date = LocalDate.of(pruhYm.getYear(), pruhYm.getMonth(), day);
                     isWeekend = (date.getDayOfWeek() == DayOfWeek.SATURDAY) || (date.getDayOfWeek() == DayOfWeek.SUNDAY);
-                    isHoliday = calyHolService.calyHolÈxist(date);
+                    isHoliday = calService.calyHolÈxist(date);
                 }
                 if (isHoliday) {
                     col.setClassNameGenerator(pruhZak -> "pruh-day-is-holiday");

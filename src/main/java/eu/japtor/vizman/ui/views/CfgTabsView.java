@@ -46,8 +46,8 @@ public class CfgTabsView extends VerticalLayout {
     @Autowired
     CfgRoleListView roleListView;
 
-//    @Autowired
-//    CalTreeView calTreeView;
+    @Autowired
+    CfgCalTreeView calTreeView;
 
     @Autowired
     CfgCinListView cinListView;
@@ -74,7 +74,7 @@ public class CfgTabsView extends VerticalLayout {
         cfgExtTabs.add(personListView, tabPerson);
         cfgExtTabs.add(roleListView, tabRole);
         cfgExtTabs.add(cinListView, tabCin);
-//        cfgExtTabs.add(calTreeView, tabCal);
+        cfgExtTabs.add(calTreeView, tabCal);
 //        cfgExtTabs.add(curr, tabCurr);
         cfgExtTabs.add(propsFormView, tabAppCfg);
 

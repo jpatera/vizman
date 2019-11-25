@@ -69,6 +69,11 @@ public class CfgPersonListView extends VerticalLayout implements BeforeEnterObse
     private PersonGrid personGrid;
 //    ComboBox<Person> usernameSearchCombo;
 
+    private DataProvider<Person, String> searchUsernameDataProvider;
+    private DataProvider<Person, PersonService.PersonFilter> gridDataProvider; // Second type  param  must not be Void
+    private ConfigurableFilterDataProvider<Person, Void, PersonService.PersonFilter> filteredGridDataProvider;
+
+
     @Autowired
     public PersonService personService;
 
@@ -100,12 +105,6 @@ public class CfgPersonListView extends VerticalLayout implements BeforeEnterObse
                 buildGridContainer()
         );
     }
-
-
-    DataProvider<Person, String> searchUsernameDataProvider;
-    DataProvider<Person, PersonService.PersonFilter> gridDataProvider; // Second type  param  must not be Void
-    ConfigurableFilterDataProvider<Person, Void, PersonService.PersonFilter> filteredGridDataProvider;
-
 
     @PostConstruct
     public void postInit() {

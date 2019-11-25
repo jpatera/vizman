@@ -5,10 +5,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.math.BigDecimal;
+import java.time.YearMonth;
 
 @Entity
 @Table(name = "CALY")
-public class Caly extends AbstractGenIdEntity {
+public class Caly extends AbstractGenIdEntity implements CalTreeNode {
   public static final String SORT_PROP_YR = "yr";
 
   @Basic
@@ -24,6 +25,7 @@ public class Caly extends AbstractGenIdEntity {
   private BigDecimal yearFondDays;
 
 
+  @Override
   public Integer getYr() {
     return yr;
   }
@@ -45,5 +47,32 @@ public class Caly extends AbstractGenIdEntity {
   }
   public void setYearFondDays(BigDecimal yearFondDays) {
     this.yearFondDays = yearFondDays;
+  }
+
+  // ---------------------------------------------------
+
+  @Override
+  public Long getNodeId() {
+    return getId();
+  }
+
+  @Override
+  public YearMonth getYm() {
+    return null;
+  }
+
+  @Override
+  public BigDecimal getFondDays() {
+    return getYearFondDays();
+  }
+
+  @Override
+  public BigDecimal getFondHours() {
+    return getYearFondHours();
+  }
+
+  @Override
+  public CalTreeNode getParent() {
+    return null;
   }
 }

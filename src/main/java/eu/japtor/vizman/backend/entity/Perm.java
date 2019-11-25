@@ -40,6 +40,9 @@ public enum Perm implements GrantedAuthority {
     ROLE_READ("Lze prohlížet seznam rolí"),
     ROLE_MODIFY("Lze vytvářet/editovat/rušit role"),
 
+    CAL_READ("Lze prohlížet kalendář aplikace"),
+    CAL_MODIFY("Lze generovat záznamy aplikačního kalndáře"),
+
     CIN_READ("Lze prohlížet seznam činností"),
     ;
 
