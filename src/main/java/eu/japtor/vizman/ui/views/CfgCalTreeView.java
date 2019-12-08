@@ -29,10 +29,7 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
-import eu.japtor.vizman.backend.bean.Account;
-import eu.japtor.vizman.backend.bean.TestCalService;
 import eu.japtor.vizman.backend.dataprovider.CfgCalTreeDataProvider;
-import eu.japtor.vizman.backend.dataprovider.TestDataProvider;
 import eu.japtor.vizman.backend.entity.CalTreeNode;
 import eu.japtor.vizman.backend.entity.Caly;
 import eu.japtor.vizman.backend.entity.Perm;
@@ -43,7 +40,6 @@ import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import java.time.YearMonth;
 import java.util.NoSuchElementException;
 
 @Permissions(
@@ -65,6 +61,7 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
     private TreeGrid<CalTreeNode> calGrid;
     private Button genCalYearButton;
     private Button reloadButton;
+    private HeaderRow filterRow;
     private Select<Integer> rokFilterField;
 
 //    @Autowired
@@ -107,46 +104,9 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
 
         HierarchicalDataProvider<CalTreeNode, CalTreeNode> calDataProvider = new CfgCalTreeDataProvider(calService);
         filteredCalDataProvider = calDataProvider.withConfigurableFilter();
-//        calGrid.setDataProvider(filteredCalymDataProvider);
         calGrid.setDataProvider(filteredCalDataProvider);
         calGrid.getDataProvider().refreshAll();
-
-
-//        testGrid.getDataProvider().refreshAll();
-
-
     }
-
-    class CalymFilter {
-        Integer year;
-        YearMonth ym;
-
-        public CalymFilter(Integer year, YearMonth ym) {
-            this.year = year;
-            this.ym = ym;
-        }
-
-        public Integer getYear() {
-            return year;
-        }
-
-        public void setYear(Integer year) {
-            this.year = year;
-        }
-
-        public YearMonth getYm() {
-            return ym;
-        }
-
-        public void setYm(YearMonth ym) {
-            this.ym = ym;
-        }
-    }
-
-
-
-    TestCalService testService;
-
 
     private VerticalLayout buildGridContainer() {
         VerticalLayout gridContainer = new VerticalLayout();
@@ -157,56 +117,8 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
         gridContainer.add(buildGridToolBar());
         gridContainer.add(initCalymTreeGrid());
 
-
-//        testGrid = new TreeGrid<>();
-//        testGrid.addHierarchyColumn(cal -> cal.getYr().toString()).setHeader("CAL Yr");
-//        testGrid.addColumn(cal -> cal.getYearFondDays().toString()).setHeader("Fond (hod/rok)");
-//        testService = new TestCalService();
-//        HierarchicalDataProvider testDataProvider =
-//            new AbstractBackEndHierarchicalDataProvider<CalyTest, Void>() {
-//
-//                @Override
-//                public int getChildCount(HierarchicalQuery<CalyTest, Void> query) {
-//                    return (int) testService.getChildCount(query.getParent());
-//                }
-//
-//                @Override
-//                public boolean hasChildren(CalyTest item) {
-//                    return testService.hasChildren(item);
-//                }
-//
-//                @Override
-//                protected Stream<CalyTest> fetchChildrenFromBackEnd(
-//                        HierarchicalQuery<CalyTest, Void> query) {
-//                    return testService.fetchChildren(query.getParent()).stream();
-//                }
-//            };
-//
-//
-//
-////        testDataProvider = new TestDataProvider(testService);
-//        testGrid.setDataProvider(testDataProvider);
-//        testGrid.setId("testgrid");
-
-
-
-//        initialCalymSortOrder = Arrays.asList(new GridSortOrder(
-//                calGrid.getColumnByKey(YM_KEY), SortDirection.DESCENDING)
-//        );
-
-
-        TreeGrid<Account> accGrid = new TreeGrid<>();
-        accGrid.addHierarchyColumn(Account::toString).setHeader("Account Title");
-        accGrid.addColumn(Account::getCode).setHeader("Code");
-
-//        gridContainer.add(testGrid);
         return gridContainer;
     }
-
-
-
-    TestDataProvider testDataProvider;
-    HeaderRow filterRow;
 
     private Grid initCalymTreeGrid() {
 
