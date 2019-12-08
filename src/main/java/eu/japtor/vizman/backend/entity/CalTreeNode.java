@@ -6,11 +6,14 @@ import java.util.List;
 
 public interface CalTreeNode<T extends CalTreeNode> {
 
-    Long getNodeId();
+    Long getId();
     Integer getYr();
+    void setYr(Integer yr);
     YearMonth getYm();
-    BigDecimal getFondDays();
-    BigDecimal getFondHours();
+    BigDecimal getYearFondDays();
+    BigDecimal getYearFondHours();
+    BigDecimal getMonthFondDays();
+    BigDecimal getMonthFondHours();
 
     CalTreeNode getParent();
 }

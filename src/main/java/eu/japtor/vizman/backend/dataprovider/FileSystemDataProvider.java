@@ -1,4 +1,4 @@
-package eu.japtor.vizman.backend.bean;
+package eu.japtor.vizman.backend.dataprovider;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;

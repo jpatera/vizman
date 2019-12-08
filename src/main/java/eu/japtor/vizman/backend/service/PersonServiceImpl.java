@@ -158,17 +158,15 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
 //            List<QuerySortOrder> defaultSort = ImmutableList.of(new QuerySortOrder("username", SortDirection.ASCENDING));
 //            List<QuerySortOrder> defaultSort = Collections.singletonList(new QuerySortOrder("username", SortDirection.ASCENDING));
 
-            ExampleMatcher exampleMatcher = ExampleMatcher.matching()
-                    .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
-                    .withIgnoreNullValues();
-
             Person probe = Person.getEmptyInstance();
             probe.setHidden(personFilter.getHidden());
             probe.setUsername(personFilter.getUsername());
 //            example.setHidden(personFilter.getHidden());
+
             ExampleMatcher matcher = ExampleMatcher.matching()
                     .withMatcher("username", new ExampleMatcher.GenericPropertyMatcher().startsWith())
                     .withMatcher("hidden", new ExampleMatcher.GenericPropertyMatcher().exact())
+//                    .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
 //                    .withIgnorePaths("lastname")
 //                    .withIncludeNullValues()
                     ;

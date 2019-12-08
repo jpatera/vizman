@@ -68,28 +68,65 @@ public class Calym extends AbstractGenIdEntity implements CalTreeNode {
 
 // ---------------------------------------
 
-  @Override
-  public Long getNodeId() {
-    return getId();
+  public Calym() {
   }
+
+  public Calym(YearMonth ym, BigDecimal monthFondHours, BigDecimal monthFondDays, Caly caly) {
+    this.ym = ym;
+    this.monthFondHours = monthFondHours;
+    this.monthFondDays = monthFondDays;
+    this.caly = caly;
+  }
+
+//  @Override
+//  public Long getNodeId() {
+//    return getId();
+//  }
 
   @Override
   public Integer getYr() {
     return null;
+//    return 0;
   }
 
   @Override
-  public BigDecimal getFondDays() {
-    return getMonthFondDays();
+  public void setYr(Integer yr) {
+//    return null;
+//    return 0;
   }
 
   @Override
-  public BigDecimal getFondHours() {
-    return getMonthFondHours();
+  public BigDecimal getYearFondDays() {
+    return null;
+  }
+
+  @Override
+  public BigDecimal getYearFondHours() {
+    return null;
   }
 
   @Override
   public CalTreeNode getParent() {
     return getCaly();
+  }
+
+  @Override
+  public int hashCode() {
+    return getId().hashCode();
+//        if (getId() == null) {
+//            return super.hashCode();
+//        }
+//        return 31 + getId().hashCode();
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) return true;
+    if (!(other instanceof AbstractGenIdEntity)) return false;
+    return getId() != null && getId().equals(((AbstractGenIdEntity) other).getId());
+//		if (id == null) {
+//			// New entities are only equal if the instance is the same
+//			return super.equals(other);
+//		}
   }
 }

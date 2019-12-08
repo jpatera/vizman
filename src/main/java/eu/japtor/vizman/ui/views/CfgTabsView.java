@@ -67,7 +67,7 @@ public class CfgTabsView extends VerticalLayout {
         Tab tabPerson = new Tab("Uživatelé");
         Tab tabRole = new Tab("Role");
         Tab tabCin = new Tab("Činnosti");
-        Tab tabCal = new Tab("Kalendář");
+        Tab tabCal = new Tab("Prac. fond");
 //        Tab tabCurr = new Tab("Měny");
         Tab tabAppCfg = new Tab("Aplikace");
 
