@@ -1,6 +1,8 @@
 package eu.japtor.vizman.backend.entity;
 
 
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.YearMonth;
@@ -44,6 +46,11 @@ public class Calym extends AbstractGenIdEntity implements CalTreeNode {
     this.ym = calYm;
   }
 
+  @Override
+  public String getMonthLocal() {
+      return VzmFormatUtils.monthLocalizedFormatter.format(ym.atDay(1));
+  }
+
   public BigDecimal getMonthFondHours() {
     return monthFondHours;
   }
@@ -71,10 +78,10 @@ public class Calym extends AbstractGenIdEntity implements CalTreeNode {
   public Calym() {
   }
 
-  public Calym(YearMonth ym, BigDecimal monthFondHours, BigDecimal monthFondDays, Caly caly) {
+  public Calym(YearMonth ym, BigDecimal monthFondDays, Caly caly) {
     this.ym = ym;
-    this.monthFondHours = monthFondHours;
     this.monthFondDays = monthFondDays;
+    this.monthFondHours = monthFondDays.multiply(BigDecimal.valueOf(8));
     this.caly = caly;
   }
 

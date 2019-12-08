@@ -54,6 +54,8 @@ public class VzmFormatUtils {
     public final static DateTimeFormatter basicDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 //    public final static DateTimeFormatter titleModifDateFormatter = DateTimeFormatter.ofPattern("EEEE yyyy-MM-dd HH:mm");
     public final static DateTimeFormatter titleModifDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    public final static DateTimeFormatter monthLocalizedFormatter = DateTimeFormatter.ofPattern("LLLL");
+//    public final static DateTimeFormatter monthLocalizedFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle."yyyy-MM-dd HH:mm");
 
     private static Map<String, Color> nameToColorMap;
 

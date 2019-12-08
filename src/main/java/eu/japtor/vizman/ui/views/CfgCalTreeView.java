@@ -16,10 +16,8 @@
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -37,20 +35,16 @@ import eu.japtor.vizman.backend.dataprovider.CfgCalTreeDataProvider;
 import eu.japtor.vizman.backend.dataprovider.TestDataProvider;
 import eu.japtor.vizman.backend.entity.CalTreeNode;
 import eu.japtor.vizman.backend.entity.Caly;
-import eu.japtor.vizman.backend.entity.CalyTest;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.service.CalService;
 import eu.japtor.vizman.ui.components.*;
-import org.apache.commons.lang3.StringUtils;
+import org.claspina.confirmdialog.ButtonOption;
+import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
 import java.time.YearMonth;
-import java.util.List;
-import java.util.stream.Stream;
-
-import static eu.japtor.vizman.backend.utils.VzmFileUtils.VzmFile;
+import java.util.NoSuchElementException;
 
 @Permissions(
         {Perm.CAL_READ, Perm.CAL_MODIFY}
@@ -62,19 +56,16 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
     private static final String ID_KEY = "cal-id-key";
     private static final String YR_KEY = "cal-yr-key";
     private static final String YM_KEY = "cal-ym-key";
+    private static final String MONTH_KEY = "cal-month-key";
     private static final String YEAR_FOND_HOURS_KEY = "year-fond-hours";
     private static final String YEAR_FOND_DAYS_KEY = "year-fond-days";
     private static final String MONTH_FOND_HOURS_KEY = "month-fond-hours";
     private static final String MONTH_FOND_DAYS_KEY = "month-fond-days";
 
-    private TreeGrid<CalyTest> testGrid;
-
     private TreeGrid<CalTreeNode> calGrid;
     private Button genCalYearButton;
     private Button reloadButton;
-//    private RadioButtonGroup<String> dirFilterRadio;
-
-    private List<GridSortOrder<CalTreeNode>> initialCalymSortOrder;
+    private Select<Integer> rokFilterField;
 
 //    @Autowired
 //    public CfgPropsCache cfgPropsCache;
@@ -261,14 +252,14 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
 //                    + Jsoup.clean(file.getName(), Whitelist.simpleText());
 //        }, new ComponentRenderer<>();
 
-        calGrid.addColumn(CalTreeNode::getId)
-                .setHeader("ID")
-                .setFlexGrow(0)
-                .setWidth("9em")
-                .setResizable(true)
-                .setKey(ID_KEY)
-//                .setId("file-size-id")
-        ;
+//        calGrid.addColumn(CalTreeNode::getId)
+//                .setHeader("ID")
+//                .setFlexGrow(0)
+//                .setWidth("9em")
+//                .setResizable(true)
+//                .setKey(ID_KEY)
+////                .setId("file-size-id")
+//        ;
         calGrid.addHierarchyColumn(c -> null == c.getYr() ? "" : c.getYr())
                 .setHeader("Rok")
                 .setFlexGrow(0)
@@ -278,7 +269,7 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
                 .setSortProperty("yr")
         ;
         calGrid.addColumn(c -> null == c.getYearFondDays() ? "" : c.getYearFondDays())
-                .setHeader("Fond [dní/rok]")
+                .setHeader("Fond [den/rok]")
                 .setKey(YEAR_FOND_DAYS_KEY)
         ;
         calGrid.addColumn(c -> null == c.getYearFondHours() ? "" : c.getYearFondHours())
@@ -289,8 +280,12 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
                 .setHeader("Rok-Měs")
                 .setKey(YM_KEY)
         ;
+        calGrid.addColumn(c -> null == c.getMonthLocal() ? "" : c.getMonthLocal())
+                .setHeader("Měsíc")
+                .setKey(MONTH_KEY)
+        ;
         calGrid.addColumn(c -> null == c.getMonthFondDays() ? "" : c.getMonthFondDays())
-                .setHeader("Fond [dní/měs]")
+                .setHeader("Fond [den/měs]")
                 .setKey(MONTH_FOND_DAYS_KEY)
         ;
         calGrid.addColumn(c -> null == c.getMonthFondHours() ? "" : c.getMonthFondHours())
@@ -362,7 +357,7 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
 
         filterRow = calGrid.appendHeaderRow();
         rokFilterField = buildSelectionFilterField();
-        rokFilterField.setItems(2014, 2016, 2019);
+        rokFilterField.setItems(calService.fetchCalyYrList());
         rokFilterField.addValueChangeListener(event -> {
                 Integer yrFilter = event.getValue();
                 CalTreeNode filter = Caly.getEmptyInstance();
@@ -377,9 +372,6 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
         return calGrid;
     }
 
-    Select<Integer> rokFilterField;
-
-
     private <T> Select buildSelectionFilterField() {
         Select <T> selectFilterField = new Select<>();
         selectFilterField.setSizeFull();
@@ -387,18 +379,6 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
         selectFilterField.setEmptySelectionAllowed(true);
         return selectFilterField;
     }
-//    private ComponentRenderer<Component, KzTreeAware> kzArchRenderer = new ComponentRenderer<>(kz -> {
-//        ArchIconBox archBox = new ArchIconBox();
-//        archBox.showIcon(kz.getTyp(), kz.getArchState());
-//        return archBox;
-//    });
-
-//    public HeaderRow appendHeaderRow() {
-//        if (getHeaderRows().size() == 0) {
-//            return addFirstHeaderRow();
-//        }
-//        return insertInmostColumnLayer(true, false).asHeaderRow();
-//    }
 
     private Button buildEditBtn(CalTreeNode node) {
         Button editBtn = new GridItemEditBtn(event ->
@@ -413,9 +393,6 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
 
         HorizontalLayout viewToolBar = new HorizontalLayout();
         viewToolBar.setSpacing(false);
-//        viewToolBar.setPadding(true);
-//        viewToolBar.getStyle().set("padding-bottom", "5px");
-//        viewToolBar.setWidth("100%");
         viewToolBar.setAlignItems(Alignment.END);
         viewToolBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
@@ -440,57 +417,37 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
     }
 
     private Component initReloadButton() {
-        reloadButton = new ReloadButton(event -> updateFolderViewContent());
+        reloadButton = new ReloadButton(event -> updateCalViewContent());
         return reloadButton;
     }
 
     private Component initGenCalYearButton() {
-        genCalYearButton = new ToolBarButton("Generovat rok"
-                , event -> {
+
+        genCalYearButton = new ToolBarButton("Generovat fond/rok", event -> {
+            int yrNew = 1 + calService.fetchCalyYrList().stream()
+                    .mapToInt(y -> y)
+                    .max().orElseThrow(NoSuchElementException::new);
+
+            ConfirmDialog.createQuestion()
+                    .withCaption("PRACOVNÍ FOND")
+                    .withMessage(
+                            String.format("Generovat pracovní fond pro rok %d ?", yrNew))
+                    .withYesButton(() -> {
+                        calService.generateAndSaveCalYearWorkFonds(yrNew);
+                        rokFilterField.setItems(calService.fetchCalyYrList());
+                        calGrid.getDataProvider().refreshAll();
+                    }, ButtonOption.focus(), ButtonOption.caption("GENEROVAT"))
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .open();
         });
         return genCalYearButton;
     }
 
-    private void updateFolderViewContent() {
-        updateFolderViewContent(null);
+    private void updateCalViewContent() {
+        updateCalViewContent(null);
     }
 
-    private void assignDataProviderToGridAndSort(TreeData<CalTreeNode> calymTreeData) {
-        List<GridSortOrder<CalTreeNode>> sortOrderOrig = calGrid.getSortOrder();
-        calGrid.setTreeData(calymTreeData);
-        if (CollectionUtils.isEmpty(sortOrderOrig)) {
-            calGrid.sort(initialCalymSortOrder);
-        } else {
-            calGrid.sort(sortOrderOrig);
-        }
-    }
-
-    private void updateFolderViewContent(final VzmFile itemToSelect) {
-
+    private void updateCalViewContent(final CalTreeNode itemToSelect) {
         calGrid.getDataProvider().refreshAll();
-
-//        kzTreeData = loadKzTreeData(archFilterRadio.getStringValue());
-//        inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
-//        assignDataProviderToGridAndSort(inMemoryKzTreeProvider);
-//        inMemoryKzTreeProvider.refreshAll();
-
-//        folderGrid.deselectAll();
-//        TreeData<VzmFileUtils.VzmFile> folderTreeData
-//                = VzmFileUtils.getExpectedKontFolderTree(cfgPropsCache.getDocRootServer(), null);
-//
-//        Path folderRootPath = getKontDocRootPath(cfgPropsCache.getDocRootServer(), currentItem.getFolder());
-//        File folderRootDir = new File(folderRootPath.toString());
-//        addFilesToExpectedVzmTreeData(folderTreeData, folderRootDir.listFiles(), null);
-//
-//        addNotExpectedKontSubDirs(folderTreeData
-//                , new VzmFileUtils.VzmFile(folderRootPath, true)
-//        );
-//        addNotExpectedKontSubDirs(folderTreeData, new VzmFileUtils.VzmFile(getExpectedKontFolder(currentItem), true));
-//
-//        assignDataProviderToGridAndSort(kontDocTreeData);
-
-//        if (null != itemToSelect) {
-//            folderGrid.getSelectionModel().select(itemToSelect);
-//        }
     }
 }

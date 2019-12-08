@@ -11,41 +11,84 @@ import eu.japtor.vizman.backend.entity.Calym;
 import eu.japtor.vizman.backend.service.CalService;
 import org.springframework.data.domain.*;
 import org.springframework.data.util.Pair;
+import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CfgCalTreeDataProvider
                 extends AbstractBackEndHierarchicalDataProvider<CalTreeNode, CalTreeNode>
-//            extends AbstractBackEndHierarchicalDataProvider<CalTreeNode, CalymFilter> {
 {
     private final CalService calService;
-    private CalTreeNode defaultFilter = null;
-    //    private final ToLongFunction<String> lengthFunction;
+
+    private final CalTreeNode defaultFilter = Caly.getEmptyInstance();
+
+    private final List<QuerySortOrder> defaultSortOrders = Arrays.asList(
+            new QuerySortOrder("yr", SortDirection.DESCENDING)
+//            , new QuerySortOrder("ym", SortDirection.ASCENDING)
+    );
 
     private final ExampleMatcher matcher = ExampleMatcher.matching()
             .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
             .withIgnoreNullValues();
-
-//    private Example<Caly> buildCalyExample(Caly probe) {
-//        return Example.of(probe, matcher);
-//    }
-
-    private Example<CalTreeNode> buildCalyExample(CalTreeNode probe) {
-        return Example.of(probe, matcher);
-    }
-
 
 
     public CfgCalTreeDataProvider(CalService calService) {
         this.calService = calService;
     }
 
-    private final List<QuerySortOrder> defaultSortOrders = new ArrayList<>();
+    @Override
+    public boolean hasChildren(final CalTreeNode calNode) {
+        return null == calNode || calNode.getYr() != null;
+    }
 
+    @Override
+    public int getChildCount(HierarchicalQuery<CalTreeNode, CalTreeNode> hQuery) {
+
+//        CalTreeNode parent = query.getParentOptional().orElse(null);
+        if (null == hQuery.getParent()) {
+            return (int)calService.countCalysByExample(buildCalyExample(hQuery), getPageable(hQuery));
+        } else if (null != hQuery.getParent().getYr()) {
+            return (int)calService.countCalymsByYear(hQuery.getParent().getYr());
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    protected Stream<CalTreeNode> fetchChildrenFromBackEnd(HierarchicalQuery<CalTreeNode, CalTreeNode> hQuery) {
+
+////        Optional<CalTreeNode> parentOpt = hQuery.getParentOptional();
+//        hQuery.getFilter()
+//                .map(probe -> calService.fetchCalysByExameple(buildCalyExample(probe), ChunkRequest.of(hQuery, defaultSort)).getContent()))
+//                .map(probe -> calService.findAll(buildExample(document), ChunkRequest.of(q, defaultSort)).getContent()))
+
+        if (hQuery.getParent() == null) { // Only root nodes have null parents
+//            Pageable pageable =  PageRequest.of(0, 8, sort);
+            // TODO: rewrite to "return fromPageaable(...)":
+            Page<Caly> rootNodes = calService.fetchCalysByExameple(
+                    buildCalyExample(hQuery),  getPageable(hQuery)
+            );
+            return rootNodes.stream()
+                    .map(cy -> (CalTreeNode) cy)
+            ;
+        } else if (null != hQuery.getParent().getYr()) {    // Not null years are provided only by Caly (not leaf)
+            List<Calym> childs = calService.fetchCalymsByYear(
+                    hQuery.getParent().getYr()
+            );
+            return childs.stream()
+                    .map(cym -> (CalTreeNode) cym)
+            ;
+        } else {    // Null years are provided by leaf Calym items
+            return null;
+        }
+    }
+
+    private Example<Caly> buildCalyExample(final Query query) {
+        return Example.of((Caly)query.getFilter().orElse(defaultFilter), matcher);
+    }
 
     private static Sort.Order queryOrderToSpringOrder(QuerySortOrder queryOrder) {
         return new Sort.Order(queryOrder.getDirection() == SortDirection.ASCENDING
@@ -53,16 +96,14 @@ public class CfgCalTreeDataProvider
                 , queryOrder.getSorted());
     }
 
-
     // From: https://github.com/Artur-/spring-data-provider/blob/master/src/main/java/org/vaadin/artur/spring/dataprovider/PageableDataProvider.java
     private Sort createSpringSort(Query<CalTreeNode, CalTreeNode> query) {
         List<QuerySortOrder> sortOrders;
-        if (null == query.getSortOrders()) {
+        if (CollectionUtils.isEmpty(query.getSortOrders())) {    // Sort orders is never null (by Vaadin), empty  list is default
             sortOrders = defaultSortOrders;
         } else {
             sortOrders = query.getSortOrders();
         }
-
         if (sortOrders.size() == 0) {
             return Sort.unsorted();
         } else {
@@ -70,19 +111,11 @@ public class CfgCalTreeDataProvider
                     .map(CfgCalTreeDataProvider::queryOrderToSpringOrder)
                     .collect(Collectors.toList());
             return Sort.by(orders);
-
-//            SortDirection qSortDirection = sortOrders.get(0).getDirection();
-//            String qSortProp = sortOrders.get(0).getSorted();
-//            return Sort.by(
-//                    qSortDirection == SortDirection.ASCENDING ? Sort.Direction.ASC : Sort.Direction.DESC
-//                    , qSortProp
-//            );
         }
     }
 
-
     // From: https://github.com/Artur-/spring-data-provider/blob/master/src/main/java/org/vaadin/artur/spring/dataprovider/PageableDataProvider.java
-    public static Pair<Integer, Integer> limitAndOffsetToPageSizeAndNumber(
+    private static Pair<Integer, Integer> limitAndOffsetToPageSizeAndNumber(
             int offset, int limit) {
         int minPageSize = limit;
         int lastIndex = offset + limit - 1;
@@ -101,102 +134,24 @@ public class CfgCalTreeDataProvider
         return Pair.of(maxPageSize, 0);
     }
 
-    private Pageable getPageable(Query <CalTreeNode, CalTreeNode> query) {
+    private Pageable getPageable(Query <CalTreeNode, CalTreeNode> query)
+    {
         Pair<Integer, Integer> pageSizeAndNumber = limitAndOffsetToPageSizeAndNumber(
                 query.getOffset(), query.getLimit());
         return PageRequest.of(pageSizeAndNumber.getSecond(), pageSizeAndNumber.getFirst(), createSpringSort(query));
     }
 
-
-    @Override
-//    protected Stream<CalTreeNode> fetchChildrenFromBackEnd(HierarchicalQuery<CalTreeNode, CalymFilter> query) {
-    protected Stream<CalTreeNode> fetchChildrenFromBackEnd(HierarchicalQuery<CalTreeNode, CalTreeNode> hQuery) {
-
-//        hQuery.getSortOrders();
-
-//        List<QuerySortOrder> qSortOrders = hQuery.getSortOrders();
-
-//        List<CfgCalSortOrders> sortOrders = new ArrayList<>();
-//        for(SortOrder<String> queryOrder : hQuery.getSortOrders()) {
-//            CfgCalSort sort = calService.createSort(
-//                    // The name of the sorted property
-//                    queryOrder.getSorted(),
-//                    // The sort direction for this property
-//                    queryOrder.getDirection() == SortDirection.DESCENDING);
-//            sortOrders.add(sort);
-//        }
-
-        Pageable pageable =  getPageable(hQuery);
-
-////        Optional<CalTreeNode> parentOpt = hQuery.getParentOptional();
-//        hQuery.getFilter()
-//                .map(probe -> calService.fetchAllCalys(buildCalyExample(probe), ChunkRequest.of(hQuery, defaultSort)).getContent()))
-//                .map(probe -> calService.findAll(buildExample(document), ChunkRequest.of(q, defaultSort)).getContent()))
-//
-        CalTreeNode probe = hQuery.getFilter().orElse(null);
-
-
-        if (hQuery.getParent() == null) { // Root nodes - no parent by definition
-//            List<CalTreeNode> rootNodes = calService.fetchAllCalRootNodes();
-            List<Caly> rootNodes = calService.fetchAllCalys(probe, pageable);
-//                    hQuery.getOffset()
-//                    , hQuery.getLimit()
-//                    , sortOrders
-//            );
-            return rootNodes.stream()
-                    .map(cy -> (CalTreeNode) cy)
-//                    .skip(hQuery.getOffset())
-//                    .limit(hQuery.getLimit())
-            ;
-        } else if (null != hQuery.getParent().getYr()) {    // Not null year is provided only by Caly
-//            List<CalTreeNode> childNodes = calService.fetchCalymNodesByYear(Integer.valueOf(hQuery.getParent().getYr()));
-//            return childNodes.stream()
-//                    .skip(hQuery.getOffset())
-//                    .limit(hQuery.getLimit())
-//            ;
-
-            List<Calym> childs = calService.fetchCalymsByYear(
-                    Integer.valueOf(hQuery.getParent().getYr())
-            );
-            return childs.stream()
-                    .map(c -> (CalTreeNode) c)
-//                    .skip(hQuery.getOffset())
-//                    .limit(hQuery.getLimit())
-            ;
-
-//
-//                return childNodes.stream()
-//                        .map(s -> {
-//                            return (Caly) s;   // casting to super type for the Stream
-//                        }
-//                );
-        } else {    // Null years have only Calym items
-            return null;
+    private <T> Stream<T> fromPageable(Page<T> result, Pageable pageable, Query<T, ?> query)
+    {
+        List<T> items = result.getContent();
+        int firstRequested = query.getOffset();
+        int nrRequested = query.getLimit();
+        int firstReturned = (int) pageable.getOffset();
+        int firstReal = firstRequested - firstReturned;
+        int afterLastReal = firstReal + nrRequested;
+        if (afterLastReal > items.size()) {
+            afterLastReal = items.size();
         }
-    }
-
-
-    @Override
-    public int getChildCount(HierarchicalQuery<CalTreeNode, CalTreeNode> hQuery) {
-//    public int getChildCount(HierarchicalQuery<CalTreeNode, CalymFilter> query) {
-
-//        CalTreeNode parent = query.getParentOptional().orElse(null);
-        if (null == hQuery.getParent()) {
-//            return calService.fetchAllCalRootNodes().size();
-//            return calService.fetchAllCalys().size();
-
-            hQuery.getFilter().orElse(defaultFilter);
-
-            return (int)calService.countAllCalys( hQuery.getFilter().orElse(null), getPageable(hQuery));
-        } else if (null != hQuery.getParent().getYr()) {
-            return calService.fetchCalymNodesByYear(Integer.valueOf(hQuery.getParent().getYr())).size();
-        } else {
-            return 0;
-        }
-    }
-
-    @Override
-    public boolean hasChildren(CalTreeNode calNode) {
-        return null == calNode || calNode.getYr() != null;
+        return items.subList(firstReal, afterLastReal).stream();
     }
 }

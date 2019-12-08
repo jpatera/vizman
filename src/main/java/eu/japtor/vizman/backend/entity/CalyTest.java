@@ -104,6 +104,11 @@ public class CalyTest implements CalTreeNode {
   }
 
   @Override
+  public String getMonthLocal() {
+    return null;
+  }
+
+  @Override
   public CalTreeNode getParent() {
     return null;
   }

@@ -1478,7 +1478,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
 ////            pzak.getZakId()...
 //            for (int i = 1; i <= pruhDayMax; i++) {
 //                BigDecimal newCellHod = pzak.getHod(i);
-//                LocalDate pzakDate = LocalDate.of(pruhYm.getYear(), pruhYm.getMonth(), i);
+//                LocalDate pzakDate = LocalDate.of(pruhYm.getYear(), pruhYm.getMonthLocal(), i);
 //                DochsumZak dsZakDb = dsZaksDb.stream()
 //                        .filter(zakDb -> zakDb.getZakId().equals(pzakZakId)
 //                                && zakDb.getDsDate().equals(pzakDate)

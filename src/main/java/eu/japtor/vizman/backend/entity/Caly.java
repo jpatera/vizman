@@ -1,5 +1,7 @@
 package eu.japtor.vizman.backend.entity;
 
+import org.springframework.data.annotation.Transient;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -56,6 +58,12 @@ public class Caly extends AbstractGenIdEntity implements CalTreeNode {
   public Caly() {
   }
 
+  public Caly(Integer yr, BigDecimal yearFondDays) {
+    this.yr = yr;
+    this.yearFondDays = yearFondDays;
+    this.yearFondHours = yearFondDays.multiply(BigDecimal.valueOf(8));
+  }
+
   public Caly(Integer yr, BigDecimal yearFondHours, BigDecimal yearFondDays) {
     this.yr = yr;
     this.yearFondHours = yearFondHours;
@@ -67,8 +75,13 @@ public class Caly extends AbstractGenIdEntity implements CalTreeNode {
 //    return getId();
 //  }
 
-  @Override
+  @Transient
   public YearMonth getYm() {
+    return null;
+  }
+
+  @Transient
+  public String getMonthLocal() {
     return null;
   }
 
