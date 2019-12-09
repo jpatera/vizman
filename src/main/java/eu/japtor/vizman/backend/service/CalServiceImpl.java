@@ -1,9 +1,6 @@
 package eu.japtor.vizman.backend.service;
 
-import eu.japtor.vizman.backend.entity.CalTreeNode;
-import eu.japtor.vizman.backend.entity.Caly;
-import eu.japtor.vizman.backend.entity.CalyHol;
-import eu.japtor.vizman.backend.entity.Calym;
+import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.CalyHolRepo;
 import eu.japtor.vizman.backend.repository.CalyRepo;
 import eu.japtor.vizman.backend.repository.CalymRepo;
@@ -49,13 +46,30 @@ public class CalServiceImpl implements CalService {
         return calyRepo.findAllYrList();
     }
 
+//    @Override
+//    public Page<Caly> fetchCalysByExample(Example<Caly> example, Pageable pageable) {
+//        return calyRepo.findAll(example, pageable);
+//    }
+
     @Override
-    public Page<Caly> fetchCalysByExameple(Example<Caly> example, Pageable pageable) {
+    public Page<Caly> fetchCalysByExample(Example<Caly> example, Pageable pageable) {
         return calyRepo.findAll(example, pageable);
     }
 
+//    @Override
+//    public Page<CalHolTreeNode> fetchCalHolNodesByExample(Example<Caly> example, Pageable pageable) {
+//        return calyRepo.findAll(example, pageable);
+//    }
+
+
+//    @Override
+//    public long countCalysByExample(Example<Caly> example, Pageable pageable) {
+//        return calyRepo.findAll(example, pageable).getTotalElements();
+//    }
+
     @Override
     public long countCalysByExample(Example<Caly> example, Pageable pageable) {
+//        return calyRepo.findAll(example, pageable).getSize();
         return calyRepo.findAll(example, pageable).getTotalElements();
     }
 
@@ -156,18 +170,39 @@ public class CalServiceImpl implements CalService {
 
     // Calendar - holiday
     // ------------------
-    public CalyHol fetchCalyHol(LocalDate holDate) {
+    @Override
+    public CalyHol fetchCalyHols(LocalDate holDate) {
         if (null == holDate) {
             return null;
         }
         return calyHolRepo.findByHolDate(holDate);
     }
 
+    @Override
     public boolean calyHolÈxist(LocalDate holDate) {
-        return null != fetchCalyHol(holDate);
+        return null != fetchCalyHols(holDate);
     }
 
-    List<LocalDate> fetchCalyHolDateListByYear(Integer yr) {
+    @Override
+    public Page<CalyHol> fetchCalyHolsByExample(Example<CalyHol> calyHolExample, Pageable pageable) {
+//        if (null == yr) {
+//            return null;
+//        }
+        return calyHolRepo.findAll(calyHolExample, pageable);
+    }
+
+    @Override
+    public long countCalyHolsByExample(Example<CalyHol> calyHolExample, Pageable pageable) {
+//        return calyHolRepo.findAll(calyHolExample, pageable).getSize();
+        return calyHolRepo.findAll(calyHolExample, pageable).getTotalElements();
+    }
+
+    @Override
+    public long countCalyHolsByYear(Integer yr) {
+        return calyHolRepo.countByYr(yr);
+    }
+
+    private List<LocalDate> fetchCalyHolDateListByYear(Integer yr) {
         return new ArrayList<>();
     }
 }

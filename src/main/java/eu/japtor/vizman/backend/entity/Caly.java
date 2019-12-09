@@ -7,11 +7,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.YearMonth;
 
 @Entity
 @Table(name = "CALY")
-public class Caly extends AbstractGenIdEntity implements CalTreeNode {
+public class Caly extends AbstractGenIdEntity implements CalTreeNode, CalHolTreeNode {
   public static final String SORT_PROP_YR = "yr";
 
   @Basic
@@ -35,7 +36,6 @@ public class Caly extends AbstractGenIdEntity implements CalTreeNode {
   public void setYr(Integer yr) {
     this.yr = yr;
   }
-
 
   public BigDecimal getYearFondHours() {
     return yearFondHours;
@@ -100,6 +100,29 @@ public class Caly extends AbstractGenIdEntity implements CalTreeNode {
     return null;
   }
 
+// ---------------------------------------------------
+
+  @Transient
+  @Override
+  public LocalDate getHolDate() {
+    return null;
+  }
+
+  @Override
+  public void setHolDate(LocalDate holDate) {
+
+  }
+
+  @Transient
+  @Override
+  public String getHolText() {
+    return null;
+  }
+
+  @Override
+  public void setHolText(String holText) {
+
+  }
 
 // ========================================
 

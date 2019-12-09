@@ -1,9 +1,6 @@
 package eu.japtor.vizman.backend.service;
 
-import eu.japtor.vizman.backend.entity.CalTreeNode;
-import eu.japtor.vizman.backend.entity.Caly;
-import eu.japtor.vizman.backend.entity.CalyHol;
-import eu.japtor.vizman.backend.entity.Calym;
+import eu.japtor.vizman.backend.entity.*;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +16,9 @@ public interface CalService {
     long countAllCalys();
 
 
-    Page<Caly> fetchCalysByExameple(Example<Caly> example, Pageable pageable);
+    Page<Caly> fetchCalysByExample(Example<Caly> example, Pageable pageable);
+//    Page<CalHolTreeNode> fetchCalHolNodesByExample(Example<Caly> example, Pageable pageable);
+//    List<Caly> fetchCalysByExample(Example<Caly> example, Pageable pageable);
     long countCalysByExample(Example<Caly> example, Pageable pageable);
 
     List<Integer> fetchCalyYrList();
@@ -31,7 +30,12 @@ public interface CalService {
     List<Calym> fetchCalymsByYear(Integer year);
     long countCalymsByYear(Integer yr);
 
-    CalyHol fetchCalyHol(LocalDate holDate);
+    long countCalyHolsByExample(Example<CalyHol> example, Pageable pageable);
+    long countCalyHolsByYear(Integer yr);
+
+    CalyHol fetchCalyHols(LocalDate holDate);
+//    List<CalyHol> fetchCalyHolsByExample(Integer yr, Pageable pageable);
+    Page<CalyHol> fetchCalyHolsByExample(Example<CalyHol> example, Pageable pageable);
     boolean calyHolÈxist(LocalDate holDate);
 
     void generateAndSaveCalYearWorkFonds(Integer yr);

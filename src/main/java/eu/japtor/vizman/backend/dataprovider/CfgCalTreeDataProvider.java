@@ -62,13 +62,13 @@ public class CfgCalTreeDataProvider
 
 ////        Optional<CalTreeNode> parentOpt = hQuery.getParentOptional();
 //        hQuery.getFilter()
-//                .map(probe -> calService.fetchCalysByExameple(buildCalyExample(probe), ChunkRequest.of(hQuery, defaultSort)).getContent()))
+//                .map(probe -> calService.fetchCalysByExample(buildCalyExample(probe), ChunkRequest.of(hQuery, defaultSort)).getContent()))
 //                .map(probe -> calService.findAll(buildExample(document), ChunkRequest.of(q, defaultSort)).getContent()))
 
         if (hQuery.getParent() == null) { // Only root nodes have null parents
 //            Pageable pageable =  PageRequest.of(0, 8, sort);
             // TODO: rewrite to "return fromPageaable(...)":
-            Page<Caly> rootNodes = calService.fetchCalysByExameple(
+            Page<Caly> rootNodes = calService.fetchCalysByExample(
                     buildCalyExample(hQuery),  getPageable(hQuery)
             );
             return rootNodes.stream()

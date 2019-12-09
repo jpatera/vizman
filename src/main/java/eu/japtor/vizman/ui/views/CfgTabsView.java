@@ -50,6 +50,9 @@ public class CfgTabsView extends VerticalLayout {
     CfgCalTreeView calTreeView;
 
     @Autowired
+    CfgCalHolTreeView calHolTreeView;
+
+    @Autowired
     CfgCinListView cinListView;
 
     @Autowired
@@ -67,6 +70,7 @@ public class CfgTabsView extends VerticalLayout {
         Tab tabPerson = new Tab("Uživatelé");
         Tab tabRole = new Tab("Role");
         Tab tabCin = new Tab("Činnosti");
+        Tab tabCalHol = new Tab("Sváky");
         Tab tabCal = new Tab("Prac. fond");
 //        Tab tabCurr = new Tab("Měny");
         Tab tabAppCfg = new Tab("Aplikace");
@@ -74,6 +78,7 @@ public class CfgTabsView extends VerticalLayout {
         cfgExtTabs.add(personListView, tabPerson);
         cfgExtTabs.add(roleListView, tabRole);
         cfgExtTabs.add(cinListView, tabCin);
+        cfgExtTabs.add(calHolTreeView, tabCalHol);
         cfgExtTabs.add(calTreeView, tabCal);
 //        cfgExtTabs.add(curr, tabCurr);
         cfgExtTabs.add(propsFormView, tabAppCfg);
