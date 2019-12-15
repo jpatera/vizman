@@ -12,7 +12,7 @@ import java.time.YearMonth;
 
 @Entity
 @Table(name = "CALY")
-public class Caly extends AbstractGenIdEntity implements CalTreeNode, CalHolTreeNode {
+public class Caly extends AbstractGenIdEntity implements CalTreeNode, CalyHolTreeNode {
   public static final String SORT_PROP_YR = "yr";
 
   @Basic

@@ -21,6 +21,5 @@ public interface CalyHolRepo extends JpaRepository<CalyHol, Long>, QueryByExampl
             , nativeQuery = true)
     long countByYr(Integer yr);
 
-//    Page<CalyHol> findByYr(Integer yr, Pageable pageable);
-
+    List<CalyHol> findByYr(Integer yr);
 }

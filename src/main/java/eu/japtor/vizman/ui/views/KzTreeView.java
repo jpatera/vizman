@@ -422,7 +422,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        kzTreeGrid.getDataProvider().refreshAll();
 
         if (zakFaktsChanged) {
-            updateViewContent();    // Workaround after fakts are deleted -> TreeGrid  isnot updatetd  properly
+            updateViewContent();    // Workaround after fakts are deleted -> TreeGrid  is not updatetd  properly
         }
 
         Zak zakToSync = zakService.fetchOne(zakOrig.getId());
@@ -1546,7 +1546,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         assignDataProviderToGridAndSort(inMemoryKzTreeProvider);
         inMemoryKzTreeProvider.refreshAll();
         if (null != itemToSelect) {
-            kzTreeGrid.getSelectionModel().select(itemToSelect);
+            kzTreeGrid.select(itemToSelect);
         }
     }
 

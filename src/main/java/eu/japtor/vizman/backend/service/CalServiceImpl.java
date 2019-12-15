@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.service;
 
+import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.CalyHolRepo;
 import eu.japtor.vizman.backend.repository.CalyRepo;
@@ -46,6 +47,19 @@ public class CalServiceImpl implements CalService {
         return calyRepo.findAllYrList();
     }
 
+    @Override
+    public boolean calyExist(Integer year) {
+        return null != fetchCaly(year);
+    }
+
+    @Override
+    public Caly fetchCaly(Integer year) {
+        if (null == year) {
+            return null;
+        }
+        return calyRepo.findByYr(year);
+    }
+
 //    @Override
 //    public Page<Caly> fetchCalysByExample(Example<Caly> example, Pageable pageable) {
 //        return calyRepo.findAll(example, pageable);
@@ -57,7 +71,7 @@ public class CalServiceImpl implements CalService {
     }
 
 //    @Override
-//    public Page<CalHolTreeNode> fetchCalHolNodesByExample(Example<Caly> example, Pageable pageable) {
+//    public Page<CalyHolTreeNode> fetchCalHolNodesByExample(Example<Caly> example, Pageable pageable) {
 //        return calyRepo.findAll(example, pageable);
 //    }
 
@@ -145,6 +159,11 @@ public class CalServiceImpl implements CalService {
         return workDayCounts;
     }
 
+    private List<LocalDate> fetchCalyHolDateListByYear(Integer yr) {
+        List<CalyHol> calyHols = calyHolRepo.findByYr(yr);
+        return new ArrayList<>();
+    }
+
     private int calcWorkDayCountForYm(YearMonth ym, List<LocalDate> holidays)
     {
         Calendar startCal;
@@ -179,16 +198,15 @@ public class CalServiceImpl implements CalService {
     }
 
     @Override
-    public boolean calyHolÈxist(LocalDate holDate) {
+    public boolean calyHolExist(LocalDate holDate) {
         return null != fetchCalyHols(holDate);
     }
 
     @Override
     public Page<CalyHol> fetchCalyHolsByExample(Example<CalyHol> calyHolExample, Pageable pageable) {
-//        if (null == yr) {
-//            return null;
-//        }
-        return calyHolRepo.findAll(calyHolExample, pageable);
+        Sort sort = pageable.getSort().and(Sort.by(new Sort.Order(Sort.Direction.DESC, "holDate")));
+        Pageable modifPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        return calyHolRepo.findAll(calyHolExample, modifPageable);
     }
 
     @Override
@@ -202,7 +220,19 @@ public class CalServiceImpl implements CalService {
         return calyHolRepo.countByYr(yr);
     }
 
-    private List<LocalDate> fetchCalyHolDateListByYear(Integer yr) {
-        return new ArrayList<>();
+    @Transactional
+    @Override
+    public CalyHol saveCalyHol(final CalyHol itemToSave) {
+        itemToSave.setYr(itemToSave.getHolDate().getYear());
+        return calyHolRepo.save(itemToSave);
+//        calyHolRepo.flush();
+//        return saved;
     }
+
+    @Transactional
+    @Override
+    public void deleteCalyHol(final CalyHol itemToDelete) {
+        calyHolRepo.delete(itemToDelete);
+    }
+
 }

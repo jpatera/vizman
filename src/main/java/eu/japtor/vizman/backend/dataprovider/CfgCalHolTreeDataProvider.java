@@ -15,15 +15,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CfgCalHolTreeDataProvider
-                extends PageableTreeDataProvider<CalHolTreeNode, CalHolTreeNode>
+                extends PageableTreeDataProvider<CalyHolTreeNode, CalyHolTreeNode>
 {
     private final CalService calService;
 
-    private final CalHolTreeNode defaultCalyFilter = Caly.getEmptyInstance();
-    private final CalHolTreeNode defaultCalyHolFilter = CalyHol.getEmptyInstance();
+    private final CalyHolTreeNode defaultCalyFilter = Caly.getEmptyInstance();
+    private final CalyHolTreeNode defaultCalyHolFilter = CalyHol.getEmptyInstance();
 
     private final List<QuerySortOrder> defaultSortOrders = Arrays.asList(
             new QuerySortOrder("yr", SortDirection.DESCENDING)
+//            new QuerySortOrder("holDate", SortDirection.ASCENDING)
 //            , new QuerySortOrder("ym", SortDirection.ASCENDING)
     );
 
@@ -42,12 +43,12 @@ public class CfgCalHolTreeDataProvider
 //    }
 
     @Override
-    public boolean hasChildren(final CalHolTreeNode calNode) {
+    public boolean hasChildren(final CalyHolTreeNode calNode) {
         return null == calNode || ((calNode.getHolDate() == null) && (calService.countCalyHolsByYear(calNode.getYr()) > 0));
     }
 
     @Override
-    public int getChildCount(HierarchicalQuery<CalHolTreeNode, CalHolTreeNode> hQuery) {
+    public int getChildCount(HierarchicalQuery<CalyHolTreeNode, CalyHolTreeNode> hQuery) {
 
 //        CalTreeNode parent = query.getParentOptional().orElse(null);
         if (null == hQuery.getParent()) {
@@ -63,13 +64,11 @@ public class CfgCalHolTreeDataProvider
         }
     }
 
-
     @Override
-    protected Page<CalHolTreeNode> fetchChildrenFromBackEnd(
-//    protected Page<CalHolTreeNode> fetchChildrenFromBackEnd(
-            HierarchicalQuery<CalHolTreeNode, CalHolTreeNode> hQuery, Pageable pageable)
+    protected Page<CalyHolTreeNode> fetchChildrenFromBackEnd(
+            HierarchicalQuery<CalyHolTreeNode, CalyHolTreeNode> hQuery, Pageable pageable)
     {
-////        Optional<CalTreeNode> parentOpt = hQuery.getParentOptional();
+//        Optional<CalyHolTreeNode> parentOpt = hQuery.getParentOptional();
 //        hQuery.getFilter()
 //                .map(probe -> calService.fetchCalysByExample(buildCalyExample(probe), ChunkRequest.of(hQuery, defaultSort)).getContent()))
 //                .map(probe -> calService.findAll(buildExample(document), ChunkRequest.of(q, defaultSort)).getContent()))
@@ -77,35 +76,21 @@ public class CfgCalHolTreeDataProvider
         if (hQuery.getParent() == null) { // Only root nodes have null parents
 //            Pageable pageable =  PageRequest.of(0, 8, sort);
             // TODO: rewrite to "return fromPageaable(...)":
-//            Page<Caly> rootNodes = calService.fetchCalysByExample(
             Page<Caly> rootNodes = calService.fetchCalysByExample(
                     buildCalyExample(hQuery), getPageable(hQuery)
             );
-            List<CalHolTreeNode> rootList  = rootNodes.stream()
-                    .map(ch -> (CalHolTreeNode) ch)
-                    .collect(Collectors.toList());
-            ;
-            return new PageImpl(rootList, pageable, rootList.size());
-//            Page<CalHolTreeNode> pg = new PageImpl(lst, pageable, lst.size());
-//            return (Page<CalHolTreeNode>)rootNodes;
-//            return rootNodes.stream()
-//                    .map(ch -> (CalHolTreeNode) ch)
-//            ;
+            return rootNodes.map(c -> (CalyHolTreeNode)c);
         } else if (null == hQuery.getParent().getHolDate()) {    // Not null years are provided only by Caly (not leaf)
-//            List<CalyHol> childs = calService.fetchCalyHolsByExample(
             Example<CalyHol> example = buildCalyHolExample(hQuery, hQuery.getParent().getYr());
             Page<CalyHol> childNodes = calService.fetchCalyHolsByExample(
                     example, getPageable(hQuery)
             );
-            List<CalHolTreeNode> childList  = childNodes.stream()
-                    .map(ch -> (CalHolTreeNode) ch)
-                    .collect(Collectors.toList());
-            ;
-            return new PageImpl(childList, pageable, childList.size());
-//            return childs.stream()
-//                    .map(ch -> (CalHolTreeNode) ch)
+//            List<CalyHolTreeNode> childList  = childNodes.stream()
+//                    .map(ch -> (CalyHolTreeNode) ch)
+//                    .collect(Collectors.toList());
 //            ;
-//            return childs.getContent();
+            return childNodes.map(c -> (CalyHolTreeNode)c);
+//            return new PageImpl(childList, pageable, childList.size());
         } else {    // Null years are provided by leaf Calym items
             return null;
         }
@@ -116,12 +101,10 @@ public class CfgCalHolTreeDataProvider
     }
 
     private Example<CalyHol> buildCalyHolExample(final HierarchicalQuery query, final Integer yr) {
-//        CalyHol example = (CalyHol)query.getFilter().orElse(defaultCalyHolFilter);
         CalyHol probe = CalyHol.getEmptyInstance();
         probe.setYr(yr);
         return Example.of(probe, matcher);
     }
-
 
     @Override
     protected List<QuerySortOrder> getDefaultSortOrders() {

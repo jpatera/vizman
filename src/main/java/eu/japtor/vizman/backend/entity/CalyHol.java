@@ -4,10 +4,11 @@ package eu.japtor.vizman.backend.entity;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "CALY_HOL")
-public class CalyHol extends AbstractGenIdEntity implements CalHolTreeNode {
+public class CalyHol extends AbstractGenIdEntity implements CalyHolTreeNode {
 
   private Integer yr;
   private LocalDate holDate;
@@ -22,6 +23,7 @@ public class CalyHol extends AbstractGenIdEntity implements CalHolTreeNode {
     this.yr = yr;
   }
 
+  @Override
   public LocalDate getHolDate() {
     return holDate;
   }

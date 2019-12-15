@@ -261,7 +261,7 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
     private void scrollToIndex(Grid<?> grid, int index) {
         UI.getCurrent().getPage()
                 .executeJavaScript(
-                        "$0._scrollToIndex(" + index + ")", grid.getElement()
+                        "$0._scrollToIndex($1)", grid, index
                 );
     }
 
@@ -272,7 +272,7 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
 
 
     private void saveKlient(Klient klient, Operation operation) {
-        int itemIndexOrig = klients.indexOf(klient);
+//        int itemIndexOrig = klients.indexOf(klient);
         Klient klientSaved = klientService.saveKlient(klient);
 //        klientGrid.getDataProvider().refreshItem(klientSaved);
         Notification.show(

@@ -4,7 +4,6 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
-import eu.japtor.vizman.backend.entity.CalHolTreeNode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

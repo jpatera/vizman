@@ -572,7 +572,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
                 if (null != pruhYm) {
                     LocalDate date = LocalDate.of(pruhYm.getYear(), pruhYm.getMonth(), day);
                     isWeekend = (date.getDayOfWeek() == DayOfWeek.SATURDAY) || (date.getDayOfWeek() == DayOfWeek.SUNDAY);
-                    isHoliday = calService.calyHolÈxist(date);
+                    isHoliday = calService.calyHolExist(date);
                 }
                 if (isHoliday) {
                     col.setClassNameGenerator(pruhZak -> "pruh-day-is-holiday");

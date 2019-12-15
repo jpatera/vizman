@@ -15,6 +15,8 @@ public interface CalyRepo extends JpaRepository<Caly, Long>, QueryByExampleExecu
             , nativeQuery = true)
     List<Integer> findAllYrList();
 
+    Caly findByYr(Integer yr);
+
     void deleteByYr(Integer yr);
 
 }

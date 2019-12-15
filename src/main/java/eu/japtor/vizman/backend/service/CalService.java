@@ -17,11 +17,13 @@ public interface CalService {
 
 
     Page<Caly> fetchCalysByExample(Example<Caly> example, Pageable pageable);
-//    Page<CalHolTreeNode> fetchCalHolNodesByExample(Example<Caly> example, Pageable pageable);
+//    Page<CalyHolTreeNode> fetchCalHolNodesByExample(Example<Caly> example, Pageable pageable);
 //    List<Caly> fetchCalysByExample(Example<Caly> example, Pageable pageable);
     long countCalysByExample(Example<Caly> example, Pageable pageable);
 
     List<Integer> fetchCalyYrList();
+    boolean calyExist(Integer year);
+    Caly fetchCaly(Integer year);
 
     List<Calym> fetchAllCalyms();
     long countAllCalyms();
@@ -36,7 +38,10 @@ public interface CalService {
     CalyHol fetchCalyHols(LocalDate holDate);
 //    List<CalyHol> fetchCalyHolsByExample(Integer yr, Pageable pageable);
     Page<CalyHol> fetchCalyHolsByExample(Example<CalyHol> example, Pageable pageable);
-    boolean calyHolÈxist(LocalDate holDate);
+    boolean calyHolExist(LocalDate holDate);
+
+    CalyHol saveCalyHol(CalyHol itemToSave);
+    void deleteCalyHol(CalyHol itemToDelete);
 
     void generateAndSaveCalYearWorkFonds(Integer yr);
     Map<YearMonth, Integer> calcWorkDayCountsForYr(Integer yr);
