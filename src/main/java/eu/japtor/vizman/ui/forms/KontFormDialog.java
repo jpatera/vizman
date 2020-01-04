@@ -61,10 +61,10 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     public static final String DIALOG_WIDTH = "1300px";
     public static final String DIALOG_HEIGHT = "800px";
 
-    private final ComponentRenderer<HtmlComponent, Zak> zakHonorarCellRenderer =
-            new ComponentRenderer<>(zak ->
-                    VzmFormatUtils.getMoneyComponent(zak.getHonorar())
-            );
+//    private final ComponentRenderer<HtmlComponent, Zak> zakHonorarCellRenderer =
+//            new ComponentRenderer<>(zak ->
+//                    VzmFormatUtils.getMoneyComponent(zak.getHonorar())
+//            );
     private final ComponentRenderer<HtmlComponent, Zak> zakHonorarCistyCellRenderer =
             new ComponentRenderer<>(zak ->
                     VzmFormatUtils.getMoneyComponent(zak.getHonorarCisty())
@@ -885,15 +885,15 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         return menaCombo;
     }
 
-    private Component initHonorarField() {
-        honorarField = new TextField("Honorář");
-        honorarField.setReadOnly(true);
-        honorarField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
-        getBinder().forField(honorarField)
-                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
-                .bind(Kont::getHonorar, null);
-        return honorarField;
-    }
+//    private Component initHonorarField() {
+//        honorarField = new TextField("Honorář");
+//        honorarField.setReadOnly(true);
+//        honorarField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+//        getBinder().forField(honorarField)
+//                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
+//                .bind(Kont::getHonorar, null);
+//        return honorarField;
+//    }
 
     private Component initHonorarCistyField() {
         honorarCistyFieldCalc = new TextField("Honorář čistý");

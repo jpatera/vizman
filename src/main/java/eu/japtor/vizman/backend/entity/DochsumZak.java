@@ -1,17 +1,13 @@
 package eu.japtor.vizman.backend.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 
 @Entity
 @Table(name = "DOCHSUM_ZAK")
-
-public class DochsumZak  extends AbstractGenIdEntity {
+public class DochsumZak extends AbstractGenIdEntity {
 
   private Long personId;
   private LocalDate dsDate;
@@ -32,6 +28,12 @@ public class DochsumZak  extends AbstractGenIdEntity {
   @Column(name = "DSZ_WORK_PRUH")
   private BigDecimal dszWorkPruh;
 
+  @Column(name = "DSZ_KOEF_P8")
+  private BigDecimal dszKoefP8;
+
+  @Column(name = "DSZ_WORK_P8")
+  private BigDecimal dszWorkP8;
+
   @Column(name = "DSZ_WORK_NORM")
   private Double dszWorkNorm;
 
@@ -41,11 +43,11 @@ public class DochsumZak  extends AbstractGenIdEntity {
   @Column(name = "DSZ_POJIST")
   private BigDecimal dszPojist;
 
-  @Column(name = "DSZ_MZDAS")
-  private BigDecimal dszMzdas;
+  @Column(name = "DSZ_MZDA_P8")
+  private BigDecimal dszMzdaP8;
 
-  @Column(name = "DSZ_POJISTS")
-  private BigDecimal dszPojists;
+  @Column(name = "DSZ_POJIST_P8")
+  private BigDecimal dszPojistP8;
 
   private BigDecimal sazba;
   private String tmp;
@@ -61,13 +63,23 @@ public class DochsumZak  extends AbstractGenIdEntity {
     this.zakId = zakId;
   }
 
-  public DochsumZak(Long personId, LocalDate dsDate, YearMonth dsYm, Long zakId, BigDecimal dszWorkPruh, BigDecimal sazba) {
+  public DochsumZak(
+          Long personId
+          , LocalDate dsDate
+          , YearMonth dsYm
+          , Long zakId
+          , BigDecimal dszWorkPruh
+          , BigDecimal dszKoefP8
+          , BigDecimal dszWorkP8
+          , BigDecimal sazba)
+  {
     this.personId = personId;
     this.dsDate = dsDate;
-//    this.dsYm = YearMonth.from(dsDate);
     this.dsYm = dsYm;
     this.zakId = zakId;
     this.dszWorkPruh = dszWorkPruh;
+    this.dszKoefP8 = dszKoefP8;
+    this.dszWorkP8 = dszWorkP8;
     this.sazba = sazba;
     this.dszMzda = (null == this.sazba || null == this.dszWorkPruh) ? null : this.sazba.multiply(this.dszWorkPruh);
   }
@@ -134,13 +146,20 @@ public class DochsumZak  extends AbstractGenIdEntity {
     this.dszWorkPruh = dszWorkPruh;
   }
 
-
-  public Double getDszWorkNorm() {
-    return dszWorkNorm;
+  public BigDecimal getDszKoefP8() {
+    return dszKoefP8;
   }
 
-  public void setDszWorkNorm(Double dsWorkNorm) {
-    this.dszWorkNorm = dsWorkNorm;
+  public void setDszKoefP8(BigDecimal dszKoefP8) {
+    this.dszKoefP8 = dszKoefP8;
+  }
+
+  public BigDecimal getDszWorkP8() {
+    return dszWorkP8;
+  }
+
+  public void setDszWorkP8(BigDecimal dsWorkP8) {
+    this.dszWorkP8 = dsWorkP8;
   }
 
 
@@ -153,6 +172,7 @@ public class DochsumZak  extends AbstractGenIdEntity {
   }
 
 
+  // TODO: remove, from DB too ??
   public BigDecimal getDszPojist() {
     return dszPojist;
   }
@@ -162,21 +182,22 @@ public class DochsumZak  extends AbstractGenIdEntity {
   }
 
 
-  public BigDecimal getDszMzdas() {
-    return dszMzdas;
+  public BigDecimal getDszMzdaP8() {
+    return dszMzdaP8;
   }
 
-  public void setDszMzdas(BigDecimal dsMzdas) {
-    this.dszMzdas = dsMzdas;
+  public void setDszMzdaP8(BigDecimal dsMzdaP8) {
+    this.dszMzdaP8 = dsMzdaP8;
   }
 
 
-  public BigDecimal getDszPojists() {
-    return dszPojists;
+  // TODO: remove, from DB too ??
+  public BigDecimal getDszPojistP8() {
+    return dszPojistP8;
   }
 
-  public void setDszPojists(BigDecimal dsPojists) {
-    this.dszPojists = dsPojists;
+  public void setDszPojistP8(BigDecimal dsPojistP8) {
+    this.dszPojistP8 = dsPojistP8;
   }
 
 

@@ -81,22 +81,22 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
     }
 
     @Override
+    @Transactional
+    public DochsumZak store(DochsumZak dsZak) {
+        return dochsumZakRepo.save(dsZak);
+    };
+
+    @Override
     public long countDochsumZaksForPersonAndYm(Long personId, YearMonth dsYm) {
 //        int dsYmInt = 100 * dsYm.getYear() + dsYm.getMonthValue();
         return dochsumZakRepo.countByPersonIdAndDsYm(personId, dsYm);
     }
 
-//    @Override
-//    public boolean updateDochsumZaksForPersonAndMonth(
-//            Long personId
-//            , YearMonth ym
-//            , List<DochsumZak> dsZaks) {
-//        return false;
-//    }
+    @Autowired
+    DochService dochService;
 
     @Override
     @Transactional
-//    public boolean updateDochsumZaksForPersonAndMonth(Long personId, YearMonth ym, List<DochsumZak> dsZaks) {
     public boolean updateDochsumZaksForPersonAndMonth(
             Long pruhPersonId
             , YearMonth pruhYm
@@ -108,6 +108,7 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
 
             PersonWage personWage = personWageRepo.findPersonWageForMonth(pruhPersonId, pruhYm);
             List<DochsumZak> dsZaksDb = fetchDochsumZaksForPersonAndYm(pruhPersonId, pruhYm);
+            BigDecimal koefP8 = dochService.calcKoefP8(pruhPersonId, pruhYm);
 
             // Get zakId list for deletion:
             // ----------------------------
@@ -135,7 +136,7 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
                 if (null == dsZakDbAnchor) {
                     LocalDate pzakDateAnchor = pruhYm.atDay( 1 ).minusYears(200);
                     DochsumZak dsZakYmAnchor = new DochsumZak(
-                            pruhPersonId, pzakDateAnchor, pruhYm, pzakZakId, null, null);
+                            pruhPersonId, pzakDateAnchor, pruhYm, pzakZakId, null, null, null, null);
                     dsZaksToInsert.add(dsZakYmAnchor);
                     dsZaksDb.add(dsZakYmAnchor);
                 }
@@ -145,8 +146,7 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
                     LocalDate pzakDate = LocalDate.of(pruhYm.getYear(), pruhYm.getMonth(), i);
                     DochsumZak dsZakDb = dsZaksDb.stream()
                             .filter(zakDb -> zakDb.getZakId().equals(pzakZakId)
-                                    && zakDb.getDsDate().equals(pzakDate)
-                            )
+                                    && zakDb.getDsDate().equals(pzakDate))
                             .findFirst().orElse(null);
 //                    if (i == 1) {
 //                        if (null == newCellHod){
@@ -166,14 +166,22 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
                         if (null != dsZakDb) {
                             if ((null == newCellHod) || newCellHod.compareTo(BigDecimal.ZERO) == 0) {
                                 dsZakDb.setDszWorkPruh(null);
+                                dsZakDb.setDszKoefP8(null);
+                                dsZakDb.setDszWorkP8(null);
                             } else {
                                 dsZakDb.setDszWorkPruh(newCellHod);
                                 dsZakDb.setSazba(personWage.getTariff());
                                 if (null == dsZakDb.getDszWorkPruh() || (null == dsZakDb.getSazba())) {
                                     dsZakDb.setDszMzda(null);
+                                    dsZakDb.setDszMzdaP8(null);
                                 } else {
                                     dsZakDb.setDszMzda(dsZakDb.getDszWorkPruh().multiply(dsZakDb.getSazba()));
+                                    dsZakDb.setDszMzdaP8(dsZakDb.getDszWorkPruh().multiply(dsZakDb.getSazba()).multiply(koefP8));
                                 }
+
+                                dsZakDb.setDszKoefP8(koefP8);
+                                dsZakDb.setDszWorkP8(newCellHod.multiply(koefP8));
+
                             }
                             dsZaksToUpdate.add(dsZakDb);
                         } else {
@@ -185,7 +193,8 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
 //                            }
                             if (null != newCellHod && newCellHod.compareTo(BigDecimal.ZERO) != 0) {
                                 DochsumZak dsZakNew = new DochsumZak(
-                                        pruhPersonId, pzakDate, pruhYm, pzakZakId, newCellHod, personWage.getTariff());
+                                        pruhPersonId, pzakDate, pruhYm, pzakZakId
+                                        , newCellHod, koefP8, newCellHod.multiply(koefP8), personWage.getTariff());
                                 dsZaksToInsert.add(dsZakNew);
                             }
                         }

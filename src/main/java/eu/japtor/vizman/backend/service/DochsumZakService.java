@@ -19,6 +19,8 @@ public interface DochsumZakService {
 
     long countDochsumZaksForPersonAndYm(Long personId, YearMonth dsYm);
 
+    DochsumZak store(DochsumZak dsZak);
+
 //    boolean updateDochsumZaksForPersonAndMonth(
 //            Long personId
 //            , YearMonth ym

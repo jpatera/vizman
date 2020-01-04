@@ -67,11 +67,21 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 
     @Basic
     @Column(name = "NAKL_MZDA")
-    private BigDecimal naklMzdy;
+    private BigDecimal naklMzda;
 
+    @Basic
+    @Column(name = "NAKL_MZDA_P8")
+    private BigDecimal naklMzdaP8;
+
+    // TODO : to be removed, from DB too
     @Basic
     @Column(name = "NAKL_POJIST")
     private BigDecimal naklPojist;
+
+    // TODO : to be removed, from DB too
+    @Basic
+    @Column(name = "NAKL_POJIST_P8")
+    private BigDecimal naklPojistP8;
 
     @Basic
     @Column(name = "RP")
@@ -121,7 +131,14 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     @Column(name = "VYSLEDEK_BY_KURZ")
     private BigDecimal vysledekByKurz;
 
-//    @OneToMany(mappedBy = "zakr", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH, orphanRemoval = false)
+    @Basic
+    @Column(name = "VYSLEDEK_P8_BY_KURZ")
+    private BigDecimal vysledekP8ByKurz;
+
+    @Transient
+    private boolean checked;
+
+    //    @OneToMany(mappedBy = "zakr", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH, orphanRemoval = false)
     @OneToMany(mappedBy = "zakr", cascade = CascadeType.REFRESH, orphanRemoval = false)
     @OrderBy("rok DESC, qa DESC")
     private List<Zaqa> zaqas = new ArrayList<>();
@@ -183,19 +200,33 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 //        this.honorSub = honorSub;
 //    }
 
-    public BigDecimal getNaklMzdy() {
-        return naklMzdy;
+    public BigDecimal getNaklMzda() {
+        return naklMzda;
     }
-    public void setNaklMzdy(BigDecimal naklMzda) {
-        this.naklMzdy = naklMzda;
+    public void setNaklMzda(BigDecimal naklMzda) {
+        this.naklMzda = naklMzda;
     }
 
-    public BigDecimal getNaklPojist() {
-        return naklPojist;
+//    public BigDecimal getNaklPojist() {
+//        return naklPojist;
+//    }
+//    public void setNaklPojist(BigDecimal naklPojist) {
+//        this.naklPojist = naklPojist;
+//    }
+
+    public BigDecimal getNaklMzdaP8() {
+        return naklMzdaP8;
     }
-    public void setNaklPojist(BigDecimal naklPojist) {
-        this.naklPojist = naklPojist;
+    public void setNaklMzdaP8(BigDecimal naklMzdaP8) {
+        this.naklMzdaP8 = naklMzdaP8;
     }
+
+//    public BigDecimal getNaklPojistP8() {
+//        return naklPojistP8;
+//    }
+//    public void setNaklPojistP8(BigDecimal naklPojistP8) {
+//        this.naklPojistP8 = naklPojistP8;
+//    }
 
     public BigDecimal getRp() {
         return rp;
@@ -277,6 +308,13 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         this.vysledekByKurz = vysledekByKurz;
     }
 
+    public BigDecimal getVysledekP8ByKurz() {
+        return vysledekP8ByKurz;
+    }
+    public void setVysledekP8ByKurz(BigDecimal vysledekP8ByKurz) {
+        this.vysledekP8ByKurz = vysledekP8ByKurz;
+    }
+
 
     // Zaqa
     // -----
@@ -301,13 +339,11 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 
 // =============================================
 
-    @Transient
-    private boolean checked;
 
 //    @Transient
 //    private BigDecimal rpHotovo;
 
-    @Transient
+//    @Transient
     public BigDecimal getRpHotovo() {
         if (null == rp || null == honorCisty) {
             return null;
@@ -319,7 +355,7 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 //    @Transient
 //    private BigDecimal rpZbyva;
 
-    @Transient
+//    @Transient
     public BigDecimal getRpZbyva() {
         if (null == rp || null == honorCisty) {
             return null;
@@ -474,26 +510,45 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 //        rxRyVykon = vykRy.subtract(vykRx);
     }
 
-    @Transient
+//    @Transient
     public BigDecimal calcVysledekByKurz(BigDecimal koefPojist, BigDecimal koefRezie) {
 //        BigDecimal honCalc= getHonorCistyByKurz();
         BigDecimal hotovoCalc = getRpHotovoByKurz();
         if (null == hotovoCalc) {
             hotovoCalc = BigDecimal.ZERO;
         }
-        BigDecimal mzdyCalc = (null == naklMzdy) ? BigDecimal.ZERO : naklMzdy;
+        BigDecimal mzdaCalc = (null == naklMzda) ? BigDecimal.ZERO : naklMzda;
 
         return hotovoCalc.subtract(
-                mzdyCalc.multiply(koefPojist.add(BigDecimal.ONE)).multiply(koefRezie.add(BigDecimal.ONE))
+                mzdaCalc.multiply(koefPojist.add(BigDecimal.ONE)).multiply(koefRezie.add(BigDecimal.ONE))
         );
     }
 
-    @Transient
+    public BigDecimal calcVysledekP8ByKurz(BigDecimal koefPojist, BigDecimal koefRezie) {
+        BigDecimal hotovoCalc = getRpHotovoByKurz();
+        if (null == hotovoCalc) {
+            hotovoCalc = BigDecimal.ZERO;
+        }
+        BigDecimal mzdaP8Calc = (null == naklMzdaP8) ? BigDecimal.ZERO : naklMzdaP8;
+
+        return hotovoCalc.subtract(
+                mzdaP8Calc.multiply(koefPojist.add(BigDecimal.ONE)).multiply(koefRezie.add(BigDecimal.ONE))
+        );
+    }
+
     public BigDecimal calcNaklMzdyPojistRezie(BigDecimal koefPojist, BigDecimal koefRezie) {
-        if (null == naklMzdy) {
+        if (null == naklMzda) {
             return null;
         } else {
-            return naklMzdy.multiply(koefPojist.add(BigDecimal.ONE)).multiply(koefRezie.add(BigDecimal.ONE));
+            return naklMzda.multiply(koefPojist.add(BigDecimal.ONE)).multiply(koefRezie.add(BigDecimal.ONE));
+        }
+    }
+
+    public BigDecimal calcNaklMzdyP8PojistRezie(BigDecimal koefPojist, BigDecimal koefRezie) {
+        if (null == naklMzdaP8) {
+            return null;
+        } else {
+            return naklMzdaP8.multiply(koefPojist.add(BigDecimal.ONE)).multiply(koefRezie.add(BigDecimal.ONE));
         }
     }
 

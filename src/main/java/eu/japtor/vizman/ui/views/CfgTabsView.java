@@ -36,7 +36,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_CFG;
 @PageTitle(PAGE_TITLE_CFG)
 //@Tag(TAG_CFG)
 // Note 1: @SpringComponent  ..must not be defined, otherwise refresh (in Chrome) throws exception
-// Note 2: May be has to be combined wit a UIScope for for a correct finctionality
+// Note 2: May be has to be combined with a UIScope for a correct functionality
 @Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL})
 public class CfgTabsView extends VerticalLayout {
 
@@ -66,7 +66,7 @@ public class CfgTabsView extends VerticalLayout {
     }
 
     private void initTabs() {
-        ExtendedPagedTabs cfgExtTabs = new ExtendedPagedTabs();
+        ExtendedPagedTabs cfgExtTabs = new ExtendedPagedTabs("KONFIGURACE");
         Tab tabPerson = new Tab("Uživatelé");
         Tab tabRole = new Tab("Role");
         Tab tabCin = new Tab("Činnosti");
@@ -78,8 +78,8 @@ public class CfgTabsView extends VerticalLayout {
         cfgExtTabs.add(personListView, tabPerson);
         cfgExtTabs.add(roleListView, tabRole);
         cfgExtTabs.add(cinListView, tabCin);
-        cfgExtTabs.add(calHolTreeView, tabCalHol);
         cfgExtTabs.add(calTreeView, tabCal);
+        cfgExtTabs.add(calHolTreeView, tabCalHol);
 //        cfgExtTabs.add(curr, tabCurr);
         cfgExtTabs.add(propsFormView, tabAppCfg);
 

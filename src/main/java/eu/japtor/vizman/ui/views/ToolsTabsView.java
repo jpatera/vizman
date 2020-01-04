@@ -49,10 +49,14 @@ public class ToolsTabsView extends VerticalLayout implements BeforeEnterObserver
 
 
     @Autowired
-    ToolsDirTreeView toolsDirTreeView;
+    ToolsMzdyView toolsMzdyView;
 
     @Autowired
-    ToolsMzdyView toolsMzdyView;
+    ToolsNaklView toolsNaklView;
+
+    @Autowired
+    ToolsDirTreeView toolsDirTreeView;
+
 
 
     @PostConstruct
@@ -64,11 +68,13 @@ public class ToolsTabsView extends VerticalLayout implements BeforeEnterObserver
     private void initTabs() {
 //        VerticalLayout container = new VerticalLayout();
 //        container.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-        ExtendedPagedTabs toolsExtTabs = new ExtendedPagedTabs();
+        ExtendedPagedTabs toolsExtTabs = new ExtendedPagedTabs("NÁSTROJE");
         Tab tabMzdy = new Tab("Mzdy");
+        Tab tabNakl = new Tab("Náklady");
         Tab tabDirs = new Tab("Adresáře");
 
         toolsExtTabs.add(toolsMzdyView, tabMzdy);
+        toolsExtTabs.add(toolsNaklView, tabNakl);
         toolsExtTabs.add(toolsDirTreeView, tabDirs);
 //        toolsExtTabs.add(curr, tabCurr);
 

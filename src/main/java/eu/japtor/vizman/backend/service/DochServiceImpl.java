@@ -3,11 +3,14 @@ package eu.japtor.vizman.backend.service;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Cin;
 import eu.japtor.vizman.backend.entity.Doch;
+import eu.japtor.vizman.backend.repository.CalymRepo;
 import eu.japtor.vizman.backend.repository.DochRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -17,18 +20,14 @@ import java.util.List;
 @Service
 public class DochServiceImpl implements DochService, HasLogger {
 
+    @Autowired
     private DochRepo dochRepo;
 
     @Autowired
-    public DochServiceImpl(DochRepo dochRepo) {
-        super();
-        this.dochRepo = dochRepo;
-    }
+    private CalymRepo calymRepo;
 
     @Override
     public List<Doch> fetchDochForPersonAndDate(Long personId, LocalDate dochDate) {
-//        return dochRepo.findByPersonIdAndDochDateOrderByFromTimeDesc(personId, dochDate);
-//        return dochRepo.findDochForPersonAndDate(personId, dochDate);
         return dochRepo.findByPersonIdAndDochDateOrderByCdochDesc(personId, dochDate);
     }
 
@@ -39,15 +38,7 @@ public class DochServiceImpl implements DochService, HasLogger {
 
 
     @Override
-    public LocalDate findPrevDochDate(Long personId, LocalDate dochDate) {
-//        List<Doch> dochList = dochRepo.findDistinctTop2ByPersonIdAndDochDateOrderByFromTimeDesc(personId, dochDate);
-//        List<DochRepo.DochDateOnly> dochDateList = dochRepo.findDistinctTop2ByPersonIdAndDochDateOrderByDochDateDesc(personId, dochDate);
-//        LocalDate prevDochDateList = dochRepo.findPrevDochDate(personId, dochDate);
-//        if (dochDateList.size() > 0) {
-//            return dochDateList.get(0).getDsYm();
-//        }
-//        return null;
-
+    public LocalDate fetchPrevDochDate(Long personId, LocalDate dochDate) {
         return dochRepo.findPrevDochDate(personId, dochDate);
     }
 
@@ -60,41 +51,6 @@ public class DochServiceImpl implements DochService, HasLogger {
     public LocalDate findLastDochDate(Long personId) {
         return dochRepo.findLastDochDate(personId);
     }
-
-
-//    @Override
-//    @Transactional
-//    public Doch closePrevZkDochAndOpenNew(Doch newDoch) {
-//        LocalDateTime modifTime = LocalDateTime.now();
-//        stampOdchodAndNewOutsideRec(newDoch, modifTime);
-//        return openDochRec(newDoch, modifTime);
-//    }
-
-
-
-
-//    @Override
-//    @Transactional
-//    public Doch stampOdchodAndNewOutsideRec(Doch lastInsideRec, Doch newOutsideRec) {
-////        Doch lastZkDoch = dochRepo.findLastZkDochForPersonAndDate(dochOdchod.getPersonId(), dochOdchod.getdDochDate());
-//        LocalDateTime modifdochStamp = LocalDateTime.now();
-//        if (null != lastInsideRec) {
-//            if (null == lastInsideRec.getToTime()) {
-//                lastInsideRec.setToTime(dochStamp.toLocalTime());
-//            }
-//            Doch closedInsideRec = closeDochRec(lastInsideRec, dochStamp);
-//            Doch newOutsideRec = new Doch(
-//                    cinRepo.getByCinKod(outsideCinKod)
-//                    , closedInsideRec.getPersonId()
-//                    , closedInsideRec.getdDochDate()
-//                    , dochStamp
-//            );
-//
-//            return openDochRec(newOutsideRec, dochStamp);
-//        }
-//        return null;
-//    }
-
 
     @Override
     @Transactional
@@ -216,4 +172,57 @@ public class DochServiceImpl implements DochService, HasLogger {
 
         return true;
     }
+
+    @Override
+    public BigDecimal calcKoefP8(Long personId, YearMonth ym) {
+        long nonParagDays = dochRepo.countNonParagDays(personId, ym.getYear(), ym.getMonthValue());
+        BigDecimal ymFondReduced = BigDecimal.valueOf(8).multiply(BigDecimal.valueOf(nonParagDays));
+        Long durNanosLong = dochRepo.sumNonParagDochDur(personId, ym.getYear(), ym.getMonthValue());
+        if (null == durNanosLong) {
+            return null;
+        }
+        return ymFondReduced.divide(durToDec(Duration.ofNanos(durNanosLong)), 2, RoundingMode.HALF_UP);
+    }
+
+    public static BigDecimal durToDecNulled(Duration dur) {
+        BigDecimal durDec = durToDec(dur);
+        return (durDec.compareTo(BigDecimal.ZERO) == 0) ? null : durDec;
+    }
+
+    public static BigDecimal durToDec(Duration dur) {
+        if (null == dur) {
+            return BigDecimal.ZERO;
+        }
+        Long hours  = dur.toHours();
+        Long minutes = dur.toMinutes() - hours * 60;
+        return BigDecimal.valueOf(hours).add(BigDecimal.valueOf((minutes % 60) / 60f));
+    }
+
+    public static BigDecimal durPracToDecRoundedNulled(Duration dur) {
+        BigDecimal durDec = durPracToDecRounded(dur);
+        return (durDec.compareTo(BigDecimal.ZERO) == 0) ? null : durDec;
+    }
+
+    public static BigDecimal durPracToDecRounded(Duration durPrac) {
+        if (null == durPrac) {
+            return null;
+        }
+        Long hours  = durPrac.toHours();
+        Long minutes = durPrac.toMinutes() - hours * 60;
+        BigDecimal hoursDecPart;
+
+        if ((hours == 7 && minutes > 30) && (hours == 8 && minutes < 30)) {
+            hours = 8L;
+            hoursDecPart = BigDecimal.valueOf(0.0);
+        } else {
+            if (minutes >= 30) {
+                hoursDecPart = BigDecimal.valueOf(0.5);
+            } else {
+                hoursDecPart = BigDecimal.ZERO;
+            }
+        }
+
+        return BigDecimal.valueOf(hours).add(hoursDecPart);
+    }
+
 }

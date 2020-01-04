@@ -758,7 +758,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
         return box;
     }
 
-    private boolean pruhToBeLocked() {
+    private boolean actinIsLock() {
         return togglePruhStateButton.getText().equals(LOCK_PRUH_BUTTON_TEXT);
     }
 
@@ -816,7 +816,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
                 return;
             }
 
-            if (pruhToBeLocked() && pruhIsLockedOrUnknown()) {
+            if (actinIsLock() && pruhIsLockedOrUnknown()) {
                 ConfirmDialog.createInfo()
                         .withCaption(dialogCaption)
                         .withMessage("Proužek je již zavřen, nelze znova.")
@@ -825,7 +825,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
                 return;
             }
 
-            if (pruhToBeLocked() && getMissingHodSum().compareTo(BigDecimal.ZERO) != 0) {
+            if (actinIsLock() && getMissingHodSum().compareTo(BigDecimal.ZERO) != 0) {
                 ConfirmDialog.createWarning()
                         .withCaption(LOCK_PRUH_BUTTON_TEXT)
                         .withMessage("V proužku jsou nevyplněné hodiny na zakázkách, nelze uzavřít.")
@@ -846,7 +846,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
                 return;
             }
 
-            if (pruhToBeLocked()) {
+            if (actinIsLock()) {
                 Pruh openedPruh = pruhRepo.findFirstByYmAndPersonId(pruhYm, personId);
                 pruhState = Pruh.PRUH_STATE_LOCKED;
                 openedPruh.setState(pruhState);

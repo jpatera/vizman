@@ -58,7 +58,7 @@ public class Zakn implements Serializable {
         return textZak;
     }
 
-    @Transient
+//    @Transient
     public String getCkzTextRep() {
         StringBuilder builder = new StringBuilder();
         builder .append(getCkont())
@@ -72,7 +72,7 @@ public class Zakn implements Serializable {
         return builder.toString();
     }
 
-    @Transient
+//    @Transient
     public String getKzTextFull() {
         StringBuilder builder = new StringBuilder();
         builder .append(getTextKontNotNull())
@@ -82,22 +82,22 @@ public class Zakn implements Serializable {
         return builder.toString();
     }
 
-    @Transient
+//    @Transient
     public String getCkontNotNull() {
         return null == ckont ? "" : ckont;
     }
 
-    @Transient
+//    @Transient
     public String getCzakNotNull() {
         return null == czak ? "" : czak.toString();
     }
 
-    @Transient
+//    @Transient
     public String getTextKontNotNull() {
         return null == textKont ? "" : textKont;
     }
 
-    @Transient
+//    @Transient
     public String getTextZakNotNull() {
         return null == textZak ? "" : textZak.toString();
     }
@@ -149,6 +149,14 @@ public class Zakn implements Serializable {
     private BigDecimal workPruh;
 
     @Basic
+    @Column(name = "KOEF_P8")
+    private BigDecimal koefP8;
+
+    @Basic
+    @Column(name = "WORK_P8")
+    private BigDecimal workP8;
+
+    @Basic
     @Column(name = "NAKL_MZDA")
     private BigDecimal naklMzda;
 
@@ -164,40 +172,41 @@ public class Zakn implements Serializable {
     @Column(name = "SAZBA")
     private BigDecimal sazba;
 
-    @Basic
-    @Column(name = "KOEF_P8")
-    private BigDecimal koefP8;
 
     public BigDecimal getKoefP8() {
         return koefP8;
     }
 
-    @Transient
+    public BigDecimal getWorkP8() {
+        return workP8;
+    }
+
+    //    @Transient
     public BigDecimal getNaklMzdaP8() {
         return getNaklMzdaNotNull().multiply(getKoefP8NotNull());
     }
 
-    @Transient
+//    @Transient
     public BigDecimal getWorkPruhP8() {
         return getWorkPruhNotNull().multiply(getKoefP8NotNull());
     }
 
-    @Transient
+//    @Transient
     public BigDecimal getNaklMzdaPojistP8() {
         return getNaklMzdaPojistNotNull().multiply(getKoefP8NotNull());
     }
 
-    @Transient
+//    @Transient
     public BigDecimal getKoefP8NotNull() {
         return null == koefP8 ? BigDecimal.ZERO : koefP8;
     }
 
-    @Transient
+//    @Transient
     public BigDecimal getNaklMzdaNotNull() {
         return null == naklMzda ? BigDecimal.ZERO : naklMzda;
     }
 
-    @Transient
+//    @Transient
     public BigDecimal getNaklMzdaPojistNotNull() {
         return null == getNaklMzdaPojist() ? BigDecimal.ZERO : getNaklMzdaPojist();
     }
@@ -235,7 +244,7 @@ public class Zakn implements Serializable {
         return workPruh;
     }
 
-    @Transient
+//    @Transient
     public BigDecimal getWorkPruhNotNull() {
         return null == workPruh ? BigDecimal.ZERO : workPruh;
     }
@@ -287,12 +296,12 @@ public class Zakn implements Serializable {
 
     // =============================================
 
-    @Transient
+//    @Transient
     public String getPrijmeni() {
         return person == null ? "N/A" : person.getPrijmeni();
     }
 
-    @Transient
+//    @Transient
     public BigDecimal getNaklMzdaPojist() {
         if (null == naklMzda || null == naklPojist) {
             return null;
@@ -300,7 +309,7 @@ public class Zakn implements Serializable {
         return naklMzda.add(naklPojist);
     }
 
-    @Transient
+//    @Transient
     public BigDecimal getNaklMzdaPojistRezie() {
         return (null == naklMzda ? BigDecimal.ZERO : naklMzda).add(naklPojist).add(naklRezie);
     }
@@ -314,13 +323,13 @@ public class Zakn implements Serializable {
 //        }
 //    }
 
-    @Transient
+//    @Transient
     public BigDecimal calcNaklPojist(BigDecimal koefPojist) {
 //        return null == naklMzda ? null : naklMzda.multiply(koefPojist.add(BigDecimal.ONE));
         return null == naklMzda ? null : naklMzda.multiply(koefPojist);
     }
 
-    @Transient
+//    @Transient
     public BigDecimal calcNaklRezie(BigDecimal koefRezie) {
 //        return null == naklMzda ? null : naklMzda.multiply(koefRezie.add(BigDecimal.ONE));
         return null == naklMzda ? null : naklMzda.multiply(koefRezie);

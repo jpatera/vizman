@@ -265,13 +265,13 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
         return getLastCzak() + 1;
     }
 
-    @Transient
-    @Override
-    public BigDecimal getHonorar() {
-        return getNodes().stream()
-                .map(node -> node.getHonorar())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
+//    @Transient
+//    @Override
+//    public BigDecimal getHonorar() {
+//        return getNodes().stream()
+//                .map(node -> node.getHonorar())
+//                .reduce(BigDecimal.ZERO, BigDecimal::add);
+//    }
 
     @Transient
     public BigDecimal getHonorarHruby() {

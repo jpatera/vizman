@@ -16,7 +16,7 @@ public interface KzTreeAware<T extends KzTreeAware> {
     Klient getKlient();
     String getKlientName();
     String getText();
-    BigDecimal getHonorar();
+//    BigDecimal getHonorar();
     BigDecimal getHonorarCisty();
     Mena getMena();
     Integer getRok();

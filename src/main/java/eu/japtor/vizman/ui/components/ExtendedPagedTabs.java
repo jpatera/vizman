@@ -26,12 +26,12 @@ public class ExtendedPagedTabs extends Composite<HorizontalLayout> implements Ha
     protected final Map<Tab, SerializableSupplier<Component>> tabsToSuppliers = new HashMap<>();
     protected Component selected;
 
-    public ExtendedPagedTabs() {
-        init();
+    public ExtendedPagedTabs(String menuTitle) {
+        init(menuTitle);
     }
 
 //    @PostConstruct
-    public void init() {
+    public void init(final String menuTitle) {
         this.getContent().setClassName("view-container");
         tabs = new Tabs();
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
@@ -42,7 +42,7 @@ public class ExtendedPagedTabs extends Composite<HorizontalLayout> implements Ha
 
         VerticalLayout sideMenu = new VerticalLayout();
         sideMenu.setWidth(null);
-        sideMenu.add(new H4("KONFIGURACE"), tabs);
+        sideMenu.add(new H4(null == menuTitle ? "MENU" : menuTitle), tabs);
         getContent().add(sideMenu);
     }
 

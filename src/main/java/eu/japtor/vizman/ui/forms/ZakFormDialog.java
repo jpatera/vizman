@@ -1303,22 +1303,22 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         return menaField;
     }
 
-    private Component initHonorarField() {
-        honorarField = new TextField("Honorář");
-//        honorarField.setReadOnly(true);
-        honorarField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
-        getBinder().forField(honorarField)
-                .asRequired("Honorář nesmí být prázdný")
-//                .withValidator(new StringLengthValidator(
-//                        "Honorář nesmí být prázdný",
-//                        1, null))
-                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
-                .withValidator(honorar -> null != honorar && honorar.compareTo(BigDecimal.ZERO) >= 0
-                        , "Honorář nesmí být záporný")
-                .bind(Zak::getHonorar, Zak::setHonorar);
-        honorarField.setValueChangeMode(ValueChangeMode.EAGER);
-        return honorarField;
-    }
+//    private Component initHonorarField() {
+//        honorarField = new TextField("Honorář");
+////        honorarField.setReadOnly(true);
+//        honorarField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
+//        getBinder().forField(honorarField)
+//                .asRequired("Honorář nesmí být prázdný")
+////                .withValidator(new StringLengthValidator(
+////                        "Honorář nesmí být prázdný",
+////                        1, null))
+//                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
+//                .withValidator(honorar -> null != honorar && honorar.compareTo(BigDecimal.ZERO) >= 0
+//                        , "Honorář nesmí být záporný")
+//                .bind(Zak::getHonorar, Zak::setHonorar);
+//        honorarField.setValueChangeMode(ValueChangeMode.EAGER);
+//        return honorarField;
+//    }
 
     private Component initHonorarCistyField() {
         honorarCistyField = new TextField("Honorář čistý");

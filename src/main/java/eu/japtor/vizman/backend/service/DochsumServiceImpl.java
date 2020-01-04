@@ -95,7 +95,8 @@ public class DochsumServiceImpl implements DochsumService, HasLogger {
         } else {
             if (null != durDecLekRounded && durDecLekRounded.compareTo(BigDecimal.ZERO) != 0) {
                 DochsumZak dsZakNew = new DochsumZak(
-                        personId, dsDate, YearMonth.from(dsDate), lekZak.getId(), durDecLekRounded, personWage.getTariff());
+                        personId, dsDate, YearMonth.from(dsDate), lekZak.getId()
+                        , durDecLekRounded, null, null, personWage.getTariff());
                 dochsumZakRepo.save(dsZakNew);
             }
         }

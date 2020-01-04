@@ -550,31 +550,31 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        }
 //    };
 
-    private ComponentRenderer<HtmlComponent, KzTreeAware> honorarCellRenderer = new ComponentRenderer<>(kz -> {
-        HtmlComponent comp =  VzmFormatUtils.getMoneyComponent(kz.getHonorar());
-        if (ItemType.KONT == kz.getTyp()) {
-////            comp.getStyle().set("color", "darkmagenta");
-////            return new Emphasis(kontZak.getHonorar().toString());
-//            comp.getElement().appendChild(ElementFactory.createEmphasis(
-//                    VzmFormatUtils.moneyFormat.format(kz.getHonorar())));
-            comp.getStyle()
-//                    .set("color", "red")
+//    private ComponentRenderer<HtmlComponent, KzTreeAware> honorarCellRenderer = new ComponentRenderer<>(kz -> {
+//        HtmlComponent comp =  VzmFormatUtils.getMoneyComponent(kz.getHonorar());
+//        if (ItemType.KONT == kz.getTyp()) {
+//////            comp.getStyle().set("color", "darkmagenta");
+//////            return new Emphasis(kontZak.getHonorar().toString());
+////            comp.getElement().appendChild(ElementFactory.createEmphasis(
+////                    VzmFormatUtils.moneyFormat.format(kz.getHonorar())));
+//            comp.getStyle()
+////                    .set("color", "red")
+////                    .set("text-indent", "1em");
+//                    .set("padding-right", "1em");
+//        } else {
+//            comp.getStyle()
+////                        .set("color", "red")
 //                    .set("text-indent", "1em");
-                    .set("padding-right", "1em");
-        } else {
-            comp.getStyle()
-//                        .set("color", "red")
-                    .set("text-indent", "1em");
-//            if ((null != kz) && (kz.getHonorar().compareTo(BigDecimal.ZERO) < 0)) {
-//                comp.getStyle()
-//                        .set("color", "red")
-//                        .set("text-indent", "1em");
-//            }
-//            comp.getElement().appendChild(ElementFactory.createSpan(
-//                    VzmFormatUtils.moneyFormat.format(kz.getHonorar())));
-        }
-        return comp;
-    });
+////            if ((null != kz) && (kz.getHonorar().compareTo(BigDecimal.ZERO) < 0)) {
+////                comp.getStyle()
+////                        .set("color", "red")
+////                        .set("text-indent", "1em");
+////            }
+////            comp.getElement().appendChild(ElementFactory.createSpan(
+////                    VzmFormatUtils.moneyFormat.format(kz.getHonorar())));
+//        }
+//        return comp;
+//    });
 
     private ComponentRenderer<HtmlComponent, KzTreeAware> honorarCistyCellRenderer = new ComponentRenderer<>(kz -> {
         HtmlComponent comp =  VzmFormatUtils.getMoneyComponent(kz.getHonorarCisty());

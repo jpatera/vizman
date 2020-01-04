@@ -57,9 +57,9 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     @Column(name = "FOLDER")
     private String folder;
 
-    @Basic
-    @Column(name = "HONORAR")
-    private BigDecimal honorar;
+//    @Basic
+//    @Column(name = "HONORAR")
+//    private BigDecimal honorar;
 
     @Basic
     @Column(name = "ROZPRAC")
@@ -201,13 +201,13 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         this.folder = docdir;
     }
 
-    public BigDecimal getHonorar() {
-        return honorar;
-    }
-
-    public void setHonorar(BigDecimal honorar) {
-        this.honorar = honorar;
-    }
+//    public BigDecimal getHonorar() {
+//        return honorar;
+//    }
+//
+//    public void setHonorar(BigDecimal honorar) {
+//        this.honorar = honorar;
+//    }
 
     public String getTmp() {
         return tmp;
@@ -475,10 +475,10 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         ;
     }
 
-    @Transient
-    public BigDecimal getHonorarNotNull() {
-        return null == honorar ? BigDecimal.ZERO : honorar;
-    }
+//    @Transient
+//    public BigDecimal getHonorarNotNull() {
+//        return null == honorar ? BigDecimal.ZERO : honorar;
+//    }
 
     @Transient
     public BigDecimal getHonorarHrubyNotNull() {
@@ -546,7 +546,7 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         this.czak = czak;
         this.rok = LocalDate.now().getYear();
         this.uuid = UUID.randomUUID();
-        this.honorar = BigDecimal.valueOf(0);
+//        this.honorar = BigDecimal.valueOf(0);
         this.kont = parentKont;
         this.arch = false;
 
@@ -555,28 +555,28 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     }
 
 
-    public void updateBasicData(Zak zak) {
-
-        this.setVersion(zak.getVersion());
-        this.uuid = zak.uuid;
-        this.typ = zak.typ;
-        this.ckontOrig = zak.ckontOrig;
-        this.czak = zak.czak;
-        this.rok = zak.rok;
-        this.arch = zak.arch;
-        this.skupina = zak.skupina;
-        this.text = zak.text;
-        this.folder = zak.folder;
-        this.honorar = zak.honorar;
-//        this.setKontId(zak.getKontId());
-        this.tmp = zak.tmp;
-        this.dateCreate = zak.dateCreate;
-        this.rokmeszad = zak.rokmeszad;
-//        this.dateCreate = kont.dateCreate;
-        this.datetimeUpdate = zak.datetimeUpdate;
-
-//        BigDecimal rozprac;
-    }
+//    public void updateBasicData(Zak zak) {
+//
+//        this.setVersion(zak.getVersion());
+//        this.uuid = zak.uuid;
+//        this.typ = zak.typ;
+//        this.ckontOrig = zak.ckontOrig;
+//        this.czak = zak.czak;
+//        this.rok = zak.rok;
+//        this.arch = zak.arch;
+//        this.skupina = zak.skupina;
+//        this.text = zak.text;
+//        this.folder = zak.folder;
+//        this.honorar = zak.honorar;
+////        this.setKontId(zak.getKontId());
+//        this.tmp = zak.tmp;
+//        this.dateCreate = zak.dateCreate;
+//        this.rokmeszad = zak.rokmeszad;
+////        this.dateCreate = kont.dateCreate;
+//        this.datetimeUpdate = zak.datetimeUpdate;
+//
+////        BigDecimal rozprac;
+//    }
 
 
 //    public List<Fakt> getFakts() {

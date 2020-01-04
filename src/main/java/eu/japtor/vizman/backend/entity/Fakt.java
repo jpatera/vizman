@@ -251,10 +251,10 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemT
                 ;
     }
 
-    @Transient
-    public BigDecimal getZakHonorar() {
-        return null == zak ? BigDecimal.ZERO : zak.getHonorar();
-    }
+//    @Transient
+//    public BigDecimal getZakHonorar() {
+//        return null == zak ? BigDecimal.ZERO : zak.getHonorar();
+//    }
 
     @Transient
     public String getCkont() {

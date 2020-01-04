@@ -45,21 +45,21 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 // ###***
 public class ZakEvalListView extends VerticalLayout implements BeforeEnterObserver {
 
-//    private final VerticalLayout mainViewContainer = new VerticalLayout();
-    private final H3 zakHeader = new H3(TITLE_ZAK_LIST);
-    private final Grid<Zak> zakGrid = new Grid<>();
-
-    @Autowired
-    public ZakRepo zakRepo;
-
-    @PostConstruct
-    public void init() {
-//        setHeight("90%");
-//        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        initView();
-        initGrid();
-        updateViewContent();
-    }
+////    private final VerticalLayout mainViewContainer = new VerticalLayout();
+//    private final H3 zakHeader = new H3(TITLE_ZAK_LIST);
+//    private final Grid<Zak> zakGrid = new Grid<>();
+//
+//    @Autowired
+//    public ZakRepo zakRepo;
+//
+//    @PostConstruct
+//    public void init() {
+////        setHeight("90%");
+////        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+//        initView();
+//        initGrid();
+//        updateViewContent();
+//    }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
@@ -67,60 +67,60 @@ public class ZakEvalListView extends VerticalLayout implements BeforeEnterObserv
 //        System.out.println("###  ZaklListView.beforeEnter");
     }
 
-    private void initView() {
-        setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-    }
-
-    private void initGrid() {
-        VerticalLayout container = new VerticalLayout();
-        container.setClassName("view-container");
-        container.setAlignItems(Alignment.STRETCH);
-
-
-//        VerticalLayout gridContainer = new VerticalLayout();
-//        gridContainer.setClassName("view-container");
-//        gridContainer.setAlignItems(Alignment.CENTER);
-//        gridContainer.setComponentAlignment();
-//        gridContainer.setSizeFull();
-//        gridContainer.setHeight("100%");
-//        gridContainer.setHeight("90%");
-//        gridContainer.setWidth("90%");
-
-        zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-//        zakGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#").setWidth("4em")
-//            .setFrozen(true);;
-        zakGrid.addColumn(Zak::getCkont).setHeader("ČK").setWidth("7em").setResizable(true)
-            .setFrozen(true);
-        zakGrid.addColumn(Zak::getCzak).setHeader("ČZ").setWidth("3em").setResizable(true)
-            .setFrozen(true);;
-        zakGrid.addColumn(Zak::getText).setHeader("Text").setWidth("15em").setResizable(true);
-
-        zakGrid.addColumn(Zak::getSkupina).setHeader("Skupina").setWidth("4em").setResizable(true);
-        zakGrid.addColumn(Zak::getHonorar).setHeader("Honorář").setWidth("4em").setResizable(true);
-        zakGrid.addColumn(Zak::getRm).setHeader("RM").setWidth("4em").setResizable(true);
-        zakGrid.addColumn(Zak::getR1).setHeader("R1").setWidth("4em").setResizable(true);
-        zakGrid.addColumn(Zak::getR2).setHeader("R2").setWidth("4em").setResizable(true);
-        zakGrid.addColumn(Zak::getR3).setHeader("R3").setWidth("4em").setResizable(true);
-        zakGrid.addColumn(Zak::getR4).setHeader("R4").setWidth("4em").setResizable(true);
-
-        container.add(zakHeader, zakGrid);
-        add(container);
-    }
-
-//    private void openDir(String path) {
-//        try {
-////            Runtime.getRuntime().exec("explorer.exe /select," + path);
-//            ProcessBuilder pb = new ProcessBuilder("explorer.exe", "/select," + path);
-//            pb.redirectError();
-//            pb.start();
-////            Process proc = pb.start();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+//    private void initView() {
+//        setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
 //    }
-
-    private void updateViewContent() {
-        List<Zak> zaks = zakRepo.findAll();
-        zakGrid.setItems(zaks);
-    }
+//
+//    private void initGrid() {
+//        VerticalLayout container = new VerticalLayout();
+//        container.setClassName("view-container");
+//        container.setAlignItems(Alignment.STRETCH);
+//
+//
+////        VerticalLayout gridContainer = new VerticalLayout();
+////        gridContainer.setClassName("view-container");
+////        gridContainer.setAlignItems(Alignment.CENTER);
+////        gridContainer.setComponentAlignment();
+////        gridContainer.setSizeFull();
+////        gridContainer.setHeight("100%");
+////        gridContainer.setHeight("90%");
+////        gridContainer.setWidth("90%");
+//
+//        zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+////        zakGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#").setWidth("4em")
+////            .setFrozen(true);;
+//        zakGrid.addColumn(Zak::getCkont).setHeader("ČK").setWidth("7em").setResizable(true)
+//            .setFrozen(true);
+//        zakGrid.addColumn(Zak::getCzak).setHeader("ČZ").setWidth("3em").setResizable(true)
+//            .setFrozen(true);;
+//        zakGrid.addColumn(Zak::getText).setHeader("Text").setWidth("15em").setResizable(true);
+//
+//        zakGrid.addColumn(Zak::getSkupina).setHeader("Skupina").setWidth("4em").setResizable(true);
+//        zakGrid.addColumn(Zak::getHonorar).setHeader("Honorář").setWidth("4em").setResizable(true);
+//        zakGrid.addColumn(Zak::getRm).setHeader("RM").setWidth("4em").setResizable(true);
+//        zakGrid.addColumn(Zak::getR1).setHeader("R1").setWidth("4em").setResizable(true);
+//        zakGrid.addColumn(Zak::getR2).setHeader("R2").setWidth("4em").setResizable(true);
+//        zakGrid.addColumn(Zak::getR3).setHeader("R3").setWidth("4em").setResizable(true);
+//        zakGrid.addColumn(Zak::getR4).setHeader("R4").setWidth("4em").setResizable(true);
+//
+//        container.add(zakHeader, zakGrid);
+//        add(container);
+//    }
+//
+////    private void openDir(String path) {
+////        try {
+//////            Runtime.getRuntime().exec("explorer.exe /select," + path);
+////            ProcessBuilder pb = new ProcessBuilder("explorer.exe", "/select," + path);
+////            pb.redirectError();
+////            pb.start();
+//////            Process proc = pb.start();
+////        } catch (IOException e) {
+////            e.printStackTrace();
+////        }
+////    }
+//
+//    private void updateViewContent() {
+//        List<Zak> zaks = zakRepo.findAll();
+//        zakGrid.setItems(zaks);
+//    }
 }

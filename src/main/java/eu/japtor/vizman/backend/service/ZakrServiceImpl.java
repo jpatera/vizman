@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiConsumer;
+
 
 @Service
 public class ZakrServiceImpl implements ZakrService, HasLogger {
@@ -62,14 +64,17 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
     public List<Zakr> fetchAllDescOrder(ZakrListView.ZakrParams zakrParams) {
         List<Zakr> zakrs =  zakrRepo.findAllByOrderByCkontDescCzakDesc();
         zakrs.stream()
-                .forEach(zr -> {
-                    if (zr.getMena() == Mena.EUR) {
-                        zr.setKurzEur(zakrParams.getKurzEur());
-                    }
-                    zr.setRxRyVykon(zr.calcRxRyVykon(zakrParams.getRx(), zakrParams.getRy()));
-                    zr.setVysledekByKurz(zr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
-                })
-        ;
+                .forEach(zr -> adjustZakrVykonAndVysledky.accept(zr, zakrParams));
+//
+//                        zr -> {
+//                    if (zr.getMena() == Mena.EUR) {
+//                        zr.setKurzEur(zakrParams.getKurzEur());
+//                    }
+//                    zr.setRxRyVykon(zr.calcRxRyVykon(zakrParams.getRx(), zakrParams.getRy()));
+//                    zr.setVysledekByKurz(zr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
+//                    zr.setVysledekP8ByKurz(zr.calcVysledekP8ByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
+//                })
+//        ;
         return zakrs;
     }
 
@@ -77,22 +82,31 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
     public List<Zakr> fetchByFiltersDescOrder(ZakrListView.ZakrParams zakrParams) {
         List<Zakr> zakrs = zakrRepo.findZakrByArchAndCkontAndRokAndSkupina(
                 zakrParams.getArch(), zakrParams.getCkz(), zakrParams.getRokZak(), zakrParams.getSkupina());
-//        zakrs.stream()
-//                .filter(zr -> zr.getMena() == Mena.EUR)
-//                .forEach(zr -> zr.setKurzEur(zakrParams.getKurzEur()))
-//        ;
         zakrs.stream()
-                .forEach(zr -> {
-                    if (zr.getMena() == Mena.EUR) {
-                        zr.setKurzEur(zakrParams.getKurzEur());
-                    }
-                    zr.setRxRyVykon(zr.calcRxRyVykon(zakrParams.getRx(), zakrParams.getRy()));
-                    zr.setVysledekByKurz(zr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
-                })
-        ;
+                .forEach(zr -> adjustZakrVykonAndVysledky.accept(zr, zakrParams));
+//
+//
+//                        zr -> {
+//                    if (zr.getMena() == Mena.EUR) {
+//                        zr.setKurzEur(zakrParams.getKurzEur());
+//                    }
+//                    zr.setRxRyVykon(zr.calcRxRyVykon(zakrParams.getRx(), zakrParams.getRy()));
+//                    zr.setVysledekByKurz(zr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
+//                    zr.setVysledekP8ByKurz(zr.calcVysledekP8ByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
+//                })
+//        ;
         return zakrs;
     }
 
+
+    private BiConsumer<Zakr, ZakrListView.ZakrParams> adjustZakrVykonAndVysledky = (zr, par) -> {
+        if (zr.getMena() == Mena.EUR) {
+            zr.setKurzEur(par.getKurzEur());
+        }
+        zr.setRxRyVykon(zr.calcRxRyVykon(par.getRx(), par.getRy()));
+        zr.setVysledekByKurz(zr.calcVysledekByKurz(par.getKoefPojist(), par.getKoefRezie()));
+        zr.setVysledekP8ByKurz(zr.calcVysledekP8ByKurz(par.getKoefPojist(), par.getKoefRezie()));
+    };
 
     @Override
     public List<Zakr> fetchByRokDescOrder(final Integer rok) {

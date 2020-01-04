@@ -512,8 +512,13 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
         Label vysledekHeaderLabel = new Label("Def.");
         vysledekHeaderLabel.getElement()
-                .setProperty("title", "[Výsledek] = [Zbývá RP] - [Mzdy] * (1 + koef_pojist) * (1 + koef_rezie)");
+                .setProperty("title", "[Výsledek] = [Hotovo RP] - [Mzdy] * (1 + koef_pojist) * (1 + koef_rezie)");
         descHeaderRow.getCell(colVysledek).setComponent(vysledekHeaderLabel);
+
+        Label vysledekP8HeaderLabel = new Label("Def.");
+        vysledekP8HeaderLabel.getElement()
+                .setProperty("title", "[Výsledek P8] = [Hotovo RP] - [Mzdy P8] * (1 + koef_pojist) * (1 + koef_rezie)");
+        descHeaderRow.getCell(colVysledekP8).setComponent(vysledekP8HeaderLabel);
 
         // =============
         // Filters
@@ -591,6 +596,12 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setText("" + (VzmFormatUtils.moneyFormat.format(calcVysledekSum())));
     }
 
+    private void updateVysledekP8SumField() {
+        sumFooterRow
+                .getCell(this.getColumnByKey(RESULTP8_COL_KEY))
+                .setText("" + (VzmFormatUtils.moneyFormat.format(calcVysledekP8Sum())));
+    }
+
     private BigDecimal calcHotovokSum() {
         return this.getDataProvider()
                 .withConfigurableFilter()
@@ -631,7 +642,17 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         return this.getDataProvider()
                 .withConfigurableFilter()
                 .fetch(new Query<>())
-                .map(zakr -> zakr.getNaklMzdy())
+                .map(zakr -> zakr.getNaklMzda())
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+        ;
+    }
+
+    private BigDecimal calcMzdyP8Sum() {
+        return this.getDataProvider()
+                .withConfigurableFilter()
+                .fetch(new Query<>())
+                .map(zakr -> zakr.getNaklMzdaP8())
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
         ;
@@ -647,11 +668,31 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         ;
     }
 
+    private BigDecimal calcMzdyP8PojRezSum() {
+        return this.getDataProvider()
+                .withConfigurableFilter()
+                .fetch(new Query<>())
+                .map(zakr -> zakr.calcNaklMzdyP8PojistRezie(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()))
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+        ;
+    }
+
     private BigDecimal calcVysledekSum() {
         return this.getDataProvider()
                 .withConfigurableFilter()
                 .fetch(new Query<>())
                 .map(zakr -> zakr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()))
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+        ;
+    }
+
+    private BigDecimal calcVysledekP8Sum() {
+        return this.getDataProvider()
+                .withConfigurableFilter()
+                .fetch(new Query<>())
+                .map(zakr -> zakr.calcVysledekP8ByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()))
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
         ;
@@ -873,21 +914,14 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         }
     };
 
-    private ValueProvider<Zakr, String> vysledekGridValueProvider = zakr -> {
-            BigDecimal vysledek = zakr.getVysledekByKurz();
-            return null == vysledek ? "" : VzmFormatUtils.moneyFormat.format(vysledek);
-    };
+    private ValueProvider<Zakr, String> vysledekGridValueProvider = zakr ->
+            null == zakr.getVysledekByKurz() ? "" : VzmFormatUtils.moneyFormat.format(zakr.getVysledekByKurz());
 
-    private ValueProvider<Zakr, String> vysledekP8GridValueProvider = zakr -> {
-//            BigDecimal rpVysledek = getRpVysledekP8(zakr);
-//            return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
-            return "";
-    };
+    private ValueProvider<Zakr, String> vysledekP8GridValueProvider = zakr ->
+            null == zakr.getVysledekP8ByKurz() ? "" : VzmFormatUtils.moneyFormat.format(zakr.getVysledekP8ByKurz());
 
-    private ValueProvider<Zakr, String> naklMzdyValueProvider = zakr -> {
-            BigDecimal naklMzdy = zakr.getNaklMzdy();
-            return null == naklMzdy ? "" : VzmFormatUtils.moneyFormat.format(naklMzdy);
-    };
+    private ValueProvider<Zakr, String> naklMzdyValueProvider = zakr ->
+            null == zakr.getNaklMzda() ? "" : VzmFormatUtils.moneyFormat.format(zakr.getNaklMzda());
 
     private ValueProvider<Zakr, String> naklMzdyPojistRezieValueProvider = zakr -> {
             BigDecimal naklMzdy = zakr.calcNaklMzdyPojistRezie(zakrParams.getKoefPojist(), zakrParams.getKoefRezie());
@@ -898,9 +932,8 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             }
     };
 
-    private ValueProvider<Zakr, String> menaValueProvider = zakr -> {
-        return null == zakr.getMena() ? null : zakr.getMena().name();
-    };
+    private ValueProvider<Zakr, String> menaValueProvider = zakr ->
+            null == zakr.getMena() ? null : zakr.getMena().name();
 
 
     // ===========================
@@ -1059,6 +1092,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         updateZbyvaSumField();
         updateVykonSumField();
         updateVysledekSumField();
+        updateVysledekP8SumField();
         updateMzdySumField();
         updateMzdyPojRezSumField();
     }

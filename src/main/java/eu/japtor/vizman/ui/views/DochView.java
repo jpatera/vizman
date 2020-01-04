@@ -29,10 +29,7 @@ import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.CinRepo;
 import eu.japtor.vizman.backend.repository.PruhRepo;
-import eu.japtor.vizman.backend.service.DochYearMonthService;
-import eu.japtor.vizman.backend.service.DochService;
-import eu.japtor.vizman.backend.service.DochsumService;
-import eu.japtor.vizman.backend.service.PersonService;
+import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.Operation;
@@ -51,7 +48,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
 
-import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -1194,7 +1190,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         loadPrevDateButton = new Button(VaadinIcon.STEP_BACKWARD.create());
         loadPrevDateButton.addClickListener(event -> {
             if (null != dochPerson && null != dochDate) {
-                LocalDate prevDochDate = dochService.findPrevDochDate(dochPerson.getId(), dochDate);
+                LocalDate prevDochDate = dochService.fetchPrevDochDate(dochPerson.getId(), dochDate);
                 if (prevDochDate == null) {
                     loadPrevDateButton.setEnabled(false);
                 } else {
@@ -1422,16 +1418,16 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         }
         dochsum.setDsToLast(toDateTimeMax);
 
-        dochsum.setDsDov(durToDecNulled(sumOfDovolena()));
-        dochsum.setDsNem(durToDecNulled(sumOfNemoc()));
-        dochsum.setDsVol(durToDecNulled(sumOfVolno()));
-        dochsum.setDsLek(durPracToDecRoundedNulled(sumOfLekar()));
-        dochsum.setDsObedMan(durToDecNulled(durObedMan));
-        dochsum.setDsObedAut(durToDecNulled(Duration.ZERO.minus(durObedAutMinus))); // Obedy v dochsum chceme mit v '+'
-        dochsum.setDsObed(durToDecNulled(durObedMan.minus(durObedAutMinus)));
+        dochsum.setDsDov(DochServiceImpl.durToDecNulled(sumOfDovolena()));
+        dochsum.setDsNem(DochServiceImpl.durToDecNulled(sumOfNemoc()));
+        dochsum.setDsVol(DochServiceImpl.durToDecNulled(sumOfVolno()));
+        dochsum.setDsLek(DochServiceImpl.durPracToDecRoundedNulled(sumOfLekar()));
+        dochsum.setDsObedMan(DochServiceImpl.durToDecNulled(durObedMan));
+        dochsum.setDsObedAut(DochServiceImpl.durToDecNulled(Duration.ZERO.minus(durObedAutMinus))); // Obedy v dochsum chceme mit v '+'
+        dochsum.setDsObed(DochServiceImpl.durToDecNulled(durObedMan.minus(durObedAutMinus)));
         dochsum.setObedKratky((null == durObedAutMinus) || (Duration.ZERO.compareTo(durObedAutMinus) != 0));
-        dochsum.setDsWork(durToDecNulled(durPrac));
-        dochsum.setDsWorkPruh(durPracToDecRounded(durPrac.plus(durObedAutMinus)));
+        dochsum.setDsWork(DochServiceImpl.durToDecNulled(durPrac));
+        dochsum.setDsWorkPruh(DochServiceImpl.durPracToDecRounded(durPrac.plus(durObedAutMinus)));
 
         try {
             dochsumService.updateDochsumCloseDoch(dochDate, dochPerson.getId(), dochsum);
@@ -1455,47 +1451,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     .open()
             ;
         }
-    }
-
-    private BigDecimal durToDecNulled(Duration dur) {
-        BigDecimal durDec = durToDec(dur);
-        return (durDec.compareTo(BigDecimal.ZERO) == 0) ? null : durDec;
-    }
-
-    private BigDecimal durToDec(Duration dur) {
-        if (null == dur) {
-            return BigDecimal.ZERO;
-        }
-        Long hours  = dur.toHours();
-        Long minutes = dur.toMinutes() - hours * 60;
-        return BigDecimal.valueOf(hours).add(BigDecimal.valueOf((minutes % 60) / 60f));
-    }
-
-    private BigDecimal durPracToDecRoundedNulled(Duration dur) {
-        BigDecimal durDec = durPracToDecRounded(dur);
-        return (durDec.compareTo(BigDecimal.ZERO) == 0) ? null : durDec;
-    }
-
-    private BigDecimal durPracToDecRounded(Duration durPrac) {
-        if (null == durPrac) {
-            return null;
-        }
-        Long hours  = durPrac.toHours();
-        Long minutes = durPrac.toMinutes() - hours * 60;
-        BigDecimal hoursDecPart;
-
-        if ((hours == 7 && minutes > 30) && (hours == 8 && minutes < 30)) {
-            hours = 8L;
-            hoursDecPart = BigDecimal.valueOf(0.0);
-        } else {
-            if (minutes >= 30) {
-                hoursDecPart = BigDecimal.valueOf(0.5);
-            } else {
-                hoursDecPart = BigDecimal.ZERO;
-            }
-        }
-
-        return BigDecimal.valueOf(hours).add(hoursDecPart);
     }
 
     private LocalTime getDsFromFirst() {
@@ -1883,7 +1838,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private void updateLowerDochGridPane(final Person dochPerson, final LocalDate dochDate) {
         LocalDate prevDochDate = null;
         if (null != dochPerson) {
-            prevDochDate = dochService.findPrevDochDate(dochPerson.getId(), dochDate);
+            prevDochDate = dochService.fetchPrevDochDate(dochPerson.getId(), dochDate);
         }
 
         loadLowerDochGridData(dochPerson, prevDochDate);

@@ -5,8 +5,7 @@ import eu.japtor.vizman.backend.entity.Doch;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.time.LocalDate;
-import java.time.YearMonth;
+import java.time.*;
 import java.util.List;
 
 public interface DochRepo extends JpaRepository<Doch, Long> {
@@ -73,5 +72,19 @@ public interface DochRepo extends JpaRepository<Doch, Long> {
 
 
     void deleteByPersonIdAndDochDate(final Long personId, final LocalDate dochDate);
+
+    @Query(value = "SELECT COUNT (DISTINCT doch_date) FROM vizman.doch WHERE "
+            + "PERSON_ID = ?1 AND YEAR(DOCH_DATE) = ?2 AND MONTH(DOCH_DATE) = ?3 "
+//            + " AND (CIN_CIN_KOD = 'P' OR CIN_CIN_KOD = 'PM' OR CIN_CIN_KOD = 'SC' OR CIN_CIN_KOD = 'L') "
+            + " AND CALCPRAC = true "
+            , nativeQuery = true)
+    long countNonParagDays(Long personId, Integer year, Integer month);
+
+    @Query(value = "SELECT SUM (doch_dur) FROM vizman.doch WHERE "
+            + "PERSON_ID = ?1 AND YEAR(DOCH_DATE) = ?2 AND MONTH(DOCH_DATE) = ?3 "
+//            + " AND (CIN_CIN_KOD = 'P' OR CIN_CIN_KOD = 'PM' OR CIN_CIN_KOD = 'SC' OR CIN_CIN_KOD = 'L') "
+            + " AND CALCPRAC = true "
+            , nativeQuery = true)
+    Long sumNonParagDochDur(Long personId, Integer year, Integer month);
 
 }
