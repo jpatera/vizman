@@ -88,6 +88,18 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     private BigDecimal rp;  // Rozpracovanost posledni platna
 
     @Basic
+    @Column(name = "RM3")
+    private BigDecimal rm3;  // Rozpracovanost  na konci Q4 (minus 3) minuleho roku
+
+    @Basic
+    @Column(name = "RM2")
+    private BigDecimal rm2;  // Rozpracovanost  na konci Q2 (minus 2) minuleho roku
+
+    @Basic
+    @Column(name = "RM1")
+    private BigDecimal rm1;  // Rozpracovanost na konci Q3 (minus 1) predminuleho roku
+
+    @Basic
     @Column(name = "R0")
     private BigDecimal r0;  // Rozpracovanost  na konci Q4 minuleho roku
 
@@ -233,6 +245,27 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     }
     public void setRp(BigDecimal rp) {
         this.rp = rp;
+    }
+
+    public BigDecimal getRm3() {
+        return rm3;
+    }
+    public void setRm3(BigDecimal rm3) {
+        this.rm3 = rm3;
+    }
+
+    public BigDecimal getRm2() {
+        return rm2;
+    }
+    public void setRm2(BigDecimal rm2) {
+        this.rm2 = rm2;
+    }
+
+    public BigDecimal getRm1() {
+        return rm1;
+    }
+    public void setRm1(BigDecimal rm1) {
+        this.rm1 = rm1;
     }
 
     public BigDecimal getR0() {

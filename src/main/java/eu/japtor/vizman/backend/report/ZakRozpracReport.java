@@ -95,6 +95,9 @@ public class ZakRozpracReport extends PrintPreviewReport {
     private AbstractColumn menaCol;
     private AbstractColumn honorCistyByKurzCol;
     private AbstractColumn kzTextShortCol;
+    private AbstractColumn rm3Col;
+    private AbstractColumn rm2Col;
+    private AbstractColumn rm1Col;
     private AbstractColumn r0Col;
     private AbstractColumn r1Col;
     private AbstractColumn r2Col;
@@ -149,6 +152,9 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .addColumn(skupCol)
                 .addColumn(menaCol)
                 .addColumn(honorCistyByKurzCol)
+                .addColumn(rm3Col)
+                .addColumn(rm2Col)
+                .addColumn(rm1Col)
                 .addColumn(r0Col)
                 .addColumn(r1Col)
                 .addColumn(r2Col)
@@ -225,6 +231,30 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .setStyle(DEFAULT_GRID_STYLE)
                 .setWidth(25)
 //                .setFixedWidth(false)
+                .build();
+
+        rm3Col = ColumnBuilder.getNew()
+                .setColumnProperty("rm3", BigDecimal.class)
+                .setTitle("R-3")
+//                .setHeaderStyle(HEADER_STYLE)
+                .setStyle(PROC_GRID_STYLE)
+                .setWidth(4)
+                .build();
+
+        rm2Col = ColumnBuilder.getNew()
+                .setColumnProperty("rm2", BigDecimal.class)
+                .setTitle("R-2")
+//                .setHeaderStyle(HEADER_STYLE)
+                .setStyle(PROC_GRID_STYLE)
+                .setWidth(4)
+                .build();
+
+        rm1Col = ColumnBuilder.getNew()
+                .setColumnProperty("rm1", BigDecimal.class)
+                .setTitle("R-1")
+//                .setHeaderStyle(HEADER_STYLE)
+                .setStyle(PROC_GRID_STYLE)
+                .setWidth(4)
                 .build();
 
         r0Col = ColumnBuilder.getNew()
