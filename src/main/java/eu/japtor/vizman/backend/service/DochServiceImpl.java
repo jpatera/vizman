@@ -81,10 +81,10 @@ public class DochServiceImpl implements DochService, HasLogger {
         if (null != recToOpen) {
             Integer cdoch;
             if (Cin.ATYP_FIX_CAS.equals(recToOpen.getCinAkceTyp())) {
-                Integer firstCdoch = dochRepo.findFirstCdochForPersonAndDate(recToOpen.getPersonId(), recToOpen.getdDochDate());
+                Integer firstCdoch = dochRepo.findFirstCdochForPersonAndDate(recToOpen.getPersonId(), recToOpen.getDochDate());
             cdoch = null == firstCdoch ? 0 : Math.min(0, firstCdoch -1);
             }  else {
-                Integer lastCdoch = dochRepo.findLastCdochForPersonAndDate(recToOpen.getPersonId(), recToOpen.getdDochDate());
+                Integer lastCdoch = dochRepo.findLastCdochForPersonAndDate(recToOpen.getPersonId(), recToOpen.getDochDate());
                 cdoch = null == lastCdoch ? 1 : Math.max(1, lastCdoch + 1);
             }
             recToOpen.setCdoch(cdoch);
@@ -96,7 +96,7 @@ public class DochServiceImpl implements DochService, HasLogger {
     private Doch addDochRec(Doch recToAdd) {
         if (null != recToAdd) {
             Integer cdoch;
-            Integer lastCdoch = dochRepo.findLastCdochForPersonAndDate(recToAdd.getPersonId(), recToAdd.getdDochDate());
+            Integer lastCdoch = dochRepo.findLastCdochForPersonAndDate(recToAdd.getPersonId(), recToAdd.getDochDate());
             cdoch = null == lastCdoch ? 1 : Math.max(1, lastCdoch + 1);
             recToAdd.setCdoch(cdoch);
             return dochRepo.save(recToAdd);
@@ -121,7 +121,7 @@ public class DochServiceImpl implements DochService, HasLogger {
         if (null == dochRecToRemove.getToTime()) {
             dochRepo.deleteById(dochRecToRemove.getId());
         }
-        Doch prevZkDoch = dochRepo.findLastZkDochForPersonAndDate(dochRecToRemove.getPersonId(), dochRecToRemove.getdDochDate());
+        Doch prevZkDoch = dochRepo.findLastZkDochForPersonAndDate(dochRecToRemove.getPersonId(), dochRecToRemove.getDochDate());
         if (null != prevZkDoch) {
             prevZkDoch.setToTime(null);
 //            prevZkDoch.setDochDurationFromUI(null);

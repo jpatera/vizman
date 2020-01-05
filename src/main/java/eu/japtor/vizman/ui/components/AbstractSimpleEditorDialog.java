@@ -37,22 +37,11 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
     private T currentItem;
 
     private Operation operation;
-
-    private final ConfirmationDialog<T> confirmationDialog = new ConfirmationDialog<>();
-
-    private GrammarGender itemGender;
-    private String itemTypeNomS;
-    private String itemTypeGenS;
-    private String itemTypeAccuS;
     private BiConsumer<T, Operation> itemSaver;
 
     /**
      * Constructs a new instance.
      *
-//     * @param itemGender
-//     *            Gender of the item name
-//     * @param itemNameMap
-//     *            Map of readable names/shapes for titles, buttons, etc
      * @param itemSaver
      *            Callback to save the edited item
      */
@@ -60,7 +49,6 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 
         this.itemSaver = itemSaver;
 
-//        initDialogTitle();
         initFormLayout();
         initDialogButtonBar();
 
@@ -116,7 +104,6 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
         saveButton = new Button("Uložit");
         saveButton.getElement().setAttribute("theme", "primary");
         saveButton.addClickShortcut(Key.ENTER);
-//        saveButton.setEnabled(false);
 
         HorizontalLayout leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);
@@ -126,7 +113,6 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
         rightBarPart.setSpacing(true);
         rightBarPart.add(cancelButton);
 
-//        buttonBar.getStyle().set("margin-top", "0.2em");
         buttonBar.setSpacing(false);
         buttonBar.setPadding(false);
         buttonBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
@@ -134,7 +120,6 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 
         buttonBar.add(leftBarPart, rightBarPart);
         buttonBar.setClassName("buttons");
-//        buttonBar.setSpacing(true);
     }
 
 
@@ -170,19 +155,6 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 
     protected abstract void openSpecific();
 
-    public void open(T item, Operation operation) {
-        openInternal(item, operation, null, null, null);
-    }
-
-    public void open(T item, Operation operation
-                     , String titleItemNameText) {
-        openInternal(item, operation, titleItemNameText, null, null);
-    }
-
-    public void open(T item, Operation operation
-                     , String titleItemNameText, String titleEndText) {
-        openInternal(item, operation, titleItemNameText, null, titleEndText);
-    }
 
     /**
      * Opens the given item for editing in the dialog.
@@ -194,7 +166,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
             , Component titleMiddleComponent
             , String titleEndText)
     {
-        setDefaultItemNames();  // Set general default names
+//        setDefaultItemNames();  // Set general default names
         this.currentItem = item;
         this.operation = operation;
         binder.removeBean();
@@ -204,10 +176,6 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 
         String titleMainTextInternal = "";
         if (null == titleMainText) {
-//            if (currentItem instanceof HasItemType) {
-//                setItemNames(((HasItemType) currentItem).getTyp());  // Set general default names
-//                titleItemNameText = ItemNames.getNomS(((HasItemType) currentItem).getTyp());
-//            } else {
             titleMainTextInternal =
                     operation.getTitleOperName(GrammarGender.FEMININE)
                     + " " + ItemNames.getGenS(ItemType.UNKNOWN);
@@ -221,11 +189,9 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
                         + ", Poslední změna: " + ((HasModifDates) currentItem).getDatetimeUpdate().format(VzmFormatUtils.titleModifDateFormatter) + " ]";
         }
 
-//        titleLayout.setText(buildDialogTitle(currentOperation));
-//        titleMain.setText(currentOperation.getDialogTitle(getItemName(currentOperation), itemGender));
         titleMain.setText(titleMainTextInternal);
         if (null != titleMiddleComponent) {
-            titleMiddle.removeAll();;
+            titleMiddle.removeAll();
             titleMiddle.add(titleMiddleComponent);
         }
         titleEnd.setText(titleEndText);
@@ -235,24 +201,10 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
             registrationForSave.remove();
         }
         registrationForSave = saveButton.addClickListener(e -> saveClicked(operation));
-        saveButton.setText("Uložit " + itemTypeAccuS.toLowerCase());
+//        saveButton.setText("Uložit " + itemTypeAccuS.toLowerCase());
+        saveButton.setText("Uložit");
 
         this.open();
-    }
-
-    public void setDefaultItemNames() {
-        setItemNames(ItemType.UNKNOWN);
-    }
-
-    public void setItemNames(ItemType itemType) {
-        this.itemGender = ItemNames.getItemGender(itemType);
-        this.itemTypeNomS = ItemNames.getNomS(itemType);
-        this.itemTypeGenS = ItemNames.getGenS(itemType);
-        this.itemTypeAccuS = ItemNames.getAccuS(itemType);
-    }
-
-    private String getItemName() {
-        return itemTypeGenS;
     }
 
     private void saveClicked(Operation operation) {
@@ -272,13 +224,6 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
         // This command shows warnings in UI:
         BinderValidationStatus status = binder.validate();
         return !status.hasErrors();
-//        if (status.hasErrors()) {
-//            BindingValidationStatus<String> st = ((BindingValidationStatus) status.getFieldValidationErrors().get(0));
-//            Notification.show(st.getMessage().orElse("Pole nejsou správně vyplněna")
-//                    , 2000, Notification.Position.MIDDLE);
-//            return false;
-//        }
-//        return true;
     }
 
     public Operation getOperation() {
