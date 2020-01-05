@@ -119,7 +119,7 @@ public class ToolsNaklView extends VerticalLayout  implements HasLogger {
         titleComponent.setAlignItems(Alignment.CENTER);
         titleComponent.setJustifyContentMode(JustifyContentMode.START);
         titleComponent.add(
-                new GridTitle("PŘEPOČET MEZD")
+                new GridTitle("PŘEPOČET NÁKLADŮ")
                 , new Ribbon()
 //                , initReloadButton()
         );

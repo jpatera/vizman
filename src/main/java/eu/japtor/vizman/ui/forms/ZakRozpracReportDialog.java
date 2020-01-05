@@ -44,30 +44,20 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     private Select<String> skupinaFilterField;
     private Select<String> rxParamField;
     private Select<String> ryParamField;
-//    private Select<Boolean> archFilterRadio;
     private TextField rezieParamField;
     private TextField pojistParamField;
     private TextField kurzParamField;
 
     private SerializableSupplier<List<? extends Zakr>> itemsSupplier = () -> {
-//        if (null == rokZakFilterField.getValue()) {
-            return zakrService.fetchByFiltersDescOrder(zakrParams);
-//            return zakrService.fetchAllDescOrder();
-//        } else {
-//            return zakrService.fetchByRokDescOrder(rokZakFilterField.getValue());
-//        }
+        return zakrService.fetchAndCalcByFiltersDescOrder(zakrParams);
     };
 
 
     public ZakRozpracReportDialog(ZakrService zakrService, ZakrListView.ZakrParams zakrParams) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setDialogTitle("Report: ROZPRACOVANOST ZAKÁZEK");
-//        getHeaderEndBox().setText("END text");
         this.zakrService = zakrService;
-//        this.zakrParams = zakrParams;
         initReportControls();
-//        this.addOpenedChangeListener(e -> generateAndShowReport());
-//        this.addAttachListener(e -> generateAndShowReport());
     }
 
     public void openDialog(ZakrListView.ZakrParams zakrParams) {
@@ -323,7 +313,6 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
         rightBarPart.setSpacing(true);
         rightBarPart.add(
                 closeButton
-//                , revertAndCloseButton
         );
 
         bar.setClassName("buttons");

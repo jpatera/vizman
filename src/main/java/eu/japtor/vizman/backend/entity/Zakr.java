@@ -476,6 +476,21 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
             return vykRx;
         }
         switch (rxParam) {
+            case "R-3":
+                if (null != rm3 && null != honorCisty) {
+                    vykRx = rm3.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            case "R-2":
+                if (null != rm2 && null != honorCisty) {
+                    vykRx = rm2.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            case "R-1":
+                if (null != rm1 && null != honorCisty) {
+                    vykRx = rm1.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
             case "R0":
                 if (null != r0 && null != honorCisty) {
                     vykRx = r0.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
@@ -509,6 +524,21 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
             return vykRy;
         }
         switch (ryParam) {
+            case "R-3":
+                if (null != rm3 && null != honorCisty) {
+                    vykRy = rm3.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            case "R-2":
+                if (null != rm2 && null != honorCisty) {
+                    vykRy = rm2.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
+            case "R-1":
+                if (null != rm1 && null != honorCisty) {
+                    vykRy = rm1.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
             case "R0":
                 if (null != r0 && null != honorCisty) {
                     vykRy = r0.multiply(honorCisty).divide(BigDecimal.valueOf(100L));

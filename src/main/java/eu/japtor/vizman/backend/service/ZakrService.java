@@ -14,9 +14,11 @@ public interface ZakrService {
 
     Zakr fetchOne(Long id);
 
-    List<Zakr> fetchAllDescOrder(ZakrListView.ZakrParams zakrParams);
+    Zakr fetchAndCalcOne(Long id, ZakrListView.ZakrParams zakrParams);
 
-    List<Zakr> fetchByFiltersDescOrder(ZakrListView.ZakrParams zakrParams);
+    List<Zakr> fetchAndCalcAllDescOrder(ZakrListView.ZakrParams zakrParams);
+
+    List<Zakr> fetchAndCalcByFiltersDescOrder(ZakrListView.ZakrParams zakrParams);
 
     List<Zakr> fetchByRokDescOrder(Integer rok);
 

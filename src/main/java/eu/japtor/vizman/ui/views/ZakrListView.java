@@ -272,11 +272,10 @@ public class ZakrListView extends VerticalLayout {
         rxParamField = new Select<>();
         rxParamField.setLabel("RX (od)");
         rxParamField.setWidth("5em");
-//        rxParamField.setEmptySelectionCaption("Vše");
         rxParamField.getElement().setAttribute("theme", "small");
 //        rxParamField.getStyle().set("theme", "small");
         rxParamField.setEmptySelectionAllowed(true);
-        rxParamField.setItems("R0", "R1", "R2", "R3", "R4");
+        rxParamField.setItems("R-3", "R-2", "R-1", "R0", "R1", "R2", "R3", "R4");
 
         paramsBinder.forField(rxParamField)
                 .bind(ZakrParams::getRx, ZakrParams::setRx)
@@ -288,11 +287,10 @@ public class ZakrListView extends VerticalLayout {
         ryParamField = new Select<>();
         ryParamField.setLabel("RY (do)");
         ryParamField.setWidth("5em");
-//        rxParamField.setEmptySelectionCaption("Vše");
         ryParamField.getElement().setAttribute("theme", "small");
 //        ryParamField.getStyle().set("theme", "small");
         ryParamField.setEmptySelectionAllowed(true);
-        ryParamField.setItems("R0", "R1", "R2", "R3", "R4");
+        ryParamField.setItems("R-3", "R-2", "R-1", "R0", "R1", "R2", "R3", "R4");
 
         paramsBinder.forField(ryParamField)
                 .bind(ZakrParams::getRy, ZakrParams::setRy)
@@ -308,7 +306,7 @@ public class ZakrListView extends VerticalLayout {
             } else {
                 paramsBinder.writeBeanIfValid(zakrParams);
 //                zakrGrid.setZakrParams(zakrParams);
-                zakrList = zakrService.fetchAllDescOrder(zakrParams);
+                zakrList = zakrService.fetchAndCalcAllDescOrder(zakrParams);
                 zakrGrid.populateGridDataAndRestoreFilters(zakrList);
                 zakrGrid.recalcGrid();
                 zakrGrid.getDataProvider().refreshAll();
@@ -399,62 +397,19 @@ public class ZakrListView extends VerticalLayout {
     private void saveGridItem(Zakr itemForSave, Operation operation) {
 
         zakrService.saveZakr(itemForSave);
-        Zakr savedItem = zakrService.fetchOne(itemForSave.getId());
-
-//        Zakr savedItem = zakrService.fetchOne(itemToSave.getId());
-
-//        zakrList = zakrService.fetchAllDescOrder();
-//        zakrGrid.setItems(zakrList);
-
+        Zakr savedItem = zakrService.fetchAndCalcOne(itemForSave.getId(), zakrParams);
         List<Zakr> zakrList = (List<Zakr>)((ListDataProvider)zakrGrid.getDataProvider()).getItems();
         int idx = zakrList.indexOf(itemForSave);
         if (idx >= 0) {
             zakrList.set(idx, savedItem);
+        } else {
+            calcButton.setIconDirty();
         }
 
 //        zakrGrid.getDataCommunicator().getKeyMapper().remove(itemForSave);
         zakrGrid.getDataCommunicator().getKeyMapper().removeAll();
         zakrGrid.getDataCommunicator().getDataProvider().refreshAll();
         zakrGrid.getDataProvider().refreshAll();
-
-//        zakrGrid.getDataCommunicator().getKeyMapper().refresh(savedItem);
-
-//        ((ListDataProvider)zakrGrid.getDataProvider()).refreshItem(savedItem);
-
-//        List<Zakr> zakrList = (List<Zakr>)((ListDataProvider)zakrGrid.getDataProvider()).getItems();
-//        int idx = zakrList.indexOf(itemForSave);
-//        if (idx >= 0) {
-//            zakrList.set(idx, savedItem);
-//        }
-
-
-//        zakrGrid.getDataCommunicator().getKeyMapper().removeAll();
-//        zakrGrid.getDataCommunicator().getDataProvider().refreshAll();
-
-//        zakrGrid.getDataCommunicator().getKeyMapper().remove(itemForSave);
-//        zakrGrid.getDataCommunicator().getDataProvider().refreshItem(itemForSave);
-//        zakrGrid.getDataCommunicator().getDataProvider().refreshItem(savedItem);
-
-//        zakrGrid.getDataCommunicator().getKeyMapper().refresh(savedItem);
-//        zakrGrid.getDataProvider().refreshItem(savedItem);
-
-
-//        zakrGrid.getDataCommunicator().getKeyMapper().removeAll();
-//        zakrGrid.getDataCommunicator().getDataProvider().refreshAll();
-//        zakrGrid.getDataProvider().refreshAll();
-
-//        zakrGrid.getDataCommunicator().reset();
-//        zakrGrid.getDataCommunicator().getKeyMapper().remove(savedItem);
-//        zakrGrid.getDataCommunicator().getKeyMapper().remove(itemToSave);
-//        zakrGrid.getDataProvider().refreshItem(itemToSave);
-//        zakrGrid.getDataCommunicator().getDataProvider().refreshItem(savedItem);
-//        zakrGrid.getDataCommunicator().getDataProvider().refreshAll();
-
-
-//        zakrGrid.tariffGridValueProvider.apply(savedItem);
-//        zakrGrid.getDataProvider().refreshAll();
-//        zakrList = zakrService.fetchAllDescOrder();
-//        zakrGrid.setItems(zakrList);
 
         Notification.show(
                 "Rozpracovanost uložena", 2000, Notification.Position.TOP_CENTER);
@@ -503,7 +458,7 @@ public class ZakrListView extends VerticalLayout {
         if (zakrGrid.getEditor().isOpen()) {
             zakrGrid.getEditor().closeEditor();
         }
-        zakrList = zakrService.fetchAllDescOrder(zakrParams);
+        zakrList = zakrService.fetchAndCalcAllDescOrder(zakrParams);
         zakrGrid.populateGridDataAndRestoreFilters(zakrList);
         calcButton.setIconClean();
         zakrGrid.getDataProvider().refreshAll();
@@ -514,7 +469,7 @@ public class ZakrListView extends VerticalLayout {
         if (zakrGrid.getEditor().isOpen()) {
             zakrGrid.getEditor().closeEditor();
         }
-        zakrList = zakrService.fetchAllDescOrder(zakrParams);
+        zakrList = zakrService.fetchAndCalcAllDescOrder(zakrParams);
         zakrGrid.populateGridDataAndRebuildFilterFields(zakrList);
         calcButton.setIconClean();
         zakrGrid.getDataProvider().refreshAll();

@@ -61,40 +61,26 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
     }
 
     @Override
-    public List<Zakr> fetchAllDescOrder(ZakrListView.ZakrParams zakrParams) {
+    public Zakr fetchAndCalcOne(Long id, ZakrListView.ZakrParams zakrParams) {
+        Zakr zakr = zakrRepo.findTopById(id);
+        adjustZakrVykonAndVysledky.accept(zakr, zakrParams);
+        return zakr;
+    }
+
+    @Override
+    public List<Zakr> fetchAndCalcAllDescOrder(ZakrListView.ZakrParams zakrParams) {
         List<Zakr> zakrs =  zakrRepo.findAllByOrderByCkontDescCzakDesc();
         zakrs.stream()
                 .forEach(zr -> adjustZakrVykonAndVysledky.accept(zr, zakrParams));
-//
-//                        zr -> {
-//                    if (zr.getMena() == Mena.EUR) {
-//                        zr.setKurzEur(zakrParams.getKurzEur());
-//                    }
-//                    zr.setRxRyVykon(zr.calcRxRyVykon(zakrParams.getRx(), zakrParams.getRy()));
-//                    zr.setVysledekByKurz(zr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
-//                    zr.setVysledekP8ByKurz(zr.calcVysledekP8ByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
-//                })
-//        ;
         return zakrs;
     }
 
     @Override
-    public List<Zakr> fetchByFiltersDescOrder(ZakrListView.ZakrParams zakrParams) {
+    public List<Zakr> fetchAndCalcByFiltersDescOrder(ZakrListView.ZakrParams zakrParams) {
         List<Zakr> zakrs = zakrRepo.findZakrByArchAndCkontAndRokAndSkupina(
                 zakrParams.getArch(), zakrParams.getCkz(), zakrParams.getRokZak(), zakrParams.getSkupina());
         zakrs.stream()
                 .forEach(zr -> adjustZakrVykonAndVysledky.accept(zr, zakrParams));
-//
-//
-//                        zr -> {
-//                    if (zr.getMena() == Mena.EUR) {
-//                        zr.setKurzEur(zakrParams.getKurzEur());
-//                    }
-//                    zr.setRxRyVykon(zr.calcRxRyVykon(zakrParams.getRx(), zakrParams.getRy()));
-//                    zr.setVysledekByKurz(zr.calcVysledekByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
-//                    zr.setVysledekP8ByKurz(zr.calcVysledekP8ByKurz(zakrParams.getKoefPojist(), zakrParams.getKoefRezie()));
-//                })
-//        ;
         return zakrs;
     }
 
@@ -131,22 +117,12 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
         String kzCis = String.format("%s / %d", itemForSave.getCkont(), itemForSave.getCzak());
 
         try {
-//            zakrRepo.flush();
-//            Zak zakToSave = zakRepo.getOne(zakrToSave.getId());
-
-
-//            Hibernate.initialize(itemForSave.getZaqas());
-//            itemForSave.setZaqas(zaqaRepo.findByZakrIdOrderByRokDesc(itemForSave.getId()));
-
             List<Zaqa> zaqasDb = zaqaRepo.findByZakrIdOrderByRokDesc(itemForSave.getId());
-//            List<Zaqa>zaqasToSave = (null == itemForSave.getZaqas()) ? new ArrayList<>() : itemForSave.getZaqas();
             Integer currentYear = Calendar.getInstance().get(Calendar.YEAR);
-
             for (Iterator<Zaqa> i = zaqasDb.iterator(); i.hasNext();) {
                 Zaqa zaqaDb = i.next();
                 if ((null == zaqaDb.getRx())
                         || (zaqaDb.getRok().equals(currentYear))
-//                        || ((zaqaDb.getRok().equals(currentYear - 1) && zaqaDb.getQa() == 4)))
                         || (zaqaDb.getRok().equals(currentYear - 1))
                     ) {
                     i.remove();
@@ -177,7 +153,6 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
                 zaqasDb.add(new Zaqa(currentYear, 4, itemForSave.getR4(), itemForSave));
             }
 
-//            zaqaRepo.deleteInBatch(itemForSave.getZaqas());
             zaqaRepo.deleteAllByZakId(itemForSave.getId());
             zaqaRepo.saveAll(zaqasDb);
             zaqaRepo.flush();
@@ -192,12 +167,8 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
             zakrFinal.setR3(itemForSave.getR3());
             zakrFinal.setR4(itemForSave.getR4());
             zakrRepo.saveAndFlush(zakrFinal);
-//            Zakr zakr = zakrRepo.findTopById(itemForSave.getId());
 
             getLogger().info("ZAKR saved for: {}" , kzCis);
-//            Zakr zakr = zakrRepo.findTopById(itemForSave.getId());
-//            return zakrRepo.findTopById(itemForSave.getId());
-//            return zakrRepo.findTopById(itemForSave.getId());
 
         } catch (Exception e) {
             String errMsg = "Error while saving rozpracovanost for : {}";
