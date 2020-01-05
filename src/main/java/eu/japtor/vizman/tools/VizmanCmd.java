@@ -8,8 +8,8 @@ import org.springframework.boot.SpringApplication;
 public class VizmanCmd {
 // public class VizmanCmd implements CommandLineRunner {
 
-    @Autowired
-    KontZakFolderTool tool;
+//    @Autowired
+//    KontZakFolderTool tool;
 
     public static void main(String[] args) {
         SpringApplication.run(VizmanCmd.class, args);

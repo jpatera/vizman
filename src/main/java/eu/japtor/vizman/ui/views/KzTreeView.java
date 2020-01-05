@@ -47,7 +47,6 @@ import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.KontFormDialog;
-import eu.japtor.vizman.ui.forms.ZakTestReportDialog;
 import eu.japtor.vizman.ui.forms.ZakFormDialog;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1614,80 +1613,6 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                     kontFormDialog.openDialog(kont, Operation.ADD);
         });
         return newKontButton;
-    }
-
-    private Component initZakRepButton() {
-        zakRepButton = new Button("Report"
-                , event -> {
-                    generateZakReport();
-//                    zakRepDialog.openDialog(zaks, Operation.ADD);
-        });
-        return zakRepButton;
-    }
-
-    private void generateZakReport() {
-//        PrintPreviewReport<Zak> report = new PrintPreviewReport<>(Zak.class, "ckz", "text", "skupina");
-//        report.setItems(zakService.fetchAll());
-//        this.add(report);
-
-//        try {
-////            InputStream in = new FileInputStream("reports/Leaf_Grey.jrxml");
-//            InputStream in = this.getClass().getResourceAsStream("/reports/Leaf_Grey.jrxml");
-//            JasperDesign jDesign = JRXmlLoader.load(in);
-//
-////            String sql = "select ckz, text, skupina from vizman.zak";
-////            JRDesignQuery newQuery = new JRDesignQuery();
-////            newQuery.setText(sql);
-//
-//            JasperReport jRep = JasperCompileManager.compileReport(jDesign);
-////            Map para = new HashMap();
-////            JasperPrint jp = JasperFillManager.fillReport(jr, para, con);
-//
-//            JRBeanCollectionDataSource jDataSource = new JRBeanCollectionDataSource(getReportData());
-
-//        ZakListReportDialog repZakDlg  = new ZakListReportDialog(zakService);
-        ZakTestReportDialog repZakPlneniDlg  = new ZakTestReportDialog(zakService);
-        repZakPlneniDlg.openDialog();
-
-//        FastReportBuilder drb = new FastReportBuilder();
-//        try {
-//            drb.addColumn("CZ", "ckz", Integer.class.getName(),10)
-//                .addColumn("Text zakazky", "text", String.class.getName(),40)
-//                .addColumn("Skup.", "skupina", String.class.getName(), 4)
-////                .addGroups(2)
-//                .setTitle("Zakazky - testovaci vypis")
-//                .setSubtitle("This report was generated at " + new Date())
-////                .setPrintBackgroundOnOddRows(true)
-//                .setUseFullPageWidth(true);
-//        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//        JRDataSource jds = new JRBeanCollectionDataSource(zakService.fetchAll());
-//        try {
-//            JasperPrint jp = DynamicJasperHelper.generateJasperPrint(drb.build(), new ClassicLayoutManager(), jds);
-//
-//            JasperViewer jasperViewer = new JasperViewer(jp, false);
-//            jasperViewer.setDefaultCloseOperation(JasperViewer.DISPOSE_ON_CLOSE);
-//            jasperViewer.setTitle("TEST report");
-//            jasperViewer.setZoomRatio((float) 1.25);
-//            jasperViewer.setExtendedState(JasperViewer.MAXIMIZED_BOTH);
-////            jasperViewer.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
-//            jasperViewer.setVisible(true);
-//            jasperViewer.requestFocus();
-//
-////            JasperViewer.viewReport(jp, false);
-//
-//        } catch (JRException e) {
-//            e.printStackTrace();
-//        }
-////            JasperPrint jPrint = JasperFillManager.fillReport(jRep, null, jDataSource);
-////
-//////            OutputStream os = new FileOutputStream(new File("d:\\reports"));
-//////            JasperExportManager.exportReportToPdfStream(jp, os);
-////
-////        } catch (Exception e) {
-////            e.printStackTrace();
-////        }
     }
 
     public List<Map<String, Object>> getReportData() {
