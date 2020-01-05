@@ -275,7 +275,7 @@ public class ZakrListView extends VerticalLayout {
         rxParamField.getElement().setAttribute("theme", "small");
 //        rxParamField.getStyle().set("theme", "small");
         rxParamField.setEmptySelectionAllowed(true);
-        rxParamField.setItems("R-3", "R-2", "R-1", "R0", "R1", "R2", "R3", "R4");
+        rxParamField.setItems("R-4", "R-3", "R-2", "R-1", "R0", "R1", "R2", "R3", "R4");
 
         paramsBinder.forField(rxParamField)
                 .bind(ZakrParams::getRx, ZakrParams::setRx)
@@ -290,7 +290,7 @@ public class ZakrListView extends VerticalLayout {
         ryParamField.getElement().setAttribute("theme", "small");
 //        ryParamField.getStyle().set("theme", "small");
         ryParamField.setEmptySelectionAllowed(true);
-        ryParamField.setItems("R-3", "R-2", "R-1", "R0", "R1", "R2", "R3", "R4");
+        ryParamField.setItems("R-4", "R-3", "R-2", "R-1", "R0", "R1", "R2", "R3", "R4");
 
         paramsBinder.forField(ryParamField)
                 .bind(ZakrParams::getRy, ZakrParams::setRy)

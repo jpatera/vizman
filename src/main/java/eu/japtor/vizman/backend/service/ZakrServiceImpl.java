@@ -124,9 +124,13 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
                 if ((null == zaqaDb.getRx())
                         || (zaqaDb.getRok().equals(currentYear))
                         || (zaqaDb.getRok().equals(currentYear - 1))
+                        || ((zaqaDb.getRok().equals(currentYear - 2) && (zaqaDb.getQa() == 4)))
                     ) {
                     i.remove();
                 }
+            }
+            if (null != itemForSave.getRm4()) {
+                zaqasDb.add(new Zaqa(currentYear - 2, 4, itemForSave.getRm4(), itemForSave));
             }
             if (null != itemForSave.getRm3()) {
                 zaqasDb.add(new Zaqa(currentYear - 1, 1, itemForSave.getRm3(), itemForSave));
@@ -158,6 +162,7 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
             zaqaRepo.flush();
 
             Zakr zakrFinal = zakrRepo.findTopById(itemForSave.getId());
+            zakrFinal.setRm4(itemForSave.getRm4());
             zakrFinal.setRm3(itemForSave.getRm3());
             zakrFinal.setRm2(itemForSave.getRm2());
             zakrFinal.setRm1(itemForSave.getRm1());

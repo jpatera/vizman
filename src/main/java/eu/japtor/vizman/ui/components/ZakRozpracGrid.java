@@ -60,6 +60,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     public static final String ARCH_COL_KEY = "zakr-bg-arch";
     public static final String HONOR_CISTY_COL_KEY = "zakr-bg-honor-cisty";
     public static final String RP_COL_KEY = "zakr-bg-rp";
+    public static final String RM4_COL_KEY = "zakr-bg-rm4";
     public static final String RM3_COL_KEY = "zakr-bg-rm3";
     public static final String RM2_COL_KEY = "zakr-bg-rm2";
     public static final String RM1_COL_KEY = "zakr-bg-rm1";
@@ -287,6 +288,17 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setFlexGrow(0)
                 .setWidth("3em")
         ;
+
+        Grid.Column<Zakr> colRm4 = this.addColumn(rm4GridValueProvider)
+                .setHeader("R-4")
+                .setFlexGrow(0)
+                .setWidth("3em")
+                .setTextAlign(ColumnTextAlign.END)
+                .setSortable(false)
+                .setKey(RM4_COL_KEY)
+                .setResizable(false)
+                ;
+        colRm4.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getRm3, Zakr::setRm3));
 
         Grid.Column<Zakr> colRm3 = this.addColumn(rm3GridValueProvider)
                 .setHeader("R-3")
@@ -871,6 +883,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
     private ValueProvider<Zakr, String> rpGridValueProvider =
             zakr -> null == zakr.getRp() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getRp())
+    ;
+
+    private ValueProvider<Zakr, String> rm4GridValueProvider =
+            zakr -> null == zakr.getRm4() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getRm4())
     ;
 
     private ValueProvider<Zakr, String> rm3GridValueProvider =

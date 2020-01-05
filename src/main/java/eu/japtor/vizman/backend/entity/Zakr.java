@@ -88,12 +88,16 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     private BigDecimal rp;  // Rozpracovanost posledni platna
 
     @Basic
+    @Column(name = "RM4")
+    private BigDecimal rm4;  // Rozpracovanost na konci Q4 (minus 4) predminuleho roku
+
+    @Basic
     @Column(name = "RM3")
-    private BigDecimal rm3;  // Rozpracovanost  na konci Q4 (minus 3) minuleho roku
+    private BigDecimal rm3;  // Rozpracovanost na konci Q1 (minus 3) minuleho roku
 
     @Basic
     @Column(name = "RM2")
-    private BigDecimal rm2;  // Rozpracovanost  na konci Q2 (minus 2) minuleho roku
+    private BigDecimal rm2;  // Rozpracovanost na konci Q2 (minus 2) minuleho roku
 
     @Basic
     @Column(name = "RM1")
@@ -245,6 +249,13 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     }
     public void setRp(BigDecimal rp) {
         this.rp = rp;
+    }
+
+    public BigDecimal getRm4() {
+        return rm4;
+    }
+    public void setRm4(BigDecimal rm4) {
+        this.rm4 = rm4;
     }
 
     public BigDecimal getRm3() {
@@ -476,6 +487,11 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
             return vykRx;
         }
         switch (rxParam) {
+            case "R-4":
+                if (null != rm4 && null != honorCisty) {
+                    vykRx = rm4.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
             case "R-3":
                 if (null != rm3 && null != honorCisty) {
                     vykRx = rm3.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
@@ -524,6 +540,11 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
             return vykRy;
         }
         switch (ryParam) {
+            case "R-4":
+                if (null != rm4 && null != honorCisty) {
+                    vykRy = rm4.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+                }
+                break;
             case "R-3":
                 if (null != rm3 && null != honorCisty) {
                     vykRy = rm3.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
