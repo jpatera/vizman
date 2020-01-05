@@ -98,16 +98,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // Not using Spring CSRF here to be able to use plain HTML for the login page
         http.csrf().disable()
 
-//                .exceptionHandling()
-//                    .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
-////                    .accessDeniedPage("/accessDenied")
-//                    .and()
-
-//                // Register our CustomRequestCache, that saves unauthorized access attempts, so
-//                // the user is redirected after login.
-//                .requestCache().requestCache(new CustomRequestCache())
-//                .and()
-
                 // Restrict access to our application.
                 .authorizeRequests()
 
@@ -125,8 +115,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                        // (production mode) static resources
 //                        "/frontend-es5/**", "/frontend-es6/**").permitAll()
 
-
-////                    .antMatchers("/", "/home").permitAll()
                     .antMatchers("/" + ROUTE_DOCH).hasAnyAuthority(
                             Perm.DOCH_USE.name(),
                             Perm.VIEW_ALL.name(), Perm.MODIFY_ALL.name())

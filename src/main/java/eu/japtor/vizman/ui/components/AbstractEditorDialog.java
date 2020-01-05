@@ -592,10 +592,6 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     }
 
     private void deleteClicked() {
-//        if (confirmationDialog.getElement().getParent() == null) {
-//            getUI().ifPresent(ui -> ui.add(confirmationDialog));
-//        }
-
 // TODO: to be or not to be?
 //        if (confirmDialog.getElement().getParent() == null) {
 //            getUI().ifPresent(ui -> ui.add(confirmDialog));
@@ -620,11 +616,6 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
      */
     protected final void openConfirmDeleteDialog(String title, String message,
                                                  String additionalMessage) {
-//        close();
-//        confirmationDialog.open(title, message, additionalMessage, "Zrušit",
-//                true, getCurrentItem(), this::deleteItemConfirmed, this::open);
-
-
         ConfirmDialog
                 .createQuestion()
                 .withCaption(title)
