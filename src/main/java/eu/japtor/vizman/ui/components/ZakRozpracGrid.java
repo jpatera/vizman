@@ -298,7 +298,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(RM4_COL_KEY)
                 .setResizable(false)
                 ;
-        colRm4.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getRm3, Zakr::setRm3));
+        colRm4.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getRm4, Zakr::setRm4));
 
         Grid.Column<Zakr> colRm3 = this.addColumn(rm3GridValueProvider)
                 .setHeader("R-3")
