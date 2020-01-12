@@ -1,8 +1,9 @@
-package eu.japtor.vizman.backend.entity;
+package eu.japtor.vizman.ui.components;
 
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import eu.japtor.vizman.backend.entity.ItemType;
 
 public class ArchIconBox extends FlexLayout {
 

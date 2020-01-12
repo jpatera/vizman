@@ -9,7 +9,6 @@ import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.dom.Element;
-import eu.japtor.vizman.backend.entity.HiddenIconBox;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;

@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
+import eu.japtor.vizman.ui.components.ArchIconBox;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -17,14 +18,6 @@ import java.util.UUID;
 @Table(name = "KONT")
 //@SequenceGenerator(initialValue = 1, name = "id_gen", sequenceName = "kont_seq")
 public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArchState, HasModifDates {
-
-//    public static final GrammarGender GENDER = GrammarGender.MASCULINE;
-//    public static final String NOMINATIVE_SINGULAR = "Kontrakt";
-//    public static final String NOMINATIVE_PLURAL = "Kontrakty";
-//    public static final String GENITIVE_SINGULAR = "Kontraktu";
-//    public static final String GENITIVE_PLURAL = "Kontraktů";
-//    public static final String ACCUSATIVE_SINGULAR = "Kontrakt";
-//    public static final String ACCUSATIVE_PLURAL = "Kontrakty";
 
 //    @GeneratedValue(generator = "uuid2")
 //    @GenericGenerator(name = "uuid2", strategy = "uuid2")
@@ -248,12 +241,6 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     }
 
     @Transient
-    @Override
-    public Long getItemId() {
-        return getId();
-    }
-
-    @Transient
     public Integer getLastCzak() {
         return getZaks().stream()
                 .mapToInt(zak -> zak.getCzak())
@@ -264,14 +251,6 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public Integer getNewCzak() {
         return getLastCzak() + 1;
     }
-
-//    @Transient
-//    @Override
-//    public BigDecimal getHonorar() {
-//        return getNodes().stream()
-//                .map(node -> node.getHonorar())
-//                .reduce(BigDecimal.ZERO, BigDecimal::add);
-//    }
 
     @Transient
     public BigDecimal getHonorarHruby() {
@@ -308,11 +287,7 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     @Transient
     @Override
     public List<Zak> getNodes() {
-//    public Collection<T extends KzTreeAware> getNodes() {
-//        if (null != this.zaks) {
         return this.zaks;
-//        return (Collection<KzTreeAware>)(this.zaks);
-//        return new ArrayList();
     }
 
 // ========================================
@@ -334,45 +309,11 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
 //        String randomUUIDString = uuid.toString();
     }
 
-    public void updateBasicData(Kont kont) {
-
-        this.setVersion(kont.getVersion());
-        this.uuid = kont.uuid;
-        this.typ = kont.typ;
-        this.ckont = kont.ckont;
-        this.rok = kont.rok;
-//        this.arch = kont.arch;
-        this.investor = kont.investor;
-        this.objednatel = kont.objednatel;
-        this.mena = kont.mena;
-        this.text = kont.text;
-        this.folder = kont.folder;
-        this.klient = kont.klient;
-//        this.dateCreate = kont.dateCreate;
-        this.datetimeUpdate = kont.datetimeUpdate;
-
-//        BigDecimal rozprac;
-    }
-
-//    @Override
-//    public void setNodes(List<KzTreeAware> subNodes) {
-//
-//    }
-
-//    @Override
-//    public void setNodes(List<? extends KzTreeAware> nodes) {
-//        this.zaks = nodes;
-//    }
-
 // ========================================
 
     @Override
     public int hashCode() {
 		return uuid.hashCode();
-//        if (getId() == null) {
-//            return super.hashCode();
-//        }
-//        return 31 + getId().hashCode();
     }
 
     @Override
@@ -380,14 +321,5 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
         if (this == other) return true;
         if (!(other instanceof AbstractGenIdEntity)) return false;
         return getId() != null && getId().equals(((AbstractGenIdEntity) other).getId());
-//		if (id == null) {
-//			// New entities are only equal if the instance is the same
-//			return super.equals(other);
-//		}
     }
-
-//    @Override
-//    public Boolean getArch() {
-//        return null;
-//    }
 }

@@ -18,8 +18,6 @@ import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -66,8 +64,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_DOCH;
 @SpringComponent
 @UIScope
 //@Push
-// public class DochView extends VerticalLayout implements HasLogger, BeforeEnterListener {
-public class DochView extends HorizontalLayout implements HasLogger, BeforeEnterListener {
+public class DochView extends HorizontalLayout implements HasLogger {
 
     private static final String DOCH_UPPER_DURATION_KEY = "doch-upper-duration-key";
     private static final String DOCH_UPPER_CINNOST_KEY = "doch-upper-cinnost-key";
@@ -117,15 +114,12 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private Button dochMonthReportBtn = new Button();
     private Button dochYearReportBtn = new Button();
 
-    private HorizontalLayout dochHeader;
-
     private FormLayout dochControl = new FormLayout();
     private FormLayout nepritControl = new FormLayout();
 
     private VerticalLayout clockContainer;
     private Span clockDisplay = new Span();
 
-    //    private Span upperDochDateInfo = new Span();
     private Paragraph upperDochDateInfo;
     private Span lowerDochDateInfo;
 
@@ -165,8 +159,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     Grid<Doch> lowerDochGrid;
     List<Doch> lowerDochList;
-//    HorizontalLayout dochRecLowerHeader = new HorizontalLayout();
-//    HorizontalLayout dochRecLowerFooter = new HorizontalLayout();
 
     private Person dochPerson;
     private LocalDate dochDate;
@@ -177,9 +169,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     private DochMonthReportDialog dochMonthReportDialog = null;
     private DochYearReportDialog dochYearReportDialog = null;
-
-//    @Autowired
-//    public DochRepo kontRepo;
 
     @Autowired
     public PersonService personService;
@@ -207,7 +196,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     @PostConstruct
     public void init() {
-//        System.out.println("## 1 POST CONSTRUCT DochView ##");
         authUsername = SecurityUtils.getUsername();
         initDochData();
         dochFormDialog = new DochFormDialog(
@@ -215,17 +203,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     }
 
     @Override
-    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-//        System.out.println("## BEFORE ENTER DochView ##");
-    }
-
-    @Override
     protected void onAttach(AttachEvent attachEvent) {
-//        System.out.println("## 2 ON ATTACH DochView ##");
-
-        // Set locale here, because when it is set in constructor, it is effective only in first open,
-        // and next openings show date in US format
-//        dochDateSelector.setLocale(new Locale("cs", "CZ"));
         dochDateSelector.setLocale(czLocale);
 
         dochDatePrev = LocalDate.now().minusDays(1);
@@ -264,9 +242,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     dochDate
                     , dochPerson
                     , cinRepo.findByCinKod(dochManual.getCinCinKod())
-//                    , dochManual.getFromTime()
-//                    , modifStamp
-                    , null
                     , null
                     , false
                     , dochManual.getPoznamka()
@@ -310,13 +285,11 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     , dochPerson
                     , cinRepo.findByCinKod(dochManual.getCinCinKod())
                     , dochManual.getFromTime()
-                    , currentDateTime
                     , !dochManual.getFromTime().equals(dochManual.getFromTimeOrig())
                     , dochManual.getPoznamka()
             );
             if (recToClose != null) {
                 recToClose.setToTime(dochManual.getFromTime());
-                recToClose.setToModifDatetime(currentDateTime);
                 recToClose.setToManual(!dochManual.getFromTime().equals(dochManual.getFromTimeOrig()));
             }
 
@@ -329,7 +302,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                         , dochPerson
                         , cinRepo.findByCinKod(dochManual.getOutsideCinKod())
                         , dochManual.getFromTime()
-                        , currentDateTime
                         , !dochManual.getFromTime().equals(dochManual.getFromTimeOrig())
                         , dochManual.getPoznamka()
                 );
@@ -343,13 +315,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 ;
                 return;
             }
-//            if ((recToClose != null) && (recToClose.getToTime() == null)) {
-//                recToClose = null;
-//            }
             LocalTime manualFromTime = dochManual.getFromTime();
-            LocalDateTime manualFromDateTime = LocalDateTime.of(dochDate, dochManual.getFromTime());
-            LocalTime manualToTime = null;
-            LocalDateTime manualToDateTime = null;
+            LocalTime manualToTime;
             if (Operation.STAMP_ODCH_MAN_LAST == operation) {
                 manualToTime = dochManual.getToTime();
                 if (null != recToClose && manualToTime.compareTo(recToClose.getFromTime() ) < 0) {
@@ -360,17 +327,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     ;
                     return;
                 }
-                // Moved to DochFormDialog :
-//                if (dochDate.compareTo(currentDate) == 0) {
-//                    if (manualToDateTime.compareTo(currentDateTime) > 0) {
-//                        ConfirmDialog.createInfo()
-//                                .withCaption(DOCH_CONFIRM_TITLE)
-//                                .withMessage("Nelze zadávat budoucí čas.")
-//                                .open()
-//                        ;
-//                        return;
-//                    }
-//                }
             } else {
                 if (null != recToClose && manualFromTime.compareTo(recToClose.getFromTime() ) < 0) {
                     ConfirmDialog.createInfo()
@@ -380,27 +336,14 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                     ;
                     return;
                 }
-                // Moved to DochFormDialog :
-//                if (dochDate.compareTo(currentDate) == 0) {
-//                    if (manualFromDateTime.compareTo(currentDateTime) > 0) {
-//                        ConfirmDialog.createInfo()
-//                                .withCaption(DOCH_CONFIRM_TITLE)
-//                                .withMessage("Nelze zadávat budoucí čas.")
-//                                .open()
-//                        ;
-//                        return;
-//                    }
-//                }
             }
 
             if (Operation.STAMP_ODCH_MAN_LAST == operation) {
                 recToClose.setToTime(dochManual.getToTime());
-                recToClose.setToModifDatetime(currentDateTime);
                 recToClose.setToManual(!dochManual.getToTime().equals(dochManual.getToTimeOrig()));
                 recToClose.setPoznamka(dochManual.getPoznamka());
             } else {
                 recToClose.setToTime(dochManual.getFromTime());
-                recToClose.setToModifDatetime(currentDateTime);
                 recToClose.setToManual(!dochManual.getFromTime().equals(dochManual.getFromTimeOrig()));
                 recToClose.setPoznamka(dochManual.getPoznamka());
             }
@@ -417,12 +360,9 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     private Component initPruhStateBox() {
         HorizontalLayout box = new HorizontalLayout();
-//        box.setWidth("3em");
-//        box.setMinWidth("3em");
         box.setVerticalComponentAlignment(Alignment.END);
         box.getStyle()
                 .set("margin-top", "0.7em");
-
 
         pruhStateIconUnlocked = VaadinIcon.UNLOCK.create();
         pruhStateIconUnlocked.setColor("green");
@@ -521,8 +461,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
 
     private void initDochData() {
-//        getLogger().info("## Initializing doch data");
-
         odchodRadio.setItems(cinRepo.getCinsForDochOdchodRadio());
 
         loadPruhDataFromDb();
@@ -530,7 +468,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         dochPersonSelector.setValue(pruhPersonByAuth);
 
         if (null == dochDate) {
-//            dochDate = LocalDate.of(2019, 1, 15);
             dochDate = LocalDate.now();
             dochDateSelector.setValue(dochDate);
         }
@@ -591,8 +528,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 }
                 dochMonthReportDialog.openDialog(dochParams);
                 dochMonthReportDialog.generateAndShowReport();
-    //            dochMonthreport = new DochMonthReport();
-    //            dochMonthreport
             }
         );
 
@@ -609,8 +544,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 }
                 dochYearReportDialog.openDialog(dochParams);
                 dochYearReportDialog.generateAndShowReport();
-                //            dochMonthreport = new DochMonthReport();
-                //            dochMonthreport
             }
         );
 
@@ -622,7 +555,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 , initPrichodButton()
                 , initPrichodAltButton()
                 , buildVertSpace()
-//                , buildVertSpace()
                 , initOdchodRadio()
                 , initOdchodButton()
                 , initOdchodAltButton()
@@ -797,7 +729,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         dochDateSelector.setLabel(null);
         dochDateSelector.setWidth("10em");
         dochDateSelector.setPlaceholder("Rok-měsíc");
-//        dochDateSelector.getStyle().set("margin-right", "1em");
         dochDateSelector.addValueChangeListener(event -> {
             dochDate = event.getValue();
             updateDochControls();
@@ -904,7 +835,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
             }
             Cin.CinKod odchodWhereKod = odchodRadio.getValue().getCinKod();
             resetOdchodRadio();
-//            odchodAltButtonClicked(event);
             LocalDateTime currentDateTime = LocalDateTime.now(minuteClock);
             if (Cin.CinKod.KP == odchodWhereKod || Cin.CinKod.XD == odchodWhereKod) {
                 stampOdchodAlt(currentDateTime);
@@ -934,7 +864,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         volnoZrusButton = new Button("Zrušit neplac.volno");
         volnoZrusButton
                 .getElement().setAttribute("theme", "error secondary");
-        ;
         volnoZrusButton.addClickListener(event -> {
             if (!checkDochContainsNahradniVolno("není co rušit")) {
                 return;
@@ -968,7 +897,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         nemocZrusButton = new Button("Zrušit nemoc");
         nemocZrusButton
                 .getElement().setAttribute("theme", "error secondary");
-        ;
         nemocZrusButton.addClickListener(event -> {
             if (!checkDochContainsNemoc("není co rušit")) {
                 return;
@@ -1025,7 +953,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         });
         dovolenaZrusButton
                 .getElement().setAttribute("theme", "error secondary");
-        ;
         return dovolenaZrusButton;
     }
 
@@ -1033,8 +960,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         sluzebkaButton = new Button("Služebka (celodenní)");
         sluzebkaButton.getElement().setAttribute("theme", "primary");
         sluzebkaButton.addClickListener(event -> {
-            LocalDateTime currentDateTime = LocalDateTime.now(minuteClock);
-            stampSingleManualRecord(currentDateTime, Cin.CinKod.SC);
+            stampSingleManualRecord(Cin.CinKod.SC);
         });
         return sluzebkaButton;
     }
@@ -1043,7 +969,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         sluzebkaZrusButton = new Button("Zrušit služebku");
         sluzebkaZrusButton
                 .getElement().setAttribute("theme", "error secondary");
-        ;
         sluzebkaZrusButton.addClickListener(event -> {
             if (!checkDochContainsSluzebka("není co rušit")) {
                 return;
@@ -1172,12 +1097,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 dochDate = LocalDate.now();
                 dochDateSelector.setValue(dochDate);
                 fireEvent(new GeneratedVaadinDatePicker.ChangeEvent<>(dochDateSelector, false));
-//                updateUpperDochGridPane(dochPerson, dochDate);
-
-//                dochDateSelector.setValue(dochDate);
-//                fireEvent(new GeneratedVaadinDatePicker.ChangeEvent(dochDateSelector, false));
-//                loadUpperDochGridData(dochPerson, dochDate);
-//                loadPrevDateButton.setEnabled(true);
                 setDochNaviButtonsEnabled(true);
             } else {
                 setDochNaviButtonsEnabled(false);
@@ -1337,26 +1256,10 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         }
     }
 
-
-    private void closeDoch() {
-        try {
-            updateDochsumAndCloseDochDay();
-            updateDochControls();
-        } catch (Exception e) {
-            getLogger().error("Error when closing  DOCH day", e);
-            ConfirmDialog
-                    .createError()
-                    .withCaption("CHYBA")
-                    .withMessage("Neočekávaná chyba při přenosu docházky do proužků")
-                    .open();
-        }
-    }
-
     private Component initCancelPrenosPersonDateButton() {
         cancelPrenosPersonDateButton = new Button("Zrušit přenos");
         cancelPrenosPersonDateButton
                 .getElement().setAttribute("theme", "error secondary");
-        ;
         cancelPrenosPersonDateButton.addClickListener(event -> {
             if (pruhState.equals(PRUH_STATE_LOCKED)) {
                 ConfirmDialog.createWarning()
@@ -1382,8 +1285,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
 
     private void updateDochsumAndCloseDochDay() {
-//        generateAutomaticLunch();
-
         final Duration obedRequired = Duration.ofMinutes(30);
         final Duration durForObedAuto = Duration.ofMinutes(4 * 60 + 30);
 
@@ -1456,7 +1357,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private LocalTime getDsFromFirst() {
         return upperDochList.stream()
                 .filter(doch -> null != doch.getFromTime())
-                .map(doch -> doch.getFromTime())
+                .map(Doch::getFromTime)
                 .min(LocalTime::compareTo)
                 .orElse(null)
                 ;
@@ -1465,7 +1366,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private LocalTime getDsToLast() {
         return upperDochList.stream()
                 .filter(doch -> null != doch.getToTime())
-                .map(doch -> doch.getToTime())
+                .map(Doch::getToTime)
                 .max(LocalTime::compareTo)
                 .orElse(null)
                 ;
@@ -1474,8 +1375,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private Duration sumOfDochPrac() {
         return upperDochList.stream()
                 .filter(doch -> null != doch.getDochDur() &&  doch.getCalcprac())
-                .map(doch -> doch.getDochDur())
-                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                .map(Doch::getDochDur)
+                .reduce(Duration.ZERO, Duration::plus)
                 ;
     }
 
@@ -1512,32 +1413,32 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
     private Duration sumOfObedStamped() {
         return upperDochList.stream()
                 .filter(doch -> Cin.CinKod.MO == doch.getCinCinKod())
-                .map(doch -> doch.getDochDur())
-                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                .map(Doch::getDochDur)
+                .reduce(Duration.ZERO, Duration::plus)
                 ;
     }
 
     private Duration sumOfObedAutMinus() {
         return upperDochList.stream()
                 .filter(doch -> Cin.CinKod.OA == doch.getCinCinKod())
-                .map(doch -> doch.getDochDur())
-                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                .map(Doch::getDochDur)
+                .reduce(Duration.ZERO, Duration::plus)
                 ;
     }
 
     private Duration sumOfNemoc() {
         return upperDochList.stream()
                 .filter(doch -> Cin.CinKod.ne == doch.getCinCinKod())
-                .map(doch -> doch.getDochDur())
-                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                .map(Doch::getDochDur)
+                .reduce(Duration.ZERO, Duration::plus)
                 ;
     }
 
     private Duration sumOfDovolena() {
         return upperDochList.stream()
                 .filter(doch -> Cin.CinKod.dc == doch.getCinCinKod() || Cin.CinKod.dp == doch.getCinCinKod())
-                .map(doch -> doch.getDochDur())
-                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                .map(Doch::getDochDur)
+                .reduce(Duration.ZERO, Duration::plus)
                 ;
     }
 
@@ -1545,16 +1446,16 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         return upperDochList.stream()
                 // TODO: je nahradni volno vs neplacene  volno ?
                 .filter(doch -> Cin.CinKod.nv == doch.getCinCinKod())
-                .map(doch -> doch.getDochDur())
-                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                .map(Doch::getDochDur)
+                .reduce(Duration.ZERO, Duration::plus)
                 ;
     }
 
     private Duration sumOfLekar() {
         return upperDochList.stream()
                 .filter(doch -> Cin.CinKod.L == doch.getCinCinKod())
-                .map(doch -> doch.getDochDur())
-                .reduce(Duration.ZERO, (p, q) -> p.plus(q))
+                .map(Doch::getDochDur)
+                .reduce(Duration.ZERO, Duration::plus)
                 ;
     }
 
@@ -1617,8 +1518,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 .setTextAlign(ColumnTextAlign.END)
                 .setResizable(true)
         ;
-//        pruhZakGrid.addComponentColumn(new ComponentRenderer<>(doch -> getHodinComponent(doch)))
-//        pruhZakGrid.addComponentColumn(doch -> getHodinComponent(doch))
 
         upperDochGrid.addColumn(new ComponentRenderer<>(doch -> {
             // Note: following icons MUST NOT be created outside this renderer (the KontFormDialog cannot be reopened)
@@ -1636,7 +1535,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
         upperDochGrid.addColumn(durationValProv)
                 .setHeader("Hod.")
-//                .setFooter("S: " + formatDuration(getDurationSum()))
                 .setFooter("")
                 .setWidth("3em")
                 .setFlexGrow(0)
@@ -1645,16 +1543,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 .setResizable(true)
         ;
 
-//        upperDochGrid.addColumn(new ComponentRenderer<>(doch -> {
-//            Paragraph cinnostComp = new Paragraph(doch.getCinnost());
-//            cinnostComp.getElement().setAttribute("margin-left","20px");
-//            return cinnostComp;
-//        }))
-
         upperDochGrid.addColumn(Doch::getCinnost)
                 .setHeader("Činnost")
-//                .setWidth("4em")
-//                .setFooter("")
                 .setFlexGrow(1)
                 .setKey(DOCH_UPPER_CINNOST_KEY)
                 .setResizable(true);
@@ -1682,38 +1572,16 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
             }
         }
         return durSum;
-
-//        return pruhZakList.stream()
-//                .map(Doch::getSignedDochDur)
-//                .reduce(
-//                        Duration.ZERO,
-//                        (a, b) ->
-////                        {
-////                            if (null == b) {
-////                                if (a.)return a;
-////                            } else {
-////
-////                            }
-//                            (null == b) ? a : a.plus(b));
     }
 
     private Component initLowerDochGrid() {
         lowerDochGrid = new Grid<>();
-//        lowerDochGrid.setHeight("30em");
         lowerDochGrid.setColumnReorderingAllowed(false);
         lowerDochGrid.setClassName("vizman-simple-grid");
         lowerDochGrid.setSelectionMode(Grid.SelectionMode.NONE);
         lowerDochGrid.getStyle()
                 .set("margin-bottom", "1em")
         ;
-
-//        lowerDochGrid.setItemDetailsRenderer(new ComponentRenderer<>(doch -> {
-//            Emphasis poznamkaComp = new Emphasis(StringUtils.isBlank(doch.getPoznamka()) ? "" : doch.getPoznamka());
-//            poznamkaComp.getStyle()
-//                    .set("margin-left", "270px")
-//            ;
-//            return poznamkaComp;
-//        }));
 
         lowerDochGrid.addColumn(Doch::getDochState)
                 .setHeader("St.")
@@ -1786,7 +1654,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
         lowerDochGrid.addColumn(Doch::getCinnost)
                 .setHeader("Činnost")
-//                .setFooter("")
                 .setFlexGrow(1)
                 .setKey(DOCH_LOWER_CINNOST_KEY)
                 .setResizable(true);
@@ -1804,20 +1671,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
         return lowerDochGrid;
     }
-
-//    public static HtmlComponent getCasOdComponent(Doch doch) {
-//        return new Paragraph(null == doch.getFromTime() ? "" : doch.getFromTime().format( VzmFormatUtils.shortTimeFormatter));
-//    }
-//
-//    public static HtmlComponent getCasDoComponent(Doch doch) {
-//        return new Paragraph(null == doch.getToTime() ? "" : doch.getToTime().format( VzmFormatUtils.shortTimeFormatter));
-//    }
-//
-//    public static HtmlComponent getHodinComponent(Doch doch) {
-////        return new Paragraph(null == doch.getDochDuration() ? "" : doch.getDochDuration().format( VzmFormatUtils.shortTimeFormatter));
-////        return new Paragraph(null == doch.getDochDurationUI() ? "" : formatDuration(doch.getDochDurationUI()));
-//        return new Paragraph(null == doch.getDochDur() ? "" : formatDuration(doch.getDochDur()));
-//    }
 
     private static String formatDuration(Duration duration) {
         long seconds = duration.getSeconds();
@@ -1840,17 +1693,14 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         if (null != dochPerson) {
             prevDochDate = dochService.fetchPrevDochDate(dochPerson.getId(), dochDate);
         }
-
         loadLowerDochGridData(dochPerson, prevDochDate);
         lowerDochDateInfo.setText(null == prevDochDate ? "" : prevDochDate.format(lowerDochDateHeaderFormatter));
     }
-
 
     private Component getDurationFooter(Duration durationSum) {
         return new Paragraph(null == durationSum ?
                 null : LocalTime.MIDNIGHT.plus(durationSum).format(DateTimeFormatter.ofPattern("H:mm")));
     }
-
 
     private Component getDurationLabelFooter() {
         Paragraph comp = new Paragraph("(odpracováno)");
@@ -1865,9 +1715,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
             upperDochList = dochService.fetchDochForPersonAndDate(dochPerson.getId(), dochDate);
         }
         upperDochGrid.setItems(upperDochList);
-//        for (Doch doch : pruhZakList) {
-//            pruhZakGrid.setDetailsVisible(doch, StringUtils.isNotBlank(doch.getPoznamka()));
-//        }
         upperDochGrid.getColumnByKey(DOCH_UPPER_DURATION_KEY)
                 .setFooter(getDurationFooter(getDurationSum()));
         upperDochGrid.getColumnByKey(DOCH_UPPER_CINNOST_KEY)
@@ -1883,12 +1730,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
             lowerDochList = dochService.fetchDochForPersonAndDate(dochPerson.getId(), dochDate);
         }
         lowerDochGrid.setItems(lowerDochList);
-
-//        lowerDochGrid.getColumnByKey(DOCH_LOWER_DURATION_KEY)
-//                .setFooter(getDurationFooter(getDurationSum()));
-//        lowerDochGrid.getColumnByKey(DOCH_LOWER_CINNOST_KEY)
-//                .setFooter(getDurationLabelFooter());
-
         lowerDochGrid.getDataProvider().refreshAll();
     }
 
@@ -1906,7 +1747,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 , dochPerson
                 , cinRepo.findByCinKod(prichodWhereKod)
                 , currentDateTime.toLocalTime()
-                , currentDateTime
                 , false
                 , null
         );
@@ -1919,7 +1759,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 recToClose = null;
             } else {
                 recToClose.setToTime(currentDateTime.toLocalTime());
-                recToClose.setToModifDatetime(currentDateTime);
             }
             dochService.closeRecAndOpenNew(recToClose, newInRec);
         }
@@ -1961,7 +1800,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 , dochPerson
                 , cinRepo.findByCinKod(cinKod)
                 , currentDateTime.toLocalTime()
-                , currentDateTime
                 , false
                 , null
 
@@ -1994,7 +1832,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 , dochPerson
                 , cinRepo.findByCinKod(cinKod)
                 , currentDateTime.toLocalTime()
-                , currentDateTime
                 , false
                 , null
 
@@ -2014,9 +1851,7 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         }
     }
 
-
-
-    private void stampSingleManualRecord(final LocalDateTime currentDateTime, Cin.CinKod cinKod) {
+    private void stampSingleManualRecord(Cin.CinKod cinKod) {
         if (!canStampStandaloneRec()) {
             return;
         }
@@ -2049,7 +1884,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         Doch lastZkDochRec = getLastZkDochRec();
         if (null != lastZkDochRec) {
             lastZkDochRec.setToTime(currentDateTime.toLocalTime());
-            lastZkDochRec.setToModifDatetime(currentDateTime);
             dochService.closeLastRec(lastZkDochRec);
 
             updateUpperDochGridPane(dochPerson, dochDate);
@@ -2092,7 +1926,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 , dochPerson
                 , cinRepo.findByCinKod(odchodWhereKod)
                 , currentDateTime.toLocalTime()
-                , currentDateTime
                 , false
                 , null
         );
@@ -2100,7 +1933,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         Doch lastInRec = getLastZkDochRec();
         if (null != lastInRec) {
             lastInRec.setToTime(currentDateTime.toLocalTime());
-            lastInRec.setToModifDatetime(currentDateTime);
             dochService.closeRecAndOpenNew(lastInRec, newOutRec);
         }
 
@@ -2118,12 +1950,9 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         if (!canStampOdchodAlt()) {
             return;
         }
-//        Cin newCin = cinRepo.findByCinKod(odchodWhereKod);
-//        Doch lastZkDochRec = getLastZkDochRec();
         DochManual dochOdchManual = new DochManual(
                 dochDate
                 , cinRepo.findByCinKod(odchodWhereKod)
-//                , currentDateTime.toLocalTime()
                 , (fromTimeIsEditable || toTimeIsEditable) ? null : currentDateTime.toLocalTime()
                 , null
                 , odchodWhereKod
@@ -2163,7 +1992,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
 
     private boolean canStampPrichodAlt() {
         return checkDayDochIsOpened(DOCH_CONFIRM_MSG_EDIT_NOT_POSSIBLE)
-//                && checkDochDateIsToday("je třeba použít 'Příchod jiný čas'.")
                 && checkDochDateNotInFuture()
                 && checkDochDateNotInFuture()
                 && checkPersonIsOutOfOffice(DOCH_CONFIRM_MSG_NEXT_PRICH_NOT_POSSIBLE)
@@ -2314,19 +2142,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         return false;
     }
 
-    private boolean checkDochContainsRec(final String additionalMsg) {
-        if (!CollectionUtils.isEmpty(upperDochList)) {
-            return true;
-        }
-        ConfirmDialog
-                .createInfo()
-                .withCaption(DOCH_CONFIRM_TITLE)
-                .withMessage(String.format("Docházka neobsahuje záznamy%s", adjustAdditionalMsg(additionalMsg)))
-                .withOkButton()
-                .open();
-        return false;
-    }
-
     private boolean checkDochNotContainsRec(final String additionalMsg) {
         if (CollectionUtils.isEmpty(upperDochList)) {
             return true;
@@ -2395,20 +2210,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         return false;
     }
 
-    private boolean checkLastDochRecIsPrichod(final String additionalMsg) {
-        Doch lastZkDoch = getLastZkDochRec();
-        if ((null != lastZkDoch) && (null == lastZkDoch.getToTime())) {
-            return true;
-        }
-        ConfirmDialog
-                .createInfo()
-                .withCaption(DOCH_CONFIRM_TITLE)
-                .withMessage(String.format("Poslední záznam v docházce není příchod%s", adjustAdditionalMsg(additionalMsg)))
-                .withOkButton()
-                .open();
-        return false;
-    }
-
     private String adjustAdditionalMsg(final String additionalMsg) {
         return StringUtils.isBlank(additionalMsg) ? "." : ", " + additionalMsg + ".";
     }
@@ -2451,10 +2252,6 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
         return null;
     }
 
-    private Doch getLastDoch() {
-        return upperDochList.get(upperDochList.size() - 1);
-    }
-
     private void odchodRadioChanged(HasValue.ValueChangeEvent event) {
         if (null == event.getValue()) {
             odchodAltButton.setEnabled(false);
@@ -2483,16 +2280,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
                 while (true) {
                     // Sleep to emulate background work
                     Thread.sleep(1000);
-//                    String message = "This is update " + count++;
-
-//                    ui.access(() -> dochForm.view.add(new Span(message)));
                     ui.access(dochView::updateDochClockTime);
                 }
-
-//                // Inform that we are done
-//                ui.access(() -> {
-//                    view.add(new Span("Done updating"));
-//                });
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 LOG.debug("Doch clock timer interrupted. Orig.message: {}", e.getMessage() );
@@ -2535,16 +2324,8 @@ public class DochView extends HorizontalLayout implements HasLogger, BeforeEnter
             this.dochYear = dochYear;
         }
 
-        public YearMonth getDochYmStart() {
-            return dochYmStart;
-        }
-
         public void setDochYmStart(YearMonth dochYmStart) {
             this.dochYmStart = dochYmStart;
-        }
-
-        public YearMonth getDochYmEnd() {
-            return dochYmEnd;
         }
 
         public void setDochYmEnd(YearMonth dochYmEnd) {

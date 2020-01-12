@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
+import eu.japtor.vizman.ui.components.ArchIconBox;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Immutable;
 
@@ -444,31 +445,6 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         return (null == rpZbyva) ? null : rpZbyva.multiply(kurzEur);
     }
 
-//    @Transient
-//    private BigDecimal rpZbyvaByKurz;
-//
-//    @Transient
-//    public BigDecimal getRpZbyvaByKurz(BigDecimal kurzEur) {
-//        BigDecimal rpZbyva = getRpZbyva();
-//        if (null == rpZbyva) {
-//            return null;
-//        } else {
-//            return getMena() == Mena.EUR ?
-//                    rpZbyva.multiply(kurzEur) :
-//                    rpZbyva;
-//        }
-//    }
-
-//    @Transient
-//    public BigDecimal getNaklMzdyPojist() {
-//        if (null == naklMzdy && null == naklPojist) {
-//            return null;
-//        } else {
-//            return (null == naklMzdy ? BigDecimal.ZERO : naklMzdy).add(null == naklPojist ? BigDecimal.ZERO : naklPojist);
-//        }
-//    }
-
-
     @Transient
     private BigDecimal rxRyVykonByKurz;
 
@@ -483,7 +459,6 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         BigDecimal vykRy = BigDecimal.ZERO;
 
         if (rxParam == null) {
-//            rxRyVykon = vykRx;
             return vykRx;
         }
         switch (rxParam) {
@@ -536,7 +511,6 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         }
 
         if (ryParam == null) {
-//            rxRyVykon = vykRy;
             return vykRy;
         }
         switch (ryParam) {
@@ -636,65 +610,10 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         }
     }
 
-//    public BigDecimal getFinished() {
-//        return finished;
-//    }
-//    public void setFinished(BigDecimal finished) {
-//        this.finished = finished;
-//    }
-
-//    @Transient
-//    private BigDecimal finished;
-
     @Transient
     public boolean isChecked() {
         return checked;
     }
-
-
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
-//
-//    public void setTyp(ItemType typ) {
-//        this.typ = typ;
-//    }
-//
-//    public void setCkont(String ckont) {
-//        this.ckont = ckont;
-//    }
-//
-//    public void setCkz(Integer czak) {
-//        this.czak = czak;
-//    }
-//
-//    public void setSkupina(String skupina) {
-//        this.skupina = skupina;
-//    }
-//
-//    public void setRok(Integer rok) {
-//        this.rok = rok;
-//    }
-//
-//    public void setTextKont(String textKont) {
-//        this.textKont = textKont;
-//    }
-//
-//    public void setTextZak(String textZak) {
-//        this.textZak = textZak;
-//    }
-//
-//    public void setObjednatel(String objednatel) {
-//        this.objednatel = objednatel;
-//    }
-//
-//    public void setArch(Boolean arch) {
-//        this.arch = arch;
-//    }
-//
-//    public void setIdKont(Long idKont) {
-//        this.idKont = idKont;
-//    }
 
     @Transient
     public void setChecked(boolean checked) {
@@ -780,25 +699,9 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         return builder.toString();
     }
 
-//    @Transient
-//    @Override
-//    public boolean isChecked() {
-//        return checked;
-//    }
-
-//    @Override
-//    public void setChecked(boolean checked) {
-//        this.checked = checked;
-//    }
-
-
     @Override
     public int hashCode() {
         return 31;
-//		if (id == null) {
-//			return super.hashCode();
-//		}
-//		return 31 + id.hashCode();
     }
 
     @Override
@@ -806,9 +709,5 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         if (this == other) return true;
         if (!(other instanceof AbstractGenIdEntity)) return false;
         return id != null && id.equals(((Zakr) other).id);
-//		if (id == null) {
-//			// New entities are only equal if the instance is the same
-//			return super.equals(other);
-//		}
     }
 }

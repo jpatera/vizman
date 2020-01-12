@@ -1,22 +1,19 @@
 package eu.japtor.vizman.backend.entity;
 
+import eu.japtor.vizman.ui.components.ArchIconBox;
+
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 
 public interface KzTreeAware<T extends KzTreeAware> {
 
     String getCkont();
     Integer getCzak();
-    Long getItemId();
     ItemType getTyp();
     ArchIconBox.ArchState getArchState();
-//    Boolean getArch();
-//    String getObjednatel();
     Klient getKlient();
     String getKlientName();
     String getText();
-//    BigDecimal getHonorar();
     BigDecimal getHonorarCisty();
     Mena getMena();
     Integer getRok();

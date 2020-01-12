@@ -30,10 +30,6 @@ public class Doch extends AbstractGenIdEntity {
     private LocalTime fromTime;
 
     @Basic
-    @Column(name = "FROM_MODIF_DATETIME")
-    private LocalDateTime fromModifDatetime;
-
-    @Basic
     @Column(name = "FROM_MANUAL")
     private Boolean fromManual;
 
@@ -42,12 +38,8 @@ public class Doch extends AbstractGenIdEntity {
     private LocalTime toTime;
 
     @Basic
-    @Column(name = "TO_MODIF_DATETIME")
-    private LocalDateTime toModifDatetime;
-
-    @Basic
     @Column(name = "DOCH_DUR")
-    Duration dochDur;
+    private Duration dochDur;
 
     @Basic
     @Column(name = "TO_MANUAL")
@@ -94,7 +86,6 @@ public class Doch extends AbstractGenIdEntity {
             , final Person person
             , final Cin cin
             , final LocalTime fromTime
-            , final LocalDateTime fromModifStamp
             , boolean fromManual
             , String poznamka
     ) {
@@ -107,7 +98,6 @@ public class Doch extends AbstractGenIdEntity {
         this.calcprac = cin.getCalcprac();
         if (!Cin.ATYP_FIX_CAS.equals(cin.getAkceTyp())) {
             this.fromTime = fromTime;
-            this.fromModifDatetime = fromModifStamp;
         }
         this.fromManual = fromManual;
         this.poznamka = poznamka;
@@ -138,10 +128,7 @@ public class Doch extends AbstractGenIdEntity {
 
 //    @PostLoad
 //    public void init() {
-////        this.dochDurationUI = this.dochDuration == null ? null : Duration.between(LocalTime.MIDNIGHT, dochDuration);
-////        this.dochDur = this.dochDuration == null ? null : Duration.between(LocalTime.MIDNIGHT, dochDuration);
-////        this.dochDuration = this.dbDochDuration == null ? null : LocalTime.MIDNIGHT.plus(this.dbDochDuration);
-////        this.myDuration = this.myDurationString == null ? null : Duration.parse(this.myDurationString);
+//        this.dochDurationUI = this.dochDuration == null ? null : Duration.between(LocalTime.MIDNIGHT, dochDuration);
 //    };
 
     public Long getPersonId() {
@@ -158,32 +145,12 @@ public class Doch extends AbstractGenIdEntity {
         this.dochDate = dochDate;
     }
 
-    public LocalDateTime getFromModifDatetime() {
-        return fromModifDatetime;
-    }
-    public void setFromModifDatetime(LocalDateTime fromModifDatetime) {
-        this.fromModifDatetime = fromModifDatetime;
-    }
-
     public LocalTime getFromTime() {
         return fromTime;
-    }
-    public void setFromTime(LocalTime fromTime) {
-        this.fromTime = fromTime;
     }
 
     public Boolean getFromManual() {
         return fromManual;
-    }
-    public void setFromManual(Boolean fromManual) {
-        this.fromManual = fromManual;
-    }
-
-    public LocalDateTime getToModifDatetime() {
-        return toModifDatetime;
-    }
-    public void setToModifDatetime(LocalDateTime toModifDatetime) {
-        this.toModifDatetime = toModifDatetime;
     }
 
     public LocalTime getToTime() {
@@ -207,16 +174,6 @@ public class Doch extends AbstractGenIdEntity {
         this.dochDur = dochDur;
     }
 
-    public Long getCinId() {
-        return cinId;
-    }
-    public void setCinId(Long cinId) {
-        this.cinId = cinId;
-    }
-
-    public Integer getCdoch() {
-        return cdoch;
-    }
     public void setCdoch(Integer cdoch) {
         this.cdoch = cdoch;
     }
@@ -231,29 +188,17 @@ public class Doch extends AbstractGenIdEntity {
     public String getCinAkceTyp() {
         return cinAkceTyp;
     }
-    public void setCinAkceTyp(String cinAkceTyp) {
-        this.cinAkceTyp = cinAkceTyp;
-    }
 
     public Cin.CinKod getCinCinKod() {
         return cinCinKod;
-    }
-    public void setCinCinKod(Cin.CinKod cinCinKod) {
-        this.cinCinKod = cinCinKod;
     }
 
     public String getCinnost() {
         return cinnost;
     }
-    public void setCinnost(String cinnost) {
-        this.cinnost = cinnost;
-    }
 
     public Boolean getCalcprac() {
         return calcprac;
-    }
-    public void setCalcprac(Boolean calcprac) {
-        this.calcprac = calcprac;
     }
 
     public String getPoznamka() {

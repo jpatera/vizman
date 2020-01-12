@@ -124,9 +124,7 @@ public class DochServiceImpl implements DochService, HasLogger {
         Doch prevZkDoch = dochRepo.findLastZkDochForPersonAndDate(dochRecToRemove.getPersonId(), dochRecToRemove.getDochDate());
         if (null != prevZkDoch) {
             prevZkDoch.setToTime(null);
-//            prevZkDoch.setDochDurationFromUI(null);
             prevZkDoch.setDochDur(null);
-            prevZkDoch.setToModifDatetime(null);
             prevZkDoch.setToManual(false);
             dochRepo.save(prevZkDoch);
         }

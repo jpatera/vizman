@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
+import eu.japtor.vizman.ui.components.ArchIconBox;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Immutable;
 
@@ -116,51 +117,6 @@ public class ZakBasic implements Serializable, HasItemType, HasArchState {
         return checked;
     }
 
-
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
-//
-//    public void setTyp(ItemType typ) {
-//        this.typ = typ;
-//    }
-//
-//    public void setCkont(String ckont) {
-//        this.ckont = ckont;
-//    }
-//
-//    public void setCkz(Integer czak) {
-//        this.czak = czak;
-//    }
-//
-//    public void setSkupina(String skupina) {
-//        this.skupina = skupina;
-//    }
-//
-//    public void setRok(Integer rok) {
-//        this.rok = rok;
-//    }
-//
-//    public void setTextKont(String textKont) {
-//        this.textKont = textKont;
-//    }
-//
-//    public void setTextZak(String textZak) {
-//        this.textZak = textZak;
-//    }
-//
-//    public void setObjednatel(String objednatel) {
-//        this.objednatel = objednatel;
-//    }
-//
-//    public void setArch(Boolean arch) {
-//        this.arch = arch;
-//    }
-//
-//    public void setIdKont(Long idKont) {
-//        this.idKont = idKont;
-//    }
-
     @Transient
     public void setChecked(boolean checked) {
         this.checked = checked;
@@ -206,25 +162,9 @@ public class ZakBasic implements Serializable, HasItemType, HasArchState {
         return builder.toString();
     }
 
-//    @Transient
-//    @Override
-//    public boolean isChecked() {
-//        return checked;
-//    }
-
-//    @Override
-//    public void setChecked(boolean checked) {
-//        this.checked = checked;
-//    }
-
-
     @Override
     public int hashCode() {
         return 31;
-//		if (id == null) {
-//			return super.hashCode();
-//		}
-//		return 31 + id.hashCode();
     }
 
     @Override
@@ -232,9 +172,5 @@ public class ZakBasic implements Serializable, HasItemType, HasArchState {
         if (this == other) return true;
         if (!(other instanceof AbstractGenIdEntity)) return false;
         return id != null && id.equals(((ZakBasic) other).id);
-//		if (id == null) {
-//			// New entities are only equal if the instance is the same
-//			return super.equals(other);
-//		}
     }
 }

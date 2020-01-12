@@ -1,4 +1,4 @@
-package eu.japtor.vizman.backend.entity;
+package eu.japtor.vizman.ui.components;
 
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;

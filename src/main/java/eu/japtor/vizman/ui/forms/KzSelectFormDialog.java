@@ -18,7 +18,7 @@ import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
-import eu.japtor.vizman.backend.entity.ArchIconBox;
+import eu.japtor.vizman.ui.components.ArchIconBox;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.KzTreeAware;
