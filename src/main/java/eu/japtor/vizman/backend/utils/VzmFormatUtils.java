@@ -634,6 +634,7 @@ public class VzmFormatUtils {
         return buildFlagBasis(shiftUp);
     }
 
+    // TODO> move to UI
     public static FlexLayout buildAvizoComponent(long greenValue, long redValue, boolean shiftUp) {
         FlexLayout zakFaktFlags = new FlexLayout();
         zakFaktFlags.setJustifyContentMode(FlexComponent.JustifyContentMode.START);

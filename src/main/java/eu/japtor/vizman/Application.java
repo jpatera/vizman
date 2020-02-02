@@ -2,13 +2,12 @@ package eu.japtor.vizman;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableScheduling;
-
+import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 /**
  * The entry point of the Spring Boot application.
  */
-
 
 //@SpringBootApplication(scanBasePackageClasses = {
 //        SecurityConfiguration.class, MainView.class, Application.class})
@@ -17,10 +16,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 //@EnableJpaRepositories(basePackageClasses = { UserRepository.class })
 //@EntityScan(basePackageClasses = { User.class })
 
-@SpringBootApplication
+@SpringBootApplication(exclude = ErrorMvcAutoConfiguration.class)
 //@EnableScheduling
-public class Application {
-//public class Application extends SpringBootServletInitializer {
+public class Application extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);

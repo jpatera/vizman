@@ -29,8 +29,6 @@ public class UserDetailServiceImpl  implements UserDetailsService {
 
     @Autowired
     public UserDetailServiceImpl(PersonService personService) {
-//        Assert.nonNull("");
-//        Objects.nonNull(personService);
         this.personService = personService;
     }
 
@@ -38,23 +36,7 @@ public class UserDetailServiceImpl  implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-
-//        Optional<UserObject> user = users.stream()
-//                .filter(u -> u.name.equals(username))
-//                .findAny();
-//        if (!user.isPresent()) {
-//            throw new UsernameNotFoundException("User not found by name: " + username);
-//        }
-//        return toUserDetails(user.get());
-
-
         Person person = personService.getByUsername(username);
-
-//            return User.withUsername(person.getUsername())
-//                    .password(person.getPassword())
-////                    .roles("ROLE")
-//                    .authorities(getGrantedAuthorities())
-//                    .build();
 
         return new User(
                 person.getUsername()

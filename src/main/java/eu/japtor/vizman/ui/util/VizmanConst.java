@@ -2,6 +2,7 @@ package eu.japtor.vizman.ui.util;
 
 import java.util.Locale;
 
+// TODO: move it out of UI
 public class VizmanConst {
 
 	public static final Locale APP_LOCALE = Locale.US;

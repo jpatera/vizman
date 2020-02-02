@@ -4,7 +4,6 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Person;
-import eu.japtor.vizman.backend.entity.PersonState;
 import eu.japtor.vizman.backend.repository.PersonRepo;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +34,6 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
 
     @Override
     public Person fetchOne(Long id) {
-//        return personRepo.getOne(id);
         return personRepo.findTopById(id);
     }
 
@@ -104,23 +102,14 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
         } else {
             String likeFilter = "%" + searchString.toLowerCase() + "%";
 
-            // TODO: Or may be sort of this way:
-//            List<QuerySortOrder> defaultSort = ImmutableList.of(new QuerySortOrder("username", SortDirection.ASCENDING));
-//            List<QuerySortOrder> defaultSort = Collections.singletonList(new QuerySortOrder("username", SortDirection.ASCENDING));
-            ExampleMatcher exampleMatcher = ExampleMatcher.matching()
-                    .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
-                    .withIgnoreNullValues();
+//            // TODO: Or may be sort of this way:
+////            List<QuerySortOrder> defaultSort = ImmutableList.of(new QuerySortOrder("username", SortDirection.ASCENDING));
+////            List<QuerySortOrder> defaultSort = Collections.singletonList(new QuerySortOrder("username", SortDirection.ASCENDING));
+//            ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+//                    .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
+//                    .withIgnoreNullValues();
 
             return personRepo.findByUsernameLikeIgnoreCase(likeFilter, mapSortOrdersToSpring(sortOrders));
-
-            // Make a copy of each matching item to keep entities and DTOs separated
-            //        return personRepo.findAllByUsername(filter).stream()
-//            return fetchAll().stream()
-//                    //                .filter(c -> c.getUsername().toLowerCase().contains(normalizedFilter))
-//                    .filter(u -> u.getUsername().toLowerCase().contains(normalizedFilter))
-//                    //              .map(Person::new)
-//                    //                .sorted((c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()))
-//                    .collect(Collectors.toList());
         }
     }
 
@@ -135,13 +124,6 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
             // Make a copy of each matching item to keep entities and DTOs separated
             //        return personRepo.findAllByUsername(filter).stream()
             return personRepo.countByUsernameLikeIgnoreCase(likeFilter);
-
-//            return fetchAll().stream()
-//                    //                .filter(c -> c.getUsername().toLowerCase().contains(normalizedFilter))
-//                    .filter(u -> u.getUsername().toLowerCase().contains(normalizedFilter))
-//                    //              .map(Person::new)
-//                    //                .sorted((c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()))
-//                    .collect(Collectors.toList());
         }
     }
 
@@ -149,38 +131,17 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
     @Override
     public List<Person> fetchByPersonFilter(PersonFilter personFilter, List<QuerySortOrder> sortOrders) {
         if (personFilter == null) {
-//            return personRepo.findAll(mapSortOrdersToSpring(sortOrders));
             return personRepo.findAll();
         } else {
-//            String likeFilter = "%" + personFilter.getUsername().toLowerCase() + "%";
-
-            // TODO: Or may be sort of this way:
-//            List<QuerySortOrder> defaultSort = ImmutableList.of(new QuerySortOrder("username", SortDirection.ASCENDING));
-//            List<QuerySortOrder> defaultSort = Collections.singletonList(new QuerySortOrder("username", SortDirection.ASCENDING));
-
             Person probe = Person.getEmptyInstance();
             probe.setHidden(personFilter.getHidden());
             probe.setUsername(personFilter.getUsername());
-//            example.setHidden(personFilter.getHidden());
 
             ExampleMatcher matcher = ExampleMatcher.matching()
                     .withMatcher("username", new ExampleMatcher.GenericPropertyMatcher().startsWith())
                     .withMatcher("hidden", new ExampleMatcher.GenericPropertyMatcher().exact())
-//                    .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
-//                    .withIgnorePaths("lastname")
-//                    .withIncludeNullValues()
                     ;
-//            return personRepo.findAll(Example.of(example, matcher), mapSortOrdersToSpring(sortOrders));
             return personRepo.findAll(Example.of(probe, matcher));
-
-            // Make a copy of each matching item to keep entities and DTOs separated
-            //        return personRepo.findAllByUsername(filter).stream()
-//            return fetchAll().stream()
-//                    //                .filter(c -> c.getUsername().toLowerCase().contains(normalizedFilter))
-//                    .filter(u -> u.getUsername().toLowerCase().contains(normalizedFilter))
-//                    //              .map(Person::new)
-//                    //                .sorted((c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()))
-//                    .collect(Collectors.toList());
         }
     }
 
@@ -192,15 +153,11 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
             Person probe = Person.getEmptyInstance();
             probe.setHidden(personFilter.getHidden());
             probe.setUsername(personFilter.getUsername());
-//            example.setHidden(personFilter.getHidden());
             ExampleMatcher matcher = ExampleMatcher.matching()
                     .withMatcher("username", new ExampleMatcher.GenericPropertyMatcher().startsWith())
                     .withMatcher("hidden", new ExampleMatcher.GenericPropertyMatcher().exact())
-//                    .withIgnorePaths("state", "hidden", "loginEnabled", ...)
-//                    .withIncludeNullValues()
                     ;
             return personRepo.count(Example.of(probe, matcher));
         }
     }
-
 }

@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,10 +30,9 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
  * <li>Bypass security checks for static resources,</li>
  * <li>Restrict access to the application, allowing only logged in users,</li>
  * <li>Set up the login form,</li>
-
  */
 @EnableWebSecurity
-@EnableGlobalMethodSecurity
+// @EnableGlobalMethodSecurity
 @Configuration
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
@@ -77,17 +75,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // Registers our UserDetailsService and the password encoder to be used on login attempts.
         super.configure(auth);
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
-
-//        auth
-//                .inMemoryAuthentication()
-//                .passwordEncoder(NoOpPasswordEncoder.getInstance())
-//                .withUser("user")
-//                .password("user")
-//                .roles("USER")
-//                .and()
-//                .withUser("admin")
-//                .password("admin")
-//                .roles("ADMIN", "USER");
     }
 
     /**
@@ -98,22 +85,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // Not using Spring CSRF here to be able to use plain HTML for the login page
         http.csrf().disable()
 
+                // Register our CustomRequestCache, that saves unauthorized access attempts, so
+                // the user is redirected after login.
+                .requestCache().requestCache(new CustomRequestCache())
+
                 // Restrict access to our application.
-                .authorizeRequests()
+                .and().authorizeRequests()
 
-
-//                    // TODO: Isn't it redundant ?
-//                    .antMatchers("/VAADIN/**", "/HEARTBEAT/**", "/UIDL/**", "/resources/**"
-//                        , "/login", "/login**", "/login/**"
-//                        , "/manifest.json", "/icons/**", "/images/**",
-//                        // (development mode) static resources
-//                        "/frontend/**",
-//                        // (development mode) webjars
-//                        "/webjars/**",
-//                        // (development mode) H2 debugging console
-//                        "/h2-console/**",
-//                        // (production mode) static resources
-//                        "/frontend-es5/**", "/frontend-es6/**").permitAll()
+                // Allow all flow internal requests.
+                // Bez toho to vyhazuje vpravo nahore JSON error
+                .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
 
                     .antMatchers("/" + ROUTE_DOCH).hasAnyAuthority(
                             Perm.DOCH_USE.name(),
@@ -138,8 +119,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .antMatchers("/" + ROUTE_ZAK_LIST).hasAnyAuthority(
                             Perm.ZAK_BASIC_READ.name(), Perm.ZAK_EXT_READ.name(),
                             Perm.VIEW_ALL.name(), Perm.MODIFY_ALL.name())
-//                    // Allow all flow internal requests.
-////                    .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
 
                     .anyRequest().authenticated()
 
@@ -150,14 +129,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .and()
 // 				.and().httpBasic()
 
-//                .formLogin()
-//                    .permitAll().defaultSuccessUrl("/zak", true)
-//                    .and()
 //                // Configure the login page.
-
                 .formLogin()
                     .loginPage("/login").permitAll()
-//                    .defaultSuccessUrl("/home", true)
                     .defaultSuccessUrl("/home", false)
                     .loginProcessingUrl("/login")
                     .successForwardUrl("/doch")
@@ -170,49 +144,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                    .and()
 //                .sessionManagement().sessionAuthenticationStrategy(sessionControlAuthenticationStrategy())
         ;
-
-//        http.authorizeRequests()
-//                .antMatchers("/login")
-//                .permitAll()
-//                .antMatchers("/*")
-//                .access("hasRole('USER')");
-//
-//        http.formLogin()
-//                .defaultSuccessUrl("/", true);
     }
 
-//    /**
-//     * Require login to access internal pages and configure login form.
-//     */
-//    @Override
-//    protected void configure(HttpSecurity http) throws Exception {
-//        // Not using Spring CSRF here to be able to use plain HTML for the login page
-//        http.csrf().disable()
-//
-//                // Register our CustomRequestCache, that saves unauthorized access attempts, so
-//                // the user is redirected after login.
-//                .requestCache().requestCache(new CustomRequestCache())
-//
-//                // Restrict access to our application.
-//                .and().authorizeRequests()
-//
-//                // Allow all flow internal requests.
-//                .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
-//
-//                // Allow all requests by logged in users.
-//                .anyRequest().hasAnyAuthority(Role.getAllRoles())
-//
-//                // Configure the login page.
-//                .and().formLogin().loginPage(LOGIN_URL).permitAll().loginProcessingUrl(LOGIN_PROCESSING_URL)
-//                .failureUrl(LOGIN_FAILURE_URL)
-//
-//                // Register the success handler that redirects users to the page they last tried
-//                // to access
-//                .successHandler(new SavedRequestAwareAuthenticationSuccessHandler())
-//
-//                // Configure logout
-//                .and().logout().logoutSuccessUrl(LOGOUT_SUCCESS_URL);
-//    }
 
     /**
      * Allows access to static resources, bypassing Spring security.
@@ -226,7 +159,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 // the standard favicon URI
                 "/favicon.ico",
 
+                // the robots exclusion standard
+                "/robots.txt",
+
                 // web application manifest
+                "/manifest.webmanifest",
                 "/manifest.json",
                 "/sw.js",
                 "/offline-page.html",

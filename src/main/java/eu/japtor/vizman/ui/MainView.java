@@ -2,25 +2,21 @@ package eu.japtor.vizman.ui;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.ui.components.NavigationBar;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import eu.japtor.vizman.ui.exceptions.AccessDeniedException;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +34,9 @@ import java.util.Locale;
 //@Route(value = "")
 //@PageTitle(PAGE_TITLE_HOME)
 @Theme(Lumo.class)
-@HtmlImport("frontend://styles/shared-styles.html")
+@CssImport("./styles/shared-styles.css")
+//@CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")    // ###***
-//@BodySize(height = "100vh", width = "100vw")
 //@Push(PushMode.MANUAL)
 @Push
 public class MainView extends VerticalLayout implements RouterLayout, BeforeEnterObserver, HasLogger {

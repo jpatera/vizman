@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// TODO: move it to .repository
 @Component
 public class CfgPropsCacheImpl implements CfgPropsCache {
 

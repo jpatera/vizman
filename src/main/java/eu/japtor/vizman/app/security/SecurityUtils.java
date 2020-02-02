@@ -51,7 +51,6 @@ public class SecurityUtils {
         if (userAuthentication == null) {
             return false;
         }
-//        List<GrantedAuthority> allowedAuths = Arrays.asList(perm.value());
         Set<String> allowedPermNames = Perm.getPermNames(Arrays.asList(permissions.value()));
         return userAuthentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -73,7 +72,6 @@ public class SecurityUtils {
         return userAuthentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(moneyPermNames::contains);
-//                .anyMatch(a -> allowedAuths.contains(a));
     }
 
     public static boolean isWagesAccessGranted() {
@@ -87,7 +85,6 @@ public class SecurityUtils {
         return userAuthentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(moneyPermNames::contains);
-//                .anyMatch(a -> allowedAuths.contains(a));
     }
 
     public static boolean isZakFormsAccessGranted() {
@@ -101,7 +98,6 @@ public class SecurityUtils {
         return userAuthentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(kontZakformPermNames::contains);
-//                .anyMatch(a -> allowedAuths.contains(a));
     }
 
     /**

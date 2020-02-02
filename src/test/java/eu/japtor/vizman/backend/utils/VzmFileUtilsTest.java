@@ -22,7 +22,7 @@ class VzmFileUtilsTest {
     @Test
     public void testNormalizeFilepath() {
         String pathToTest = "žščřďťň ŽŠČŘĎŤŇ áäéíóúůüý ÁÄÉÍÓÚŮÜÝ";
-        String expectedPath = "zscrdtn ZSCRDTN aaeiouuuy AAEIOUUUYxx";
+        String expectedPath = "zscrdtn_ZSCRDTN_aaeiouuuy_AAEIOUUUY";
         assertThat("Normalized string is not as expected"
                 , VzmFileUtils.normalizeDirFileName(pathToTest), is(expectedPath));
     }

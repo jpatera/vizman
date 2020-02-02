@@ -6,6 +6,7 @@ import eu.japtor.vizman.backend.entity.GrammarGender;
  * The operations supported by this dialog. Delete is enabled when editing
  * an already existing item.
  */
+// TODO:  move to backend.bean
 public enum Operation {
 
     ADD("Nový", "Nová", "Nové", "Přidat", "zadat", false),

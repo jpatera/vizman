@@ -13,40 +13,12 @@ public class ArchIconBox extends FlexLayout {
     private Icon icoZakArchived;
 
 
+    // TODO: extract and move to backend.bean
     public enum ArchState {
         EMPTY, ACTIVE, ARCHIVED
     }
 
-//    static {
-//        icoKontActive = VaadinIcon.HAMMER.create();
-//        icoKontActive.setColor("green");
-//        icoKontActive.setSize("0.8em");
-//        icoKontActive.getStyle()
-//                .set("theme", "small icon secondary")
-//        ;
-//
-//        icoKontArchived = new Icon(VaadinIcon.CHECK_SQUARE_O);
-//        icoKontArchived.setSize("1em");
-//        icoKontArchived.getStyle()
-//                .set("theme", "small icon secondary")
-//        ;
-//
-//        icoZakArchived = new Icon(VaadinIcon.CHECK);
-//        icoZakArchived.setSize("0.8em");
-//        icoZakArchived.getStyle()
-//                .set("theme", "small icon secondary")
-//                .set("padding-left", "1em");
-//        ;
-//    }
-
     public ArchIconBox() {
-//        FlexLayout box = new FlexLayout();
-//        box.setWidth("3em");
-//        box.setMinWidth("3em");
-//        box.setVerticalComponentAlignment(Alignment.END);
-//        box.getStyle()
-//                .set("margin-top", "0.7em");
-
         icoKontEmpty = VaadinIcon.CIRCLE_THIN.create();
         icoKontEmpty.setColor("peru");
         icoKontEmpty.setSize("0.8em");
