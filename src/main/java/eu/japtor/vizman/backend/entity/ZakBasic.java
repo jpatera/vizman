@@ -1,6 +1,7 @@
 package eu.japtor.vizman.backend.entity;
 
 import eu.japtor.vizman.ui.components.ArchIconBox;
+import eu.japtor.vizman.ui.components.DigiIconBox;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Immutable;
 
@@ -56,6 +57,10 @@ public class ZakBasic implements Serializable, HasItemType, HasArchState {
     private Boolean arch;
 
     @Basic
+    @Column(name = "DIGI")
+    private Boolean digi;
+
+    @Basic
     @Column(name = "ID_KONT")
     private Long idKont;
 
@@ -101,11 +106,19 @@ public class ZakBasic implements Serializable, HasItemType, HasArchState {
     }
 
     public ArchIconBox.ArchState getArchState() {
-        return arch ? ArchIconBox.ArchState.EMPTY.ARCHIVED : ArchIconBox.ArchState.EMPTY;
+        return arch ? ArchIconBox.ArchState.ARCHIVED : ArchIconBox.ArchState.EMPTY;
+    }
+
+    public DigiIconBox.DigiState getDigiState() {
+        return digi ? DigiIconBox.DigiState.DIGI_ONLY : DigiIconBox.DigiState.EMPTY;
     }
 
     public Boolean getArch() {
         return arch;
+    }
+
+    public Boolean getDigi() {
+        return digi;
     }
 
     public Long getIdKont() {

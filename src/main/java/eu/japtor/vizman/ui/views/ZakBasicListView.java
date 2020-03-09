@@ -163,7 +163,7 @@ public class ZakBasicListView extends VerticalLayout {
 
 
     private Component initZakGrid() {
-        zakGrid = new ZakSimpleGrid(false, null, null,true, null);
+        zakGrid = new ZakSimpleGrid(false, null, null,true, true, null, null);
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         return zakGrid;
@@ -203,6 +203,11 @@ public class ZakBasicListView extends VerticalLayout {
         );
         zakGrid.setArchFilterItems(zakList.stream()
                 .map(ZakBasic::getArch)
+                .filter(a -> null != a)
+                .distinct().collect(Collectors.toCollection(LinkedList::new))
+        );
+        zakGrid.setDigiFilterItems(zakList.stream()
+                .map(ZakBasic::getDigi)
                 .filter(a -> null != a)
                 .distinct().collect(Collectors.toCollection(LinkedList::new))
         );

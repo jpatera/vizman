@@ -194,7 +194,7 @@ public class ZakTreeSelectDialog extends Dialog {
         gridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
 
         gridContainer.add(initKzToolBar());
-        zakGrid = new ZakSimpleGrid(true, null, null, false, Boolean.FALSE);
+        zakGrid = new ZakSimpleGrid(true, null, null, false, false,  Boolean.FALSE, null);
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 //        gridContainer.add(initKzTreeGrid());

@@ -144,7 +144,7 @@ public class ZakSelectDialog extends Dialog {
     }
 
     private Component initZakGrid(Consumer<Integer> selectionChanger) {
-        zakGrid = new ZakSimpleGrid(true, checkBoxEnabler, selectionChanger, false, Boolean.FALSE);
+        zakGrid = new ZakSimpleGrid(true, checkBoxEnabler, selectionChanger, false, false, Boolean.FALSE, null);
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.NONE);
         return zakGrid;

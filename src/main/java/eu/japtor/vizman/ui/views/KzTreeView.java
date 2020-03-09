@@ -81,6 +81,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
     private static final String CKZ_COL_KEY = "ckz-col";
     private static final String ARCH_COL_KEY = "arch-col";
+    private static final String DIGI_COL_KEY = "digi-col";
     private static final String MENA_COL_KEY = "mena-col";
     private static final String HONORAR_COL_KEY = "honorar-col";
     private static final String HONORAR_CISTY_COL_KEY = "honorar-cisty-col";
@@ -590,38 +591,16 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private ComponentRenderer<Component, KzTreeAware> kzArchRenderer = new ComponentRenderer<>(kz -> {
         ArchIconBox archBox = new ArchIconBox();
         archBox.showIcon(kz.getTyp(), kz.getArchState());
-//        archBox.showIcon(ItemType.KONT == kz.getTyp() ?
-//                (kz.getArch() ? icoKontArchived : icoKontActive)
-//                : kz.getArch() ? icoZakArchived : new Span();
         return archBox;
-
-//        //        this.getElement().setAttribute("theme", "small icon secondary");
-//        Icon icoZakArchived = new Icon(VaadinIcon.CHECK);
-//        icoZakArchived.setSize("0.8em");
-//        icoZakArchived.getStyle()
-//                .set("theme", "small icon secondary")
-//                .set("padding-left","1em");
-//        ;
-////        Icon icoKontActive = new Icon(VaadinIcon.ELLIPSIS_H);
-//        Icon icoKontActive = new Icon(VaadinIcon.HAMMER);
-//        icoKontActive.setColor("green");
-//        icoKontActive.setSize("0.8em");
-//        icoKontActive.getStyle()
-//                .set("theme", "small icon secondary")
-//        ;
-////        Icon icoKontArchived = new Icon(VaadinIcon.CHECK_CIRCLE_O);
-//        Icon icoKontArchived = new Icon(VaadinIcon.CHECK_SQUARE_O);
-////        Icon icoKontArchived = new Icon(VaadinIcon.ARCHIVE);
-//        icoKontArchived.setSize("1em");
-//        icoKontArchived.getStyle()
-//                .set("theme", "small icon secondary")
-//        ;
-//        return ItemType.KONT == kz.getTyp() ?
-//                (kz.getArch() ? icoKontArchived : icoKontActive)
-//                : kz.getArch() ? icoZakArchived : new Span();
     });
 
-    //    TextField searchField = new TextField("Hledej kontrakty...");
+    private ComponentRenderer<Component, KzTreeAware> kzDigiRenderer = new ComponentRenderer<>(kz -> {
+        DigiIconBox digiBox = new DigiIconBox();
+        digiBox.showIcon(kz.getTyp(), kz.getDigiState());
+        return digiBox;
+    });
+
+  //    TextField searchField = new TextField("Hledej kontrakty...");
 ////    SearchField searchField = new SearchField("Hledej uživatele..."
 ////            , event -> ((ConfigurableFilterDataProvider) treeGrid.getDataProvider()).setFilter(event.getStringValue()));
 //
@@ -717,6 +696,13 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 .setKey(ARCH_COL_KEY)
 //                .setFrozen(true)
 //                .setId("arch-column")
+        ;
+        kzTreeGrid.addColumn(kzDigiRenderer)
+                .setHeader(("DIGI"))
+                .setFlexGrow(0)
+                .setWidth("5em")
+                .setResizable(true)
+                .setKey(DIGI_COL_KEY)
         ;
         if (isZakFormsAccessGranted()) {
             kzTreeGrid.addColumn(new ComponentRenderer<>(this::buildKzOpenBtn))

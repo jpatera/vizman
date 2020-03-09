@@ -64,6 +64,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private TextField poznamkaField;
     private Button akvToZakButton;
     private Checkbox archCheckBox;
+    private Checkbox digiCheckBox;
     private TextField textField;
     private TextField skupinaField;
     private TextField honorarCistyField;
@@ -146,6 +147,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 , initAkvToZakButton()
         );
         initArchCheckBox();
+        initDigiCheckBox();
 
         getUpperRightPane().add(
                 initZakDocFolderComponent()
@@ -238,6 +240,8 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         headerMiddleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         headerMiddleComponent.add(
                 archCheckBox
+                , new Gap("2em")
+                , digiCheckBox
                 , new Gap("5em")
                 , VzmFormatUtils.buildAvizoComponent(zakItem.getBeforeTerms(), zakItem.getAfterTerms(), true)
         );
@@ -295,6 +299,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         poznamkaField.setReadOnly(readonly);
         akvToZakButton.setEnabled(!readonly);
         archCheckBox.setEnabled(!readonly);
+        digiCheckBox.setEnabled(!readonly);
     }
 
     private void adjustControlsOperability(final boolean hasChanges, final boolean isValid) {
@@ -895,6 +900,14 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         getBinder().forField(archCheckBox)
                 .bind(Zak::getArch, Zak::setArch);
         return archCheckBox;
+    }
+
+    private Component initDigiCheckBox() {
+        digiCheckBox = new Checkbox("DIGI"); // = new TextField("Username");
+        digiCheckBox.getElement().setAttribute("theme", "secondary");
+        getBinder().forField(digiCheckBox)
+                .bind(Zak::getDigi, Zak::setDigi);
+        return digiCheckBox;
     }
 
     private Component initTextField() {

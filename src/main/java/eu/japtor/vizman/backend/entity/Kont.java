@@ -1,6 +1,7 @@
 package eu.japtor.vizman.backend.entity;
 
 import eu.japtor.vizman.ui.components.ArchIconBox;
+import eu.japtor.vizman.ui.components.DigiIconBox;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -219,6 +220,17 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
         }
     }
 
+    @Transient
+    @Override
+    public DigiIconBox.DigiState getDigiState() {
+        if ((null == getZaks()) || (getZaks().size() == 0)) {
+            return DigiIconBox.DigiState.EMPTY;
+        } else if (getZaks().stream().anyMatch(zak -> zak.getDigi())) {
+            return DigiIconBox.DigiState.DIGI_ONLY;
+        } else {
+            return DigiIconBox.DigiState.PAPER_AND_DIGI;
+        }
+    }
 
     @Transient
     @Override

@@ -86,6 +86,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private ComboBox<Mena> menaCombo;
     private ComboBox<Klient> objednatelCombo;
     private ArchIconBox archIconBox;
+    private DigiIconBox digiIconBox;
 
 //    private String kontFolderOrig;
     private FlexLayout kontDocFolderComponent;
@@ -102,6 +103,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private Button newAkvButton;
     private FlexLayout zakGridTitleComponent;
     private ComponentRenderer<Component, Zak> zakArchRenderer;
+    private ComponentRenderer<Component, Zak> zakDigiRenderer;
     private ComponentRenderer<Component, Zak> avizoRenderer;
 
     EvidKont evidKontOrig;
@@ -267,6 +269,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         headerMiddleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         headerMiddleComponent.add(
                 buildArchBox()
+                , new Gap("2em")
+                , buildDigiBox()
                 , new Gap("5em")
                 , VzmFormatUtils.buildAvizoComponent(kontItem.getBeforeTerms(), kontItem.getAfterTerms(), true)
         );
@@ -275,6 +279,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
             getHeaderMiddleBox().add(headerMiddleComponent);
         }
         archIconBox.showIcon(kontItem.getTyp(), kontItem.getArchState());
+        digiIconBox.showIcon(kontItem.getTyp(), kontItem.getDigiState());
     }
 
     private void deactivateListeners() {
@@ -817,11 +822,11 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //        return title;
 //    }
 
-    private ComponentRenderer<Component, Kont> kontArchRenderer = new ComponentRenderer<>(kont -> {
-        ArchIconBox archCheck = new ArchIconBox();
-        archCheck.showIcon(kont.getTyp(), kont.getArchState());
-        return archCheck;
-    });
+//    private ComponentRenderer<Component, Kont> kontArchRenderer = new ComponentRenderer<>(kont -> {
+//        ArchIconBox archCheck = new ArchIconBox();
+//        archCheck.showIcon(kont.getTyp(), kont.getArchState());
+//        return archCheck;
+//    });
 
     private Component buildArchBox() {
         HorizontalLayout archBox = new HorizontalLayout();
@@ -832,9 +837,23 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         return archBox;
     }
 
+    private Component buildDigiBox() {
+        HorizontalLayout digiBox = new HorizontalLayout();
+        digiBox.setAlignItems(FlexComponent.Alignment.BASELINE);
+        digiBox.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        digiBox.add(initDigiIconBox());
+        digiBox.add(new Span("DIGI"));
+        return digiBox;
+    }
+
     private Component initArchIconBox() {
         archIconBox = new ArchIconBox();
         return archIconBox;
+    }
+
+    private Component initDigiIconBox() {
+        digiIconBox = new DigiIconBox();
+        return digiIconBox;
     }
 
     private Component initTextField() {
@@ -1199,6 +1218,12 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                 .setFlexGrow(0)
                 .setResizable(true)
         ;
+        zakGrid.addColumn(initZakDigiRenderer())
+                .setHeader(("DIGI"))
+                .setWidth("4em")
+                .setFlexGrow(0)
+                .setResizable(true)
+        ;
         zakGrid.addColumn(Zak::getRok)
                 .setHeader("Rok")
                 .setResizable(true)
@@ -1241,6 +1266,19 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
             return zak.getArch() ? icoTrue : icoFalse;
         });
         return zakArchRenderer;
+    }
+
+    private ComponentRenderer<Component, Zak> initZakDigiRenderer() {
+        zakDigiRenderer = new ComponentRenderer<>(zak -> {
+            Icon icoTrue = new Icon(VaadinIcon.CHECK);
+            icoTrue.setSize("0.8em");
+            icoTrue.getStyle().set("theme", "small icon secondary");
+            Icon icoFalse = new Icon(VaadinIcon.MINUS);
+            icoFalse.setSize("0.8em");
+            icoFalse.getStyle().set("theme", "small icon secondary");
+            return zak.getDigi() ? icoTrue : icoFalse;
+        });
+        return zakDigiRenderer;
     }
 
 //    private ComponentRenderer initZakTextRenderer() {

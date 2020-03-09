@@ -31,18 +31,22 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     public static final String KZTEXT_COL_KEY = "zak-bg-kztext";
     public static final String SEL_COL_KEY = "zak-bg-select";
     public static final String ARCH_COL_KEY = "zak-bg-arch";
+    public static final String DIGI_COL_KEY = "zak-bg-digi";
 
 //    Grid<Zak> zakGrid;
 
     TextField kzCisloFilterField;
     FilterSelectionField<Boolean> archFilterField;
+    FilterSelectionField<Boolean> digiFilterField;
     Select<Integer> rokFilterField;
     Select<String> skupinaFilterField;
     TextField objednatelFilterField;
     TextField kzTextFilterField;
 
     private Boolean initFilterArchValue;
+    private Boolean initFilterDigiValue;
     private boolean archFieldVisible;
+    private boolean digiFieldVisible;
     private boolean selectFieldVisible;
     private Consumer<Integer> selectionChanger;
     private Function<ZakBasic, Boolean> checkBoxEnabler;
@@ -56,11 +60,15 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
             , Function<ZakBasic, Boolean> checkBoxEnabler
             , Consumer<Integer> selectionChanger
             , boolean archFieldVisible
+            , boolean digiFieldVisible
             , Boolean initFilterArchValue
+            , Boolean initFilterDigiValue
     ) {
         this.initFilterArchValue = initFilterArchValue;
+        this.initFilterDigiValue = initFilterDigiValue;
         this.checkBoxEnabler = checkBoxEnabler;
         this.archFieldVisible = archFieldVisible;
+        this.digiFieldVisible = digiFieldVisible;
         this.selectFieldVisible = selectFieldVisible;
         this.selectionChanger = selectionChanger;
 
@@ -107,6 +115,15 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 .setResizable(true)
                 .setKey(ARCH_COL_KEY)
                 .setVisible(this.archFieldVisible);
+        //                .setFrozen(true)
+        ;
+        this.addColumn(digiRenderer)
+                .setHeader(("DIGI"))
+                .setFlexGrow(0)
+                .setWidth("6em")
+                .setResizable(true)
+                .setKey(DIGI_COL_KEY)
+                .setVisible(this.digiFieldVisible);
         //                .setFrozen(true)
         ;
         this.addColumn(ZakBasic::getKzCislo)
@@ -163,6 +180,12 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         archFilterField.setTextRenderer(this::archFilterLabelGenerator);
         filterRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
                 .setComponent(archFilterField);
+
+        digiFilterField = buildDigiFilterField();
+//        archFilterField.setItemLabelGenerator(this::archFilterLabelGenerator);
+        digiFilterField.setTextRenderer(this::digiFilterLabelGenerator);
+        filterRow.getCell(this.getColumnByKey(DIGI_COL_KEY))
+                .setComponent(digiFilterField);
 
         kzCisloFilterField = buildTextFilterField();
         filterRow.getCell(this.getColumnByKey(KZCISLO_COL_KEY))
@@ -234,11 +257,25 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         return archFilterField;
     }
 
+    private <T> FilterSelectionField buildDigiFilterField() {
+        digiFilterField = new FilterSelectionField<>();
+        digiFilterField.addValueChangeListener(event -> doFilter());
+        return digiFilterField;
+    }
+
     private String archFilterLabelGenerator(Boolean arch) {
         if  (null == arch) {
             return "Vše";
         } else {
             return arch ? "Ano" : "Ne";
+        }
+    }
+
+    private String digiFilterLabelGenerator(Boolean digi) {
+        if  (null == digi) {
+            return "Vše";
+        } else {
+            return digi ? "Ano" : "Ne";
         }
     }
 
@@ -268,6 +305,11 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         } else {
             archFilterField.setValue(this.initFilterArchValue);
         }
+        if (null == this.initFilterDigiValue) {
+            digiFilterField.clear();
+        } else {
+            digiFilterField.setValue(this.initFilterDigiValue);
+        }
         rokFilterField.clear();
         skupinaFilterField.clear();
         kzCisloFilterField.clear();
@@ -280,6 +322,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         listDataProvider.clearFilters();
 
         Boolean archFilterValue = archFilterField.getValue();
+        Boolean digiFilterValue = digiFilterField.getValue();
         Integer rokFilterValue = rokFilterField.getValue();
         String kzCisloFilterValue = kzCisloFilterField.getValue();
         String skupinaFilterValue = skupinaFilterField.getValue();
@@ -289,6 +332,11 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         if (null != archFilterValue) {
             listDataProvider.addFilter(ZakBasic::getArch
                     , arch -> arch.equals(archFilterValue)
+            );
+        }
+        if (null != digiFilterValue) {
+            listDataProvider.addFilter(ZakBasic::getDigi
+                    , digi -> digi.equals(digiFilterValue)
             );
         }
         if (null != rokFilterValue) {
@@ -326,6 +374,12 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         return archBox;
     });
 
+    private ComponentRenderer<Component, ZakBasic> digiRenderer = new ComponentRenderer<>(zakb -> {
+        DigiIconBox digiBox = new DigiIconBox();
+        digiBox.showIcon(zakb.getTyp(), zakb.getDigi() ? DigiIconBox.DigiState.DIGI_ONLY : DigiIconBox.DigiState.EMPTY);
+        return digiBox;
+    });
+
     private ComponentRenderer<Component, ZakBasic> checkFieldRenderer = new ComponentRenderer<>(zakb -> {
         Checkbox zakCheckBox = new Checkbox();
         zakCheckBox.addValueChangeListener(event -> {
@@ -357,6 +411,13 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         filterRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
                 .setComponent(archFilterField);
         archFilterField.setItems(archItems);
+    }
+
+    public void setDigiFilterItems(final List<Boolean> digiItems) {
+        digiFilterField = buildDigiFilterField();
+        filterRow.getCell(this.getColumnByKey(DIGI_COL_KEY))
+                .setComponent(digiFilterField);
+        digiFilterField.setItems(digiItems);
     }
 
     public void setRokFilterItems(final List<Integer> rokItems) {

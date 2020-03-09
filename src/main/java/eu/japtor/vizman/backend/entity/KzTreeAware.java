@@ -1,6 +1,7 @@
 package eu.japtor.vizman.backend.entity;
 
 import eu.japtor.vizman.ui.components.ArchIconBox;
+import eu.japtor.vizman.ui.components.DigiIconBox;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -11,6 +12,7 @@ public interface KzTreeAware<T extends KzTreeAware> {
     Integer getCzak();
     ItemType getTyp();
     ArchIconBox.ArchState getArchState();
+    DigiIconBox.DigiState getDigiState();
     Klient getKlient();
     String getKlientName();
     String getText();

@@ -1,6 +1,7 @@
 package eu.japtor.vizman.backend.entity;
 
 import eu.japtor.vizman.ui.components.ArchIconBox;
+import eu.japtor.vizman.ui.components.DigiIconBox;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.LazyCollection;
@@ -65,6 +66,10 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     @Basic
     @Column(name = "ARCH")
     private Boolean arch;
+
+    @Basic
+    @Column(name = "DIGI")
+    private Boolean digi;
 
     @Basic
     @Column(name = "DATE_CREATE")
@@ -147,6 +152,14 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         this.arch = arch;
     }
 
+
+    public Boolean getDigi() {
+        return digi;
+    }
+    public void setDigi(Boolean digi) {
+        this.digi = digi;
+    }
+
     public LocalDate getDateCreate() {
         return dateCreate;
     }
@@ -171,6 +184,11 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     @Transient
     public ArchIconBox.ArchState getArchState() {
         return (null == arch) || !arch ? ArchIconBox.ArchState.ACTIVE : ArchIconBox.ArchState.ARCHIVED;
+    }
+
+    @Transient
+    public DigiIconBox.DigiState getDigiState() {
+        return (null == digi) || !digi ? DigiIconBox.DigiState.PAPER_AND_DIGI : DigiIconBox.DigiState.DIGI_ONLY;
     }
 
 //    public List<ZakDoc> getZakDocs() {
