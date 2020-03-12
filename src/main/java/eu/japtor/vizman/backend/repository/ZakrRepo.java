@@ -22,7 +22,10 @@ public interface ZakrRepo extends JpaRepository<Zakr, Long> {
             + " and (:rok is null or zr.rok = :rok) "
             + " and (:skup is null or zr.skupina = :skup) ")
     List<Zakr> findZakrByArchAndCkontAndRokAndSkupina(
-            @Param("arch") Boolean arch, @Param("ckont") String ckont, @Param("rok") Integer rokZak, @Param("skup") String skup
+            @Param("arch") Boolean arch
+            , @Param("ckont") String ckont
+            , @Param("rok") Integer rokZak
+            , @Param("skup") String skup
     );
 
     @Query(value = "SELECT distinct rok FROM vizman.zak_rozprac_view ORDER BY ROK DESC",

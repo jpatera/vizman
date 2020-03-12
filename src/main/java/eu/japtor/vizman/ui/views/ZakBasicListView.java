@@ -16,25 +16,32 @@
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamRegistration;
+import com.vaadin.flow.server.VaadinSession;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.ItemNames;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.ZakBasic;
+import eu.japtor.vizman.backend.report.ZakListReportBuilder;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
+import eu.japtor.vizman.backend.service.ZakBasicService;
 import eu.japtor.vizman.ui.MainView;
-import eu.japtor.vizman.ui.components.ReloadButton;
-import eu.japtor.vizman.ui.components.Ribbon;
-import eu.japtor.vizman.ui.components.GridTitle;
-import eu.japtor.vizman.ui.components.ZakSimpleGrid;
+import eu.japtor.vizman.ui.components.*;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -61,12 +68,40 @@ public class ZakBasicListView extends VerticalLayout {
     private ZakSimpleGrid zakGrid;
     private List<GridSortOrder<ZakBasic>> initialSortOrder;
     private ReloadButton reloadButton;
+//    private Button exportReportToXlsButton;
+    private Anchor expXlsAnchor;
+    private ReportExporter<ZakBasic> xlsReportExporter;
+
+    private final static String REPORT_FILE_NAME = "vzm-rep-zak";
+
 
     @Autowired
     public ZakBasicRepo zakBasicRepo;
 
+    @Autowired
+    public ZakBasicService zakBasicService;
+
+
+    private ComponentEventListener anchorExportListener = event -> {
+        try {
+            updateExpXlsAnchorResource(zakList);
+        } catch (JRException e) {
+            e.printStackTrace();
+        }
+    };
+
+//    private SerializableSupplier<List<? extends ZakBasic>> itemsSupplier = () -> {
+////          zaknService.fetchByZakId(zakr.getId(), zakrParams)
+//        return zakList;
+////        return dochYearMonthService.fetchRepDochYearForPersonAndYear(dochParams.getPersonId(), dochParams.getDochYear());
+//    };
+
+
+    private SerializableSupplier<List<? extends ZakBasic>> itemsSupplier =
+            () -> zakBasicService.fetchAndCalcByFiltersDescOrder(buildZakBasicFilterParams());
 
     public ZakBasicListView() {
+        xlsReportExporter = new ReportExporter((new ZakListReportBuilder()).buildReport());
         initView();
     }
 
@@ -90,18 +125,17 @@ public class ZakBasicListView extends VerticalLayout {
         //        UI.getCurrent().getPage().executeJavaScript("document.querySelectorAll(\"vaadin-grid-sorter\")[1].click()");
     }
 
+    private ZakBasicFilterParams buildZakBasicFilterParams() {
+        ZakBasicFilterParams zakBasicFilterParams = new ZakBasicFilterParams();
+        zakBasicFilterParams.setArch(zakGrid.getArchFilterValue());
+        zakBasicFilterParams.setDigi(zakGrid.getDigiFilterValue());
+        zakBasicFilterParams.setCkz(zakGrid.getkzCisloFilterField());
+        zakBasicFilterParams.setRokZak(zakGrid.getRokFilterValue());
+        zakBasicFilterParams.setSkupina(zakGrid.getSkupinaFilterValue());
+        return zakBasicFilterParams;
+    }
 
-//    private Component buildInitinitGridToolBar() {
-//        initialSortOrder = Arrays.asList(
-//                new GridSortOrder(
-//                        zakGrid.getColumnByKey(ZakSimpleGrid.ROK_COL_KEY), SortDirection.DESCENDING)
-//                , new GridSortOrder(
-//                        zakGrid.getColumnByKey(ZakSimpleGrid.CKZ_COL_KEY), SortDirection.DESCENDING)
-//        );
-//    }
-
-
-    private Component buildGridToolBar() {
+    private Component buildGridBarComponent() {
         HorizontalLayout gridToolBar = new HorizontalLayout();
 //        gridToolBar.setWidth("100%");
 //        gridToolBar.setPadding(true);
@@ -109,12 +143,14 @@ public class ZakBasicListView extends VerticalLayout {
         gridToolBar.setAlignItems(Alignment.END);
         gridToolBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
+        expXlsAnchor = initReportXlsExpAnchor();
         gridToolBar.add(
                 buildTitleComponent()
                 , new Ribbon()
-//                , archFilterComponent
+//                , buildGridBarControlsComponent()
                 , new Ribbon()
-                , new Span("")
+                , expXlsAnchor
+//                , new Span("")
         );
         return gridToolBar;
     }
@@ -133,6 +169,69 @@ public class ZakBasicListView extends VerticalLayout {
         );
         return titleComponent;
     }
+
+    private Anchor initReportXlsExpAnchor() {
+        expXlsAnchor = new ReportExpButtonAnchor(ReportExporter.Format.XLS, anchorExportListener);
+        return expXlsAnchor;
+
+
+//        exportReportToXlsButton = new Button("Excel"
+//                , event -> {
+//            try {
+//                zakListReport = (new ZakListReportBuilder()).buildReport();
+//                updateExpXlsAnchorResource(zakList, zakListReport);
+//            } catch (JRException e) {
+//                e.printStackTrace();
+//            }
+//        });
+////        this.addClassName("view-toolbar__button");
+//        exportReportToXlsButton.getElement().setAttribute("theme", "small secondary");
+//        return exportReportToXlsButton;
+    }
+
+//    private InputStream createExporterResource(ReportExporter xlsReportExporter) {
+//        return xlsReportExporter.getStreamResource();
+//    }
+
+    private String getReportFileName(ReportExporter.Format format) {
+        return REPORT_FILE_NAME + "." + format.name().toLowerCase();
+    }
+
+
+//    Anchor download = new Anchor(
+//            xlsReportExporter.getStreamResource("filename.ext", itemsSupplier, ReportExporter.Format.XLS)
+//            ,""
+//    );
+
+
+    //    private void updateExpXlsAnchorResource(List<? extends T> items, DynamicReport report) {
+    //    private void updateExpXlsAnchorResource(List<ZakBasic> items, DynamicReport report) throws JRException {
+    private void updateExpXlsAnchorResource(List<ZakBasic> items) throws JRException {
+
+//        zakListReport = new ZakListReportBuilder();
+//        this.reportBuilder = buildReportBuilder();
+//        if (this.report == null) {
+//            this.report = this.reportBuilder.build();
+//        }
+
+//        this.print = this.buildJasperPrint(items, this.report);
+
+        ReportExporter.Format expFormat = ReportExporter.Format.XLS;
+//        this.print = DynamicJasperHelper.generateJasperPrint(report, new ClassicLayoutManager(), items);
+
+//        xlsReportExporter.setItems(items);
+        AbstractStreamResource xlsResource =
+                xlsReportExporter.getStreamResource(getReportFileName(expFormat), itemsSupplier, expFormat);
+        expXlsAnchor.setHref(xlsResource);
+
+        // Varianta 1
+//        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
+
+        // Varianta 2
+        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
+        UI.getCurrent().getPage().setLocation(registration.getResourceUri());
+    }
+
 
     private Component initReloadButton() {
         return reloadButton = new ReloadButton(event -> loadViewContent());
@@ -155,7 +254,7 @@ public class ZakBasicListView extends VerticalLayout {
         gridContainer.setAlignItems(Alignment.STRETCH);
 
         gridContainer.add(
-                buildGridToolBar()
+                buildGridBarComponent()
                 ,initZakGrid()
         );
         return gridContainer;
@@ -211,5 +310,50 @@ public class ZakBasicListView extends VerticalLayout {
                 .filter(a -> null != a)
                 .distinct().collect(Collectors.toCollection(LinkedList::new))
         );
+    }
+
+
+    public static class ZakBasicFilterParams {
+
+        String ckz;
+        Integer rokZak;
+        String skupina;
+        Boolean arch;
+        Boolean digi;
+
+        public Boolean getArch() {
+            return arch;
+        }
+        public void setArch(Boolean arch) {
+            this.arch = arch;
+        }
+
+        public Boolean getDigi() {
+            return digi;
+        }
+        public void setDigi(Boolean digi) {
+            this.digi = digi;
+        }
+
+        public String getCkz() {
+            return ckz;
+        }
+        public void setCkz(String ckz) {
+            this.ckz = ckz;
+        }
+
+        public Integer getRokZak() {
+            return rokZak;
+        }
+        public void setRokZak(Integer rokZak) {
+            this.rokZak = rokZak;
+        }
+
+        public String getSkupina() {
+            return skupina;
+        }
+        public void setSkupina(String skupina) {
+            this.skupina = skupina;
+        }
     }
 }

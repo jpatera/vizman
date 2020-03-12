@@ -175,6 +175,16 @@ public class ZakBasic implements Serializable, HasItemType, HasArchState {
         return builder.toString();
     }
 
+    @Transient
+    public String getKzTextFull() {
+        StringBuilder builder = new StringBuilder();
+        builder .append(getTextKontNotNull())
+                .append(" / ")
+                .append(getTextZakNotNull())
+        ;
+        return builder.toString();
+    }
+
     @Override
     public int hashCode() {
         return 31;

@@ -2,7 +2,6 @@ package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -11,7 +10,7 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.function.SerializableSupplier;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Zak;
-import eu.japtor.vizman.backend.report.ZakListReport;
+import eu.japtor.vizman.backend.report.ZakListReportBuilder;
 import eu.japtor.vizman.backend.service.ZakService;
 import eu.japtor.vizman.ui.components.AbstractPrintDialog;
 import eu.japtor.vizman.ui.components.ReportExpAnchor;
@@ -20,6 +19,8 @@ import org.vaadin.reports.PrintPreviewReport;
 import java.util.Comparator;
 import java.util.List;
 
+
+// TODO: probbably delete this class
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -63,8 +64,8 @@ public class ZakListReportDialog extends AbstractPrintDialog<Zak> implements Has
 //    @Autowired
     private ZakService zakService;
 
-//    private ZakListReport<Zak> report;
-    private ZakListReport report;
+//    private ZakListReportBuilder<Zak> report;
+    private ZakListReportBuilder report;
     private HorizontalLayout expAnchorsBox;
     private HorizontalLayout reportParamBox;
 //    private HorizontalLayout zakInfoBox;
@@ -130,7 +131,7 @@ public class ZakListReportDialog extends AbstractPrintDialog<Zak> implements Has
                 reportParamBox
                 , expAnchorsBox
         );
-        report = new ZakListReport();
+        report = new ZakListReportBuilder();
 
         activateListeners();
     }
@@ -177,25 +178,25 @@ public class ZakListReportDialog extends AbstractPrintDialog<Zak> implements Has
 
     private void generateAndShowReport() {
         deactivateListeners();
-//        report.setParamRok(rokFilterField.getStringValue());
-        report.getReportBuilder().setSubtitle(
-                "Parametry: Rok=" + (null == rokFilterField.getValue() ? "Vše" : rokFilterField.getValue().toString())
-        );
-        report.setItems(itemsSupplier.get());
-        expAnchorsBox.getChildren()
-                .forEach(anch -> {
-                    if (anch.getClass() == ReportExpAnchor.class) {
-                        PrintPreviewReport.Format expFormat = ((ReportExpAnchor)anch).getExpFormat();
-//                        if (expFormat == PrintPreviewReport.Format.PDF)
-                            ((ReportExpAnchor)anch).setHref(
-                                    report.getStreamResource(getReportFileName(expFormat), itemsSupplier, expFormat)
-                            );
-//                        )
-                    }
-                });
-
-        this.getReportPanel().removeAllContent();
-        this.getReportPanel().addContent(report);
+////        report.setParamRok(rokFilterField.getStringValue());
+//        report.getReportBuilder().setSubtitle(
+//                "Parametry: Rok=" + (null == rokFilterField.getValue() ? "Vše" : rokFilterField.getValue().toString())
+//        );
+//        report.setItems(itemsSupplier.get());
+//        expAnchorsBox.getChildren()
+//                .forEach(anch -> {
+//                    if (anch.getClass() == ReportExpAnchor.class) {
+//                        PrintPreviewReport.Format expFormat = ((ReportExpAnchor)anch).getExpFormat();
+////                        if (expFormat == PrintPreviewReport.Format.PDF)
+//                            ((ReportExpAnchor)anch).setHref(
+//                                    report.getStreamResource(getReportFileName(expFormat), itemsSupplier, expFormat)
+//                            );
+////                        )
+//                    }
+//                });
+//
+//        this.getReportPanel().removeAllContent();
+//        this.getReportPanel().addContent(report);
         activateListeners();
     }
 
@@ -208,7 +209,7 @@ public class ZakListReportDialog extends AbstractPrintDialog<Zak> implements Has
 
     private void showReport() {
 
-//        report = ZakListReport.getReportPreview();
+//        report = ZakListReportBuilder.getReportPreview();
 
 //        this.getReportPanel().removeAllContent();
 //        this.getReportPanel().addContent(report);

@@ -48,9 +48,8 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     private TextField pojistParamField;
     private TextField kurzParamField;
 
-    private SerializableSupplier<List<? extends Zakr>> itemsSupplier = () -> {
-        return zakrService.fetchAndCalcByFiltersDescOrder(zakrParams);
-    };
+    private SerializableSupplier<List<? extends Zakr>> itemsSupplier =
+            () -> zakrService.fetchAndCalcByFiltersDescOrder(zakrParams);
 
 
     public ZakRozpracReportDialog(ZakrService zakrService, ZakrListView.ZakrParams zakrParams) {

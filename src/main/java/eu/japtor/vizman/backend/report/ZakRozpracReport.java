@@ -2,10 +2,7 @@ package eu.japtor.vizman.backend.report;
 
 import ar.com.fdvs.dj.domain.*;
 import ar.com.fdvs.dj.domain.builders.ColumnBuilder;
-import ar.com.fdvs.dj.domain.builders.GroupBuilder;
-import ar.com.fdvs.dj.domain.builders.StyleBuilder;
 import ar.com.fdvs.dj.domain.constants.*;
-import ar.com.fdvs.dj.domain.constants.Font;
 import ar.com.fdvs.dj.domain.entities.columns.AbstractColumn;
 import eu.japtor.vizman.backend.entity.Mena;
 import org.vaadin.reports.PrintPreviewReport;
@@ -16,77 +13,6 @@ import java.util.Locale;
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
 
 public class ZakRozpracReport extends PrintPreviewReport {
-
-//    static final Font DEFAULT_FONT_PDF = Font.ARIAL_MEDIUM;
-//    static final Font HEADER_FONT_PDF = Font.ARIAL_MEDIUM_BOLD;
-//    static final Font TITLE_FONT_PDF = Font.ARIAL_BIG_BOLD;
-//    static final Style DEFAULT_STYLE;
-//    static final Style TITLE_STYLE;
-//    static final Style HEADER_STYLE;
-//    public static final Style TEXT_STYLE;
-//    static final Style MONEY_NO_FRACT_GRID_STYLE;
-//    static final Style PROC_GRID_STYLE;
-    static {
-//        DEFAULT_FONT_PDF.setPdfFontEmbedded(true);
-//        DEFAULT_FONT_PDF.setPdfFontEncoding(Font.PDF_ENCODING_Identity_H_Unicode_with_horizontal_writing);
-//        DEFAULT_FONT_PDF.setPdfFontName("/Windows/Fonts/arial.ttf");
-//
-//        HEADER_FONT_PDF.setPdfFontEmbedded(true);
-//        HEADER_FONT_PDF.setPdfFontEncoding(Font.PDF_ENCODING_Identity_H_Unicode_with_horizontal_writing);
-//        HEADER_FONT_PDF.setPdfFontName("/Windows/Fonts/arialbd.ttf");
-//
-//        TITLE_FONT_PDF.setPdfFontEmbedded(true);
-//        TITLE_FONT_PDF.setPdfFontEncoding(Font.PDF_ENCODING_Identity_H_Unicode_with_horizontal_writing);
-//        TITLE_FONT_PDF.setPdfFontName("/Windows/Fonts/arialbd.ttf");
-//
-//        DEFAULT_STYLE = new StyleBuilder(false)
-//                .setFont(DEFAULT_FONT_PDF)
-//                .setPaddingLeft(Integer.valueOf(3))
-////                .setBorderLeft(Border.PEN_1_POINT())
-////                .setBorderRight(Border.PEN_1_POINT())
-////                .setStretchWithOverflow(false)
-////                .setStretching(Stretching.NO_STRETCH)
-//                .build();
-//
-//        TITLE_STYLE = new StyleBuilder(false)
-//                .setFont(TITLE_FONT_PDF)
-//                .build();
-//
-//        HEADER_STYLE = new StyleBuilder(false)
-//                .setFont(HEADER_FONT_PDF)
-//                .setHorizontalAlign(HorizontalAlign.CENTER)
-//                .setBorder(Border.THIN())
-////        sb.setBorderBottom(Border.PEN_2_POINT());
-//                .setBorderColor(Color.BLACK)
-//                .setBorderTop(Border.PEN_1_POINT())
-//                .setBorderBottom(Border.PEN_1_POINT())
-//                .build();
-//
-//        TEXT_STYLE = new StyleBuilder(false)
-//                .setHorizontalAlign(HorizontalAlign.LEFT)
-//                .setPaddingLeft(Integer.valueOf(3))
-//                .setBorderLeft(Border.THIN())
-//                .setBorderRight(Border.THIN())
-//                .build();
-//
-//        MONEY_NO_FRACT_GRID_STYLE = new StyleBuilder(false)
-//                .setHorizontalAlign(HorizontalAlign.RIGHT)
-//                .setPaddingRight(Integer.valueOf(3))
-//                .setBorderLeft(Border.THIN())
-//                .setBorderRight(Border.THIN())
-////                .setPattern("#,##0.00;-#,##0.00")
-//                .setPattern("#,##0;-#,##0")
-//                .build();
-//
-//        PROC_GRID_STYLE = new StyleBuilder(false)
-//                .setHorizontalAlign(HorizontalAlign.RIGHT)
-//                .setPaddingRight(Integer.valueOf(3))
-//                .setBorderLeft(Border.THIN())
-//                .setBorderRight(Border.THIN())
-//                .setPattern("##0;-##0")
-//                .build();
-    }
-
 
     private AbstractColumn ckontCol;
     private AbstractColumn czakCol;

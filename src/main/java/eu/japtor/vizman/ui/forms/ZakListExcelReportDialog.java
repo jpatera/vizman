@@ -20,7 +20,7 @@ import java.util.List;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class DochMonthReportDialog extends AbstractPrintDialog<DochMonth> implements HasLogger {
+public class ZakListExcelReportDialog extends AbstractPrintDialog<DochMonth> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "1200px";
     public static final String DIALOG_HEIGHT = "750px";
@@ -47,7 +47,7 @@ public class DochMonthReportDialog extends AbstractPrintDialog<DochMonth> implem
     ;
 
 
-    public DochMonthReportDialog(DochYearMonthService dochYearMonthService) {
+    public ZakListExcelReportDialog(DochYearMonthService dochYearMonthService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setDialogTitle("Report: MĚSÍČNÍ DOCHÁZKA");
 //        getHeaderEndBox().setText("END text");
@@ -128,10 +128,7 @@ public class DochMonthReportDialog extends AbstractPrintDialog<DochMonth> implem
 //                "Parametry: Režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue())
 //                + "  Pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue())
 //        );
-
-        // TODO: remuve setItems ? - getStreamResource will do it again
         report.setItems(itemsSupplier.get());
-
         expAnchorsBox.getChildren()
                 .forEach(anch -> {
                     if (anch.getClass() == ReportExpAnchor.class) {

@@ -4,6 +4,8 @@ import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.ZakBasic;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -21,5 +23,20 @@ public interface ZakBasicRepo extends JpaRepository<ZakBasic, Long> {
     // findAll(Example.of(userProbe, userMatcher));
 
 //    int countByNameLikeIgnoreCase(String username);
+
+    @Query("SELECT zb FROM ZakBasic zb WHERE "
+            + " (:arch is null or zb.arch = :arch) "
+            + " and (:digi is null or zb.digi = :digi) "
+            + " and (:ckont is null or zb.ckont like %:ckont%) "
+            + " and (:rok is null or zb.rok = :rok) "
+            + " and (:skup is null or zb.skupina = :skup) "
+            + " order by ckont desc, czak desc ")
+    List<ZakBasic> findZakBasicByArchAndDigiAndCkontAndRokAndSkupina(
+            @Param("arch") Boolean arch
+            , @Param("digi") Boolean digi
+            , @Param("ckont") String ckont
+            , @Param("rok") Integer rokZak
+            , @Param("skup") String skup
+    );
 
 }

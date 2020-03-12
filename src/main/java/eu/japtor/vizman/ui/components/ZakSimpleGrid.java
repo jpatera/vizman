@@ -441,5 +441,30 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     public void setSelCount(int selCount) {
         this.selCount = selCount;
     }
+
+    public Boolean getArchFilterValue() {
+//        return archFilterValue;
+        return archFilterField.getValue();
+    }
+
+    public Boolean getDigiFilterValue() {
+//        return digiFilterValue;
+        return digiFilterField.getValue();
+    }
+
+    public String getkzCisloFilterField() {
+//        return ckzFilterValue;
+        return kzCisloFilterField.getValue();
+    }
+
+    public Integer getRokFilterValue() {
+//        return rokFilterValue;
+        return rokFilterField.getValue();
+    }
+
+    public String getSkupinaFilterValue() {
+//        return skupinaFilterValue;
+        return skupinaFilterField.getValue();
+    }
 }
 
