@@ -758,8 +758,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                 .set("padding-top", "0em")
         ;
         getBinder().forField(ckontField)
-                .withValidator(ckont -> {return ckont.matches("^[0-9]{5}\\.[0-9]-[1-2]$"); }
-                        , "Je očekáván formát XXXXX.X-[1|2].")
+                .withValidator(ckont -> {return ckont.matches("^[0-9]{5}\\.[0-9](-[1-2])?$"); }
+                        , "Je očekáván formát XXXXX.X-[1|2] nebo XXXXX.X")
                 .bind(Kont::getCkont, Kont::setCkont)
         ;
         return ckontField;
