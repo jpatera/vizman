@@ -1099,10 +1099,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     }
 
     private <T> Select buildSelectorFilterField() {
-        Select <T> selector = new Select<>();
-        selector.setSizeFull();
-        selector.setEmptySelectionCaption("Vše");
-        selector.setEmptySelectionAllowed(true);
+        Select <T> selector = new SelectorFilterField<>();
         selector.addValueChangeListener(event -> doFilter());
         return selector;
     }

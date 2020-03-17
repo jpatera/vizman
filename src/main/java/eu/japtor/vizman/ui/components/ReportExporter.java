@@ -9,9 +9,7 @@ import ar.com.fdvs.dj.domain.builders.ColumnBuilder;
 import ar.com.fdvs.dj.domain.builders.DynamicReportBuilder;
 import ar.com.fdvs.dj.domain.builders.FastReportBuilder;
 import ar.com.fdvs.dj.domain.entities.columns.AbstractColumn;
-import com.vaadin.flow.data.binder.BeanPropertySet;
 import com.vaadin.flow.data.binder.PropertyDefinition;
-import com.vaadin.flow.data.binder.PropertySet;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.function.SerializableFunction;
@@ -39,6 +37,7 @@ import java.util.stream.Collectors;
 public class ReportExporter<T> {
 
     public enum Format {
+        // TODO: HTML(() -> new JRHtml...
         PDF(() -> new JRPdfExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
         XLS(() -> new JRXlsExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
         DOCX(() -> new JRDocxExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
@@ -57,8 +56,9 @@ public class ReportExporter<T> {
         }
     }
 
-    public static final String DEFAULT_SERVLET_PATH = "/report-image";
-    protected String imageServletPathPattern = "report-image?image={0}";
+//    public static final String DEFAULT_SERVLET_PATH = "/report-image";
+//    protected String imageServletPathPattern = "report-image?image={0}";
+
     protected DynamicReportBuilder reportBuilder;
     protected DynamicReport report;
     protected JasperPrint print;
@@ -69,28 +69,7 @@ public class ReportExporter<T> {
         this.report = report;
     }
 
-//    public ReportExporter(Class<T> type) {
-//        this();
-//        PropertySet<T> propertySet = BeanPropertySet.get(type);
-//        propertySet.getProperties().forEach(this::addColumn);
-//    }
-//
-//    public ReportExporter(Class<T> type, String... columnIds) {
-//        this();
-//        PropertySet<T> propertySet = BeanPropertySet.get(type);
-//
-//        for (int i = 0; i < columnIds.length; i++) {
-//            String columnId = columnIds[i];
-//            PropertyDefinition<T, ?> propertyDefinition = propertySet.getProperties()
-//                    .filter(p -> columnId.equals(p.getName()))
-//                    .findFirst().get();
-//            addColumn(propertyDefinition);
-//        }
-//    }
-
-
     public void setItems(List<? extends T> items) {
-//        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
         try {
             if (report == null) {
                 report = reportBuilder.build();
@@ -128,17 +107,17 @@ public class ReportExporter<T> {
         }
     }
 
-    public DynamicReportBuilder getReportBuilder() {
-        return reportBuilder;
-    }
-
-    public String getImageServletPathPattern() {
-        return imageServletPathPattern;
-    }
-
-    public void setImageServletPathPattern(String imageServletPathPattern) {
-        this.imageServletPathPattern = imageServletPathPattern;
-    }
+//    public DynamicReportBuilder getReportBuilder() {
+//        return reportBuilder;
+//    }
+//
+//    public String getImageServletPathPattern() {
+//        return imageServletPathPattern;
+//    }
+//
+//    public void setImageServletPathPattern(String imageServletPathPattern) {
+//        this.imageServletPathPattern = imageServletPathPattern;
+//    }
 
     protected AbstractColumn addColumn(PropertyDefinition<T, ?> propertyDefinition) {
         AbstractColumn column = ColumnBuilder.getNew()
@@ -166,9 +145,4 @@ public class ReportExporter<T> {
     public DynamicReport getReport() {
         return report;
     }
-
-//    public void setReport(DynamicReport report) {
-//        this.report = report;
-//    }
 }
-

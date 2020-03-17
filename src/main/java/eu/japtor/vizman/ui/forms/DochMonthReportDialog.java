@@ -18,8 +18,6 @@ import org.vaadin.reports.PrintPreviewReport;
 import java.util.List;
 
 
-//@SpringComponent
-//@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class DochMonthReportDialog extends AbstractPrintDialog<DochMonth> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "1200px";
@@ -57,8 +55,6 @@ public class DochMonthReportDialog extends AbstractPrintDialog<DochMonth> implem
 
     public void openDialog(DochView.DochParams dochParams) {
         this.dochParams = dochParams;
-//        rezieParamField.setValue(zakrParams.getKoefRezie().toString());
-//        pojistParamField.setValue(zakrParams.getKoefPojist().toString());
         this.open();
     }
 
@@ -124,13 +120,6 @@ public class DochMonthReportDialog extends AbstractPrintDialog<DochMonth> implem
 
     public void generateAndShowReport() {
         deactivateListeners();
-//        report.setSubtitleText(
-//                "Parametry: Režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue())
-//                + "  Pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue())
-//        );
-
-        // TODO: remuve setItems ? - getStreamResource will do it again
-        report.setItems(itemsSupplier.get());
 
         expAnchorsBox.getChildren()
                 .forEach(anch -> {

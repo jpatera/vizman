@@ -12,6 +12,7 @@ import eu.japtor.vizman.backend.entity.Zakr;
 import eu.japtor.vizman.backend.report.ZakRozpracReport;
 import eu.japtor.vizman.backend.service.ZakrService;
 import eu.japtor.vizman.ui.components.AbstractPrintDialog;
+import eu.japtor.vizman.ui.components.SelectorFilterField;
 import eu.japtor.vizman.ui.components.ReportExpAnchor;
 import eu.japtor.vizman.ui.views.ZakrListView;
 import org.vaadin.reports.PrintPreviewReport;
@@ -129,7 +130,8 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     }
 
     private Component initArchiveParamComponent() {
-        archFilterField = buildSelectorParamField();
+//        archFilterField = buildSelectorParamField();
+        archFilterField = new SelectorFilterField<>();
         archFilterField.setLabel("Arch.");
         archFilterField.setWidth("5em");
         archFilterField.getStyle().set("theme", "small");
@@ -143,63 +145,46 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
         ckzFilterField.setWidth("5em");
         ckzFilterField.getStyle().set("theme", "small");
         ckzFilterField.setReadOnly(true);
-
-//        Span rezieParamLabel = new Span("Režie:");
-//        HorizontalLayout rezieParamComponent = new HorizontalLayout();
-//        rezieParamComponent.setMargin(false);
-//        rezieParamComponent.setPadding(false);
-//        rezieParamComponent.setAlignItems(FlexComponent.Alignment.CENTER);
-//        rezieParamComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-//        rezieParamComponent.add(
-//                rezieParamLabel
-//                , rezieParamField
-//        );
         return ckzFilterField;
     }
 
     private Component initZakRokFilterComponent() {
-        rokZakFilterField = buildSelectorParamField();
+//        rokZakFilterField = buildSelectorParamField();
+        rokZakFilterField = new SelectorFilterField<>();
         rokZakFilterField.setLabel("Rok zak.");
         rokZakFilterField.setWidth("5em");
         rokZakFilterField.getStyle().set("theme", "small");
         rokZakFilterField.setReadOnly(true);
-//        List<Integer> zakRoks = zakrService.fetchZakrRoks();
-//        rokZakFilterField.setItems(zakRoks);
-//        Integer rokMax = roks.stream().reduce(Integer::max).orElse(null);
-//        Integer rokMax = zakRoks.stream().max(Comparator.naturalOrder()).orElse(null);
         return rokZakFilterField;
     }
 
     private Component initSkupinaFilterComponent() {
-        skupinaFilterField = buildSelectorParamField();
+//        skupinaFilterField = buildSelectorParamField();
+        skupinaFilterField = new SelectorFilterField<>();
         skupinaFilterField.setLabel("Skupina");
         skupinaFilterField.setWidth("5em");
         skupinaFilterField.getStyle().set("theme", "small");
         skupinaFilterField.setReadOnly(true);
-//        List<String> skups = new ArrayList<>(Arrays.asList("1", "2", "TBD!"));
-//        skupinaFilterField.setItems(skups);
         return skupinaFilterField;
     }
 
     private Component initRxFilterComponent() {
-        rxParamField = buildSelectorParamField();
+//        rxParamField = buildSelectorParamField();
+        rxParamField = new SelectorFilterField<>();
         rxParamField.setLabel("RX");
         rxParamField.setWidth("5em");
         rxParamField.getStyle().set("theme", "small");
         rxParamField.setReadOnly(true);
-//        List<String> rxList = new ArrayList<>(Arrays.asList("R1", "R2", "R3", "R4"));
-//        rxParamField.setItems(rxList);
         return rxParamField;
     }
 
     private Component initRyFilterComponent() {
-        ryParamField = buildSelectorParamField();
+//        ryParamField = buildSelectorParamField();
+        ryParamField = new SelectorFilterField<>();
         ryParamField.setLabel("RY");
         ryParamField.setWidth("5em");
         ryParamField.getStyle().set("theme", "small");
         ryParamField.setReadOnly(true);
-//        List<String> ryList = new ArrayList<>(Arrays.asList("R1", "R2", "R3", "R4"));
-//        ryParamField.setItems(ryList);
         return ryParamField;
     }
 
@@ -216,17 +201,6 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
         rezieParamField.setWidth("5em");
         rezieParamField.getStyle().set("theme", "small");
         rezieParamField.setReadOnly(true);
-
-//        Span rezieParamLabel = new Span("Režie:");
-//        HorizontalLayout rezieParamComponent = new HorizontalLayout();
-//        rezieParamComponent.setMargin(false);
-//        rezieParamComponent.setPadding(false);
-//        rezieParamComponent.setAlignItems(FlexComponent.Alignment.CENTER);
-//        rezieParamComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-//        rezieParamComponent.add(
-//                rezieParamLabel
-//                , rezieParamField
-//        );
         return rezieParamField;
     }
 
@@ -238,13 +212,13 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
         return pojistParamField;
     }
 
-    private <T> Select buildSelectorParamField() {
-        Select <T> selector = new Select<>();
-        selector.setSizeFull();
-        selector.setEmptySelectionCaption("Vše");
-        selector.setEmptySelectionAllowed(true);
-        return selector;
-    }
+//    private <T> Select buildSelectorParamField() {
+//        Select <T> selector = new Select<>();
+//        selector.setSizeFull();
+//        selector.setEmptySelectionCaption("Vše");
+//        selector.setEmptySelectionAllowed(true);
+//        return selector;
+//    }
 
     private String getReportFileName(PrintPreviewReport.Format format) {
         return REPORT_FILE_NAME + "." + format.name().toLowerCase();
@@ -268,7 +242,7 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
         // report.getReportBuilder().setProperty("ireport.zoom", "2.0");
         // report.getReportBuilder().setProperty("net.sf.jasperreports.viewer.zoom", "2");
 
-        report.setItems(itemsSupplier.get());   // ..also builds report if has not been built yet
+//        report.setItems(itemsSupplier.get());   // ..also builds report if has not been built yet
 
         expAnchorsBox.getChildren()
                 .forEach(anch -> {

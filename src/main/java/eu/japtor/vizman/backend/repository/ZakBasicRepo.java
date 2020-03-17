@@ -1,8 +1,6 @@
 package eu.japtor.vizman.backend.repository;
 
-import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.ZakBasic;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,7 +12,6 @@ import java.util.List;
 public interface ZakBasicRepo extends JpaRepository<ZakBasic, Long> {
 
     List<ZakBasic> findAllByOrderByCkontDescCzakDesc();
-//    List<ZakBasic> findAll();
 
 //    List<Klient> findByNameLikeIgnoreCase(String username, Sort sort);
     // TODO: more versatile might be using Example matchers
@@ -38,5 +35,4 @@ public interface ZakBasicRepo extends JpaRepository<ZakBasic, Long> {
             , @Param("rok") Integer rokZak
             , @Param("skup") String skup
     );
-
 }

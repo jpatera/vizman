@@ -104,7 +104,7 @@ public class ZakReportDialog extends AbstractPrintDialog<Zak> implements HasLogg
                 .setSubtitle(zak.getText())
         ;
 
-        report.setItems(itemsSupplier.get());
+//        report.setItems(itemsSupplier.get());
         expAnchorsBox.getChildren()
                 .forEach(anch -> {
                     if (anch.getClass() == ReportExpAnchor.class) {

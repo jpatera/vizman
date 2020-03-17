@@ -206,69 +206,9 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
         ;
 
 
-//        dirTreeGrid = new Grid<>();
-//        dirTreeGrid.setMultiSort(true);
-//        dirTreeGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-//        dirTreeGrid.setId("person-grid");  // .. same ID as is used in shared-styles grid's dom module
-//
-//        dirTreeGrid.addColumn(Person::getId)
-//                .setTextAlign(ColumnTextAlign.END)
-//                .setHeader("ID")
-//                .setSortProperty("id")
-//                .setWidth("5em")
-//                .setResizable(true)
-//                .setFrozen(true)
-//        ;
-//        dirTreeGrid.addColumn(Person::getState)
-//                .setHeader("State")
-//                .setSortProperty("state")
-//                .setWidth("5em")
-//                .setResizable(true)
-//                .setFrozen(true)
-//        ;
-//        dirTreeGrid.addColumn(new ComponentRenderer<>(this::buildEditBtn))
-//                .setFlexGrow(0)
-//        ;
-//        dirTreeGrid.addColumn(Person::getUsername)
-//                .setHeader("Username")
-//                .setSortProperty("username")
-//                .setWidth("8em")
-//                .setResizable(true)
-//                .setFrozen(true)
-//        ;
-//        dirTreeGrid.addColumn(Person::getJmeno)
-//                .setHeader("Jméno")
-//                .setSortProperty("jmeno")
-//                .setWidth("8em")
-//                .setResizable(true)
-//        ;
-//        dirTreeGrid.addColumn(Person::getPrijmeni)
-//                .setHeader("Příjmení")
-//                .setSortProperty("prijmeni")
-//                .setWidth("8em")
-//                .setResizable(true)
-//        ;
-//        if (isWagesAccessGranted()) {
-//            dirTreeGrid.addColumn(new NumberRenderer<>(Person::getSazba, VzmFormatUtils.moneyFormat))
-//                    .setTextAlign(ColumnTextAlign.END)
-//                    .setHeader("Sazba")
-//                    .setWidth("8em")
-//                    .setResizable(true)
-//            ;
-//        }
-//        dirTreeGrid.addColumn(Person::getNastup)
-//                .setHeader("Nástup")
-//                .setWidth("8em")
-//                .setResizable(true)
-//        ;
-//        dirTreeGrid.addColumn(Person::getVystup)
-//                .setHeader("Ukončení")
-//                .setWidth("8em")
-//                .setResizable(true)
-//        ;
-
         filterRow = calGrid.appendHeaderRow();
-        rokFilterField = buildSelectionFilterField();
+//        rokFilterField = buildSelectionFilterField();
+        rokFilterField = new SelectorFilterField<>();
         rokFilterField.setItems(calService.fetchCalyYrList());
         rokFilterField.addValueChangeListener(event -> {
                 Integer yrFilter = event.getValue();
@@ -284,13 +224,13 @@ public class CfgCalTreeView extends VerticalLayout  implements HasLogger {
         return calGrid;
     }
 
-    private <T> Select buildSelectionFilterField() {
-        Select <T> selectFilterField = new Select<>();
-        selectFilterField.setSizeFull();
-        selectFilterField.setEmptySelectionCaption("Vše");
-        selectFilterField.setEmptySelectionAllowed(true);
-        return selectFilterField;
-    }
+//    private <T> SelectionFilterField buildSelectionFilterField() {
+//        SelectionFilterField <T> selectFilterField = new Select<>();
+//        selectFilterField.setSizeFull();
+//        selectFilterField.setEmptySelectionCaption("Vše");
+//        selectFilterField.setEmptySelectionAllowed(true);
+//        return selectFilterField;
+//    }
 
     private Button buildEditBtn(CalTreeNode node) {
         Button editBtn = new GridItemEditBtn(event ->

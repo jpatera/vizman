@@ -165,7 +165,7 @@ public class ZakNaklReportDialog extends AbstractPrintDialog<Zakr> implements Ha
                 "Parametry: Režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue())
                 + "  Pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue())
         );
-        report.setItems(itemsSupplier.get());
+//        report.setItems(itemsSupplier.get());
         expAnchorsBox.getChildren()
                 .forEach(anch -> {
                     if (anch.getClass() == ReportExpAnchor.class) {

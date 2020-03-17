@@ -2,9 +2,9 @@ package eu.japtor.vizman.ui.components;
 
 import com.vaadin.flow.component.select.Select;
 
-public class FilterSelectionField<T> extends Select<T> {
+public class SelectorFilterField<T> extends Select<T> {
 
-    public FilterSelectionField() {
+    public SelectorFilterField() {
         super();
         setSizeFull();
         setEmptySelectionCaption("Vše");
@@ -12,7 +12,7 @@ public class FilterSelectionField<T> extends Select<T> {
 //        addValueChangeListener(event -> doFilter());
     }
 
-    public FilterSelectionField(T... items) {
+    public SelectorFilterField(T... items) {
         super(items);
     }
 }

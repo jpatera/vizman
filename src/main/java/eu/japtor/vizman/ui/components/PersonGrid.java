@@ -29,7 +29,7 @@ public class PersonGrid extends Grid<Person> {
 
     private ConfigurableFilterDataProvider gridDataProvider;
 
-    FilterSelectionField<Boolean> hiddenFilterField;
+    SelectorFilterField<Boolean> hiddenFilterField;
     FilterTextField usernameFilterField;
 
     private Boolean initFilterHiddenValue;
@@ -209,8 +209,8 @@ public class PersonGrid extends Grid<Person> {
         return usernameFilterField;
     }
 
-    private FilterSelectionField<Boolean> initHiddenFilterField() {
-        hiddenFilterField = new FilterSelectionField<>();
+    private SelectorFilterField<Boolean> initHiddenFilterField() {
+        hiddenFilterField = new SelectorFilterField<>();
         hiddenFilterField.addValueChangeListener(event -> doFilter(event.getValue(), usernameFilterField.getValue()));
         return hiddenFilterField;
     }
