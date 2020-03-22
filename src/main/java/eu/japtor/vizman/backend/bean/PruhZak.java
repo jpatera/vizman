@@ -10,7 +10,6 @@ import java.util.HashMap;
 public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializable {
 
     private static final long serialVersionUID = 1L;
-//    private NumberFormat pruhDayFormatter = new DecimalFormat("00");
 
     Long zakId;
     String ckont;
@@ -94,11 +93,11 @@ public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializ
         this.tmp = tmp;
     }
 
-    public String getPruhCellText() {
+    public String getPruhCellCkzText() {
         if (isNonZakItem()) {
             return String.format("%s, %s", ckont, text);
         } else {
-            return String.format("%s / %d, %s", ckont, czak, text);
+            return String.format("%s-%d, %s", ckont, czak, text);
         }
     }
 
@@ -113,20 +112,4 @@ public class PruhZak extends AbstractPruh implements HasLogger, java.io.Serializ
     public boolean isLekarZak() {
         return ItemType.LEK == itemType;
     }
-
-
-//    public void setValueToDayField(int day, BigDecimal value) {
-//        String dayFieldName = "D" + pruhDayFormatter.format(day);
-//        Class pzClass = this.getClass();
-//        Field dayField;
-//        try {
-//            dayField = this.getClass().getField(dayFieldName);
-//            dayField.set(pzClass, value.toString());
-//        } catch (NoSuchFieldException e) {
-//            getLogger().error("Day field for {} not found.", dayFieldName, e);
-//            return;
-//        } catch (IllegalAccessException e) {
-//            e.printStackTrace();
-//        }
-//    }
 }

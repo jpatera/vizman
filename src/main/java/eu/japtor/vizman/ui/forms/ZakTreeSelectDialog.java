@@ -262,7 +262,7 @@ public class ZakTreeSelectDialog extends Dialog {
 ////                .setFlexGrow(0)
 ////        ;
 //        zakGrid.addHierarchyColumn(ckzValProv)
-//                .setHeader("ČK/ČZ")
+//                .setHeader("ČK-ČZ")
 //                .setFlexGrow(0)
 //                .setWidth("9em")
 //                .setResizable(true)

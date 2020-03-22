@@ -534,6 +534,12 @@ public class VzmFormatUtils {
         return comp;
     }
 
+    public static HtmlComponent getRokComponent(Integer rok) {
+        Div comp = new Div();
+        comp.setText(null == rok ? "" : rok.toString());
+        return comp;
+    }
+
     public static HtmlComponent getMoneyComponent(BigDecimal amount) {
         Div comp = new Div();
         String color = "black";

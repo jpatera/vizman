@@ -24,6 +24,7 @@ import java.util.function.Function;
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 //@UIScope    // Without this annotation browser refresh throws exception
+// TODO: delete class ?
 public class ZakSelectDialog extends Dialog {
 
     private List<Long> pruhZakIdList = new ArrayList<>();

@@ -20,14 +20,14 @@ import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
 
 public class ZakReport extends PrintPreviewReport {
 
-    private AbstractColumn kzCisloCol;
+    private AbstractColumn ckzCol;
     private AbstractColumn zakTextCol;
     private AbstractColumn typCol;
     private AbstractColumn faktTextCol;
     private AbstractColumn castkaCol;
     private AbstractColumn faktCisloCol;
 
-    private DJGroup kzCisloGroup;
+    private DJGroup ckzGroup;
     private DJGroup zakTextGroup;
 
 
@@ -60,7 +60,7 @@ public class ZakReport extends PrintPreviewReport {
                 .addStyle(WORK_HOUR_GRID_STYLE)
 
                 // Add columns
-//                .addColumn(kzCisloCol)
+//                .addColumn(ckzCol)
 //                .addColumn(zakTextCol)
                 .addColumn(typCol)
                 .addColumn(faktTextCol)
@@ -68,7 +68,7 @@ public class ZakReport extends PrintPreviewReport {
                 .addColumn(faktCisloCol)
 
                 // Add groups
-//                .addGroup(kzCisloGroup)
+//                .addGroup(ckzGroup)
 //                .addGroup(zakTextGroup)
 
                 // Add totals
@@ -83,9 +83,9 @@ public class ZakReport extends PrintPreviewReport {
 
     private void buildReportColumns() {
 
-        kzCisloCol = ColumnBuilder.getNew()
+        ckzCol = ColumnBuilder.getNew()
                 .setColumnProperty("zak.kzCislo", String.class)
-                .setTitle("ČK/ČZ")
+                .setTitle("ČK-ČZ")
 //                .setStyle(GROUP_HEADER_STYLE)
                 .setStyle(GROUP_HEADER_STYLE)
                 .setWidth(100)
@@ -94,7 +94,7 @@ public class ZakReport extends PrintPreviewReport {
         ;
         zakTextCol = ColumnBuilder.getNew()
                 .setColumnProperty("zak.kzText", String.class)
-                .setTitle("ext zakázky")
+                .setTitle("Text zakázky")
                 .setStyle(GROUP_HEADER_STYLE)
                 .setWidth(100)
                 .setFixedWidth(true)
@@ -135,10 +135,10 @@ public class ZakReport extends PrintPreviewReport {
 
 
     private void buildReportGroups() {
-        // kzCislo group
-        GroupBuilder kzCisloGroupBuilder = new GroupBuilder();
-        kzCisloGroup = kzCisloGroupBuilder
-                .setCriteriaColumn((PropertyColumn) kzCisloCol)
+        // ckz group
+        GroupBuilder ckzGroupBuilder = new GroupBuilder();
+        ckzGroup = ckzGroupBuilder
+                .setCriteriaColumn((PropertyColumn) ckzCol)
                 .setGroupLayout(GroupLayout.VALUE_IN_HEADER_WITH_HEADERS)
 //                .setHeaderHeight(130)
                 .setHeaderHeight(8)

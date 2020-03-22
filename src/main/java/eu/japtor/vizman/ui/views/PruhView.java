@@ -1020,15 +1020,13 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
 //        pruhZakGrid.addThemeNames("no-border", "no-row-borders", "row-stripes");
 //        pruhZakGrid.addThemeNames("border", "row-borders", "row-stripes");
 
-        ComponentRenderer<Label, PruhZak> textRenderer = new ComponentRenderer<>(item ->{
-            Label textLabel = new Label(item.getPruhCellText());
+        ComponentRenderer<Label, PruhZak> ckzTextRenderer = new ComponentRenderer<>(item ->{
+            Label textLabel = new Label(item.getPruhCellCkzText());
             textLabel.getElement().setProperty("title", item.getFullText());
             return textLabel;
         });
-//        Grid.Column zakTextCol = pruhZakGrid.addColumn() (PruhZak::getPruhCellText)
-        Grid.Column zakTextCol = pruhZakGrid.addColumn(textRenderer)
-                .setHeader("ČK / ČZ, zakázka")
-//                .setFooter("Zbývá vyplnit")
+        Grid.Column ckzTextCol = pruhZakGrid.addColumn(ckzTextRenderer)
+                .setHeader("ČK-ČZ, kont/zak")
                 .setWidth("10em")
                 .setTextAlign(ColumnTextAlign.START)
                 .setFlexGrow(1)
@@ -1146,15 +1144,6 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
                 .setFrozen(true)
                 .setResizable(false)
         ;
-
-//        pruhParagGrid.addColumn(new ComponentRenderer<>(pruhParag ->
-//                new Span(pruhParag.getPruhCellText())))
-//                .setWidth("5em")
-//                .setTextAlign(ColumnTextAlign.START)
-//                .setFlexGrow(0)
-//                .setFrozen(true)
-//                .setResizable(false)
-//        ;
 
         addParagDaySumColumn(0, pp -> pp.getHod(0));
 

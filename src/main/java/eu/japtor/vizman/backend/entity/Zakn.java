@@ -62,7 +62,7 @@ public class Zakn implements Serializable {
     public String getCkzTextRep() {
         StringBuilder builder = new StringBuilder();
         builder .append(getCkont())
-                .append(" / ")
+                .append("-")
                 .append(getCzak())
                 .append("\n")
                 .append(getTextKontNotNull())
@@ -346,7 +346,7 @@ public class Zakn implements Serializable {
 //    }
 //
 //    @Transient
-//    public String getKzCislo() {
+//    public String getCkz() {
 //        StringBuilder builder = new StringBuilder();
 //        builder .append(getCkontNotNull())
 //                .append(" / ")

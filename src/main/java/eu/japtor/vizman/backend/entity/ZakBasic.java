@@ -156,10 +156,10 @@ public class ZakBasic implements Serializable, HasItemType, HasArchState {
     }
 
     @Transient
-    public String getKzCislo() {
+    public String getCkz() {
         StringBuilder builder = new StringBuilder();
         builder .append(getCkontNotNull())
-                .append(" / ")
+                .append("-")
                 .append(getCzakNotNull())
         ;
         return builder.toString();

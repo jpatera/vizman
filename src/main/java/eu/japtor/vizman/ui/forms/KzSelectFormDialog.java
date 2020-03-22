@@ -38,6 +38,7 @@ import java.util.function.Consumer;
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 //public class KzSelectFormDialog<KzTreeAware> extends Dialog {
+// TODO: delete class ?
 public class KzSelectFormDialog extends Dialog {
 
     private static final String SEL_COL_KEY = "kz-sel-col";
@@ -251,7 +252,7 @@ public class KzSelectFormDialog extends Dialog {
 //                .setFlexGrow(0)
 //        ;
         kzTreeGrid.addHierarchyColumn(ckzValProv)
-                .setHeader("ČK/ČZ")
+                .setHeader("ČK-ČZ")
                 .setFlexGrow(0)
                 .setWidth("9em")
                 .setResizable(true)

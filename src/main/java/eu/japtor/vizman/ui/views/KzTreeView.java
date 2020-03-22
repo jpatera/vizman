@@ -84,21 +84,14 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private static final String DIGI_COL_KEY = "digi-col";
     private static final String MENA_COL_KEY = "mena-col";
     private static final String HONORAR_COL_KEY = "honorar-col";
-    private static final String HONORAR_CISTY_COL_KEY = "honorar-cisty-col";
     private static final String AVIZO_COL_KEY = "avizo-col";
     private static final String TEXT_COL_KEY = "text-col";
     private static final String OBJEDNATEL_COL_KEY = "objednatel-col";
     private static final String SKUPINA_COL_KEY = "skupina-col";
     private static final String ROK_COL_KEY = "rok-col";
 
-    private Random rand = new Random();
-//    private String kontFolderOrig;
-
     private KontFormDialog kontFormDialog;
     private ZakFormDialog zakFormDialog;
-//    private SubFormDialog subFormDialog;
-//    private final Grid<Kont> kontGrid = new Grid<>();
-//    private final Grid<Zak> zakGrid = new Grid<>();
 
     private TreeGrid<KzTreeAware> kzTreeGrid;
     private TreeData<KzTreeAware> kzTreeData;
@@ -113,13 +106,6 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
     private List<GridSortOrder<KzTreeAware>> initialSortOrder;
 
-
-    HorizontalLayout viewToolBar = new HorizontalLayout();
-//    HorizontalLayout toolBarSearch = new HorizontalLayout();
-
-    //    @Autowired
-//    public KontRepo kontRepo;
-//
     @Autowired
     public KontService kontService;
 
@@ -150,7 +136,6 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        System.out.println("#### KZ Tree VIEW - onAttach");
 //    }
 
-    //    class KzText extends HtmlComponent implements KeyNotifier {
     static class KzText extends Paragraph implements KeyNotifier {
         public KzText(String text) {
             super(text);
@@ -193,50 +178,31 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     public void postInit() {
 
         kontFormDialog = new KontFormDialog(
-//                this::saveKontForGrid, this::deleteKontForGrid
-//                deleteKontConsumer
-//                , closeKontConsumer
                 kontService, zakService, faktService, klientService, dochsumZakService
                 , cfgPropsCache
         );
         kontFormDialog.addOpenedChangeListener(event -> {
-//            System.out.println("OPEN-CHANGED: " + event.toString());
             if (!event.isOpened()) {
                 finishKontEdit((KontFormDialog)event.getSource());
             }
         });
         kontFormDialog.addDialogCloseActionListener(event -> {
-//            System.out.println("DIALOG-CLOSE: " + event.toString());
             kontFormDialog.close();
-//            finishKontEdit((KontFormDialog)event.getSource());
         });
-//        kontFormDialog.addDialogCloseActionListener(ev -> {
-////            Notification.show("Close Action Listener");
-//            loadKzTreeData(archFilterRadio.getStringValue());
-//        });
 
         zakFormDialog = new ZakFormDialog(
                 zakService, faktService, cfgPropsCache
         );
         zakFormDialog.addOpenedChangeListener(event -> {
-//            System.out.println("OPEN-CHANGED: " + event.toString());
             if (!event.isOpened()) {
                 finishZakEdit((ZakFormDialog)event.getSource());
             }
         });
         zakFormDialog.addDialogCloseActionListener(event -> {
-//            System.out.println("DIALOG-CLOSE: " + event.toString());
             zakFormDialog.close();
-//            finishKontEdit((KontFormDialog)event.getSource());
         });
 
-//        subFormDialog = new SubFormDialog(
-//                this::saveZakForGrid, this::deleteZakForGrid
-//                , zakService, faktService, cfgPropsCache
-//        );
-
         initKzTextRenderer();
-//        initZakProvider();
         this.add(buildGridContainer());
 
 //        // Triggers an event which will loadKzTreeData:
@@ -491,9 +457,6 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //    }
 
 
-//    ValueProvider<KzTreeAware, String> zakTextValProv = new ValueProvider() {
-//    ComponentRenderer<HtmlComponent, KzTreeAware> kzTextRenderer = new ComponentRenderer<>(kontZak -> {
-
     private ComponentRenderer initKzTextRenderer() {
 
         kzTextRenderer = new ComponentRenderer<>(kontZak -> {
@@ -575,6 +538,18 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        }
 //        return comp;
 //    });
+
+    private ComponentRenderer<HtmlComponent, KzTreeAware> rokCellRenderer = new ComponentRenderer<>(kz -> {
+        HtmlComponent comp =  VzmFormatUtils.getRokComponent(kz.getRok());
+        if (ItemType.KONT == kz.getTyp()) {
+            comp.getStyle()
+                    .set("padding-right", "1em");
+        } else {
+            comp.getStyle()
+                    .set("text-indent", "1em");
+        }
+        return comp;
+    });
 
     private ComponentRenderer<HtmlComponent, KzTreeAware> honorarCistyCellRenderer = new ComponentRenderer<>(kz -> {
         HtmlComponent comp =  VzmFormatUtils.getMoneyComponent(kz.getHonorarCisty());
@@ -679,14 +654,13 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        treeGrid.addColumn(TemplateRenderer.of("[[index]]")).setHeader("#");
 //        treeGrid.addColumn(Node::getId).setHeader("ID").setWidth("3em").setResizable(true);
 //        treeGrid.addColumn(Node::getText).setHeader("Text").setWidth("8em").setResizable(true);
-
 //        treeGrid.removeColumn(treeGrid.getColumnByKey("subNodes"));
 
         kzTreeGrid.addColumn(TemplateRenderer.of("[[index]]"))
                 .setHeader("Řádek")
 //                .setFooter("Zobrazeno položek: ")
                 .setFlexGrow(0)
- //               .setFrozen(true)
+//                .setFrozen(true)
         ;
         kzTreeGrid.addColumn(kzArchRenderer)
                 .setHeader(("Arch"))
@@ -712,15 +686,15 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
             ;
         }
         kzTreeGrid.addHierarchyColumn(ckzValProv)
-                .setHeader("ČK/ČZ")
+                .setHeader("ČK|ČZ")
                 .setFlexGrow(0)
                 .setWidth("9em")
                 .setResizable(true)
 //                .setFrozen(true)
                 .setKey(CKZ_COL_KEY)
         ;
-        kzTreeGrid.addColumn(KzTreeAware::getRok)
-                .setHeader("Rok")
+        kzTreeGrid.addColumn(rokCellRenderer)
+                .setHeader("Rok K|Z")
                 .setFlexGrow(0)
                 .setWidth("8em")
                 .setResizable(true)
@@ -735,14 +709,6 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 .setKey(SKUPINA_COL_KEY)
         ;
         if (isHonorareAccessGranted()) {
-//            kzTreeGrid.addColumn(honorarCellRenderer)
-//                    .setHeader("Honorář")
-//                    .setFlexGrow(0)
-//                    .setWidth("9em")
-//                    .setResizable(true)
-//                    .setTextAlign(ColumnTextAlign.END)
-//                    .setKey(HONORAR_COL_KEY)
-//            ;
             kzTreeGrid.addColumn(honorarCistyCellRenderer)
                     .setHeader("Honorář č.")
                     .setFlexGrow(0)

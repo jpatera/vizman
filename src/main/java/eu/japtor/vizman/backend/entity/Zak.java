@@ -191,32 +191,9 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         return (null == digi) || !digi ? DigiIconBox.DigiState.PAPER_AND_DIGI : DigiIconBox.DigiState.DIGI_ONLY;
     }
 
-//    public List<ZakDoc> getZakDocs() {
-//        return zakDocs;
-//    }
-
     public List<Fakt> getFakts() {
         return fakts;
     }
-
-//    public void setFakts(List<Fakt> fakts) {
-//        this.fakts = fakts;
-//    }
-//
-//    public void addFakt(Fakt fakt) {
-//        fakts.add(fakt);
-//        fakt.setZak(this);
-//    }
-//
-//    public void addFaktOnTop(Fakt fakt) {
-//        fakts.add(0, fakt);
-//        fakt.setZak(this);
-//    }
-//
-//    public void removeFakt(Fakt fakt) {
-//        fakts.remove(fakt);
-//        fakt.setZak(null);
-//    }
 
     public Kont getKont() {
         return kont;
@@ -234,26 +211,27 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     }
 
 
+
+    // Transient fields
+    // ================
+
     public Long getKontId() {
         return getKont().getId();
     }
 
-//    @Transient
     public String getCkont() {
         return null == kont ? "" : kont.getCkont();
     }
 
-//    @Transient
     public String getKontText() {
         return null == kont ? "KONT-TEXT" : kont.getText();
     }
 
-//    @Transient
     public String getKzCislo() {
         StringBuilder builder = new StringBuilder();
         String ckont = null  == kont ? "" : kont.getCkont();
         builder .append(ckont)
-                .append(StringUtils.isBlank(ckont) ? "" : " / ")
+                .append(StringUtils.isBlank(ckont) ? "" : "-")
                 .append(null == czak ? "" : czak)
         ;
         return builder.toString();
@@ -284,12 +262,10 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         return null == kont ? null : kont.getMena();
     }
 
-//    @Transient
     public String getKlientName() {
         return null == kont ? null : kont.getKlientName();
     }
 
-//    @Transient
     public String getKontFolder() {
         return null == kont ? null : kont.getFolder();
     }
@@ -344,18 +320,15 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         ;
     }
 
-//    @Transient
     public BigDecimal getHonorarHrubyNotNull() {
         BigDecimal honorarHruby = getHonorarHruby();
         return null == honorarHruby ? BigDecimal.ZERO : honorarHruby;
     }
 
-//    @Transient
     public Integer getNewCfakt() {
         return getLastCfakt() + 1;
     }
 
-//    @Transient
     public BigDecimal getSumPlneni() {
         return getFakts().stream()
                 .map(fakt -> fakt.getPlneni())
@@ -376,19 +349,6 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         return null;
     }
 
-//    @Transient
-//    public int getFaktsOver() {
-//        int over = 0;
-//        List<Fakt> fakts = getFakts();
-//        for (Fakt fakt : fakts) {
-//            if (null != fakt.getDateDuzp() && fakt.getDateDuzp().isAfter(LocalDate.now())) {
-//                over++;
-//            }
-//        }
-//        return over;
-//    }
-
-//    @Transient
     @Override
     public boolean isChecked() {
         return checked;
@@ -401,68 +361,15 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
 
 // ========================================
 
-
     public Zak(ItemType typ, Integer czak, Kont parentKont) {
         super();
         this.typ = typ;
         this.czak = czak;
         this.rok = LocalDate.now().getYear();
         this.uuid = UUID.randomUUID();
-//        this.honorar = BigDecimal.valueOf(0);
         this.kont = parentKont;
         this.arch = false;
-
-//        UUID uuid = UUID.randomUUID();
-//        String randomUUIDString = uuid.toString();
     }
-
-
-//    public void updateBasicData(Zak zak) {
-//
-//        this.setVersion(zak.getVersion());
-//        this.uuid = zak.uuid;
-//        this.typ = zak.typ;
-//        this.ckontOrig = zak.ckontOrig;
-//        this.czak = zak.czak;
-//        this.rok = zak.rok;
-//        this.arch = zak.arch;
-//        this.skupina = zak.skupina;
-//        this.text = zak.text;
-//        this.folder = zak.folder;
-//        this.honorar = zak.honorar;
-////        this.setKontId(zak.getKontId());
-//        this.tmp = zak.tmp;
-//        this.dateCreate = zak.dateCreate;
-//        this.rokmeszad = zak.rokmeszad;
-////        this.dateCreate = kont.dateCreate;
-//        this.datetimeUpdate = zak.datetimeUpdate;
-//
-////        BigDecimal rozprac;
-//    }
-
-
-//    public List<Fakt> getFakts() {
-//        if (null == fakts) {
-//            return Collections.emptyList();
-//        }
-//        return fakts;
-//    }
-
-
-//    @Override
-//    public void setNodes(List<KzTreeAware> nodes) {
-////        return new ArrayList();
-//    }
-
-//    @Override
-//    public void setNodes(Set<? extends KzTreeAware> zaks) {
-//        // Do nothing
-//    }
-
-//    @Override
-//    public String getObjednatel() {
-//        return "";
-//    }
 
 // ========================================
 

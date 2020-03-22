@@ -114,7 +114,7 @@ public class ZakBasicListView extends VerticalLayout {
         ZakBasicFilterParams zakBasicFilterParams = new ZakBasicFilterParams();
         zakBasicFilterParams.setArch(zakGrid.getArchFilterValue());
         zakBasicFilterParams.setDigi(zakGrid.getDigiFilterValue());
-        zakBasicFilterParams.setCkz(zakGrid.getkzCisloFilterField());
+        zakBasicFilterParams.setCkz(zakGrid.getCkzFilterField());
         zakBasicFilterParams.setRokZak(zakGrid.getRokFilterValue());
         zakBasicFilterParams.setSkupina(zakGrid.getSkupinaFilterValue());
         return zakBasicFilterParams;
@@ -190,7 +190,7 @@ public class ZakBasicListView extends VerticalLayout {
 
         gridContainer.add(
                 buildGridBarComponent()
-                ,initZakGrid()
+                , initZakGrid()
         );
         return gridContainer;
     }

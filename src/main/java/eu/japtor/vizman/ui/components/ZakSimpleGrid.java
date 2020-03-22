@@ -33,7 +33,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     public static final String ARCH_COL_KEY = "zak-bg-arch";
     public static final String DIGI_COL_KEY = "zak-bg-digi";
 
-    TextField kzCisloFilterField;
+    TextField ckzFilterField;
     Select<Boolean> archFilterField;
     Select<Boolean> digiFilterField;
     Select<Integer> rokFilterField;
@@ -117,15 +117,15 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 .setVisible(this.digiFieldVisible);
         //                .setFrozen(true)
         ;
-        this.addColumn(ZakBasic::getKzCislo)
-                .setHeader("ČK/ČZ")
+        this.addColumn(ZakBasic::getCkz)
+                .setHeader("ČK-ČZ")
                 .setFlexGrow(0)
                 .setWidth("9em")
                 .setSortable(true)
                 .setKey(KZCISLO_COL_KEY)
         ;
         this.addColumn(ZakBasic::getRok)
-                .setHeader("Rok")
+                .setHeader("Rok zak.")
                 .setFlexGrow(0)
                 .setWidth("8em")
                 .setTextAlign(ColumnTextAlign.CENTER)
@@ -179,9 +179,9 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         filterRow.getCell(this.getColumnByKey(DIGI_COL_KEY))
                 .setComponent(digiFilterField);
 
-        kzCisloFilterField = buildTextFilterField();
+        ckzFilterField = buildTextFilterField();
         filterRow.getCell(this.getColumnByKey(KZCISLO_COL_KEY))
-                .setComponent(kzCisloFilterField);
+                .setComponent(ckzFilterField);
 
         rokFilterField = buildSelectorFilterField();
         filterRow.getCell(this.getColumnByKey(ROK_COL_KEY))
@@ -282,7 +282,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         }
         rokFilterField.clear();
         skupinaFilterField.clear();
-        kzCisloFilterField.clear();
+        ckzFilterField.clear();
         kzTextFilterField.clear();
         objednatelFilterField.clear();
     }
@@ -294,7 +294,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         Boolean archFilterValue = archFilterField.getValue();
         Boolean digiFilterValue = digiFilterField.getValue();
         Integer rokFilterValue = rokFilterField.getValue();
-        String kzCisloFilterValue = kzCisloFilterField.getValue();
+        String kzCisloFilterValue = ckzFilterField.getValue();
         String skupinaFilterValue = skupinaFilterField.getValue();
         String objednatelFilterValue = objednatelFilterField.getValue();
         String kzTextFilterValue = kzTextFilterField.getValue();
@@ -315,7 +315,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
             );
         }
         if (StringUtils.isNotEmpty(kzCisloFilterValue)) {
-            listDataProvider.addFilter(ZakBasic::getKzCislo
+            listDataProvider.addFilter(ZakBasic::getCkz
                     , kzc -> StringUtils.containsIgnoreCase(kzc, kzCisloFilterValue)
             );
         }
@@ -419,8 +419,8 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         return digiFilterField.getValue();
     }
 
-    public String getkzCisloFilterField() {
-        return kzCisloFilterField.getValue();
+    public String getCkzFilterField() {
+        return ckzFilterField.getValue();
     }
 
     public Integer getRokFilterValue() {

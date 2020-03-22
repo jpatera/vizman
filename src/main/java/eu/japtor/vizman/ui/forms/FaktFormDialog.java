@@ -47,7 +47,7 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
     private Button faktExpButton;
 //    private Button stornoButton;
 
-    private TextField zakEvidField;
+    private TextField ckzTextField;
     private TextField cfaktField;
     private TextField textField;
     private TextField castkaField;
@@ -67,7 +67,6 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
 
     private Registration binderChangeListener = null;
 
-//    @Autowired
     private FaktService faktService;
     private CfgPropsCache cfgPropsCache;
 
@@ -83,19 +82,13 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
         faktExpDialog = new FaktExpDialog(this.cfgPropsCache);
 
         getFormLayout().add(
-                initZakEvidField()
+                initCkzTextField()
                 , initCfaktField()
-//                , initZakHonorarField()
                 , initTextField()
-//                , initPlneniField()
                 , initCastkaField()
                 , initDateDuzpField()
-//                , initDevider()
-//                , initDevider()
-//                , initZakladField()
                 , initFaktCisloField()
                 , initDateVystavField()
-//                , initDateTimeExportField()
         );
     }
 
@@ -127,15 +120,6 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
         deactivateListeners();
 
         setDefaultItemNames();  // Set general default names
-
-//        evidZakOrig = new EvidZak(
-//                currentItem.getKontId()
-//                , currentItem.getCkz()
-//                , currentItem.getText()
-//                , currentItem.getFolder()
-//                , currentItem.getKontFolder()
-//        );
-
         binder.removeBean();
         binder.readBean(faktItem);
 
@@ -249,78 +233,15 @@ public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogge
         return faktExpButton;
     }
 
-//    private Component initStornoButton() {
-//        stornoButton = new Button("Storno fakturace");
-//        stornoButton.addClickListener(event -> {
-//            getCurrentItem().setZaklad(null);
-//            getCurrentItem().setCastka(null);
-//            getCurrentItem().setDateVystav(null);
-//            getBinder().readBean(getCurrentItem());
-//
-//            activateControls(false);
-//            getSaveButton().setEnabled(true);
-//        });
-//        return stornoButton;
-//    }
-
-//    private Component initZakHonorarField() {
-//        zakHonorarField = new TextField("Honorář zakázky");
-//        zakHonorarField.setReadOnly(true);
-//        zakHonorarField.setWidth("8em");
-//        getBinder().forField(zakHonorarField)
-//                .withNullRepresentation("")
-//                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
-//                .bind(Fakt::getZakHonorar, null);
-//        return zakHonorarField;
-//    }
-
-//    private Component initPlneniField() {
-//        plneniField = new TextField("Zde bylo Plnění [%]"); // = new TextField("Jméno");
-//        plneniField.setPattern("^100(\\.(0{0,2})?)?$|^\\d{1,2}(\\.(\\d{0,2}))?$");
-//        plneniField.setSuffixComponent(new Span("[%]"));
-//        plneniField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
-//        plneniField.setReadOnly(true);
-//        plneniField.setValueChangeMode(ValueChangeMode.EAGER);
-//        return plneniField;
-//    }
-
-//    private Component initZakladField() {
-//        zakladField = new TextField("Zde bylo Ze základu");
-//        zakladField.setReadOnly(true);
-////        castkaField.setSuffixComponent(new Span(faktMena.name()));
-////        getBinder().forField(zakladField)
-////                .withNullRepresentation("")
-////                .withConverter(VzmFormatUtils.bigDecimalMoneyConverter)
-////                .bind(Fakt::getZaklad, Fakt::setZaklad);
-//        return zakladField;
-//    }
-
-//    private Component initDateTimeExportField() {
-////        dateTimeExportField.setValue(getCurrentItem().getDateTimeExport().toString());
-//        dateTimeExportField = new TextField("Exportováno");
-//        dateTimeExportField.setReadOnly(true);
-//        getBinder().forField(dateTimeExportField)
-////                .withConverter(new LocalDateToDateConverter())
-//                .bind(Fakt::getDateTimeExportStr, null);
-//        return dateTimeExportField;
-//    }
-
-//    private Component initDevider() {
-//        HtmlComponent gap = new Gap("1em");
-//        return gap;
-//    }
-
-
-
-    private Component initZakEvidField() {
-        zakEvidField = new TextField("Ze zakázky");
-        zakEvidField.getStyle()
+    private Component initCkzTextField() {
+        ckzTextField = new TextField("Ze zakázky");
+        ckzTextField.getStyle()
                 .set("padding-top", "0em");
-        zakEvidField.setReadOnly(true);
-        zakEvidField.getElement().setAttribute("colspan", "2");
-        getBinder().forField(zakEvidField)
-                .bind(Fakt::getZakEvid, null);
-        return zakEvidField;
+        ckzTextField.setReadOnly(true);
+        ckzTextField.getElement().setAttribute("colspan", "2");
+        getBinder().forField(ckzTextField)
+                .bind(Fakt::getCkzText, null);
+        return ckzTextField;
     }
 
     private Component initCfaktField() {

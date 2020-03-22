@@ -204,21 +204,16 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemT
     }
 
     @Transient
-    public String getZakEvid() {
-        return getCkont() + " / " + getCzak()
+    public String getCkzText() {
+        return getCkont() + "-" + getCzak()
                 + (null == zak.getText() ? "" : " , " + zak.getText());
-    }
-
-    @Transient
-    public String getFaktEvid() {
-        return getCkont() + " / " + getCzak() + " / " + cfakt;
     }
 
     @Transient
     public String getFaktExpPath(final String docRootServer) {
         return Paths.get(
                 docRootServer
-                , null == zak.getKontFolder() ? "XXXXX.X-X_KONT-FOLDER" : zak.getKontFolder()
+                , null == zak.getKontFolder() ? "XXXXX.X_KONT-FOLDER" : zak.getKontFolder()
                 , null == zak.getFolder() ? "X_ZAK-FOLDER" : zak.getFolder()
                 , "Faktury"
                 , getFaktExpFileName()
@@ -250,11 +245,6 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemT
                 + ".txt"
                 ;
     }
-
-//    @Transient
-//    public BigDecimal getZakHonorar() {
-//        return null == zak ? BigDecimal.ZERO : zak.getHonorar();
-//    }
 
     @Transient
     public String getCkont() {

@@ -243,7 +243,7 @@ public class PersonGrid extends Grid<Person> {
 
 //        rokFilterField.clear();
 //        skupinaFilterField.clear();
-//        kzCisloFilterField.clear();
+//        ckzFilterField.clear();
 //        kzTextFilterField.clear();
 //        objednatelFilterField.clear();
     }

@@ -143,7 +143,7 @@ public class ToolsDirTreeView extends VerticalLayout  implements HasLogger {
         folderGrid = new TreeGrid<>();
 
 //        folderGrid.addColumn(iconTextValueProvider)
-//            .setHeader("ČK/ČZ")
+//            .setHeader("ČK-ČZ")
 //            .setFlexGrow(0)
 //            .setWidth("4em")
 //            .setKey("file-icon")

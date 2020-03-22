@@ -8,7 +8,6 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.shared.Registration;
@@ -200,7 +199,7 @@ public class SubFormDialog extends AbstractFormDialog<Fakt> implements HasLogger
         zakEvidField.setReadOnly(true);
         zakEvidField.getElement().setAttribute("colspan", "2");
         getBinder().forField(zakEvidField)
-                .bind(Fakt::getZakEvid, null);
+                .bind(Fakt::getCkzText, null);
         return zakEvidField;
     }
 

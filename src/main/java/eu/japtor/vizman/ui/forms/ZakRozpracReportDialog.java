@@ -141,7 +141,7 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     }
 
     private Component initCkzFilterComponent() {
-        ckzFilterField = new TextField("ČK/ČZ");
+        ckzFilterField = new TextField("ČK-ČZ");
         ckzFilterField.setWidth("5em");
         ckzFilterField.getStyle().set("theme", "small");
         ckzFilterField.setReadOnly(true);
@@ -228,7 +228,7 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
         deactivateListeners();
         report.setSubtitleText(
                 "Parametry: Arch=" + (null == archFilterField.getValue() ? "Vše" : archFilterField.getValue().toString()) +
-                "  ČK/ČZ=" + (null == ckzFilterField.getValue() ? "Vše" : "*" + ckzFilterField.getValue() + "*") +
+                "  ČK-ČZ=" + (null == ckzFilterField.getValue() ? "Vše" : "*" + ckzFilterField.getValue() + "*") +
                 "  Rok zak.=" + (null == rokZakFilterField.getValue() ? "Vše" : rokZakFilterField.getValue().toString()) +
                 "  Skupina=" + (null == skupinaFilterField.getValue() ? "Vše" : skupinaFilterField.getValue().toString()) +
                 "  rx=" + (null == rxParamField.getValue() ? "" : rxParamField.getValue().toString()) +

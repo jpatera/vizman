@@ -234,14 +234,14 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             ;
 //        }
         this.addColumn(Zakr::getKzCislo)
-                .setHeader("ČK/ČZ")
+                .setHeader("ČK-ČZ")
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setSortable(true)
                 .setKey(CKZ_COL_KEY)
         ;
         this.addColumn(Zakr::getRok)
-                .setHeader("Rok")
+                .setHeader("Rok zak.")
                 .setFlexGrow(0)
                 .setWidth("6em")
                 .setTextAlign(ColumnTextAlign.CENTER)

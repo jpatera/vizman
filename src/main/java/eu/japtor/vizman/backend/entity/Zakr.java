@@ -644,20 +644,20 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     public String getKzCislo() {
         StringBuilder builder = new StringBuilder();
         builder .append(getCkontNotNull())
-                .append(" / ")
+                .append("-")
                 .append(getCzakNotNull())
         ;
         return builder.toString();
     }
 
-    @Transient
-    private String kzText;
+//    @Transient
+//    private String kzText;
 
     @Transient
     public String getCkzTextFull() {
         StringBuilder builder = new StringBuilder();
         builder .append(getCkont())
-                .append("/")
+                .append("-")
                 .append(getCzak())
                 .append(" : ")
                 .append(getKzTextFull())
