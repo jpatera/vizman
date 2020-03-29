@@ -6,7 +6,9 @@ import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.repository.KontRepo;
 import eu.japtor.vizman.ui.components.Operation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,35 +67,39 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
-    public List<? super Kont> fetchByRok(final Integer rok) {
-//        return kontRepo.findByArchTrueOrderByCkontDesc();
+    public List<? super Kont> fetchByCkontFilter(final String ckont) {
+        if (StringUtils.isBlank(ckont)) {
+            return kontRepo.findAll();
+        } else {
+            Kont probe = Kont.getEmptyInstance();
+//            probe.setHidden(personFilter.getHidden());
+            probe.setCkont(ckont);
+            ExampleMatcher matcher = ExampleMatcher.matching()
+                    .withMatcher("ckont", new ExampleMatcher.GenericPropertyMatcher().startsWith())
+//                    .withMatcher("rok", new ExampleMatcher.GenericPropertyMatcher().exact())
+//                    .withMatcher("arch", new ExampleMatcher.GenericPropertyMatcher().exact())
+                    ;
+            return kontRepo.findAll(Example.of(probe, matcher));
+        }
+    }
+
+    @Override
+    public List<? super Kont> fetchByRokFilter(final Integer rok) {
         return kontRepo.findAllByRokOrderByCkontDesc(rok);
     }
 
     @Override
-    public List<Kont> fetchHavingSomeZaksActive() {
-//        return kontRepo.findByArchTrueOrderByCkontDesc();
+    public List<Kont> fetchHavingSomeZaksActiveFilter() {
         return kontRepo.findHavingSomeZaksActive();
     }
 
     @Override
-    public List<Kont> fetchHavingAllZaksArchived() {
+    public List<Kont> fetchHavingAllZaksArchivedFilter() {
         return kontRepo.findHavingAllZaksArchived();
-
-
-//        return kontRepo.findByArchFalseOrderByCkontDesc();
-//
-//        QProduct qProduct = QProduct.product;
-//        BooleanExpression predicate = qProduct.type.eq("pizza")
-//                .and((qProduct.actualPrice.subtract(qProduct.planPrice)).gt(20L));
-//
-//        List<Kont> konts = kontRepo.findAll(predicate, pageable);
-//        List<Kont> konts = productRepository.findAll(predicate, pageable);
-//        return ...;
     }
 
     @Override
-    public List<Kont> fetchHavingNoZaks() {
+    public List<Kont> fetchHavingNoZaksFilter() {
         return kontRepo.findHavingNoZaks();
     }
 

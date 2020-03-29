@@ -24,13 +24,15 @@ public interface KontService {
 
     List<Kont> fetchAll();
 
-    List<? super Kont> fetchByRok(Integer rok);
+    List<? super Kont> fetchByCkontFilter(String ckont);
 
-    List<? super Kont> fetchHavingSomeZaksActive();
+    List<? super Kont> fetchByRokFilter(Integer rok);
 
-    List<? super Kont> fetchHavingAllZaksArchived();
+    List<? super Kont> fetchHavingSomeZaksActiveFilter();
 
-    List<? super Kont> fetchHavingNoZaks();
+    List<? super Kont> fetchHavingAllZaksArchivedFilter();
+
+    List<? super Kont> fetchHavingNoZaksFilter();
 
     List<Integer> fetchKontRoks();
 

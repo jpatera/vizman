@@ -359,7 +359,7 @@ public class KzSelectFormDialog extends Dialog {
 
     private void reloadTreeProvider() {
         List<? super Kont> kzList;
-        kzList = kontService.fetchHavingSomeZaksActive();
+        kzList = kontService.fetchHavingSomeZaksActiveFilter();
         ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
         inMemoryKzTreeProvider
                 = new TreeDataProvider<KzTreeAware>((new TreeData()).addItems(kzList, kzNodesProvider));
