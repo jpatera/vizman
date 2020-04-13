@@ -28,7 +28,9 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     public static final String ROK_COL_KEY = "zak-bg-rok";
     public static final String SKUPINA_COL_KEY = "zak-bg-skupina";
     public static final String OBJEDNATEL_COL_KEY = "zak-bg-objednatel";
-    public static final String KZTEXT_COL_KEY = "zak-bg-kztext";
+//    public static final String KZTEXT_COL_KEY = "zak-bg-kztext";
+    public static final String TEXT_KONT_COL_KEY = "zak-bg-kont-text";
+    public static final String TEXT_ZAK_COL_KEY = "zak-bg-zak-text";
     public static final String SEL_COL_KEY = "zak-bg-select";
     public static final String ARCH_COL_KEY = "zak-bg-arch";
     public static final String DIGI_COL_KEY = "zak-bg-digi";
@@ -39,7 +41,9 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     Select<Integer> rokFilterField;
     Select<String> skupinaFilterField;
     TextField objednatelFilterField;
-    TextField kzTextFilterField;
+//    TextField kzTextFilterField;
+    TextField textKontFilterField;
+    TextField textZakFilterField;
 
     private Boolean initFilterArchValue;
     private Boolean initFilterDigiValue;
@@ -155,12 +159,26 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 .setKey(SEL_COL_KEY)
                 .setVisible(this.selectFieldVisible);
         ;
-        this.addColumn(ZakBasic::getKzText)
-                .setHeader("Text")
+//        this.addColumn(ZakBasic::getKzText)
+//                .setHeader("Text")
+//                .setFlexGrow(1)
+//                .setWidth("25em")
+//                .setSortable(true)
+//                .setKey(KZTEXT_COL_KEY)
+//        ;
+        this.addColumn(ZakBasic::getTextKont)
+                .setHeader("Kontrakt")
                 .setFlexGrow(1)
-                .setWidth("25em")
+                .setWidth("13em")
                 .setSortable(true)
-                .setKey(KZTEXT_COL_KEY)
+                .setKey(TEXT_KONT_COL_KEY)
+        ;
+        this.addColumn(ZakBasic::getTextZak)
+                .setHeader("Zakázka")
+                .setFlexGrow(1)
+                .setWidth("13em")
+                .setSortable(true)
+                .setKey(TEXT_ZAK_COL_KEY)
         ;
 
 
@@ -192,9 +210,19 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 .setComponent(skupinaFilterField)
         ;
 
-        kzTextFilterField = buildTextFilterField();
-        filterRow.getCell(this.getColumnByKey(KZTEXT_COL_KEY))
-                .setComponent(kzTextFilterField)
+//        kzTextFilterField = buildTextFilterField();
+//        filterRow.getCell(this.getColumnByKey(KZTEXT_COL_KEY))
+//                .setComponent(kzTextFilterField)
+//        ;
+
+        textKontFilterField = buildTextFilterField();
+        filterRow.getCell(this.getColumnByKey(TEXT_KONT_COL_KEY))
+                .setComponent(textKontFilterField)
+        ;
+
+        textZakFilterField = buildTextFilterField();
+        filterRow.getCell(this.getColumnByKey(TEXT_ZAK_COL_KEY))
+                .setComponent(textZakFilterField)
         ;
 
         objednatelFilterField = buildTextFilterField();
@@ -283,7 +311,9 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         rokFilterField.clear();
         skupinaFilterField.clear();
         ckzFilterField.clear();
-        kzTextFilterField.clear();
+//        kzTextFilterField.clear();
+        textKontFilterField.clear();
+        textZakFilterField.clear();
         objednatelFilterField.clear();
     }
 
@@ -297,7 +327,9 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         String kzCisloFilterValue = ckzFilterField.getValue();
         String skupinaFilterValue = skupinaFilterField.getValue();
         String objednatelFilterValue = objednatelFilterField.getValue();
-        String kzTextFilterValue = kzTextFilterField.getValue();
+//        String kzTextFilterValue = kzTextFilterField.getValue();
+        String textKontFilterValue = textKontFilterField.getValue();
+        String textZakFilterValue = textZakFilterField.getValue();
 
         if (null != archFilterValue) {
             listDataProvider.addFilter(ZakBasic::getArch
@@ -331,9 +363,19 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                     , obj -> StringUtils.containsIgnoreCase(obj, objednatelFilterValue)
             );
         }
-        if (StringUtils.isNotEmpty(kzTextFilterValue)) {
-            listDataProvider.addFilter(ZakBasic::getKzText
-                    , kzt -> StringUtils.containsIgnoreCase(kzt, kzTextFilterValue)
+//        if (StringUtils.isNotEmpty(kzTextFilterValue)) {
+//            listDataProvider.addFilter(ZakBasic::getKzText
+//                    , kzt -> StringUtils.containsIgnoreCase(kzt, kzTextFilterValue)
+//            );
+//        }
+        if (StringUtils.isNotEmpty(textKontFilterValue)) {
+            listDataProvider.addFilter(ZakBasic::getTextKont
+                    , tk -> StringUtils.containsIgnoreCase(tk, textKontFilterValue)
+            );
+        }
+        if (StringUtils.isNotEmpty(textZakFilterValue)) {
+            listDataProvider.addFilter(ZakBasic::getTextZak
+                    , tz -> StringUtils.containsIgnoreCase(tz, textZakFilterValue)
             );
         }
     }
