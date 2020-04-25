@@ -46,7 +46,6 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_KLIENT;
-import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_PRUH;
 import static eu.japtor.vizman.ui.util.VizmanConst.TITLE_KLIENT;
 
 //@Route(value = ROUTE_KLIENT, layout = MainView.class)

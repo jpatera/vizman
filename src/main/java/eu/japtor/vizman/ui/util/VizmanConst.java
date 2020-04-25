@@ -90,6 +90,10 @@ public class VizmanConst {
 	public static final String TAG_CFG = "cfg-tabs-view";
 	public static final String ROUTE_CFG = "cfg";
 
+	public static final String TITLE_NAB_LIST = "Nabídky";
+	public static final String PAGE_TITLE_NAB_LIST = PAGE_TITLE_BASE + " - " + TITLE_NAB_LIST;
+	public static final String TAG_NAB = "nab-list-view";
+	public static final String ROUTE_NAB_LIST = "nab";
 
 	public static final String ROUTE_DEFAULT = ROUTE_ZAK_LIST;
 

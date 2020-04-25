@@ -17,11 +17,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "KONT")
-//@SequenceGenerator(initialValue = 1, name = "id_gen", sequenceName = "kont_seq")
 public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArchState, HasModifDates {
 
-//    @GeneratedValue(generator = "uuid2")
-//    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @Column(columnDefinition = "BINARY(16)")
     private UUID uuid;
 

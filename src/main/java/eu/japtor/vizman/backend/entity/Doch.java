@@ -8,7 +8,6 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "DOCH")
-//@SequenceGenerator(initialValue = 100001, name = "id_gen", sequenceName = "doch_seq")
 public class Doch extends AbstractGenIdEntity {
     public static final String STATE_KONEC = "K";
     public static final String STATE_NONE = null;

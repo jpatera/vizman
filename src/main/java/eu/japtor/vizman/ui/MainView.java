@@ -38,7 +38,7 @@ import java.util.Locale;
 //@CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")    // ###***
 //@Push(PushMode.MANUAL)
-@Push
+@Push   // TODO: Try to move push to DochView?  https://vaadin.com/docs/v13/flow/advanced/tutorial-push-access.html
 public class MainView extends VerticalLayout implements RouterLayout, BeforeEnterObserver, HasLogger {
 
     //    @Id("navigationBar")

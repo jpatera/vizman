@@ -9,7 +9,11 @@ public class SelectorFilterField<T> extends Select<T> {
         setSizeFull();
         setEmptySelectionCaption("Vše");
         setEmptySelectionAllowed(true);
-//        addValueChangeListener(event -> doFilter());
+    }
+
+    public SelectorFilterField(ValueChangeListener changeListener) {
+        this();
+        addValueChangeListener(changeListener);
     }
 
     public SelectorFilterField(T... items) {

@@ -121,7 +121,18 @@ public class ItemNames {
         itemNameMaps.put(ItemType.PERSON, itemPersonNameMap);
         itemGenderMap.put(ItemType.PERSON, GrammarGender.MASCULINE);
 
-//        Map<GrammarShapes, String>itemFaktNameMap = new HashMap<>();
+        Map<GrammarShapes, String>itemNabNameMap = new HashMap<>();
+        itemNabNameMap.put(GrammarShapes.NOM_S, "Nabídka");
+        itemNabNameMap.put(GrammarShapes.NOM_P, "Nabídky");
+        itemNabNameMap.put(GrammarShapes.GEN_S, "Nabídky");
+        itemNabNameMap.put(GrammarShapes.GEN_P, "Nabídek");
+        itemNabNameMap.put(GrammarShapes.ACCU_S, "Nabídku");
+        itemNabNameMap.put(GrammarShapes.ACCU_P, "Nabídky");
+        itemNameMaps.put(ItemType.NAB, itemNabNameMap);
+        itemGenderMap.put(ItemType.NAB, GrammarGender.FEMININE);
+
+
+        //        Map<GrammarShapes, String>itemFaktNameMap = new HashMap<>();
 //        itemFaktNameMap.put(GrammarShapes.NOM_S, "Fakturace");
 //        itemFaktNameMap.put(GrammarShapes.NOM_P, "Fakturace");
 //        itemFaktNameMap.put(GrammarShapes.GEN_S, "Fakturace");

@@ -95,18 +95,18 @@ public class NavigationBar extends Div implements RouterLayout {
         cfgLink.add(ICON_CFG, new Text(TITLE_CFG));
         cfgLink.addClassName("main-layout__nav-item");
 
+        RouterLink nabListLink = new RouterLink(null, NabListView.class);
+        Icon ICON_NAB_LIST = new Icon (VaadinIcon.GIFT);
+        ICON_NAB_LIST.setColor("#00bec1");  // Darker turquoise
+        nabListLink.add(ICON_NAB_LIST, new Text(TITLE_NAB_LIST));
+        nabListLink.addClassName("main-layout__nav-item");
+
+
 //        RouterLink zakEvalListLink = new RouterLink(null, ZakEvalListView.class);
 //        Icon ICON_ZAK_EVAL = new Icon (VaadinIcon.LIST);
 //        ICON_ZAK_EVAL.setColor("red");
 //        zakEvalListLink.add(ICON_ZAK_EVAL, new Text(TITLE_ZAK_EVAL));
 //        zakEvalListLink.addClassName("main-layout__nav-item");
-//
-//        RouterLink kontListLink = new RouterLink(null, KontListView.class);
-//        Icon ICON_KONT_LIST = new Icon (VaadinIcon.LIST);
-//        ICON_KONT_LIST.setColor("orange");
-//        kontListLink.add(ICON_KONT_LIST, new Text(TITLE_KONT_LIST));
-//        kontListLink.addClassName("main-layout__nav-item");
-
 
 //        RouterLink personLink = new RouterLink(null, PersonListView.class);
 //        Icon ICON_PERSON = new Icon (VaadinIcon.USERS);
@@ -124,7 +124,7 @@ public class NavigationBar extends Div implements RouterLayout {
 //        RouterLink logoutLink = new RouterLink(null, Nav.class);
         Div logoutLink = new Div();
         logoutLink.addClickListener(e ->
-                UI.getCurrent().getPage().executeJavaScript("location.assign('logout')")
+                UI.getCurrent().getPage().executeJs("location.assign('logout')")
         );
         Icon ICON_LOGOUT = new Icon (VaadinIcon.USER);
         ICON_LOGOUT.setColor("black");
@@ -152,6 +152,9 @@ public class NavigationBar extends Div implements RouterLayout {
         }
         if (SecurityUtils.isAccessGranted(KlientListView.class)) {
             middleNaviBar.add(klientListLink);
+        }
+        if (SecurityUtils.isAccessGranted(NabListView.class)) {
+            middleNaviBar.add(nabListLink);
         }
         if (SecurityUtils.isAccessGranted(ZakrListView.class)) {
             middleNaviBar.add(rozpracListLink);

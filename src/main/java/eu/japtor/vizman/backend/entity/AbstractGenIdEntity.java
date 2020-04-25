@@ -5,7 +5,7 @@ import javax.persistence.*;
 @MappedSuperclass
 public class AbstractGenIdEntity extends AbstractEntity {
 
-	//	@GeneratedValue
+//	@GeneratedValue
 //	@SequenceGenerator(name="book_generator", sequenceName = "book_seq", allocationSize=50)
 //	@Column(name = "id", updatable = false, nullable = false)
 
