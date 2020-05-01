@@ -6,7 +6,6 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
 import eu.japtor.vizman.backend.entity.CalyHol;
 import eu.japtor.vizman.backend.service.CalService;
-import eu.japtor.vizman.ui.components.AbstractEditorDialog;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Operation;
 
@@ -16,7 +15,7 @@ import java.util.function.Consumer;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class CalyHolFormDialog extends AbstractEditorDialog<CalyHol> {
+public class CalyHolFormDialog extends AbstractComplexFormDialog<CalyHol> {
 
     private DatePicker holDateField; // = new DatePicker("Nástup");
     private TextField holTextField; // = new TextField("Jméno");

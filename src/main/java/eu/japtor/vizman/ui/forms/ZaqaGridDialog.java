@@ -187,7 +187,7 @@ public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogge
 //        binder.readBean(faktItem);
 //
 ////        refreshHeaderMiddleBox(faktItem);
-//        getHeaderEndBox().setText(getHeaderEndComponentValue(null));
+//        getHeaderRightBox().setText(getHeaderEndComponentValue(null));
 //
 //        initControlsForItemAndOperation(faktItem, faktOperation);
 

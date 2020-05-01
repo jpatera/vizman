@@ -245,7 +245,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
 //        binder.readBean(faktItem);
 //
 ////        refreshHeaderMiddleBox(faktItem);
-//        getHeaderEndBox().setText(getHeaderEndComponentValue(null));
+//        getHeaderRightBox().setText(getHeaderEndComponentValue(null));
 //
 //        initControlsForItemAndOperation(faktItem, faktOperation);
 

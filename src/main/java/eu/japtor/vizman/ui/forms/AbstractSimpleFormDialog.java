@@ -1,4 +1,4 @@
-package eu.japtor.vizman.ui.components;
+package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
@@ -13,20 +13,19 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import eu.japtor.vizman.ui.components.Operation;
+import eu.japtor.vizman.ui.components.ResizeBtn;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.function.Consumer;
 
-public abstract class AbstractFormDialog<T extends Serializable> extends Dialog {
+public abstract class AbstractSimpleFormDialog<T extends Serializable> extends Dialog {
 
+    private FormLayout formLayout;
     private Div dialogCanvas;
     private VerticalLayout dialogContent;
-    private FormLayout formLayout;
-    private Component buttonBar;
-    private HorizontalLayout dialogHeader;
-    private HtmlComponent headerDevider;
 
     protected GrammarGender itemGender;
     private String itemTypeNomS;
@@ -38,25 +37,25 @@ public abstract class AbstractFormDialog<T extends Serializable> extends Dialog 
     private String dialogMinWidth;
     private String dialogMinHeight;
 
-//    private FlexLayout headerLeftBox;
+    private HorizontalLayout dialogHeader;
+    private Component buttonBar;
+    private HtmlComponent headerDevider;
+
+    private H3 mainTitle;
+    private FlexLayout headerLeftBox;
+    private Div headerMiddleBox;
+    private H5 headerEndBox;
+    private Button mainResizeBtn;
 
     private T currentItem;
     private T origItem;
 
-    private Button mainResizeBtn;
-    private FlexLayout headerLeftBox;
-    private H3 mainTitle;
-    private H5 headerEndBox;
-    private Div headerMiddleBox;
 
-//    private Div headerMiddleComponent = new Div();
-//    private H5 headerEndComponent;
-
-    protected AbstractFormDialog() {
+    protected AbstractSimpleFormDialog() {
         this("1000px", "800px");
     }
 
-    protected AbstractFormDialog(
+    protected AbstractSimpleFormDialog(
             String dialogWidth,
             String dialogHeight
     ){
@@ -67,6 +66,8 @@ public abstract class AbstractFormDialog<T extends Serializable> extends Dialog 
 
         this.setCloseOnEsc(true);
         this.setCloseOnOutsideClick(false);
+
+        setDefaultItemNames();  // Set general default names
 
         formLayout = buildFormLayout();
         buttonBar = initDialogButtonBar();
@@ -98,6 +99,7 @@ public abstract class AbstractFormDialog<T extends Serializable> extends Dialog 
         dialogMinWidth = headerLeftBox.getHeight();
 
         this.add(dialogCanvas);
+
 //        setupEventListeners();
     }
 
@@ -124,6 +126,28 @@ public abstract class AbstractFormDialog<T extends Serializable> extends Dialog 
         return dialogHeader;
     }
 
+    private Component initHeaderLeftBox() {
+        headerLeftBox = new FlexLayout(
+                initDialogResizeBtn()
+                , initDialogTitle()
+        );
+        headerLeftBox.setAlignItems(FlexComponent.Alignment.BASELINE);
+        return headerLeftBox;
+    }
+
+    protected Component getHeaderLeftBox() {
+        return headerLeftBox;
+    }
+
+    private Component initHeaderMiddleBox() {
+        headerMiddleBox = new Div();
+        return headerMiddleBox;
+    }
+
+    protected Div getHeaderMiddleBox() {
+        return headerMiddleBox;
+    }
+
     private Component initHeaderEndBox() {
         headerEndBox = new H5();
         headerEndBox.getStyle()
@@ -134,16 +158,6 @@ public abstract class AbstractFormDialog<T extends Serializable> extends Dialog 
 
     protected HtmlContainer getHeaderEndBox() {
         return headerEndBox;
-    }
-
-
-    private Component initHeaderMiddleBox() {
-        headerMiddleBox = new Div();
-        return headerMiddleBox;
-    }
-
-    protected Div getHeaderMiddleBox() {
-        return headerMiddleBox;
     }
 
     protected final HtmlContainer getMainTitle() {
@@ -168,15 +182,6 @@ public abstract class AbstractFormDialog<T extends Serializable> extends Dialog 
         return formLayout;
     }
 
-    private Component initHeaderLeftBox() {
-        headerLeftBox = new FlexLayout(
-                initDialogResizeBtn()
-                , initDialogTitle()
-        );
-        headerLeftBox.setAlignItems(FlexComponent.Alignment.BASELINE);
-        return headerLeftBox;
-    }
-
     private Button initDialogResizeBtn() {
         mainResizeBtn = new ResizeBtn(getDialogResizeAction(), false);
         return mainResizeBtn;
@@ -198,7 +203,6 @@ public abstract class AbstractFormDialog<T extends Serializable> extends Dialog 
         mainTitle.getStyle()
                 .set("marginTop", "0.2em")
                 .set("margin-right", "1em");
-//        mainTitle.getElement().setProperty("flexGrow", (double)1);
         return mainTitle;
     }
 

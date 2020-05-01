@@ -53,7 +53,7 @@ import static eu.japtor.vizman.ui.components.OperationResult.NO_CHANGE;
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger {
-//public class KontFormDialog extends AbstractEditorDialog<Kont> implements BeforeEnterObserver {
+//public class KontFormDialog extends AbstractComplexFormDialog<Kont> implements BeforeEnterObserver {
 
     private final static String ZAK_EDIT_COL_KEY = "zak-edit-col";
     private final static String DELETE_STR = "Zrušit";

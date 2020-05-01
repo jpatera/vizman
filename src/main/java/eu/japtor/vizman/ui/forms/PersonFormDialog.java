@@ -22,7 +22,6 @@ import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.service.VzmServiceException;
 import eu.japtor.vizman.backend.service.WageService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
-import eu.japtor.vizman.ui.components.AbstractFormDialog;
 import eu.japtor.vizman.ui.components.Operation;
 import eu.japtor.vizman.ui.components.OperationResult;
 import eu.japtor.vizman.ui.components.TwinColGrid;
@@ -37,8 +36,8 @@ import static eu.japtor.vizman.app.security.SecurityUtils.isWagesAccessGranted;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-// public class PersonFormDialog extends AbstractEditorDialog<Person> {
-public class PersonFormDialog extends AbstractFormDialog<Person> {
+// public class PersonFormDialog extends AbstractComplexFormDialog<Person> {
+public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
 
     private static final String DIALOG_WIDTH = "900px";
     private static final String DIALOG_HEIGHT = "600x";

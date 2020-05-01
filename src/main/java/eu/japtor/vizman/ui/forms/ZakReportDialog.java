@@ -52,7 +52,7 @@ public class ZakReportDialog extends AbstractPrintDialog<Zak> implements HasLogg
     public ZakReportDialog() {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setDialogTitle("Report: ZAKÁZKA");
-//        getHeaderEndBox().setText("END text");
+//        getHeaderRightBox().setText("END text");
 //        this.zakService = zakService;
         initReportControls();
     }

@@ -25,7 +25,7 @@ import java.util.Locale;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class SubFormDialog extends AbstractFormDialog<Fakt> implements HasLogger {
+public class SubFormDialog extends AbstractSimpleFormDialog<Fakt> implements HasLogger {
 
     private static final String DIALOG_WIDTH = "800px";
     private static final String DIALOG_HEIGHT = null;

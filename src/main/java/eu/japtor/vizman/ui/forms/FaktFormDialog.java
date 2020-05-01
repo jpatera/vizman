@@ -29,7 +29,7 @@ import java.util.Locale;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class FaktFormDialog extends AbstractFormDialog<Fakt> implements HasLogger {
+public class FaktFormDialog extends AbstractSimpleFormDialog<Fakt> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "800px";
     public static final String DIALOG_HEIGHT = null;

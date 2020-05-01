@@ -1,7 +1,8 @@
-package eu.japtor.vizman.ui.components;
+package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -15,6 +16,9 @@ import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import eu.japtor.vizman.ui.components.Operation;
+import eu.japtor.vizman.ui.components.ResizeBtn;
+import eu.japtor.vizman.ui.components.Ribbon;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 
@@ -24,68 +28,63 @@ import java.time.LocalDateTime;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public abstract class AbstractEditorDialog <T extends Serializable>  extends Dialog {
-
-    private HorizontalLayout dialogHeader;
-    private String dialogWidth;
-    private String dialogHeight;
-    private String dialogMinWidth;
-    private String dialogMinHeight;
-
-    private H3 mainTitle;
-    private Div headerMiddleComponent = new Div();
-    private H5 headerEndComponent;
-    private HtmlComponent headerDevider;
-
-    private Button mainResizeBtn;
-
-    private Button saveButton;
-    private Button cancelButton;
-    private Button deleteButton;
-//    private final Button saveButton = new Button("Uložit");
-//    private final Button cancelButton = new Button("Zpět");
-//    private final Button deleteButton = new Button("Zrušit " + getNounForTitle(isItemMale) );
-    private Registration registrationForSave;
+public abstract class AbstractComplexFormDialog<T extends Serializable>  extends Dialog {
 
     private FormLayout formLayout;
     private Div dialogCanvas;
-    private FlexLayout headerLeftComponent;
-    private VerticalLayout upperGridContainer;
-    private VerticalLayout lowerPane;
-    private HorizontalLayout upperPane = new HorizontalLayout();
-    private VerticalLayout upperLeftPane;
-    private HorizontalLayout buttonBar = new HorizontalLayout();
-    private Div dialogTitlePane;
     private VerticalLayout dialogContent;
-    private HorizontalLayout leftBarPart;
-
-    private Binder<T> binder = new Binder<>();
-    private T currentItem;
-    private boolean closeAfterSave;
-
-//    private final ConfirmationDialog<T> confirmationDialog = new ConfirmationDialog<>();
-///    private final ConfirmDialog confirmDialog = ConfirmDialog.createQuestion();
 
     private GrammarGender itemGender;
     private String itemTypeNomS;
     private String itemTypeGenS;
     private String itemTypeAccuS;
+
+    private String dialogWidth;
+    private String dialogHeight;
+    private String dialogMinWidth;
+    private String dialogMinHeight;
+
+    private HorizontalLayout dialogHeader;
+    private HorizontalLayout buttonBar;
+    private HtmlComponent headerDevider;
+
+    private H3 mainTitle;
+    private FlexLayout headerLeftBox;
+    private Div headerMiddleBox;
+    private H5 headerRightBox;
+    private Button mainResizeBtn;
+
+    private Button saveButton;
+    private Button cancelButton;
+    private Button deleteButton;
+    private Registration registrationForSave;
+
+    private T currentItem;
+
+    private VerticalLayout upperGridContainer;
+    private VerticalLayout lowerPane;
+    private HorizontalLayout upperPane = new HorizontalLayout();
+    private VerticalLayout upperLeftPane;
+    private HorizontalLayout leftBarPart;
+
+    private Div dialogTitlePane;
+    private Binder<T> binder = new Binder<>();
+    private boolean closeAfterSave;
+
     private BiConsumer<T, Operation> itemSaver;
     private Consumer<T> itemDeleter;
 
     protected Operation currentOperation;
 
-//    Map<GrammarShapes, String> itemNameMap;
 
-
-    protected AbstractEditorDialog(
+    protected AbstractComplexFormDialog(
             BiConsumer<T, Operation> itemSaver,
             Consumer<T> itemDeleter
     ){
         this("1000px", "800px", false, false, itemSaver, itemDeleter, true);
     }
 
-    protected AbstractEditorDialog(
+    protected AbstractComplexFormDialog(
             BiConsumer<T, Operation> itemSaver,
             Consumer<T> itemDeleter,
             boolean closeAfterSave
@@ -94,9 +93,10 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     }
 
 
-    protected AbstractEditorDialog(
+    protected AbstractComplexFormDialog(
             String dialogWidth,
             String dialogHeight,
+
             boolean useUpperRightPane,
             boolean useLowerPane,
             BiConsumer<T, Operation> itemSaver,
@@ -105,42 +105,24 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         this(dialogWidth, dialogHeight, useUpperRightPane, useLowerPane, itemSaver, itemDeleter, true);
     }
 
-    /**
-     * Constructs a new instance.
-     *
-//     * @param itemGender
-//     *            Gender of the item name
-//     * @param itemNameMap
-//     *            Map of readable names/shapes for titles, buttons, etc
-     * @param itemSaver
-     *            Callback to save the edited item
-     * @param itemDeleter
-     *            Callback to delete the edited item
-     */
-    protected AbstractEditorDialog(
+
+    protected AbstractComplexFormDialog(
             String dialogWidth,
             String dialogHeight,
+
             boolean useUpperRightPane,
             boolean useLowerPane,
             BiConsumer<T, Operation> itemSaver,
             Consumer<T> itemDeleter,
             boolean closeAfterSave
     ){
-//    protected AbstractEditorDialog(
-//            final GrammarGender itemGender, final Map<GrammarShapes, String> itemNameMap
-//            , BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
-//    protected AbstractEditorDialog(
-//            GrammarGender itemGender , final String itemNameNominativeS
-//            , final String itemNameGenitiveS, final String itemNameAccusativeS
-//            , BiConsumer<T, Operation> itemSaver, Consumer<T> itemDeleter) {
-
-//        this.itemNameMap = itemNameMap;
-//        this.itemGender = itemGender;
-
         this.dialogWidth = dialogWidth;
         this.dialogHeight = dialogHeight;
         setWidth(this.dialogWidth);
         setHeight(this.dialogHeight);
+
+        this.setCloseOnEsc(true);
+        this.setCloseOnOutsideClick(false);
 
         setDefaultItemNames();  // Set general default names
 
@@ -149,48 +131,34 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         this.closeAfterSave = closeAfterSave;
 
         // Because underlying dialog container is not accessible (only width and height can be set),
-        // we need following additional flexible dialogContainer t make child components grow/shrink
+        // we need following additional flexible dialogContainer make child components grow/shrink
         // as required:
 
         dialogContent = new VerticalLayout();
         dialogContent.getStyle().set("flex", "auto");
         dialogContent.setAlignItems(FlexComponent.Alignment.STRETCH);
-//        dialogContent.setAlignItems(FlexComponent.Alignment.END);
 
-//        dialogContent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-//        dialogContent.getStyle().set("display", "flex");
-
-        dialogContent.add(initHeaderDevider());
-        dialogContent.add(initUpperContentPane(useUpperRightPane));
-//        dialogContent.add(new Paragraph());
+        dialogContent.add(
+                initHeaderDevider()
+                , initUpperContentPane(useUpperRightPane)
+        );
         if (useLowerPane) {
-//            HorizontalLayout lowerPane = new HorizontalLayout();
-//            lowerPane.add(lowerPane);
-//            dialogContent.add(lowerPane);
             dialogContent.add(initLowerPane());
         }
-//        dialogContent.add(buttonBar);
-//        this.add(dialogTitlePane, dialogContent);
-
-//        Component dialogTitle = initDialogTitle();
 
         dialogCanvas = new Div();
         dialogCanvas.setSizeFull();
         dialogCanvas.getStyle().set("display", "flex");
         dialogCanvas.getStyle().set("flex-direction", "column");
         dialogCanvas.add(
-//                initDialogTitlePane()
                 initDialogHeader()
                 , dialogContent
         );
 
+        dialogMinHeight = headerLeftBox.getHeight();
+        dialogMinWidth = headerLeftBox.getHeight();
+
         this.add(dialogCanvas);
-
-        dialogMinHeight = headerLeftComponent.getHeight();
-        dialogMinWidth = headerLeftComponent.getHeight();
-
-        this.setCloseOnEsc(true);
-        this.setCloseOnOutsideClick(false);
 
         setupEventListeners();
     }
@@ -268,61 +236,58 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         return binder.hasChanges();
     }
 
-//    private String getNounForTitle(final boolean isItemMale) {
-//        return isItemMale ?
-//                currentOperation.getTitleOperName(GrammarGender.MASCULINE)
-//                : currentOperation.getTitleNounForFeminine();
-//    }
-
     public HorizontalLayout getDialogLeftBarPart() {
         return leftBarPart;
     }
 
     private Component initDialogHeader() {
-//        Button btnCompressExpand = new ResizeBtn(isExpanded -> {
-//            dialogContent.setVisible(!isExpanded);
-//            setHeight(isExpanded ? "0" : dialogHeight);
-////            upperPane.setVisible(isExpanded);
-//        });
-//        btnCompressExpand.getStyle()
-//                .set("margin-right", "8px")
-//                .set("padding", "0")
-//                .set("max-width", "20px")
-//        ;
-
         dialogHeader = new HorizontalLayout();
         dialogHeader.getStyle().set("margin-left", "-2em");
         dialogHeader.setSpacing(false);
         dialogHeader.setPadding(false);
-//        dialogHeader.getStyle()
-////                    .set("background-color", color)
-////                    .set("theme", "icon small")
-//            .set("margin", "0");
         dialogHeader.setAlignItems(FlexComponent.Alignment.BASELINE);
         dialogHeader.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         dialogHeader.add(
-                initHeaderLeftComponent()
-                , headerMiddleComponent
-                , initHeaderEndComponent()
+                initHeaderLeftBox()
+                , initHeaderMiddleBox()
+                , initHeaderEndBox()
         );
         return dialogHeader;
     }
 
-    private Component initHeaderEndComponent() {
-        headerEndComponent = new H5();
-        headerEndComponent.getStyle()
-            .set("margin-right","1.2em")
-        ;
-        return headerEndComponent;
-    }
-
-    private Component initHeaderLeftComponent() {
-        headerLeftComponent = new FlexLayout(
+    private Component initHeaderLeftBox() {
+        headerLeftBox = new FlexLayout(
                 initDialogResizeBtn()
                 , initDialogTitle()
         );
-        headerLeftComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
-        return headerLeftComponent;
+        headerLeftBox.setAlignItems(FlexComponent.Alignment.BASELINE);
+        return headerLeftBox;
+    }
+
+    protected Component getHeaderLeftBox() {
+        return headerLeftBox;
+    }
+
+
+    private Component initHeaderMiddleBox() {
+        headerMiddleBox = new Div();
+        return headerMiddleBox;
+    }
+
+    protected Div getHeaderMiddleBox() {
+        return headerMiddleBox;
+    }
+
+    private Component initHeaderEndBox() {
+        headerRightBox = new H5();
+        headerRightBox.getStyle()
+            .set("margin-right","1.2em")
+        ;
+        return headerRightBox;
+    }
+
+    protected HtmlContainer getHeaderRightBox() {
+        return headerRightBox;
     }
 
     private Button initDialogResizeBtn() {
@@ -333,8 +298,8 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     public Consumer<Boolean> getDialogResizeAction() {
         return isExpanded -> {
             dialogContent.setVisible(!isExpanded);
-            headerEndComponent.setVisible(!isExpanded);
-            headerMiddleComponent.setVisible(!isExpanded);
+            headerRightBox.setVisible(!isExpanded);
+            headerMiddleBox.setVisible(!isExpanded);
             this.setHeight(isExpanded ? dialogMinHeight : dialogHeight);
             this.setWidth(isExpanded ? dialogMinWidth : dialogWidth);
         };
@@ -346,7 +311,6 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         mainTitle.getStyle()
                 .set("marginTop", "0.2em")
                 .set("margin-right", "1em");
-//        mainTitle.getElement().setProperty("flexGrow", (double)1);
         return mainTitle;
     }
 
@@ -458,22 +422,9 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         return currentItem;
     }
 
-
-//    public void open(T item, final Operation operation) {
-//        openInternal(item, operation, null, null, null);
-//    }
-
     public void open(T item, final Operation operation, String titleItemNameText) {
         openInternal(item, operation, titleItemNameText, null, null);
     }
-
-//    public void open(T item, final Operation operation, String titleItemNameText, String titleEndText) {
-//        openInternal(item, operation, titleItemNameText, null, titleEndText);
-//    }
-
-//    public void open(T item, final Operation operation, String titleItemNameText, Component titleMiddleComponent, String titleEndText) {
-//        openInternal(item, operation, titleItemNameText, titleMiddleComponent, titleEndText);
-//    }
 
     /**
      * Opens the given item for editing in the dialog.
@@ -481,7 +432,6 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     protected void openInternal(T item, final Operation operation
             , String titleItemNameText, Component titleMiddleComponent, String titleEndText)
     {
-//        setDefaultItemNames();  // Set general default names
         if (item instanceof HasItemType)
         headerDevider.getStyle().set("background-color", VzmFormatUtils.getItemTypeColorBrighter(((HasItemType)item).getTyp()));
 
@@ -492,18 +442,16 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
 
         if ((null == titleItemNameText) && (currentItem instanceof HasItemType)) {
             setItemNames(((HasItemType) currentItem).getTyp());  // Set general default names
-//            titleItemNameText = ItemNames.getNomS(((HasItemType) currentItem).getTyp());
         }
 
-////        dialogHeader.setText(buildDialogTitle(currentOperation));
         mainTitle.setText(currentOperation.getDialogTitle(getItemName(currentOperation), itemGender));
 
-        headerMiddleComponent.removeAll();
+        headerMiddleBox.removeAll();
         if (null != titleMiddleComponent) {
-            headerMiddleComponent.add(titleMiddleComponent);
+            headerMiddleBox.add(titleMiddleComponent);
         }
 
-        headerEndComponent.setText(getHeaderEndComponentValue(titleEndText));
+        headerRightBox.setText(getHeaderEndComponentValue(titleEndText));
 
         if (currentOperation == Operation.ADD) {
             binder.removeBean();
@@ -518,7 +466,6 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         }
         registrationForSave = saveButton.addClickListener(e -> saveClicked(currentOperation));
         saveButton.setText("Uložit " + itemTypeAccuS.toLowerCase());
-//        saveButton.setEnabled(false);
 
         deleteButton.setText("Zrušit " + itemTypeAccuS.toLowerCase());
         deleteButton.setEnabled(currentOperation.isDeleteEnabled());
@@ -567,15 +514,6 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
         }
         return value;
     }
-
-//    private String buildDialogTitle(final Operation operation) {
-//        switch (operation) {
-//            case ADD :
-//        }
-//
-//        return (currentOperation.getTitleOperName(itemGender))
-//                + " " + (operation == Operation.ADD ? itemTypeNomS.toLowerCase() : itemTypeAccuS.toLowerCase());
-//    }
 
     protected abstract void openSpecific();
 
@@ -650,6 +588,4 @@ public abstract class AbstractEditorDialog <T extends Serializable>  extends Dia
     public Button getDeleteButton() {
         return deleteButton;
     }
-
-
 }

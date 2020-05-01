@@ -1,32 +1,22 @@
 package eu.japtor.vizman.ui.forms;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.data.validator.StringLengthValidator;
-import com.vaadin.flow.function.SerializablePredicate;
 import eu.japtor.vizman.backend.entity.Klient;
-import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.service.KlientService;
-import eu.japtor.vizman.ui.components.AbstractEditorDialog;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Operation;
 import eu.japtor.vizman.ui.components.TwinColGrid;
 
-import java.time.LocalDate;
-import java.util.Locale;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class KlientFormDialog extends AbstractEditorDialog<Klient> {
+public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
 
 //    private ComboBox<PersonState> statusField; // = new ComboBox("Status");
     private TextField nameField; // = new TextField("Username");

@@ -51,7 +51,7 @@ public class DochYearReportDialog extends AbstractPrintDialog<DochYear> implemen
     public DochYearReportDialog(DochYearMonthService dochYearMonthService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setDialogTitle("Report: MĚSÍČNÍ DOCHÁZKA");
-//        getHeaderEndBox().setText("END text");
+//        getHeaderRightBox().setText("END text");
         this.dochYearMonthService = dochYearMonthService;
         initReportControls();
     }

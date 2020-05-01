@@ -21,7 +21,7 @@ import org.claspina.confirmdialog.ConfirmDialog;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class WageFormDialog extends AbstractFormDialog<PersonWage> {
+public class WageFormDialog extends AbstractSimpleFormDialog<PersonWage> {
 
     private static final String DIALOG_WIDTH = "700px";
     private static final String DIALOG_HEIGHT = "350x";

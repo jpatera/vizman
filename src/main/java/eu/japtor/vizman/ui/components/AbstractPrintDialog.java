@@ -204,7 +204,7 @@ public abstract class AbstractPrintDialog<T extends Serializable> extends Dialog
         this.close();
     }
 
-//    protected HtmlContainer getHeaderEndBox() {
+//    protected HtmlContainer getHeaderRightBox() {
 //        return headerEndBox;
 //    }
 

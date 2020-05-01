@@ -60,7 +60,7 @@ public class ZakNaklReportDialog extends AbstractPrintDialog<Zakr> implements Ha
     public ZakNaklReportDialog(ZaknService zaknService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setDialogTitle("Report: NÁKLADY NA ZAKÁZKU");
-//        getHeaderEndBox().setText("END text");
+//        getHeaderRightBox().setText("END text");
         this.zaknService = zaknService;
         initReportControls();
     }
