@@ -30,7 +30,8 @@ public class CalyHolFormDialog extends AbstractComplexFormDialog<CalyHol> {
     ){
         super("800px", "300px"
                 , false, false
-                , itemSaver, itemDeleter, true);
+                , itemSaver, itemDeleter, true
+        );
 
 //        getFormLayout().setResponsiveSteps(
 //                new FormLayout.ResponsiveStep("0", 1),
@@ -70,12 +71,6 @@ public class CalyHolFormDialog extends AbstractComplexFormDialog<CalyHol> {
         openInternal(calyHol, operation, titleItemNameText, new Gap(), titleEndText);
     }
 
-
-    /**
-     * Called by abstract parent dialog from its open(...) method.
-     */
-    protected void openSpecific() {
-    }
 
     private Component initHolDateField() {
         holDateField = new DatePicker("Datum");

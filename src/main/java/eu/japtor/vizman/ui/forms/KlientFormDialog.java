@@ -39,7 +39,10 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
             , Consumer<Klient> itemDeleter
             , KlientService klientService
     ){
-        super("800px", "600px", false, false, itemSaver, itemDeleter, false);
+        super("800px", "600px"
+                , false, false
+                , itemSaver, itemDeleter, false
+        );
 
 
 //        getFormLayout().setResponsiveSteps(
@@ -72,12 +75,6 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
         openInternal(klient, operation, titleItemNameText, new Gap(), titleEndText);
     }
 
-
-    /**
-     * Called by abstract parent dialog from its open(...) method.
-     */
-    protected void openSpecific() {
-    }
 
 
     private void initNameField() {

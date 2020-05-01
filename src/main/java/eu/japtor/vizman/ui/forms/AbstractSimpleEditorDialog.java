@@ -1,4 +1,4 @@
-package eu.japtor.vizman.ui.components;
+package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
@@ -13,6 +13,7 @@ import com.vaadin.flow.data.binder.*;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import eu.japtor.vizman.ui.components.Operation;
 
 import java.io.Serializable;
 import java.util.function.BiConsumer;
@@ -153,9 +154,6 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
     }
 
 
-    protected abstract void openSpecific();
-
-
     /**
      * Opens the given item for editing in the dialog.
      */
@@ -171,8 +169,6 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
         this.operation = operation;
         binder.removeBean();
         binder.readBean(currentItem);
-
-        openSpecific();
 
         String titleMainTextInternal = "";
         if (null == titleMainText) {

@@ -467,7 +467,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
 
     @Override
-    public Component initDialogButtonBar() {
+    public Component buildDialogButtonBar() {
         HorizontalLayout bar = new HorizontalLayout();
 
 //        saveButton = new Button("Uložit");

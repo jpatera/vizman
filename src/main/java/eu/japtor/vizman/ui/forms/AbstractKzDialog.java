@@ -1,5 +1,5 @@
 
-package eu.japtor.vizman.ui.components;
+package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
@@ -17,6 +17,9 @@ import eu.japtor.vizman.backend.entity.HasModifDates;
 import eu.japtor.vizman.backend.entity.ItemNames;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import eu.japtor.vizman.ui.components.Operation;
+import eu.japtor.vizman.ui.components.ResizeBtn;
+import eu.japtor.vizman.ui.components.Ribbon;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -28,7 +31,7 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
     private Div dialogCanvas;
     private VerticalLayout dialogContent;
     private FormLayout formLayout;
-    private Component buttonBar;
+    private Component upperLeftButtonBar;
     private HorizontalLayout dialogHeader;
     private HtmlComponent headerDevider;
 
@@ -70,23 +73,8 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         this.setCloseOnEsc(true);
         this.setCloseOnOutsideClick(false);
 
-        formLayout = buildFormLayout();
-        buttonBar = initDialogButtonBar();
-
-        upperLeftPane = initUpperLeftPane();
-        upperLeftPane.add(
-                formLayout
-                , new Paragraph("")
-                , buttonBar
-        );
-
-        if (useUpperRightPane) {
-            upperRightPane = initUpperRightPane();
-        } else {
-            upperRightPane = null;
-        }
-
-        upperPane = initUpperContentPane(upperLeftPane, upperRightPane);
+        upperLeftButtonBar = buildDialogButtonBar();
+        upperPane = initUpperPane(upperLeftButtonBar, useUpperRightPane);
 
         dialogContent = new VerticalLayout();
         dialogContent.getStyle().set("flex", "auto");
@@ -96,9 +84,6 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
                 , upperPane
         );
         if (useLowerPane) {
-//            HorizontalLayout lowerPane = new HorizontalLayout();
-//            lowerPane.add(lowerPane);
-//            dialogContent.add(lowerPane);
             dialogContent.add(initLowerPane());
         }
 
@@ -110,7 +95,6 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         dialogCanvas.getStyle().set("display", "flex");
         dialogCanvas.getStyle().set("flex-direction", "column");
         dialogCanvas.add(
-//                initDialogTitlePane()
                 initDialogHeader()
                 , dialogContent
         );
@@ -121,7 +105,7 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         this.add(dialogCanvas);
     }
 
-    public abstract Component initDialogButtonBar();
+    public abstract Component buildDialogButtonBar();
 
     private HtmlComponent initHeaderDevider() {
         headerDevider = new Hr();
@@ -183,55 +167,55 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
     }
 
 
-    private FormLayout buildFormLayout() {
-        FormLayout layout = new FormLayout();
-//        layout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
-//                new FormLayout.ResponsiveStep("25em", 2));
-//        Div div = new Div(formLayout);
-//        div.addClassName("has-padding");
-        layout.addClassName("has-padding");
-//        add(div);
-        layout.setResponsiveSteps(
+    private FormLayout initFormLayout() {
+        formLayout = new FormLayout();
+        formLayout.addClassName("has-padding");
+        formLayout.setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0", 2),
                 new FormLayout.ResponsiveStep("20em", 4)
         );
-        return layout;
+        return formLayout;
     }
 
     protected final FormLayout getFormLayout() {
         return formLayout;
     }
 
-    private VerticalLayout initUpperLeftPane() {
-        VerticalLayout pane = new VerticalLayout();
-        pane.setAlignItems(FlexComponent.Alignment.STRETCH);
-        pane.setSpacing(false);
-        pane.setPadding(false);
-        return pane;
+    private Component initUpperLeftPane(final Component buttonBar) {
+        upperLeftPane = new VerticalLayout();
+        upperLeftPane.setAlignItems(FlexComponent.Alignment.STRETCH);
+        upperLeftPane.setSpacing(false);
+        upperLeftPane.setPadding(false);
+        upperLeftPane.add(
+                initFormLayout()
+                , new Paragraph("")
+                , buttonBar
+        );
+        return upperLeftPane;
     }
 
-    public HorizontalLayout initUpperContentPane(Component upperLeftPane, Component upperRightPane) {
-        HorizontalLayout contentPane = new HorizontalLayout();
-        contentPane.add(upperLeftPane);
-        if (null != upperRightPane) {
-            contentPane.add(
+    public HorizontalLayout initUpperPane(Component upperLeftButtonBar, boolean useUpperRightPane) {
+        upperPane = new HorizontalLayout();
+        upperPane.add(initUpperLeftPane(upperLeftButtonBar));
+        if (useUpperRightPane) {
+            upperPane.add(
                     new Ribbon()
-                    , upperRightPane
+                    , initUpperRightPane()
             );
+        } else {
+            upperRightPane = null;
         }
-        return contentPane;
+        return upperPane;
     }
 
 
-    private VerticalLayout  initUpperRightPane() {
-        VerticalLayout container = new VerticalLayout();
-        container.setClassName("view-container");
-        container.setSpacing(false);
-        container.setPadding(false);
-        container.setAlignItems(FlexComponent.Alignment.STRETCH);
-//        upperGridContainer.setAlignSelf(FlexComponent.Alignment.STETCH);
-//        container.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-        return container;
+    private Component initUpperRightPane() {
+        upperRightPane = new VerticalLayout();
+        upperRightPane.setClassName("view-container");
+        upperRightPane.setSpacing(false);
+        upperRightPane.setPadding(false);
+        upperRightPane.setAlignItems(FlexComponent.Alignment.STRETCH);
+        return upperRightPane;
     }
 
 
@@ -241,12 +225,6 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         lowerPane.setSpacing(false);
         lowerPane.setPadding(false);
         lowerPane.setAlignItems(FlexComponent.Alignment.STRETCH);
-
-//        gridContainer.getStyle().set("padding-right", "0em");
-//        gridContainer.getStyle().set("padding-left", "0em");
-//        gridContainer.getStyle().set("padding-top", "2.5em");
-//        gridContainer.getStyle().set("padding-bottom", "2.5em");
-//        lowerPane.setAlignItems(FlexComponent.Alignment.STRETCH);
         return lowerPane;
     }
 

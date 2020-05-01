@@ -5,7 +5,6 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import eu.japtor.vizman.backend.entity.DochManual;
-import eu.japtor.vizman.ui.components.AbstractSimpleEditorDialog;
 import eu.japtor.vizman.ui.components.Operation;
 
 import java.time.Duration;
@@ -80,13 +79,6 @@ public class DochFormDialog extends AbstractSimpleEditorDialog<DochManual> {
                 , null
                 , null
         );
-    }
-
-    /**
-     * Called by abstract parent dialog from its open(...) method.
-     */
-    @Override
-    protected void openSpecific() {
     }
 
     private Paragraph initDochDateComponent() {

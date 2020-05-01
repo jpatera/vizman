@@ -58,16 +58,16 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
     private Button cancelButton;
     private Button deleteButton;
     private Registration registrationForSave;
+    private Registration registrationForDelete;
 
     private T currentItem;
 
-    private VerticalLayout upperGridContainer;
+    private VerticalLayout upperRightPane;
     private VerticalLayout lowerPane;
-    private HorizontalLayout upperPane = new HorizontalLayout();
+    private HorizontalLayout upperPane;
     private VerticalLayout upperLeftPane;
     private HorizontalLayout leftBarPart;
 
-    private Div dialogTitlePane;
     private Binder<T> binder = new Binder<>();
     private boolean closeAfterSave;
 
@@ -137,10 +137,9 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         dialogContent = new VerticalLayout();
         dialogContent.getStyle().set("flex", "auto");
         dialogContent.setAlignItems(FlexComponent.Alignment.STRETCH);
-
         dialogContent.add(
                 initHeaderDevider()
-                , initUpperContentPane(useUpperRightPane)
+                , initUpperPane(useUpperRightPane)
         );
         if (useLowerPane) {
             dialogContent.add(initLowerPane());
@@ -159,7 +158,6 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         dialogMinWidth = headerLeftBox.getHeight();
 
         this.add(dialogCanvas);
-
         setupEventListeners();
     }
 
@@ -170,31 +168,40 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         return headerDevider;
     }
 
-    private Component initUpperContentPane(boolean useUpperRightPane) {
+    private Component initUpperLeftPane() {
         upperLeftPane = new VerticalLayout();
         upperLeftPane.setAlignItems(FlexComponent.Alignment.STRETCH);
         upperLeftPane.setSpacing(false);
         upperLeftPane.setPadding(false);
-        upperLeftPane.add(initFormLayout());
-        upperLeftPane.add(new Paragraph(""));
-        upperLeftPane.add(initDialogButtonBar());
+        upperLeftPane.add(
+                initFormLayout()
+                , new Paragraph("")
+                , initDialogButtonBar()
+        );
+        return upperLeftPane;
+    }
 
-        upperPane.add( upperLeftPane);
+    private Component initUpperPane(boolean useUpperRightPane) {
+        upperPane = new HorizontalLayout();
+        upperPane.add(initUpperLeftPane());
         if (useUpperRightPane) {
-            upperPane.add(new Ribbon());
-            upperPane.add(initUpperGridContainer());
+            upperPane.add(
+                    new Ribbon()
+                    , initUpperRightPane()
+            );
+        } else  {
+            upperRightPane = null;
         }
         return upperPane;
     }
 
     private Component initFormLayout() {
         formLayout = new FormLayout();
-        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("25em", 2));
-//        Div div = new Div(formLayout);
-//        div.addClassName("has-padding");
         formLayout.addClassName("has-padding");
-//        add(div);
+        formLayout.setResponsiveSteps(
+                new FormLayout.ResponsiveStep("0", 1),
+                new FormLayout.ResponsiveStep("25em", 2)
+        );
         return formLayout;
     }
 
@@ -250,7 +257,7 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         dialogHeader.add(
                 initHeaderLeftBox()
                 , initHeaderMiddleBox()
-                , initHeaderEndBox()
+                , initHeaderRightBox()
         );
         return dialogHeader;
     }
@@ -278,7 +285,8 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         return headerMiddleBox;
     }
 
-    private Component initHeaderEndBox() {
+
+    private Component initHeaderRightBox() {
         headerRightBox = new H5();
         headerRightBox.getStyle()
             .set("margin-right","1.2em")
@@ -315,16 +323,13 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
     }
 
 
-    private Component initUpperGridContainer() {
-        upperGridContainer = new VerticalLayout();
-        upperGridContainer.setClassName("view-container");
-        upperGridContainer.setSpacing(false);
-        upperGridContainer.setPadding(false);
-        upperGridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
-//        upperGridContainer.setAlignSelf(FlexComponent.Alignment.STETCH);
-//        upperGridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
-//        container.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-        return upperGridContainer;
+    private Component initUpperRightPane() {
+        upperRightPane = new VerticalLayout();
+        upperRightPane.setClassName("view-container");
+        upperRightPane.setSpacing(false);
+        upperRightPane.setPadding(false);
+        upperRightPane.setAlignItems(FlexComponent.Alignment.STRETCH);
+        return upperRightPane;
     }
 
     private Component initLowerPane() {
@@ -333,12 +338,6 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         lowerPane.setSpacing(false);
         lowerPane.setPadding(false);
         lowerPane.setAlignItems(FlexComponent.Alignment.STRETCH);
-
-//        gridContainer.getStyle().set("padding-right", "0em");
-//        gridContainer.getStyle().set("padding-left", "0em");
-//        gridContainer.getStyle().set("padding-top", "2.5em");
-//        gridContainer.getStyle().set("padding-bottom", "2.5em");
-//        lowerPane.setAlignItems(FlexComponent.Alignment.STRETCH);
         return lowerPane;
     }
 
@@ -359,11 +358,8 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         saveButton.setAutofocus(true);
         saveButton.getElement().setAttribute("theme", "primary");
 
-//        deleteButton = new Button("Zrušit " + getNounForTitle(isItemMale) );
         deleteButton = new Button("Zrušit");
         deleteButton.getElement().setAttribute("theme", "error");
-        deleteButton.addClickListener(e -> deleteClicked());
-//        deleteButton.addClickListener(e -> deleteClicked());
 
         leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);
@@ -396,8 +392,8 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         return formLayout;
     }
 
-    protected final VerticalLayout getUpperGridContainer() {
-        return upperGridContainer;
+    protected final VerticalLayout getUpperRightPane() {
+        return upperRightPane;
     }
 
     protected final VerticalLayout getLowerPane() {
@@ -438,8 +434,6 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         currentOperation = operation;
         currentItem = item;
 
-        openSpecific();
-
         if ((null == titleItemNameText) && (currentItem instanceof HasItemType)) {
             setItemNames(((HasItemType) currentItem).getTyp());  // Set general default names
         }
@@ -467,6 +461,10 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         registrationForSave = saveButton.addClickListener(e -> saveClicked(currentOperation));
         saveButton.setText("Uložit " + itemTypeAccuS.toLowerCase());
 
+        if (registrationForDelete != null) {
+            registrationForDelete.remove();
+        }
+        registrationForDelete = deleteButton.addClickListener(e -> deleteClicked());
         deleteButton.setText("Zrušit " + itemTypeAccuS.toLowerCase());
         deleteButton.setEnabled(currentOperation.isDeleteEnabled());
 
@@ -514,8 +512,6 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         }
         return value;
     }
-
-    protected abstract void openSpecific();
 
     private void saveClicked(Operation operation) {
         boolean isValid = binder.writeBeanIfValid(currentItem);

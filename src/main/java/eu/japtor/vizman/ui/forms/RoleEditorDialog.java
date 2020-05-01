@@ -52,16 +52,6 @@ public class RoleEditorDialog extends AbstractComplexFormDialog<Role> {
 //        roleGridContainer = buildRoleGridContainer(roleTwinGrid);
     }
 
-    /**
-     * Called by abstract parent dialog from its open(...) method.
-     */
-    protected void openSpecific() {
-        // Set locale here, because when it is set in constructor, it is effective only in first open,
-        // and next openings show date in US format
-//        nastupField.setLocale(new Locale("cs", "CZ"));
-//        vystupField.setLocale(new Locale("cs", "CZ"));
-    }
-
 
 //    private VerticalLayout buildRoleGridContainer(Grid<Role> grid) {
 //        VerticalLayout roleGridContainer = new VerticalLayout();
@@ -87,8 +77,8 @@ public class RoleEditorDialog extends AbstractComplexFormDialog<Role> {
 //    }
 
     private TextField initNameField() {
-        TextField field = new TextField();
-        getBinder().forField(field)
+        nameField = new TextField();
+        getBinder().forField(nameField)
                 .withConverter(String::trim, String::trim)
                 // TODO: fix validator
 //                .withValidator(new StringLengthValidator(
@@ -99,14 +89,14 @@ public class RoleEditorDialog extends AbstractComplexFormDialog<Role> {
                             true : roleService.fetchRoleByName(name) == null,
                         "Role s tímto názvem již existuje, zvol jiný název")
                 .bind(Role::getName, Role::setName);
-        return field;
+        return nameField;
     }
 
     private TextField initDescriptionField() {
-        TextField field = new TextField();
-        getBinder().forField(field)
+        descriptionField = new TextField();
+        getBinder().forField(descriptionField)
                 .bind(Role::getDescription, Role::setDescription);
-        return field;
+        return descriptionField;
     }
 
     private Component initPermsField(final Set<Perm> allPerms) {

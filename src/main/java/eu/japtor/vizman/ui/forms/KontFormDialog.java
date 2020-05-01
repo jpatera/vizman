@@ -443,7 +443,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 
 
     @Override
-    public Component initDialogButtonBar() {
+    public Component buildDialogButtonBar() {
         HorizontalLayout bar = new HorizontalLayout();
 
 //        saveButton = new Button("Uložit");
