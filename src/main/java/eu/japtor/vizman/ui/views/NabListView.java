@@ -24,7 +24,7 @@ import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.NabView;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.report.NabListReportBuilder;
-import eu.japtor.vizman.backend.service.NabService;
+import eu.japtor.vizman.backend.service.NabViewService;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.NabFormDialog;
@@ -58,12 +58,12 @@ public class NabListView extends VerticalLayout {
     private NabFormDialog nabFormDialog;
     private NewItemButton newItemButton;
 
-    private DataProvider<NabView, NabService.NabFilter> gridDataProvider; // Second type  param  must not be Void
-//    private ConfigurableFilterDataProvider<NabView, Void, NabService.NabFilter> filtPagGridDataProvider;
-    private FilterablePageableDataProvider<NabView, NabService.NabFilter> filtPagGridDataProvider;
+    private DataProvider<NabView, NabViewService.NabFilter> gridDataProvider; // Second type  param  must not be Void
+//    private ConfigurableFilterDataProvider<NabView, Void, NabViewService.NabFilter> filtPagGridDataProvider;
+    private FilterablePageableDataProvider<NabView, NabViewService.NabFilter> filtPagGridDataProvider;
 
     @Autowired
-    public NabService nabService;
+    public NabViewService nabViewService;
 
     public NabListView() {
         xlsReportExporter = new ReportExporter((new NabListReportBuilder()).buildReport());
@@ -92,13 +92,13 @@ public class NabListView extends VerticalLayout {
 //                    int off = query.getOffset();
 //                    int lim = query.getLimit();
 //
-//                    return nabService
+//                    return nabViewService
 //                            .fetchByNabFilter(query.getFilter().orElse(null), query.getSortOrders(), )
 //                            .stream();
 //
 ////                    int offset = query.getOffset();
 ////                    int limit = query.getLimit();
-////                    nabService.fetchBySearchFilter(filter)
+////                    nabViewService.fetchBySearchFilter(filter)
 ////                    findByExample(repository, query.getFilter())
 ////                            .skip(query.getOffset())
 ////                            .take(query.getLimit())
@@ -107,18 +107,18 @@ public class NabListView extends VerticalLayout {
 //                query -> {
 //                    int off = query.getOffset();
 //                    int lim = query.getLimit();
-//                    return (int) nabService
+//                    return (int) nabViewService
 //                            .countByNabFilter(query.getFilter().orElse(null));
 //                }
 //        );
 //        filtPagGridDataProvider = gridDataProvider.withConfigurableFilter();
-        filtPagGridDataProvider = new NabFiltPagDataProvider(nabService);
+        filtPagGridDataProvider = new NabFiltPagDataProvider(nabViewService);
         nabGrid.setGridDataProvider(filtPagGridDataProvider);
 
         nabFormDialog = new NabFormDialog (
                 this::saveItem
                 , this::deleteItem
-                , nabService
+                , nabViewService
         );
         nabFormDialog.addOpenedChangeListener(event -> {
             if (!event.isOpened()) {
@@ -142,7 +142,7 @@ public class NabListView extends VerticalLayout {
 
 //    public void saveItem(NabView itemToSave, Operation operation) {
 //        try {
-//            currentItem = nabService.saveNab(itemToSave, operation);
+//            currentItem = nabViewService.saveNab(itemToSave, operation);
 //            lastOperationResult = OperationResult.ITEM_SAVED;
 ////            Notification.show(
 ////                    "Nabídka uložena", 2000, Notification.Position.MIDDLE);
@@ -156,7 +156,7 @@ public class NabListView extends VerticalLayout {
 //    private void deleteItem(final NabView itemToDelete) {
 //        OperationResult lastOperResOrig = lastOperationResult;
 //        try {
-//            nabService.deleteNab(itemToDelete);
+//            nabViewService.deleteNab(itemToDelete);
 //            lastOperationResult = OperationResult.ITEM_DELETED;
 ////            return true;
 //        } catch (VzmServiceException e) {
@@ -174,23 +174,23 @@ public class NabListView extends VerticalLayout {
 
 
     public void saveItem(NabView itemToSave, Operation operation) {
-        nabService.saveNab(itemToSave, operation);
+        nabViewService.saveNab(itemToSave, operation);
     }
 
     private void deleteItem(final NabView itemToDelete) {
-        nabService.deleteNab(itemToDelete);
+        nabViewService.deleteNab(itemToDelete);
     }
 
 
 //    private SerializableSupplier<List<? extends NabView>> reportItemsSupplier =
 ////            () -> nabGrid.getDataCommunicator().Service.fetchByNabFilter(buildNabFilterParams(), nabGrid.getDataProvider().fetch()getSortOrder());
-//            () -> nabService.fetchByNabFilter(
+//            () -> nabViewService.fetchByNabFilter(
 //                    nabGrid.buildNabFilter()
 //                    , nabGrid.getDataCommunicator().getBackEndSorting());
-////            () -> nabService.fetchByFiltersDescOrder(buildNabFilterParams());
+////            () -> nabViewService.fetchByFiltersDescOrder(buildNabFilterParams());
 
     private SerializableSupplier<List<? extends NabView>> reportItemsSupplier =
-            () -> nabService.fetchAll();
+            () -> nabViewService.fetchAll();
 
 
     void finishNabEdit(NabFormDialog nabFormDialog) {
@@ -336,12 +336,12 @@ public class NabListView extends VerticalLayout {
 //        loadGridDataAndRebuildFilterFields();
         nabGrid.setVzFilterItems(Arrays.asList(Boolean.FALSE, Boolean.TRUE));
         nabGrid.setInitialFilterValues();
-        nabGrid.doFilter(NabService.NabFilter.getEmpty());
+        nabGrid.doFilter(NabViewService.NabFilter.getEmpty());
 //        nabGrid.getDataProvider().refreshAll();
     }
 
 //    private void loadGridDataAndRebuildFilterFields() {
-//        nabViewList = nabService.fetchByFiltersDescOrder(buildNabFilterParams());
+//        nabViewList = nabViewService.fetchByFiltersDescOrder(buildNabFilterParams());
 //        nabGrid.setItems(nabViewList);
 //        nabGrid.setRokFilterItems(nabViewList.stream()
 //                .filter(z -> null != z.getRok())

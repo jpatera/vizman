@@ -1,6 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
-import eu.japtor.vizman.backend.service.NabService;
+import eu.japtor.vizman.backend.service.NabViewService;
 import eu.japtor.vizman.ui.components.VzIconBox;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
@@ -88,7 +88,7 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
         return n;
     }
 
-    public static Nab getInstanceFromFilter(NabService.NabFilter nabFilter) {
+    public static Nab getInstanceFromFilter(NabViewService.NabFilter nabFilter) {
         if (null == nabFilter) {
             return Nab.getEmptyInstance();
         } else {

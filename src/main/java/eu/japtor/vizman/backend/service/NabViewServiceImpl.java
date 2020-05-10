@@ -13,12 +13,12 @@ import java.util.List;
 
 
 @Service
-public class NabServiceImpl implements NabService, HasLogger {
+public class NabViewServiceImpl implements NabViewService, HasLogger {
 
     private NabRepo nabRepo;
 
     @Autowired
-    public NabServiceImpl(NabRepo nabRepo) {
+    public NabViewServiceImpl(NabRepo nabRepo) {
         super();
         this.nabRepo = nabRepo;
     }

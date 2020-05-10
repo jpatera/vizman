@@ -12,7 +12,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.dom.Element;
 import eu.japtor.vizman.backend.dataprovider.spring.FilterablePageableDataProvider;
 import eu.japtor.vizman.backend.entity.NabView;
-import eu.japtor.vizman.backend.service.NabService;
+import eu.japtor.vizman.backend.service.NabViewService;
 
 
 import java.util.List;
@@ -32,8 +32,8 @@ public class NabGrid extends Grid<NabView> {
     public static final String CKONT_COL_KEY = "nab-bg-ckont";
 
 
-//    private ConfigurableFilterDataProvider<NabView, Void, NabService.NabFilter> gridDataProvider;
-    private FilterablePageableDataProvider<NabView, NabService.NabFilter> gridDataProvider;
+//    private ConfigurableFilterDataProvider<NabView, Void, NabViewService.NabFilter> gridDataProvider;
+    private FilterablePageableDataProvider<NabView, NabViewService.NabFilter> gridDataProvider;
 
     private Select<Boolean> vzFilterField;
     private Select<Integer> rokFilterField;
@@ -193,8 +193,8 @@ public class NabGrid extends Grid<NabView> {
 
     public void setInitialFilterValues() {
 //        ((ListDataProvider<NabView>) this.getDataProvider()).clearFilters();
-//        ((onfigurableFilterDataProvider<NabView, Void, NabService.NabFilter>) this.getDataProvider()).clearFilters();
-//        gridDataProvider.setFilter(NabService.NabFilter.getEmpty());
+//        ((onfigurableFilterDataProvider<NabView, Void, NabViewService.NabFilter>) this.getDataProvider()).clearFilters();
+//        gridDataProvider.setFilter(NabViewService.NabFilter.getEmpty());
         rokFilterField.clear();
         cnabFilterField.clear();
         ckontFilterField.clear();
@@ -208,7 +208,7 @@ public class NabGrid extends Grid<NabView> {
         doFilter(buildNabFilter());
     }
 
-    public void doFilter(NabService.NabFilter filter) {
+    public void doFilter(NabViewService.NabFilter filter) {
 //        ListDataProvider<NabView> listDataProvider = ((ListDataProvider<NabView>) this.getDataProvider());
 
 //        ((ConfigurableFilterDataProvider) this.getDataProvider()).setFilter(buildNabFilter());
@@ -267,8 +267,8 @@ public class NabGrid extends Grid<NabView> {
     }
 
     // Needed for getting items for report by current grid filter until Vaadin does not  have it implemented
-    public NabService.NabFilter buildNabFilter() {
-        return new NabService.NabFilter(
+    public NabViewService.NabFilter buildNabFilter() {
+        return new NabViewService.NabFilter(
                 getRokFilterValue()
                 , getCnabFilterValue()
                 , getCkontFilterValue()

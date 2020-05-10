@@ -9,7 +9,7 @@ import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.NabView;
 import eu.japtor.vizman.backend.entity.Role;
-import eu.japtor.vizman.backend.service.NabService;
+import eu.japtor.vizman.backend.service.NabViewService;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Operation;
 import eu.japtor.vizman.ui.components.OperationResult;
@@ -40,16 +40,16 @@ public class NabFormDialog extends AbstractComplexFormDialog<NabView> {
     private boolean readonly;
 
     private Registration binderChangeListener = null;
-    private NabService nabService;
+    private NabViewService nabViewService;
 
 
     public NabFormDialog(
             BiConsumer<NabView, Operation> itemSaver
             , Consumer<NabView> itemDeleter
-            , NabService nabService
+            , NabViewService nabViewService
     ){
 //    public NabFormDialog(
-//            NabService nabService
+//            NabViewService nabViewService
 //    ){
         super("800px", "600px"
                 , false, false
@@ -61,7 +61,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<NabView> {
 //                new FormLayout.ResponsiveStep("10em", 2),
 //                new FormLayout.ResponsiveStep("12em", 3));
 
-        this.nabService = nabService;
+        this.nabViewService = nabViewService;
 
         getFormLayout().add(
                 initCnabField()
@@ -93,7 +93,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<NabView> {
                         7, 7))
                 .withValidator(
                         cnab -> (currentOperation != Operation.ADD) ?
-                            true : nabService.fetchNabByCnab(cnab) == null,
+                            true : nabViewService.fetchNabByCnab(cnab) == null,
                         "Nabídka s tímto číslem již existuje, zvol jiné")
                 .bind(NabView::getCnab, NabView::setCnab);
         return cnabField;
@@ -197,7 +197,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<NabView> {
 //        String cnDel = String.format("%s", currentItem.getCnab());
 //        OperationResult lastOperResOrig = lastOperationResult;
 //        try {
-//            nabService.deleteNab(itemToDelete);
+//            nabViewService.deleteNab(itemToDelete);
 //            lastOperationResult = OperationResult.ITEM_DELETED;
 //            return true;
 //        } catch (VzmServiceException e) {
@@ -214,7 +214,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<NabView> {
 
 //    public NabView saveFakt(NabView nabToSave) throws VzmServiceException {
 //        try {
-//            currentItem = nabService.saveNab(nabToSave, currentOperation);
+//            currentItem = nabViewService.saveNab(nabToSave, currentOperation);
 //            lastOperationResult = OperationResult.ITEM_SAVED;
 //            return currentItem;
 //        } catch(VzmServiceException e) {
