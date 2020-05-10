@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Transactional(readOnly = true)
-public interface NabRepo extends JpaRepository<NabView, Long> {
+public interface NabViewRepo extends JpaRepository<NabView, Long> {
 
     // TODO: An alternative is to use getOne(Long id) which does not need to be explicitely specified in  repo.
     //       Don't know which one is better. May be findTopById loads sub-items automatically?

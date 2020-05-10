@@ -1,40 +1,33 @@
 package eu.japtor.vizman.backend.service;
 
-import com.vaadin.flow.data.provider.QuerySortOrder;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.NabView;
-import eu.japtor.vizman.backend.repository.NabRepo;
+import eu.japtor.vizman.backend.repository.NabViewRepo;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 
 @Service
 public class NabServiceImpl implements NabService, HasLogger {
 
-    private NabRepo nabRepo;
+    private NabViewRepo nabViewRepo;
 
     @Autowired
-    public NabServiceImpl(NabRepo nabRepo) {
+    public NabServiceImpl(NabViewRepo nabViewRepo) {
         super();
-        this.nabRepo = nabRepo;
+        this.nabViewRepo = nabViewRepo;
     }
 
     @Override
     public NabView fetchOne(Long id) {
-        return nabRepo.findTopById(id);
+        return nabViewRepo.findTopById(id);
     }
 
     @Override
     public NabView saveNab(NabView itemToSave, Operation oper) {
         try {
-            NabView nabViewSaved = nabRepo.save(itemToSave);
+            NabView nabViewSaved = nabViewRepo.save(itemToSave);
             getLogger().info("{} saved: [operation: {}]"
                     , nabViewSaved.getTyp().name(), oper.name());
 
@@ -49,7 +42,7 @@ public class NabServiceImpl implements NabService, HasLogger {
     @Override
     public boolean deleteNab(NabView nabViewToDelete) {
         try {
-            nabRepo.delete(nabViewToDelete);
+            nabViewRepo.delete(nabViewToDelete);
             getLogger().info("{} deleted: {}, {}", nabViewToDelete.getTyp().name(), nabViewToDelete.getCnab(), nabViewToDelete.getText());
         } catch (Exception e) {
             String errMsg = "Error while deleting {} : {}, {}";
