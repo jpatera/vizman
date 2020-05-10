@@ -11,7 +11,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.dom.Element;
 import eu.japtor.vizman.backend.dataprovider.spring.FilterablePageableDataProvider;
-import eu.japtor.vizman.backend.entity.Nab;
+import eu.japtor.vizman.backend.entity.NabView;
 import eu.japtor.vizman.backend.service.NabService;
 
 
@@ -20,9 +20,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class NabGrid extends Grid<Nab> {
+public class NabGrid extends Grid<NabView> {
 
-    // Nab grid field keys:
+    // NabView grid field keys:
     public static final String ROK_COL_KEY = "nab-bg-rok";
     public static final String CNAB_COL_KEY = "nab-bg-cnab";
     public static final String TEXT_COL_KEY = "nab-bg-text";
@@ -32,8 +32,8 @@ public class NabGrid extends Grid<Nab> {
     public static final String CKONT_COL_KEY = "nab-bg-ckont";
 
 
-//    private ConfigurableFilterDataProvider<Nab, Void, NabService.NabFilter> gridDataProvider;
-    private FilterablePageableDataProvider<Nab, NabService.NabFilter> gridDataProvider;
+//    private ConfigurableFilterDataProvider<NabView, Void, NabService.NabFilter> gridDataProvider;
+    private FilterablePageableDataProvider<NabView, NabService.NabFilter> gridDataProvider;
 
     private Select<Boolean> vzFilterField;
     private Select<Integer> rokFilterField;
@@ -46,19 +46,19 @@ public class NabGrid extends Grid<Nab> {
     private boolean vzFieldVisible;
     private boolean selectFieldVisible;
     private Consumer<Integer> selectionChanger;
-    private Function<Nab, Boolean> checkBoxEnabler;
+    private Function<NabView, Boolean> checkBoxEnabler;
 
     private int selCount;
 
     HeaderRow filterRow;
-    BiConsumer<Nab, Operation> editDialogOpener;
+    BiConsumer<NabView, Operation> editDialogOpener;
 
     public NabGrid(
             boolean selectFieldVisible
-            , Function<Nab, Boolean> checkBoxEnabler
+            , Function<NabView, Boolean> checkBoxEnabler
             , Consumer<Integer> selectionChanger
             , boolean vzFieldVisible
-            , BiConsumer<Nab, Operation> editDialogOpener
+            , BiConsumer<NabView, Operation> editDialogOpener
     ) {
         this.checkBoxEnabler = checkBoxEnabler;
         this.vzFieldVisible = vzFieldVisible;
@@ -87,7 +87,7 @@ public class NabGrid extends Grid<Nab> {
                 .setVisible(this.vzFieldVisible);
         //                .setFrozen(true)
         ;
-        this.addColumn(Nab::getRok)
+        this.addColumn(NabView::getRok)
                 .setHeader("Rok nab.")
                 .setFlexGrow(0)
                 .setWidth("7em")
@@ -96,7 +96,7 @@ public class NabGrid extends Grid<Nab> {
                 .setKey(ROK_COL_KEY)
                 .setSortProperty("rok")
         ;
-        this.addColumn(Nab::getCnab)
+        this.addColumn(NabView::getCnab)
                 .setHeader("Č. nab.")
                 .setFlexGrow(0)
                 .setWidth("8em")
@@ -105,7 +105,7 @@ public class NabGrid extends Grid<Nab> {
                 .setKey(CNAB_COL_KEY)
                 .setSortProperty("cnab")
         ;
-        this.addColumn(Nab::getCkont)
+        this.addColumn(NabView::getCkont)
                 .setHeader("Č. kont.")
                 .setFlexGrow(0)
                 .setWidth("8em")
@@ -114,7 +114,7 @@ public class NabGrid extends Grid<Nab> {
                 .setKey(CKONT_COL_KEY)
                 .setSortProperty("ckont")
         ;
-        this.addColumn(Nab::getText)
+        this.addColumn(NabView::getText)
                 .setHeader("Text")
                 .setFlexGrow(1)
                 .setWidth("13em")
@@ -122,7 +122,7 @@ public class NabGrid extends Grid<Nab> {
                 .setKey(TEXT_COL_KEY)
                 .setSortProperty("text")
         ;
-        this.addColumn(Nab::getObjednatel)
+        this.addColumn(NabView::getObjednatel)
                 .setHeader("Objednatel")
                 .setFlexGrow(0)
                 .setWidth("18em")
@@ -130,7 +130,7 @@ public class NabGrid extends Grid<Nab> {
                 .setKey(OBJEDNATEL_COL_KEY)
                 .setSortProperty("objednatel")
         ;
-        this.addColumn(Nab::getPoznamka)
+        this.addColumn(NabView::getPoznamka)
                 .setHeader("Poznámka")
                 .setFlexGrow(1)
                 .setWidth("13em")
@@ -176,8 +176,8 @@ public class NabGrid extends Grid<Nab> {
         }
     }
 
-    private Button buildEditBtn(Nab nab) {
-        Button editBtn = new GridItemEditBtn(event -> editDialogOpener.accept(nab, Operation.EDIT));
+    private Button buildEditBtn(NabView nabView) {
+        Button editBtn = new GridItemEditBtn(event -> editDialogOpener.accept(nabView, Operation.EDIT));
         return editBtn;
     }
 
@@ -192,8 +192,8 @@ public class NabGrid extends Grid<Nab> {
     }
 
     public void setInitialFilterValues() {
-//        ((ListDataProvider<Nab>) this.getDataProvider()).clearFilters();
-//        ((onfigurableFilterDataProvider<Nab, Void, NabService.NabFilter>) this.getDataProvider()).clearFilters();
+//        ((ListDataProvider<NabView>) this.getDataProvider()).clearFilters();
+//        ((onfigurableFilterDataProvider<NabView, Void, NabService.NabFilter>) this.getDataProvider()).clearFilters();
 //        gridDataProvider.setFilter(NabService.NabFilter.getEmpty());
         rokFilterField.clear();
         cnabFilterField.clear();
@@ -209,7 +209,7 @@ public class NabGrid extends Grid<Nab> {
     }
 
     public void doFilter(NabService.NabFilter filter) {
-//        ListDataProvider<Nab> listDataProvider = ((ListDataProvider<Nab>) this.getDataProvider());
+//        ListDataProvider<NabView> listDataProvider = ((ListDataProvider<NabView>) this.getDataProvider());
 
 //        ((ConfigurableFilterDataProvider) this.getDataProvider()).setFilter(buildNabFilter());
         gridDataProvider.setFilter(filter);
@@ -230,37 +230,37 @@ public class NabGrid extends Grid<Nab> {
 //        String poznamkaFilterValue = poznamkaFilterField.getValue();
 //
 //        if (null != vzFilterValue) {
-//            listDataProvider.addFilter(Nab::getVz
+//            listDataProvider.addFilter(NabView::getVz
 //                    , vz -> vz.equals(vzFilterValue)
 //            );
 //        }
 //        if (null != rokFilterValue) {
-//            listDataProvider.addFilter(Nab::getRok
+//            listDataProvider.addFilter(NabView::getRok
 //                    , rok -> rok.equals(rokFilterValue)
 //            );
 //        }
 //        if (StringUtils.isNotEmpty(cnabFilterValue)) {
-//            listDataProvider.addFilter(Nab::getCnab
+//            listDataProvider.addFilter(NabView::getCnab
 //                    , cn -> StringUtils.containsIgnoreCase(cn, cnabFilterValue)
 //            );
 //        }
 //        if (StringUtils.isNotEmpty(ckontFilterValue)) {
-//            listDataProvider.addFilter(Nab::getCkont
+//            listDataProvider.addFilter(NabView::getCkont
 //                    , ck -> StringUtils.containsIgnoreCase(ck, ckontFilterValue)
 //            );
 //        }
 //        if (StringUtils.isNotEmpty(textFilterValue)) {
-//            listDataProvider.addFilter(Nab::getText
+//            listDataProvider.addFilter(NabView::getText
 //                    , tx -> StringUtils.containsIgnoreCase(tx, textFilterValue)
 //            );
 //        }
 //        if (StringUtils.isNotEmpty(objednatelFilterValue)) {
-//            listDataProvider.addFilter(Nab::getObjednatel
+//            listDataProvider.addFilter(NabView::getObjednatel
 //                    , ob -> StringUtils.containsIgnoreCase(ob, objednatelFilterValue)
 //            );
 //        }
 //        if (StringUtils.isNotEmpty(poznamkaFilterValue)) {
-//            listDataProvider.addFilter(Nab::getPoznamka
+//            listDataProvider.addFilter(NabView::getPoznamka
 //                    , po -> StringUtils.containsIgnoreCase(po, poznamkaFilterValue)
 //            );
 //        }
@@ -279,7 +279,7 @@ public class NabGrid extends Grid<Nab> {
         );
     }
 
-    private ComponentRenderer<Component, Nab> vzRenderer = new ComponentRenderer<>(nab -> {
+    private ComponentRenderer<Component, NabView> vzRenderer = new ComponentRenderer<>(nab -> {
         VzIconBox vzBox = new VzIconBox();
         vzBox.setAlignItems(FlexComponent.Alignment.CENTER);
         vzBox.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);

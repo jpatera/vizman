@@ -2,30 +2,25 @@ package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.shared.Registration;
-import eu.japtor.vizman.backend.entity.Klient;
-import eu.japtor.vizman.backend.entity.Nab;
+import eu.japtor.vizman.backend.entity.NabView;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.service.NabService;
-import eu.japtor.vizman.backend.service.VzmServiceException;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Operation;
 import eu.japtor.vizman.ui.components.OperationResult;
 import eu.japtor.vizman.ui.components.TwinColGrid;
-import org.claspina.confirmdialog.ButtonOption;
-import org.claspina.confirmdialog.ConfirmDialog;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
+public class NabFormDialog extends AbstractComplexFormDialog<NabView> {
 
 //    private ComboBox<PersonState> statusField; // = new ComboBox("Status");
     private TextField cnabField;
@@ -37,9 +32,9 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
     private DatePicker vystupField; // = new DatePicker("Výstup");
     private TwinColGrid<Role> twinRolesGridField;
 
-    private Binder<Nab> binder = new Binder<>();
-    private Nab currentItem;
-    private Nab origItem;
+    private Binder<NabView> binder = new Binder<>();
+    private NabView currentItem;
+    private NabView origItem;
     private Operation currentOperation;
     private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
     private boolean readonly;
@@ -49,8 +44,8 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
 
 
     public NabFormDialog(
-            BiConsumer<Nab, Operation> itemSaver
-            , Consumer<Nab> itemDeleter
+            BiConsumer<NabView, Operation> itemSaver
+            , Consumer<NabView> itemDeleter
             , NabService nabService
     ){
 //    public NabFormDialog(
@@ -75,10 +70,10 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
     }
 
     public void openDialog(
-            Nab nab, Operation operation
+            NabView nabView, Operation operation
             , String titleItemNameText, String titleEndText
     ){
-//        setItemNames(nab.getTyp());
+//        setItemNames(nabView.getTyp());
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -87,7 +82,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
 
 //        this.kontFolderOrig = kontFolderOrig;
 
-        openInternal(nab, operation, new Gap(), titleEndText);
+        openInternal(nabView, operation, new Gap(), titleEndText);
     }
 
     private Component initCnabField() {
@@ -100,7 +95,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
                         cnab -> (currentOperation != Operation.ADD) ?
                             true : nabService.fetchNabByCnab(cnab) == null,
                         "Nabídka s tímto číslem již existuje, zvol jiné")
-                .bind(Nab::getCnab, Nab::setCnab);
+                .bind(NabView::getCnab, NabView::setCnab);
         return cnabField;
     }
 
@@ -108,7 +103,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
     private Component initPoznamkaField() {
         poznamkaField = new TextField("Poznámka");
         getBinder().forField(poznamkaField)
-                .bind(Nab::getPoznamka, Nab::setPoznamka);
+                .bind(NabView::getPoznamka, NabView::setPoznamka);
         return poznamkaField;
     }
 
@@ -198,7 +193,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
 //        lastOperationResult = OperationResult.NO_CHANGE;
 //    }
 
-//    private boolean deleteFakt(Nab itemToDelete) {
+//    private boolean deleteFakt(NabView itemToDelete) {
 //        String cnDel = String.format("%s", currentItem.getCnab());
 //        OperationResult lastOperResOrig = lastOperationResult;
 //        try {
@@ -217,7 +212,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
 //        }
 //    }
 
-//    public Nab saveFakt(Nab nabToSave) throws VzmServiceException {
+//    public NabView saveFakt(NabView nabToSave) throws VzmServiceException {
 //        try {
 //            currentItem = nabService.saveNab(nabToSave, currentOperation);
 //            lastOperationResult = OperationResult.ITEM_SAVED;
@@ -241,12 +236,12 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
 //        return true;
 //    }
 
-//    private boolean canDeleteNab(final Nab itemToDelete) {
+//    private boolean canDeleteNab(final NabView itemToDelete) {
 //        return true;
 //    }
 
     @Override
-    protected void refreshHeaderMiddleBox(Nab item) {
+    protected void refreshHeaderMiddleBox(NabView item) {
         // Do nothing
     }
 

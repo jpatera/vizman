@@ -1,9 +1,8 @@
 package eu.japtor.vizman.backend.service;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
-import eu.japtor.vizman.backend.entity.Nab;
+import eu.japtor.vizman.backend.entity.NabView;
 import eu.japtor.vizman.ui.components.Operation;
-import eu.japtor.vizman.ui.views.NabListView;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -11,19 +10,19 @@ import java.util.List;
 
 public interface NabService {
 
-    Nab fetchOne(Long id);
+    NabView fetchOne(Long id);
 
-    Nab saveNab(Nab nabToSave, Operation oper);
+    NabView saveNab(NabView nabViewToSave, Operation oper);
 
-    boolean deleteNab(Nab nab);
+    boolean deleteNab(NabView nabView);
 
-    List<Nab> fetchAll();
+    List<NabView> fetchAll();
 
-    Nab fetchNabByCnab(String cnab);
+    NabView fetchNabByCnab(String cnab);
 
-//    List<Nab> fetchByFiltersDescOrder(NabListView.NabFilterParams nabFilterParams);
+//    List<NabView> fetchByFiltersDescOrder(NabListView.NabFilterParams nabFilterParams);
 
-    Page<Nab> fetchByNabFilter(NabFilter nabFilter, List<QuerySortOrder> sortOrders, Pageable pageable);
+    Page<NabView> fetchByNabFilter(NabFilter nabFilter, List<QuerySortOrder> sortOrders, Pageable pageable);
     long countByNabFilter(NabFilter nabFilter);
 
     // -----------------------------------------------

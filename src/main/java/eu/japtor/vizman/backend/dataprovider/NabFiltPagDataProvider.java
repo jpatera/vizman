@@ -4,7 +4,7 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.backend.dataprovider.spring.FilterablePageableDataProvider;
-import eu.japtor.vizman.backend.entity.Nab;
+import eu.japtor.vizman.backend.entity.NabView;
 import eu.japtor.vizman.backend.service.NabService;
 import org.springframework.data.domain.*;
 
@@ -12,12 +12,12 @@ import java.util.Arrays;
 import java.util.List;
 
 public class NabFiltPagDataProvider
-                extends FilterablePageableDataProvider<Nab, NabService.NabFilter>
+                extends FilterablePageableDataProvider<NabView, NabService.NabFilter>
 {
     private final NabService nabService;
 
     private final NabService.NabFilter defaultFilter = NabService.NabFilter.getEmpty();
-    private final Nab defaultProbe = Nab.getEmptyInstance();
+    private final NabView defaultProbe = NabView.getEmptyInstance();
 
     private final List<QuerySortOrder> defaultSortOrders = Arrays.asList(
             new QuerySortOrder("cnab", SortDirection.DESCENDING)
@@ -33,7 +33,7 @@ public class NabFiltPagDataProvider
         this.nabService = nabService;
     }
 
-//    private Example<Nab> buildNabExample(final HierarchicalQuery query) {
+//    private Example<NabView> buildNabExample(final HierarchicalQuery query) {
 //        return Example.of(query.getFilter().orElse(null), matcher);
 //    }
 
@@ -50,12 +50,12 @@ public class NabFiltPagDataProvider
     }
 
     @Override
-    protected Page<Nab> fetchFromBackEnd(Query<Nab, NabService.NabFilter> query, Pageable pageable) {
+    protected Page<NabView> fetchFromBackEnd(Query<NabView, NabService.NabFilter> query, Pageable pageable) {
         return nabService.fetchByNabFilter(getNabFilter(), query.getSortOrders(), pageable);
     }
 
     @Override
-    protected int sizeInBackEnd(Query<Nab, NabService.NabFilter> query) {
+    protected int sizeInBackEnd(Query<NabView, NabService.NabFilter> query) {
         return (int) nabService.countByNabFilter(getNabFilter());
     }
 

@@ -21,7 +21,7 @@ import eu.japtor.vizman.backend.dataprovider.NabFiltPagDataProvider;
 import eu.japtor.vizman.backend.dataprovider.spring.FilterablePageableDataProvider;
 import eu.japtor.vizman.backend.entity.ItemNames;
 import eu.japtor.vizman.backend.entity.ItemType;
-import eu.japtor.vizman.backend.entity.Nab;
+import eu.japtor.vizman.backend.entity.NabView;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.report.NabListReportBuilder;
 import eu.japtor.vizman.backend.service.NabService;
@@ -31,7 +31,6 @@ import eu.japtor.vizman.ui.forms.NabFormDialog;
 import net.sf.jasperreports.engine.JRException;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
@@ -49,19 +48,19 @@ public class NabListView extends VerticalLayout {
 
     private final static String REPORT_FILE_NAME = "vzm-rep-nab";
 
-    private List<Nab> nabList;
+    private List<NabView> nabViewList;
     private NabGrid nabGrid;
-    private List<GridSortOrder<Nab>> initialSortOrder;
+    private List<GridSortOrder<NabView>> initialSortOrder;
     private ReloadButton reloadButton;
     private Anchor expXlsAnchor;
-    private ReportExporter<Nab> xlsReportExporter;
+    private ReportExporter<NabView> xlsReportExporter;
 
     private NabFormDialog nabFormDialog;
     private NewItemButton newItemButton;
 
-    private DataProvider<Nab, NabService.NabFilter> gridDataProvider; // Second type  param  must not be Void
-//    private ConfigurableFilterDataProvider<Nab, Void, NabService.NabFilter> filtPagGridDataProvider;
-    private FilterablePageableDataProvider<Nab, NabService.NabFilter> filtPagGridDataProvider;
+    private DataProvider<NabView, NabService.NabFilter> gridDataProvider; // Second type  param  must not be Void
+//    private ConfigurableFilterDataProvider<NabView, Void, NabService.NabFilter> filtPagGridDataProvider;
+    private FilterablePageableDataProvider<NabView, NabService.NabFilter> filtPagGridDataProvider;
 
     @Autowired
     public NabService nabService;
@@ -135,13 +134,13 @@ public class NabListView extends VerticalLayout {
 
     private ComponentEventListener anchorExportListener = event -> {
         try {
-            updateExpXlsAnchorResource(nabList);
+            updateExpXlsAnchorResource(nabViewList);
         } catch (JRException e) {
             e.printStackTrace();
         }
     };
 
-//    public void saveItem(Nab itemToSave, Operation operation) {
+//    public void saveItem(NabView itemToSave, Operation operation) {
 //        try {
 //            currentItem = nabService.saveNab(itemToSave, operation);
 //            lastOperationResult = OperationResult.ITEM_SAVED;
@@ -154,7 +153,7 @@ public class NabListView extends VerticalLayout {
 //        }
 //    }
 //
-//    private void deleteItem(final Nab itemToDelete) {
+//    private void deleteItem(final NabView itemToDelete) {
 //        OperationResult lastOperResOrig = lastOperationResult;
 //        try {
 //            nabService.deleteNab(itemToDelete);
@@ -174,30 +173,30 @@ public class NabListView extends VerticalLayout {
 //    }
 
 
-    public void saveItem(Nab itemToSave, Operation operation) {
+    public void saveItem(NabView itemToSave, Operation operation) {
         nabService.saveNab(itemToSave, operation);
     }
 
-    private void deleteItem(final Nab itemToDelete) {
+    private void deleteItem(final NabView itemToDelete) {
         nabService.deleteNab(itemToDelete);
     }
 
 
-//    private SerializableSupplier<List<? extends Nab>> reportItemsSupplier =
+//    private SerializableSupplier<List<? extends NabView>> reportItemsSupplier =
 ////            () -> nabGrid.getDataCommunicator().Service.fetchByNabFilter(buildNabFilterParams(), nabGrid.getDataProvider().fetch()getSortOrder());
 //            () -> nabService.fetchByNabFilter(
 //                    nabGrid.buildNabFilter()
 //                    , nabGrid.getDataCommunicator().getBackEndSorting());
 ////            () -> nabService.fetchByFiltersDescOrder(buildNabFilterParams());
 
-    private SerializableSupplier<List<? extends Nab>> reportItemsSupplier =
+    private SerializableSupplier<List<? extends NabView>> reportItemsSupplier =
             () -> nabService.fetchAll();
 
 
     void finishNabEdit(NabFormDialog nabFormDialog) {
         OperationResult operResult = nabFormDialog.getLastOperationResult();
-        Nab resultItem = nabFormDialog.getCurrentItem();  // Modified, just added or just deleted
-        Nab origItem = nabFormDialog.getOrigItem();
+        NabView resultItem = nabFormDialog.getCurrentItem();  // Modified, just added or just deleted
+        NabView origItem = nabFormDialog.getOrigItem();
 
 //        syncGridAfterEdit(
 //                resultItem
@@ -221,8 +220,8 @@ public class NabListView extends VerticalLayout {
         }
     }
 
-//    private void syncGridAfterEdit(Nab itemModified, Operation oper
-//            , OperationResult operRes, Nab itemOrig
+//    private void syncGridAfterEdit(NabView itemModified, Operation oper
+//            , OperationResult operRes, NabView itemOrig
 //    ) {
 ////        nabGrid.getDataCommunicator().getKeyMapper().removeAll();
 ////        nabGrid.getDataProvider().refreshAll();
@@ -286,7 +285,7 @@ public class NabListView extends VerticalLayout {
         return REPORT_FILE_NAME + "." + format.name().toLowerCase();
     }
 
-    private void updateExpXlsAnchorResource(List<Nab> items) throws JRException {
+    private void updateExpXlsAnchorResource(List<NabView> items) throws JRException {
         ReportExporter.Format expFormat = ReportExporter.Format.XLS;
         AbstractStreamResource xlsResource =
                 xlsReportExporter.getStreamResource(getReportFileName(expFormat), reportItemsSupplier, expFormat);
@@ -342,15 +341,15 @@ public class NabListView extends VerticalLayout {
     }
 
 //    private void loadGridDataAndRebuildFilterFields() {
-//        nabList = nabService.fetchByFiltersDescOrder(buildNabFilterParams());
-//        nabGrid.setItems(nabList);
-//        nabGrid.setRokFilterItems(nabList.stream()
+//        nabViewList = nabService.fetchByFiltersDescOrder(buildNabFilterParams());
+//        nabGrid.setItems(nabViewList);
+//        nabGrid.setRokFilterItems(nabViewList.stream()
 //                .filter(z -> null != z.getRok())
-//                .map(Nab::getRok)
+//                .map(NabView::getRok)
 //                .distinct().collect(Collectors.toCollection(LinkedList::new))
 //        );
-//        nabGrid.setVzFilterItems(nabList.stream()
-//                .map(Nab::getVz)
+//        nabGrid.setVzFilterItems(nabViewList.stream()
+//                .map(NabView::getVz)
 //                .filter(s -> null != s)
 //                .distinct().collect(Collectors.toCollection(LinkedList::new))
 //        );
