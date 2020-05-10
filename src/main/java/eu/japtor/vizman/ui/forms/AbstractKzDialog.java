@@ -144,6 +144,10 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
     }
 
 
+    public String getDialogTitle(Operation operation, final GrammarGender itemGender) {
+        return operation.getTitleOperName(itemGender) + " " + getItemName(operation).toUpperCase();
+    }
+
     private Component initHeaderEndBox() {
         headerEndBox = new H5();
         headerEndBox.getStyle()

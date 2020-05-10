@@ -34,7 +34,7 @@ public class KlientServiceImpl  extends AbstractSortableService implements Klien
 
     @Override
     public Klient fetchKlientByName(String name) {
-        return null;
+        return klientRepo.findTopByName(name);
     }
 
     @Override

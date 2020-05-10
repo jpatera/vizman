@@ -526,7 +526,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
     protected void initControlsForItemAndOperation(final Zak item, final Operation operation, final boolean readonly) {
         setItemNames(item.getTyp());
-        getMainTitle().setText(operation.getDialogTitle(getItemName(operation), itemGender));
+        getMainTitle().setText(getDialogTitle(operation, itemGender));
 
         if (getCurrentItem() instanceof HasItemType) {
             getHeaderDevider().getStyle().set(

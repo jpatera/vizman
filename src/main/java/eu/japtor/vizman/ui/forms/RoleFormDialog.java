@@ -7,6 +7,7 @@ import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.service.RoleService;
+import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Operation;
 import eu.japtor.vizman.ui.components.TwinColGrid;
 
@@ -18,7 +19,7 @@ import java.util.function.Consumer;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class RoleEditorDialog extends AbstractComplexFormDialog<Role> {
+public class RoleFormDialog extends AbstractComplexFormDialog<Role> {
 
     private TextField nameField; // = new TextField("Username");
     private TextField descriptionField; // = new TextField("Jméno");
@@ -28,10 +29,10 @@ public class RoleEditorDialog extends AbstractComplexFormDialog<Role> {
     private PersonService personService;
     private Set<Perm> permsPool;
 
-    public RoleEditorDialog(BiConsumer<Role, Operation> itemSaver,
-                            Consumer<Role> itemDeleter,
-                            RoleService roleService,
-                            List<Perm> allPerms)
+    public RoleFormDialog(BiConsumer<Role, Operation> itemSaver,
+                          Consumer<Role> itemDeleter,
+                          RoleService roleService,
+                          List<Perm> allPerms)
     {
 //        super(GrammarGender.FEMININE, "role", "role","roli", itemSaver, itemDeleter);
         super(itemSaver, itemDeleter);
@@ -52,6 +53,9 @@ public class RoleEditorDialog extends AbstractComplexFormDialog<Role> {
 //        roleGridContainer = buildRoleGridContainer(roleTwinGrid);
     }
 
+    public void openDialog(Role role, Operation  operation)  {
+        openInternal(role, operation, new Gap(), null);
+    }
 
 //    private VerticalLayout buildRoleGridContainer(Grid<Role> grid) {
 //        VerticalLayout roleGridContainer = new VerticalLayout();
@@ -138,6 +142,21 @@ public class RoleEditorDialog extends AbstractComplexFormDialog<Role> {
         return twinPermsGrid;
     }
 
+
+    @Override
+    protected void refreshHeaderMiddleBox(Role item) {
+
+    }
+
+    @Override
+    protected void activateListeners() {
+
+    }
+
+    @Override
+    protected void deactivateListeners() {
+
+    }
 
     @Override
     protected void confirmDelete() {

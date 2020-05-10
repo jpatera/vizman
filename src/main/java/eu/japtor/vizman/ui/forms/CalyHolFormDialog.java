@@ -68,7 +68,7 @@ public class CalyHolFormDialog extends AbstractComplexFormDialog<CalyHol> {
 
         holDateField.setLocale(new Locale("cs", "CZ"));
 
-        openInternal(calyHol, operation, titleItemNameText, new Gap(), titleEndText);
+        openInternal(calyHol, operation, new Gap(), titleEndText);
     }
 
 
@@ -101,5 +101,20 @@ public class CalyHolFormDialog extends AbstractComplexFormDialog<CalyHol> {
 //        } else {
 //            deleteKont(getCurrentItem());
 //        }
+    }
+
+    @Override
+    protected void refreshHeaderMiddleBox(CalyHol item) {
+
+    }
+
+    @Override
+    protected void activateListeners() {
+
+    }
+
+    @Override
+    protected void deactivateListeners() {
+
     }
 }

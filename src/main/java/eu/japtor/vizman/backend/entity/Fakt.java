@@ -72,6 +72,7 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemT
 //        this.zaklad = BigDecimal.valueOf(0);
     }
 
+    @Override
     public ItemType getTyp() {
         return typ;
     }

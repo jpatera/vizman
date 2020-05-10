@@ -32,7 +32,7 @@ public class PersonGrid extends Grid<Person> {
     SelectorFilterField<Boolean> hiddenFilterField;
     FilterTextField usernameFilterField;
 
-    private Boolean initFilterHiddenValue;
+    private Boolean initialFilterHiddenValue;
 //    private boolean hiddenFieldVisible;
 //    private boolean selectFieldVisible;
     private Consumer<Integer> selectionChanger;
@@ -46,10 +46,10 @@ public class PersonGrid extends Grid<Person> {
     public PersonGrid(
             Function<Person, Boolean> checkBoxEnabler
             , Consumer<Integer> selectionChanger
-            , Boolean initFilterHiddenValue
+            , Boolean initialFilterHiddenValue
             , BiConsumer<Person, Operation> editDialogOpener
     ) {
-        this.initFilterHiddenValue = initFilterHiddenValue;
+        this.initialFilterHiddenValue = initialFilterHiddenValue;
         this.checkBoxEnabler = checkBoxEnabler;
 //        this.hiddenFieldVisible = hiddenFieldVisible;
 //        this.selectFieldVisible = selectFieldVisible;
@@ -233,10 +233,10 @@ public class PersonGrid extends Grid<Person> {
 
     public void setInitialFilterValues() {
 //        ((ListDataProvider<Person>) this.getDataProvider()).clearFilters();
-        if (null == initFilterHiddenValue) {
+        if (null == initialFilterHiddenValue) {
             hiddenFilterField.clear();
         } else {
-            hiddenFilterField.setValue(initFilterHiddenValue);
+            hiddenFilterField.setValue(initialFilterHiddenValue);
         }
 
         usernameFilterField.clear();

@@ -6,10 +6,16 @@ import java.util.Set;
 
 @Entity
 @Table(name = "ROLE")
-public class Role extends AbstractGenIdEntity {
+public class Role extends AbstractGenIdEntity implements HasItemType {
 
     public String name;
     public String description;
+
+//    @Enumerated(EnumType.STRING)
+//    @Basic
+//    @Column(name = "TYP")
+    @Transient
+    private ItemType typ = ItemType.ROLE;
 
     // TODO: List ?
     @ManyToMany(mappedBy = "roles")
@@ -21,6 +27,17 @@ public class Role extends AbstractGenIdEntity {
     @Column(name="perm", nullable=false) // Column name in role_perm
     private Set<Perm> perms = new HashSet<>();
 
+
+    public Role() {
+        super();
+        this.typ = ItemType.ROLE;
+    }
+
+
+    @Override
+    public ItemType getTyp() {
+        return typ;
+    }
 
     public String getName() {
         return name;

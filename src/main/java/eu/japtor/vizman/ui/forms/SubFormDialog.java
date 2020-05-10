@@ -30,9 +30,9 @@ public class SubFormDialog extends AbstractSimpleFormDialog<Fakt> implements Has
     private static final String DIALOG_WIDTH = "800px";
     private static final String DIALOG_HEIGHT = null;
 
-    private final static String DELETE_STR = "Zrušit";
     private final static String REVERT_STR = "Vrátit změny";
-    private final static String REVERT_AND_CLOSE_STR = "Zpět";
+    private final static String CANCEL_STR = "Zpět";
+    private final static String DELETE_STR = "Zrušit";
     private final static String SAVE_AND_CLOSE_STR = "Uložit a zavřít";
 
     private Button revertButton;
@@ -59,11 +59,8 @@ public class SubFormDialog extends AbstractSimpleFormDialog<Fakt> implements Has
     private boolean readonly;
 
     private Registration binderChangeListener = null;
-
     private FaktService faktService;
 
-//    private Fakt faktOrig;
-//    private CfgPropsCache cfgPropsCache;
 
     public SubFormDialog(FaktService faktService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
@@ -99,7 +96,7 @@ public class SubFormDialog extends AbstractSimpleFormDialog<Fakt> implements Has
 
         castkaField.setSuffixComponent(new Span(fakt.getMena().name()));
 
-        initFaktDataAndControls(currentItem, currentOperation);
+        initDataAndControls(currentItem, currentOperation);
         this.open();
     }
 
@@ -108,7 +105,7 @@ public class SubFormDialog extends AbstractSimpleFormDialog<Fakt> implements Has
     }
 
 
-    private void initFaktDataAndControls(final Fakt faktItem, final Operation faktOperation) {
+    private void initDataAndControls(final Fakt faktItem, final Operation operation) {
 
         deactivateListeners();
 
@@ -119,7 +116,7 @@ public class SubFormDialog extends AbstractSimpleFormDialog<Fakt> implements Has
         refreshHeaderMiddleBox(faktItem);
         getHeaderEndBox().setText(getHeaderEndComponentValue(null));
 
-        initControlsForItemAndOperation(faktItem, faktOperation);
+        initControlsForItemAndOperation(faktItem, operation);
         initControlsOperability();
 
         activateListeners();
@@ -159,11 +156,11 @@ public class SubFormDialog extends AbstractSimpleFormDialog<Fakt> implements Has
 
     private void initControlsForItemAndOperation(final Fakt item, final Operation operation) {
         setItemNames(item.getTyp());
-        getMainTitle().setText(operation.getDialogTitle(getItemName(operation), itemGender));
+        getMainTitle().setText(getDialogTitle(operation, itemGender));
 
         if (getCurrentItem() instanceof HasItemType) {
             getHeaderDevider().getStyle().set(
-                    "background-color", VzmFormatUtils.getItemTypeColorBrighter((item).getTyp()));
+                    "background-color", VzmFormatUtils.getItemTypeColorBrighter(item.getTyp()));
         }
         deleteAndCloseButton.setText(DELETE_STR + " " + getItemName(Operation.DELETE).toLowerCase());
     }
@@ -302,7 +299,7 @@ public class SubFormDialog extends AbstractSimpleFormDialog<Fakt> implements Has
         revertButton = new Button(REVERT_STR);
         revertButton.addClickListener(e -> revertClicked(false));
 
-        revertAndCloseButton = new Button(REVERT_AND_CLOSE_STR);
+        revertAndCloseButton = new Button(CANCEL_STR);
         revertAndCloseButton.addClickListener(e -> revertClicked(true));
 
         leftBarPart = new HorizontalLayout();
@@ -344,7 +341,7 @@ public class SubFormDialog extends AbstractSimpleFormDialog<Fakt> implements Has
     }
 
     private void saveClicked(boolean closeAfterSave) {
-        if (!isFaktValid()) {
+        if (!isFaktValidForSave()) {
             return;
         }
         try {
@@ -352,7 +349,7 @@ public class SubFormDialog extends AbstractSimpleFormDialog<Fakt> implements Has
             if (closeAfterSave) {
                 closeDialog();
             } else {
-                initFaktDataAndControls(currentItem, currentOperation);
+                initDataAndControls(currentItem, currentOperation);
             }
         } catch (VzmServiceException e) {
             showSaveErrMessage();
@@ -440,7 +437,7 @@ public class SubFormDialog extends AbstractSimpleFormDialog<Fakt> implements Has
         }
     }
 
-    private boolean isFaktValid() {
+    private boolean isFaktValidForSave() {
         boolean isValid = binder.writeBeanIfValid(currentItem);
         if (!isValid) {
             ConfirmDialog

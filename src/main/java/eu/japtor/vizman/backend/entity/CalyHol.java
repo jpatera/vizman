@@ -3,17 +3,24 @@ package eu.japtor.vizman.backend.entity;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 @Table(name = "CALY_HOL")
-public class CalyHol extends AbstractGenIdEntity implements CalyHolTreeNode {
+public class CalyHol extends AbstractGenIdEntity implements CalyHolTreeNode, HasItemType {
 
+  @Transient
+  private ItemType typ;
   private Integer yr;
   private LocalDate holDate;
   private String holText;
 
+  @Override
+  public ItemType getTyp() {
+    return ItemType.SVAT;
+  }
 
   public Integer getYr() {
     return yr;
@@ -42,9 +49,14 @@ public class CalyHol extends AbstractGenIdEntity implements CalyHolTreeNode {
 
 // ========================================
 
+  public CalyHol() {
+    super();
+    this.typ = ItemType.SVAT;
+  }
+
   public static CalyHol getEmptyInstance() {
     CalyHol ch = new CalyHol();
-//    c.set...(null);
+//    ch.set...(null);
     return ch;
   }
 

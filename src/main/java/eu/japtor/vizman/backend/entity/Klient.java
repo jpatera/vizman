@@ -8,13 +8,12 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "KLIENT")
-public class Klient extends AbstractGenIdEntity {
+public class Klient extends AbstractGenIdEntity implements HasItemType {
 
     @Enumerated(EnumType.STRING)
     @Basic
     @Column(name = "TYP")
     private ItemType typ;
-
 
     @Column(name = "NAME")
     private String name;

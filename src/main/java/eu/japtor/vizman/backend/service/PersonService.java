@@ -11,7 +11,7 @@ public interface PersonService {
 
     Person fetchOne(Long id);
 
-    Person savePerson(Person person, Operation oper);
+    Person savePerson(Person personToSave, Operation oper);
 
     boolean deletePerson(Person person);
 
@@ -24,11 +24,9 @@ public interface PersonService {
     long countAll();
 
     List<Person> fetchBySearchFilter(String serachString, List<QuerySortOrder> sortOrders);
-
-    List<Person> fetchByPersonFilter(PersonFilter personFilter, List<QuerySortOrder> sortOrders);
-
     long countBySearchFilter(String searchFilter);
 
+    List<Person> fetchByPersonFilter(PersonFilter personFilter, List<QuerySortOrder> sortOrders);
     long countByPersonFilter(PersonFilter personFilter);
 
     class PersonFilter {

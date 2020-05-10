@@ -1,6 +1,8 @@
 package eu.japtor.vizman.backend.entity;
 
+import eu.japtor.vizman.backend.service.NabService;
 import eu.japtor.vizman.ui.components.VzIconBox;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
@@ -71,6 +73,44 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
     private Klient klient;
 
 
+// -----------------------------------------------------
+
+
+    public static Nab getEmptyInstance() {
+        Nab n = new Nab();
+        n.setRok(null);
+        n.setCnab(null);
+        n.setCkont(null);
+        n.setVz(null);
+        n.setText(null);
+        n.setObjednatel(null);
+        n.setPoznamka(null);
+        return n;
+    }
+
+    public static Nab getInstanceFromFilter(NabService.NabFilter nabFilter) {
+        if (null == nabFilter) {
+            return Nab.getEmptyInstance();
+        } else {
+            Nab n = Nab.getEmptyInstance();
+                n.setRok(nabFilter.getRok());
+                n.setCnab(nullIfBlank(nabFilter.getCnab()));
+                n.setCkont(nullIfBlank(nabFilter.getCkont()));
+                n.setVz(nabFilter.getVz());
+                n.setText(nullIfBlank(nabFilter.getText()));
+                n.setObjednatel(nullIfBlank(nabFilter.getObjednatel()));
+                n.setPoznamka(nullIfBlank(nabFilter.getPoznamka()));
+            return n;
+        }
+    }
+
+    private static String nullIfBlank(String str) {
+        if (StringUtils.isBlank(str)) {
+            return null;
+        }
+        return str;
+    }
+
     public ItemType getTyp() {
         return typ;
     }
@@ -88,8 +128,15 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
     public String getCnab() {
         return cnab;
     }
-    public void setCnab(String text) {
+    public void setCnab(String cnab) {
         this.cnab = cnab;
+    }
+
+    public String getCkont() {
+        return ckont;
+    }
+    public void setCkont(String ckont) {
+        this.ckont = ckont;
     }
 
     public String getText() {
@@ -113,6 +160,20 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
         this.vz = vz;
     }
 
+    public String getPoznamka() {
+        return poznamka;
+    }
+    public void setPoznamka(String poznamka) {
+        this.poznamka = poznamka;
+    }
+
+    public String getObjednatel() {
+        return objednatel;
+    };
+    public void setObjednatel(String objednatel) {
+        this.objednatel = objednatel;
+    }
+
     public LocalDate getDateCreate() {
         return dateCreate;
     }
@@ -126,27 +187,6 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
     public void setDatetimeUpdate(LocalDateTime datetimeUpdate) {
         this.datetimeUpdate = datetimeUpdate;
     }
-
-    public String getPoznamka() {
-        return poznamka;
-    }
-//    public void setPoznamka(String poznamka) {
-//        this.poznamka = poznamka;
-//    }
-
-    public String getObjednatel() {
-        return objednatel;
-    };
-//    public void setObjednatel(String objednatel) {
-//        this.objednatel = objednatel;
-//    }
-
-    public String getCkont() {
-        return ckont;
-    };
-//    public void setCkont(String ckont) {
-//        this.ckont = ckont;
-//    }
 
 
 

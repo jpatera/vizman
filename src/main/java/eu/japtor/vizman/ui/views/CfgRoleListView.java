@@ -34,7 +34,7 @@ import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.service.RoleService;
 import eu.japtor.vizman.ui.components.*;
-import eu.japtor.vizman.ui.forms.RoleEditorDialog;
+import eu.japtor.vizman.ui.forms.RoleFormDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -51,7 +51,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.TITLE_PERSON;
 @UIScope    // Without this annotation browser refresh throws exception
 public class CfgRoleListView extends VerticalLayout implements BeforeEnterObserver {
 
-    private RoleEditorDialog roleEditForm;
+    private RoleFormDialog roleFormDialog;
 //    private final TextField searchField;
     private final Button newItemButton;
     private final Button reloadViewButton;
@@ -68,11 +68,11 @@ public class CfgRoleListView extends VerticalLayout implements BeforeEnterObserv
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         setAlignItems(Alignment.STRETCH);
 
-        newItemButton = new NewItemButton("Nový uživatel",
-                event -> roleEditForm.open(new Role(), Operation.ADD, "")
+        newItemButton = new NewItemButton("Nová role",
+                event -> roleFormDialog.openDialog(new Role(), Operation.ADD)
         );
 
-        reloadViewButton = new ReloadButton("Znovu na49st tabulku",
+        reloadViewButton = new ReloadButton("Znovu načíst tabulku",
                 event -> reloadView()
         );
 
@@ -106,7 +106,7 @@ public class CfgRoleListView extends VerticalLayout implements BeforeEnterObserv
 //        ConfigurableFilterDataProvider<Role, Void, String> roleDataProvider = roleDataProv.withConfigurableFilter();
         roleGrid.setDataProvider(roleDataProvider);
         permGrid.setDataProvider(new ListDataProvider<>(new ArrayList<>()));
-        roleEditForm = new RoleEditorDialog(
+        roleFormDialog = new RoleFormDialog(
                 this::saveRole, this::deleteRole, roleService, Arrays.asList(Perm.values()));
     }
 
@@ -156,7 +156,7 @@ public class CfgRoleListView extends VerticalLayout implements BeforeEnterObserv
         grid.addColumn(Role::getName).setHeader("Název").setWidth("3em").setResizable(true)
             .setSortProperty("name");
         grid.addColumn(Role::getDescription).setHeader("Popis").setWidth("8em").setResizable(true);
-        grid.addColumn(new ComponentRenderer<>(this::createEditButton)).setFlexGrow(0);
+        grid.addColumn(new ComponentRenderer<>(this::buildEditButton)).setFlexGrow(0);
         return grid;
     }
 
@@ -171,7 +171,7 @@ public class CfgRoleListView extends VerticalLayout implements BeforeEnterObserv
         grid.addColumn(Perm::getAuthority).setHeader("Název").setWidth("3em").setResizable(true)
                 .setSortProperty("name");
         grid.addColumn(Perm::getDescription).setHeader("Popis").setWidth("8em").setResizable(true);
-//        pGrid.addColumn(new ComponentRenderer<>(this::createEditButton)).setFlexGrow(0);
+//        pGrid.addColumn(new ComponentRenderer<>(this::buildEditButton)).setFlexGrow(0);
 
 //        grid.setDataProvider(new ListDataProvider(new ArrayList<>()));
 
@@ -205,10 +205,8 @@ public class CfgRoleListView extends VerticalLayout implements BeforeEnterObserv
         return grid;
     }
 
-    private Button createEditButton(Role role) {
-        Button editBtn = new GridItemEditBtn(event -> roleEditForm.open(role,
-                Operation.EDIT, ""));
-        return editBtn;
+    private Button buildEditButton(Role role) {
+        return new GridItemEditBtn(event -> roleFormDialog.openDialog(role, Operation.EDIT));
     }
 
     private Component buildViewToolBar(final Button reloadViewButton, final Button newItemButton) {

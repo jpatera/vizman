@@ -126,6 +126,10 @@ public abstract class AbstractSimpleFormDialog<T extends Serializable> extends D
         return dialogHeader;
     }
 
+    public String getDialogTitle(Operation operation, final GrammarGender itemGender) {
+        return operation.getTitleOperName(itemGender) + " " + getItemName(operation).toUpperCase();
+    }
+
     private Component initHeaderLeftBox() {
         headerLeftBox = new FlexLayout(
                 initDialogResizeBtn()

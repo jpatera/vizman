@@ -131,6 +131,26 @@ public class ItemNames {
         itemNameMaps.put(ItemType.NAB, itemNabNameMap);
         itemGenderMap.put(ItemType.NAB, GrammarGender.FEMININE);
 
+        Map<GrammarShapes, String>itemRoleNameMap = new HashMap<>();
+        itemRoleNameMap.put(GrammarShapes.NOM_S, "Role");
+        itemRoleNameMap.put(GrammarShapes.NOM_P, "Role");
+        itemRoleNameMap.put(GrammarShapes.GEN_S, "Role");
+        itemRoleNameMap.put(GrammarShapes.GEN_P, "Rolí");
+        itemRoleNameMap.put(GrammarShapes.ACCU_S, "Roli");
+        itemRoleNameMap.put(GrammarShapes.ACCU_P, "Role");
+        itemNameMaps.put(ItemType.ROLE, itemRoleNameMap);
+        itemGenderMap.put(ItemType.ROLE, GrammarGender.FEMININE);
+
+        Map<GrammarShapes, String>itemSvatNameMap = new HashMap<>();
+        itemSvatNameMap.put(GrammarShapes.NOM_S, "Svátek");
+        itemSvatNameMap.put(GrammarShapes.NOM_P, "Svátky");
+        itemSvatNameMap.put(GrammarShapes.GEN_S, "Svátku");
+        itemSvatNameMap.put(GrammarShapes.GEN_P, "Svátků");
+        itemSvatNameMap.put(GrammarShapes.ACCU_S, "Svátek");
+        itemSvatNameMap.put(GrammarShapes.ACCU_P, "Svátky");
+        itemNameMaps.put(ItemType.SVAT, itemSvatNameMap);
+        itemGenderMap.put(ItemType.SVAT, GrammarGender.MASCULINE);
+
 
         //        Map<GrammarShapes, String>itemFaktNameMap = new HashMap<>();
 //        itemFaktNameMap.put(GrammarShapes.NOM_S, "Fakturace");
@@ -151,42 +171,48 @@ public class ItemNames {
     @Function
     public static GrammarGender getItemGender(ItemType type) {
         GrammarGender gender = null == type ? itemGenderMap.get(ItemType.UNKNOWN) : itemGenderMap.get(type);
-        return null != gender ? gender : itemGenderMap.get(GrammarGender.UNKNOWN);
+        return null != gender ? gender : itemGenderMap.get(ItemType.UNKNOWN);
     }
 
     @Function
     public static String getNomS(ItemType type) {
-        String name = itemNameMaps.get(type).get(GrammarShapes.NOM_S);
+        Map<GrammarShapes, String> grammarShapes = itemNameMaps.get(type);
+        String name = null == grammarShapes ? null : grammarShapes.get(GrammarShapes.NOM_S);
         return null != name ? name : itemNameMaps.get(ItemType.UNKNOWN).get(GrammarShapes.NOM_S);
     }
 
     @Function
     public static String getNomP(ItemType type) {
-        String name = itemNameMaps.get(type).get(GrammarShapes.NOM_P);
+        Map<GrammarShapes, String> grammarShapes = itemNameMaps.get(type);
+        String name = null == grammarShapes ? null : grammarShapes.get(GrammarShapes.NOM_P);
         return null != name ? name : itemNameMaps.get(ItemType.UNKNOWN).get(GrammarShapes.NOM_P);
     }
 
     @Function
     public static String getGenS(ItemType type) {
-        String name = itemNameMaps.get(type).get(GrammarShapes.GEN_S);
+        Map<GrammarShapes, String> grammarShapes = itemNameMaps.get(type);
+        String name = null == grammarShapes ? null : grammarShapes.get(GrammarShapes.GEN_S);
         return null != name ? name : itemNameMaps.get(ItemType.UNKNOWN).get(GrammarShapes.GEN_S);
     }
 
     @Function
     public static String getGenP(ItemType type) {
-        String name = itemNameMaps.get(type).get(GrammarShapes.GEN_P);
+        Map<GrammarShapes, String> grammarShapes = itemNameMaps.get(type);
+        String name = null == grammarShapes ? null : grammarShapes.get(GrammarShapes.GEN_P);
         return null != name ? name : itemNameMaps.get(ItemType.UNKNOWN).get(GrammarShapes.GEN_P);
     }
 
     @Function
     public static String getAccuS(ItemType type) {
-        String name = itemNameMaps.get(type).get(GrammarShapes.ACCU_S);
+        Map<GrammarShapes, String> grammarShapes = itemNameMaps.get(type);
+        String name = null == grammarShapes ? null : grammarShapes.get(GrammarShapes.ACCU_S);
         return null != name ? name : itemNameMaps.get(ItemType.UNKNOWN).get(GrammarShapes.ACCU_S);
     }
 
     @Function
     public static String getAccuP(ItemType type) {
-        String name = itemNameMaps.get(type).get(GrammarShapes.ACCU_P);
+        Map<GrammarShapes, String> grammarShapes = itemNameMaps.get(type);
+        String name = null == grammarShapes ? null : grammarShapes.get(GrammarShapes.ACCU_P);
         return null != name ? name : itemNameMaps.get(ItemType.UNKNOWN).get(GrammarShapes.ACCU_P);
     }
 }

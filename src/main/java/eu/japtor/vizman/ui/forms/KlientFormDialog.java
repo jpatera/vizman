@@ -59,11 +59,8 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
         addNoteField();
     }
 
-    public void openDialog(
-            Klient klient, Operation operation
-            , String titleItemNameText, String titleEndText
-    ){
-        setItemNames(klient.getTyp());
+    public void openDialog(Klient klient, Operation operation) {
+//        setItemNames(klient.getTyp());
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -72,9 +69,8 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
 
 //        this.kontFolderOrig = kontFolderOrig;
 
-        openInternal(klient, operation, titleItemNameText, new Gap(), titleEndText);
+        openInternal(klient, operation, new Gap(), null);
     }
-
 
 
     private void initNameField() {
@@ -101,7 +97,7 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
 
 
     @Override
-    protected void confirmDelete() {
+    public void confirmDelete() {
 //        long zakKlientsCount = klientService.countZakKlients(Long klientId);
 //        if (personCount > 0) {
             openConfirmDeleteDialog("Zrušení klienta",
@@ -111,5 +107,20 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
 //        } else {
 //            deleteKont(getCurrentItem());
 //        }
+    }
+
+    @Override
+    protected void refreshHeaderMiddleBox(Klient item) {
+
+    }
+
+    @Override
+    protected void activateListeners() {
+
+    }
+
+    @Override
+    protected void deactivateListeners() {
+
     }
 }

@@ -183,7 +183,7 @@ public class WageFormDialog extends AbstractSimpleFormDialog<PersonWage> {
 
     private void initControlsForItemAndOperation(final PersonWage item, final Operation operation) {
 //        setItemNames(item.getTyp());
-        getMainTitle().setText(operation.getDialogTitle(getItemName(operation), itemGender));
+        getMainTitle().setText(getDialogTitle(operation, itemGender));
 
 //        if (getCurrentItem() instanceof HasItemType) {
             getHeaderDevider().getStyle().set(

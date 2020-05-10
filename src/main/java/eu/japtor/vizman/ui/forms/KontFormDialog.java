@@ -498,9 +498,9 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     }
 
 
-    protected void initControlsForItemAndOperation(final Kont item, final Operation oper) {
+    protected void initControlsForItemAndOperation(final Kont item, final Operation operation) {
         setItemNames(item.getTyp());
-        getMainTitle().setText(oper.getDialogTitle(getItemName(oper), itemGender));
+        getMainTitle().setText(getDialogTitle(operation, itemGender));
         if (getCurrentItem() instanceof HasItemType) {
             getHeaderDevider().getStyle().set(
                     "background-color", VzmFormatUtils.getItemTypeColorBrighter(((HasItemType) item).getTyp()));

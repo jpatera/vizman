@@ -165,7 +165,7 @@ public class FaktFormDialog extends AbstractSimpleFormDialog<Fakt> implements Ha
 
     protected void initControlsForItemAndOperation(final Fakt item, final Operation operation) {
         setItemNames(item.getTyp());
-        getMainTitle().setText(operation.getDialogTitle(getItemName(operation), itemGender));
+        getMainTitle().setText(getDialogTitle(operation, itemGender));
 
         if (getCurrentItem() instanceof HasItemType) {
             getHeaderDevider().getStyle().set(
@@ -394,7 +394,7 @@ public class FaktFormDialog extends AbstractSimpleFormDialog<Fakt> implements Ha
             getBinder().readBean(getCurrentItem());
 //                activateControls(true);
 //                dateVystavField.setReadOnly(false);
-//                getSaveButton().setEnabled(true);
+//                getSaveAndCloseButton().setEnabled(true);
         }
 
         faktExpDialog.openFaktExpDialog(currentItem);

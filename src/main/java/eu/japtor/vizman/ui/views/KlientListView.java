@@ -86,7 +86,7 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
         );
 
         newItemButton = new NewItemButton("Nový klient",
-                event -> klientFormDialog.openDialog(new Klient(), Operation.ADD, null, null)
+                event -> klientFormDialog.openDialog(new Klient(), Operation.ADD)
         );
 
         reloadViewButton = new ReloadButton("Znovu načíst tabulku",
@@ -129,7 +129,8 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
 
         reloadKlientGridData();
         klientFormDialog = new KlientFormDialog(
-                this::saveKlient, this::deleteKlient, klientService);
+                this::saveKlient, this::deleteKlient, klientService
+        );
 //        initKlientGrid();
 
 //        updateGridContent();
@@ -193,8 +194,7 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
     }
 
     private Button buildEditBtn(Klient klient) {
-        Button editBtn = new GridItemEditBtn(event -> klientFormDialog.openDialog(
-                klient, Operation.EDIT, null, null));
+        Button editBtn = new GridItemEditBtn(event -> klientFormDialog.openDialog(klient, Operation.EDIT));
         return editBtn;
     }
 

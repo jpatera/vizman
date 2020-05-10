@@ -287,7 +287,7 @@ public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
 
     private void initControlsForItemAndOperation(final Person item, final Operation operation) {
 //        setItemNames(item.getTyp());
-        getMainTitle().setText(operation.getDialogTitle(getItemName(operation), itemGender));
+        getMainTitle().setText(getDialogTitle(operation, itemGender));
 
 //        if (getCurrentItem() instanceof HasItemType) {
         getHeaderDevider().getStyle().set(
@@ -464,15 +464,15 @@ public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
         wageGridOpenButton = new Button("Mzdová tabulka"
             , event -> {
             binder.writeBeanIfValid(getCurrentItem());
-            setCurrentItem(savePerson(getCurrentItem()));
+            setCurrentItem(saveItem(getCurrentItem()));
             openWageGridDialog();
         });
         return wageGridOpenButton;
     }
 
-    private Person savePerson(Person personToSave) {
+    private Person saveItem(Person itemToSave) {
         try {
-            setCurrentItem(personService.savePerson(personToSave, currentOperation));
+            setCurrentItem(personService.savePerson(itemToSave, currentOperation));
             lastOperationResult = OperationResult.ITEM_SAVED;
 //            Notification.show(
 //                    "Změny uživatele uloženy", 2000, Notification.Position.BOTTOM_END);
@@ -569,7 +569,7 @@ public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
         }
         try {
             binder.writeBeanIfValid(getCurrentItem());
-            savePerson(getCurrentItem());
+            saveItem(getCurrentItem());
             binder.readBean(getCurrentItem());
             if (closeAfterSave) {
                 closeDialog();
@@ -621,7 +621,7 @@ public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
 //            revertFormChanges();
             ConfirmDialog.createQuestion()
                     .withCaption("Zrušení uživatele")
-                    .withMessage(String.format("Zrušit uživvatele ?"))
+                    .withMessage(String.format("Zrušit uživatele ?"))
                     .withOkButton(() -> {
                                 if (deleteItem(getCurrentItem())) {
                                     closeDialog();

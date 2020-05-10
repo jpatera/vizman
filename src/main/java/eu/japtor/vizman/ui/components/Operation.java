@@ -43,10 +43,6 @@ public enum Operation {
         this.deleteEnabled = deleteEnabled;
     }
 
-    public String getDialogTitle(final String itemName, final GrammarGender itemGender) {
-        return getTitleOperName(itemGender) + " " + itemName.toUpperCase();
-    }
-
     public String getTitleOperName(final GrammarGender gender) {
         switch (gender) {
             case MASCULINE : return titleOperNameForMasculine;

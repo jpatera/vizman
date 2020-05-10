@@ -228,7 +228,7 @@ public class CfgPersonListView extends VerticalLayout implements BeforeEnterObse
 //        personGrid.getDataProvider().refreshAll();
     }
 
-    private void RebuildFilterFields() {
+    private void rebuildFilterFields() {
         // TODO: load all persons is wrong for lazy provider
 //        personList = personService.fetchAll();
 //        personGrid.setItems(personList);
@@ -324,42 +324,41 @@ public class CfgPersonListView extends VerticalLayout implements BeforeEnterObse
     }
 
     void finishPersonEdit(PersonFormDialog personFormDialog) {
-        Person itemModified = personFormDialog.getCurrentItem(); // Modified, just added or just deleted
-        Operation oper = personFormDialog.getCurrentOperation();
+        Person resultItem = personFormDialog.getCurrentItem(); // Modified, just added or just deleted
+        Person origItem = personFormDialog.getOrigItem();
         OperationResult operResult = personFormDialog.getLastOperationResult();
 
-//        if (NO_CHANGE != operResult) {
-//            personChanged = true;
-//        }
-        Person itemOrig = personFormDialog.getOrigItem();
+//        syncGridAfterPersonEdit(
+//                resultItem
+//                , personFormDialog.getCurrentOperation()
+//                , operResult
+//                , origItem
+//        );
 
-        syncGridAfterPersonEdit(itemModified, oper, operResult, itemOrig);
+        syncGridAfterPersonEdit();
 
         if (OperationResult.ITEM_SAVED == operResult) {
-            Notification.show(String.format("Uživatel uložen")
+            Notification.show(String.format("Uživatel %s uložen", resultItem.getUsername())
                     , 2500, Notification.Position.TOP_CENTER);
 
         } else if (OperationResult.ITEM_DELETED == operResult) {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Editace uživatele")
-                    .withMessage(String.format("Uživatel zrušen."))
+                    .withMessage(String.format("Uživatel % zrušen.", origItem.getUsername()))
                     .open();
         }
     }
 
-    private void syncGridAfterPersonEdit(Person itemModified, Operation oper
-            , OperationResult operRes, Person itemOrig) {
+//    private void syncGridAfterPersonEdit(Person itemModified, Operation oper
+//            , OperationResult operRes, Person itemOrig) {
+//        personGrid.getDataCommunicator().getKeyMapper().removeAll();
+//        personGrid.getDataProvider().refreshAll();
+//    }
 
-//        if (NO_CHANGE == operRes) {
-//            return;
-//        }
-
-//        Person person = personService.fetchOne(itemModified.getId());
+    private void syncGridAfterPersonEdit() {
         personGrid.getDataCommunicator().getKeyMapper().removeAll();
-//        personGrid.setItems(person.getWages());
         personGrid.getDataProvider().refreshAll();
-//        personWageGrid.select(personWageModified);
     }
 
 }

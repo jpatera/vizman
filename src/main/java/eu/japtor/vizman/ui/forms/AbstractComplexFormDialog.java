@@ -12,11 +12,12 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.service.VzmServiceException;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.Operation;
+import eu.japtor.vizman.ui.components.OperationResult;
 import eu.japtor.vizman.ui.components.ResizeBtn;
 import eu.japtor.vizman.ui.components.Ribbon;
 import org.claspina.confirmdialog.ButtonOption;
@@ -28,7 +29,14 @@ import java.time.LocalDateTime;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public abstract class AbstractComplexFormDialog<T extends Serializable>  extends Dialog {
+public abstract class AbstractComplexFormDialog<T extends Serializable & HasItemType>  extends Dialog {
+
+    private static final String DIALOG_WIDTH = "1000px";
+    private static final String DIALOG_HEIGHT = "800px";
+    private final static String REVERT_STR = "Vrátit změny";
+    private final static String CANCEL_STR = "Zpět";
+    private final static String DELETE_STR = "Zrušit";
+    private final static String SAVE_AND_CLOSE_STR = "Uložit a zavřít";
 
     private FormLayout formLayout;
     private Div dialogCanvas;
@@ -54,13 +62,15 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
     private H5 headerRightBox;
     private Button mainResizeBtn;
 
-    private Button saveButton;
+    private Button saveAndCloseButton;
     private Button cancelButton;
-    private Button deleteButton;
+    private Button deleteAndCloseButton;
+    private Button revertButton;
     private Registration registrationForSave;
     private Registration registrationForDelete;
 
     private T currentItem;
+    private T origItem;
 
     private VerticalLayout upperRightPane;
     private VerticalLayout lowerPane;
@@ -75,13 +85,13 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
     private Consumer<T> itemDeleter;
 
     protected Operation currentOperation;
-
+    private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
 
     protected AbstractComplexFormDialog(
             BiConsumer<T, Operation> itemSaver,
             Consumer<T> itemDeleter
     ){
-        this("1000px", "800px", false, false, itemSaver, itemDeleter, true);
+        this(DIALOG_WIDTH, DIALOG_HEIGHT, false, false, itemSaver, itemDeleter, true);
     }
 
     protected AbstractComplexFormDialog(
@@ -89,7 +99,7 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
             Consumer<T> itemDeleter,
             boolean closeAfterSave
     ){
-        this("1000px", "800px", false, false, itemSaver, itemDeleter, closeAfterSave);
+        this(DIALOG_WIDTH, DIALOG_HEIGHT, false, false, itemSaver, itemDeleter, closeAfterSave);
     }
 
 
@@ -236,7 +246,11 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
     }
 
     public void onValueChange(boolean isDirty) {
-        saveButton.setEnabled(isDirty);
+        saveAndCloseButton.setEnabled(isDirty);
+    }
+
+    private boolean canDelete(final T itemToDelete) {
+        return true;
     }
 
     public boolean isDirty() {
@@ -351,19 +365,31 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
     private Component initDialogButtonBar() {
         buttonBar = new HorizontalLayout();
 
-        cancelButton = new Button("Zpět");
+        cancelButton = new Button(CANCEL_STR);
         cancelButton.addClickListener(e -> close());
 
-        saveButton = new Button("Uložit");
-        saveButton.setAutofocus(true);
-        saveButton.getElement().setAttribute("theme", "primary");
+        revertButton = new Button(CANCEL_STR);
+        revertButton.addClickListener(e -> revertClicked());
 
-        deleteButton = new Button("Zrušit");
-        deleteButton.getElement().setAttribute("theme", "error");
+        saveAndCloseButton = new Button(SAVE_AND_CLOSE_STR + " " +  itemTypeAccuS.toLowerCase());
+        saveAndCloseButton.setAutofocus(true);
+        saveAndCloseButton.getElement().setAttribute("theme", "primary");
+        if (registrationForSave != null) {
+            registrationForSave.remove();
+        }
+        registrationForSave = saveAndCloseButton.addClickListener(e -> saveClicked(currentOperation));
+
+        deleteAndCloseButton = new Button(DELETE_STR + " " + itemTypeAccuS.toLowerCase());
+        deleteAndCloseButton.getElement().setAttribute("theme", "error");
+        if (registrationForDelete != null) {
+            registrationForDelete.remove();
+        }
+        registrationForDelete = deleteAndCloseButton.addClickListener(e -> deleteClicked());
+//        deleteAndCloseButton.setEnabled(currentOperation.isDeleteEnabled());
 
         leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);
-        leftBarPart.add(saveButton, deleteButton);
+        leftBarPart.add(saveAndCloseButton, deleteAndCloseButton);
 
         HorizontalLayout rightBarPart = new HorizontalLayout();
         rightBarPart.setSpacing(true);
@@ -400,79 +426,33 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         return lowerPane;
     }
 
-    /**
-     * Gets the binder.
-     *
-     * @return the binder
-     */
-    protected final Binder<T> getBinder() {
-        return binder;
-    }
-
-    /**
-     * Gets the item currently being edited.
-     *
-     * @return the item currently being edited
-     */
-    protected final T getCurrentItem() {
-        return currentItem;
-    }
-
-    public void open(T item, final Operation operation, String titleItemNameText) {
-        openInternal(item, operation, titleItemNameText, null, null);
-    }
 
     /**
      * Opens the given item for editing in the dialog.
      */
     protected void openInternal(T item, final Operation operation
-            , String titleItemNameText, Component titleMiddleComponent, String titleEndText)
+            , Component titleMiddleComponent, String titleEndText)
     {
-        if (item instanceof HasItemType)
-        headerDevider.getStyle().set("background-color", VzmFormatUtils.getItemTypeColorBrighter(((HasItemType)item).getTyp()));
+        this.headerDevider.getStyle().set("background-color", VzmFormatUtils.getItemTypeColorBrighter(item.getTyp()));
+        this.currentOperation = operation;
+        this.currentItem = item;
+        this.origItem = item;
+//        this.readonly = readonly;
 
-        currentOperation = operation;
-        currentItem = item;
+        // Set locale here, because when it is set in constructor, it is effective only in first open,
+        // and next openings show date in US format
 
-        if ((null == titleItemNameText) && (currentItem instanceof HasItemType)) {
-            setItemNames(((HasItemType) currentItem).getTyp());  // Set general default names
-        }
+        setItemNames((currentItem).getTyp());  // Set default generic names
 
-        mainTitle.setText(currentOperation.getDialogTitle(getItemName(currentOperation), itemGender));
 
-        headerMiddleBox.removeAll();
-        if (null != titleMiddleComponent) {
-            headerMiddleBox.add(titleMiddleComponent);
-        }
-
-        headerRightBox.setText(getHeaderEndComponentValue(titleEndText));
-
-        if (currentOperation == Operation.ADD) {
-            binder.removeBean();
-            binder.readBean(currentItem);
-        } else {
-            binder.removeBean();
-            binder.readBean(currentItem);
-        }
-
-        if (registrationForSave != null) {
-            registrationForSave.remove();
-        }
-        registrationForSave = saveButton.addClickListener(e -> saveClicked(currentOperation));
-        saveButton.setText("Uložit " + itemTypeAccuS.toLowerCase());
-
-        if (registrationForDelete != null) {
-            registrationForDelete.remove();
-        }
-        registrationForDelete = deleteButton.addClickListener(e -> deleteClicked());
-        deleteButton.setText("Zrušit " + itemTypeAccuS.toLowerCase());
-        deleteButton.setEnabled(currentOperation.isDeleteEnabled());
-
+        initControlsForItemAndOperation(item, operation, titleMiddleComponent, titleEndText);
+        initControlsOperability();
+        populateItemToControls(currentItem);
         this.open();
     }
 
     public void formFieldValuesChanged() {
-        saveButton.setEnabled(true);
+        saveAndCloseButton.setEnabled(true);
     }
 
     public void setDefaultItemNames() {
@@ -513,27 +493,116 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         return value;
     }
 
+    private void populateItemToControls(final T item) {
+        deactivateListeners();
+
+        if (currentOperation == Operation.ADD) {
+            binder.removeBean();
+            binder.readBean(item);
+        } else {
+            binder.removeBean();
+            binder.readBean(item);
+        }
+
+        activateListeners();
+    }
+
+    protected abstract void refreshHeaderMiddleBox(T item);
+
+    protected abstract void activateListeners();
+
+    protected abstract void deactivateListeners();
+
+    private void initControlsForItemAndOperation(
+            final T item
+            , final Operation operation
+            , final Component  titleMiddleComponent
+            , final String titleEndText
+    ) {
+        refreshHeaderMiddleBox(item);
+
+
+        headerMiddleBox.removeAll();
+        if (null != titleMiddleComponent) {
+            headerMiddleBox.add(titleMiddleComponent);
+        }
+        headerRightBox.setText(getHeaderEndComponentValue(titleEndText));
+
+
+        mainTitle.setText(getDialogTitle(operation, itemGender));
+        headerDevider.getStyle().set(
+                "background-color", VzmFormatUtils.getItemTypeColorBrighter((item).getTyp()));
+        deleteAndCloseButton.setText(DELETE_STR + " " + getItemName(Operation.DELETE).toLowerCase());
+    }
+
+    public String getDialogTitle(Operation operation, final GrammarGender itemGender) {
+        return operation.getTitleOperName(itemGender) + " " + getItemName(operation).toUpperCase();
+    }
+
+    private void initControlsOperability() {
+        saveAndCloseButton.setEnabled(false);
+//        saveAndCloseButton.setEnabled(false);
+        revertButton.setEnabled(false);
+        deleteAndCloseButton.setEnabled(currentOperation.isDeleteEnabled() && canDelete(currentItem));
+    }
+
     private void saveClicked(Operation operation) {
-        boolean isValid = binder.writeBeanIfValid(currentItem);
-        if (isValid) {
+        if (!isItemValidForSave()) {
+            binder.validate();
+            return;
+        };
+        try {
             itemSaver.accept(currentItem, operation);
             if (closeAfterSave) {
                 close();
+            } else {
+//                initControlsForItemAndOperation(currentItem, operation, ...);
+                populateItemToControls(currentItem);
             }
-        } else {
-            BinderValidationStatus<T> status = binder.validate();
+        } catch (VzmServiceException e) {
+            showSaveErrMessage();
         }
     }
 
+    private boolean isItemValidForSave() {
+        boolean isValid = binder.writeBeanIfValid(currentItem);
+        if (!isValid) {
+            ConfirmDialog
+                    .createWarning()
+                    .withCaption("Editace " + getItemName(Operation.SAVE))
+                    .withMessage(itemTypeAccuS + " nelze uložit, některá pole nejsou správně vyplněna.")
+                    .open();
+            return false;
+        }
+        return true;
+    }
+
+    private void showSaveErrMessage() {
+        ConfirmDialog.createError()
+                .withCaption("Editace" + getItemName(Operation.SAVE))
+                .withMessage(itemTypeAccuS + " se nepodařilo uložit.")
+                .open();
+    }
+
     private void deleteClicked() {
-// TODO: to be or not to be?
+// TODO: is it necessary?
 //        if (confirmDialog.getElement().getParent() == null) {
 //            getUI().ifPresent(ui -> ui.add(confirmDialog));
 //        }
         confirmDelete();
     }
 
-    protected abstract void confirmDelete();
+    private void revertClicked() {
+        revertFormChanges();
+        initControlsOperability();
+    }
+
+    private void revertFormChanges() {
+        binder.removeBean();
+        binder.readBean(currentItem);
+        lastOperationResult = OperationResult.NO_CHANGE;
+    }
+
 
     /**
      * Opens the confirmation dialog before deleting the current item.
@@ -562,6 +631,14 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
                 .open();
     }
 
+    private void showDeleteErrMessage() {
+        ConfirmDialog.createError()
+                .withCaption("Editace subdodávky")
+                .withMessage("Subdodávku se nepodařilo zrušit")
+                .open()
+        ;
+    }
+
     /**
      * Removes the {@code item} from the backend and close the dialog.
      *
@@ -577,11 +654,39 @@ public abstract class AbstractComplexFormDialog<T extends Serializable>  extends
         doDelete(item);
     }
 
-    public Button getSaveButton() {
-        return saveButton;
+    public Button getSaveAndCloseButton() {
+        return saveAndCloseButton;
     }
 
-    public Button getDeleteButton() {
-        return deleteButton;
+    public Button getDeleteAndCloseButton() {
+        return deleteAndCloseButton;
     }
+
+//  --------------------------------------------
+
+    /**
+     * @return a current state of an item currently being edited
+     */
+    public final T getCurrentItem() {
+        return currentItem;
+    }
+
+    public final T getOrigItem()  {
+        return origItem;
+    }
+
+    public final OperationResult getLastOperationResult()  {
+        return lastOperationResult;
+    }
+
+    public final Operation getCurrentOperation() {
+        return currentOperation;
+    }
+
+    public final Binder<T> getBinder() {
+        return binder;
+    }
+
+    protected abstract void confirmDelete();
+
 }

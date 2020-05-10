@@ -15,7 +15,7 @@ public interface PersonRepo extends JpaRepository<Person, Long>, QueryByExampleE
         Person findTopByUsernameIgnoreCase(String username);
 
         // TODO: An alternative is to use getOne(Long id) which does not need to be explicitely specified in  repo.
-        //       Don't know which one is better. May be findTopById loads eperson wages automatically?
+        //       Don't know which one is better. May be findTopById loads person wages automatically?
         Person findTopById(Long id);
 
         List<Person> findAllByOrderByUsername();
