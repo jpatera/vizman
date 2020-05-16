@@ -291,7 +291,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
         closeButton.setEnabled(true);
 //        saveButton.setEnabled(false);
 //        revertButton.setEnabled(false);
-//        deleteAndCloseButton.setEnabled(currentOperation.isDeleteEnabled() && canDeleteFakt(currentItem));
+//        deleteAndCloseButton.setEnabled(currentOperation.isDeleteAllowed() && canDeleteFakt(currentItem));
     }
 
 //    private void adjustControlsOperability(final boolean hasChanges, final boolean isValid) {

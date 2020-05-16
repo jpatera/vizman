@@ -179,11 +179,11 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
 
     public void openDialog(boolean readonly, Zak zak, Operation operation) {
-        this.currentOperation = operation;
-        this.currentItem = zak;
-        this.zakFaktsChanged = false;
-        this.origItem = zak;
         this.readonly = readonly;
+        this.currentItem = zak;
+        this.origItem = zak;    // TODO: to je blbe, musi se udelat new Zak
+        this.currentOperation = operation;
+        this.zakFaktsChanged = false;
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -234,7 +234,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     }
 
 
-    private void refreshHeaderMiddleBox(Zak zakItem) {
+    private void refreshHeaderMiddleBox(Zak item) {
         FlexLayout headerMiddleComponent = new FlexLayout();
         headerMiddleComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
         headerMiddleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
@@ -243,7 +243,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 , new Gap("2em")
                 , digiCheckBox
                 , new Gap("5em")
-                , VzmFormatUtils.buildAvizoComponent(zakItem.getBeforeTerms(), zakItem.getAfterTerms(), true)
+                , VzmFormatUtils.buildAvizoComponent(item.getBeforeTerms(), item.getAfterTerms(), true)
         );
         getHeaderMiddleBox().removeAll();
         if (null != headerMiddleComponent) {
@@ -291,7 +291,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         zakReportButton.setEnabled(!readonly);
         newFaktButton.setEnabled(!readonly);
         newSubButton.setEnabled(!readonly);
-        deleteAndCloseButton.setEnabled(!readonly && currentOperation.isDeleteEnabled() && canDeleteZak(currentItem));
+        deleteAndCloseButton.setEnabled(!readonly && currentOperation.isDeleteAllowed() && canDeleteZak(currentItem));
 
         rokField.setReadOnly(readonly);
         skupinaField.setReadOnly(readonly);

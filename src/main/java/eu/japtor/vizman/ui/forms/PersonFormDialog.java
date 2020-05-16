@@ -300,7 +300,7 @@ public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
         saveAndCloseButton.setEnabled(false);
 //        saveButton.setEnabled(false);
         revertButton.setEnabled(false);
-        deleteAndCloseButton.setEnabled(currentOperation.isDeleteEnabled() && canDeleteItem(getCurrentItem()));
+        deleteAndCloseButton.setEnabled(currentOperation.isDeleteAllowed() && canDeleteItem(getCurrentItem()));
     }
 
 

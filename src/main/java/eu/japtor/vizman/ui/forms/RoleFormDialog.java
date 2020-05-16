@@ -54,7 +54,7 @@ public class RoleFormDialog extends AbstractComplexFormDialog<Role> {
     }
 
     public void openDialog(Role role, Operation  operation)  {
-        openInternal(role, operation, new Gap(), null);
+        openInternal(role, operation, false, false, new Gap(), null);
     }
 
 //    private VerticalLayout buildRoleGridContainer(Grid<Role> grid) {

@@ -2,6 +2,7 @@ package eu.japtor.vizman.backend.service;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import eu.japtor.vizman.backend.entity.Kont;
+import eu.japtor.vizman.backend.entity.KontView;
 import eu.japtor.vizman.ui.components.Operation;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public interface KontService {
 
     Kont fetchOne(Long id);
 
-    Kont fetchByObjednatel(String objednatel);
+//    Kont fetchByObjednatel(String objednatel);
 
     Kont fetchByCkont(String ckont);
 
@@ -23,6 +24,8 @@ public interface KontService {
     Kont fetchByFolder(String folder);
 
     List<Kont> fetchAll();
+
+    List<KontView> fetchAllFromView();
 
     List<? super Kont> fetchByCkontFilter(String ckont);
 
@@ -38,7 +41,7 @@ public interface KontService {
 
     long countAll();
 
-    List<Kont> fetchBySearchFilter(String serachString, List<QuerySortOrder> sortOrders);
+//    List<Kont> fetchBySearchFilter(String serachString, List<QuerySortOrder> sortOrders);
 
-    long countByFilter(String filter);
+//    long countByFilter(String filter);
 }

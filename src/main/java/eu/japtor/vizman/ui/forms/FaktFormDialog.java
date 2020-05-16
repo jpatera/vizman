@@ -178,7 +178,7 @@ public class FaktFormDialog extends AbstractSimpleFormDialog<Fakt> implements Ha
         saveAndCloseButton.setEnabled(false);
 //        saveButton.setEnabled(false);
         revertButton.setEnabled(false);
-        deleteAndCloseButton.setEnabled(!readonly && currentOperation.isDeleteEnabled() && canDeleteFakt(currentItem));
+        deleteAndCloseButton.setEnabled(!readonly && currentOperation.isDeleteAllowed() && canDeleteFakt(currentItem));
 
         textField.setReadOnly(readonly);
         castkaField.setReadOnly(readonly);

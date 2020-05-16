@@ -1,8 +1,8 @@
 package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.app.HasLogger;
-import eu.japtor.vizman.backend.entity.NabView;
-import eu.japtor.vizman.backend.repository.NabViewRepo;
+import eu.japtor.vizman.backend.entity.Nab;
+import eu.japtor.vizman.backend.repository.NabRepo;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,23 +11,23 @@ import org.springframework.stereotype.Service;
 @Service
 public class NabServiceImpl implements NabService, HasLogger {
 
-    private NabViewRepo nabViewRepo;
+    private NabRepo nabRepo;
 
     @Autowired
-    public NabServiceImpl(NabViewRepo nabViewRepo) {
+    public NabServiceImpl(NabRepo nabRepo) {
         super();
-        this.nabViewRepo = nabViewRepo;
+        this.nabRepo = nabRepo;
     }
 
     @Override
-    public NabView fetchOne(Long id) {
-        return nabViewRepo.findTopById(id);
+    public Nab fetchOne(Long id) {
+        return nabRepo.findTopById(id);
     }
 
     @Override
-    public NabView saveNab(NabView itemToSave, Operation oper) {
+    public Nab saveNab(Nab itemToSave, Operation oper) {
         try {
-            NabView nabViewSaved = nabViewRepo.save(itemToSave);
+            Nab nabViewSaved = nabRepo.save(itemToSave);
             getLogger().info("{} saved: [operation: {}]"
                     , nabViewSaved.getTyp().name(), oper.name());
 
@@ -40,9 +40,9 @@ public class NabServiceImpl implements NabService, HasLogger {
     }
 
     @Override
-    public boolean deleteNab(NabView nabViewToDelete) {
+    public boolean deleteNab(Nab nabViewToDelete) {
         try {
-            nabViewRepo.delete(nabViewToDelete);
+            nabRepo.delete(nabViewToDelete);
             getLogger().info("{} deleted: {}, {}", nabViewToDelete.getTyp().name(), nabViewToDelete.getCnab(), nabViewToDelete.getText());
         } catch (Exception e) {
             String errMsg = "Error while deleting {} : {}, {}";

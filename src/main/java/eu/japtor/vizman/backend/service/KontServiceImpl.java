@@ -4,7 +4,9 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Kont;
+import eu.japtor.vizman.backend.entity.KontView;
 import eu.japtor.vizman.backend.repository.KontRepo;
+import eu.japtor.vizman.backend.repository.KontViewRepo;
 import eu.japtor.vizman.ui.components.Operation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +22,16 @@ import java.util.List;
 public class KontServiceImpl extends AbstractSortableService implements KontService, HasLogger {
 
     private final KontRepo kontRepo;
+    private final KontViewRepo kontViewRepo;
+
     private static final List<QuerySortOrder> DEFAULT_SORT_ORDER =
             Collections.singletonList(new QuerySortOrder("czak", SortDirection.ASCENDING));
 
     @Autowired
-    public KontServiceImpl(KontRepo kontRepo) {
+    public KontServiceImpl(KontRepo kontRepo, KontViewRepo kontViewRepo) {
         super();
         this.kontRepo = kontRepo;
+        this.kontViewRepo = kontViewRepo;
     }
 
 
@@ -56,14 +61,19 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
         return kontRepo.findTopByFolderIgnoreCase(folder);
     }
 
-    @Override
-    public Kont fetchByObjednatel(String objednatel) {
-        return kontRepo.findTopByObjednatelIgnoreCase(objednatel);
-    }
+//    @Override
+//    public Kont fetchByObjednatel(String objednatel) {
+//        return kontRepo.findTopByObjednatelIgnoreCase(objednatel);
+//    }
 
     @Override
     public List<Kont> fetchAll() {
         return kontRepo.findAllByOrderByCkontDescRokDesc();
+    }
+
+    @Override
+    public List<KontView> fetchAllFromView() {
+        return kontViewRepo.findAllByOrderByCkontDescRokDesc();
     }
 
     @Override
@@ -147,61 +157,61 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
         }
     }
 
-    /**
-     * Fetches the users whose name matches the given filter text.
-     *
-     * The matching is case insensitive. When passed an empty filter text,
-     * the method returns all users. The returned list is ordered
-     * by username.
-     *
-     * @param searchString    the filter text
-     * @return          the list of matching perosns
-     */
-    @Override
-    public List<Kont> fetchBySearchFilter(String searchString, List<QuerySortOrder> sortOrders) {
-        if (searchString == null) {
-            return kontRepo.findAll(mapSortOrdersToSpring(sortOrders));
-        } else {
-            String likeFilter = "%" + searchString.toLowerCase() + "%";
+//    /**
+//     * Fetches the users whose name matches the given filter text.
+//     *
+//     * The matching is case insensitive. When passed an empty filter text,
+//     * the method returns all users. The returned list is ordered
+//     * by username.
+//     *
+//     * @param searchString    the filter text
+//     * @return          the list of matching perosns
+//     */
+//    @Override
+//    public List<Kont> fetchBySearchFilter(String searchString, List<QuerySortOrder> sortOrders) {
+//        if (searchString == null) {
+//            return kontRepo.findAll(mapSortOrdersToSpring(sortOrders));
+//        } else {
+//            String likeFilter = "%" + searchString.toLowerCase() + "%";
+//
+//            // TODO: Or may be sort of this way:
+////            List<QuerySortOrder> defaultSort = ImmutableList.of(new QuerySortOrder("username", SortDirection.ASCENDING));
+////            List<QuerySortOrder> defaultSort = Collections.singletonList(new QuerySortOrder("username", SortDirection.ASCENDING));
+//            ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+//                    .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
+//                    .withIgnoreNullValues();
+//
+//            return kontRepo.findByObjednatelLikeIgnoreCase(likeFilter, mapSortOrdersToSpring(sortOrders));
+//
+//            // Make a copy of each matching item to keep entities and DTOs separated
+//            //        return personRepo.findAllByUsername(filter).stream()
+////            return fetchAll().stream()
+////                    //                .filter(c -> c.getUsername().toLowerCase().contains(normalizedFilter))
+////                    .filter(u -> u.getUsername().toLowerCase().contains(normalizedFilter))
+////                    //              .map(Person::new)
+////                    //                .sorted((c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()))
+////                    .collect(Collectors.toList());
+//        }
+//    }
 
-            // TODO: Or may be sort of this way:
-//            List<QuerySortOrder> defaultSort = ImmutableList.of(new QuerySortOrder("username", SortDirection.ASCENDING));
-//            List<QuerySortOrder> defaultSort = Collections.singletonList(new QuerySortOrder("username", SortDirection.ASCENDING));
-            ExampleMatcher exampleMatcher = ExampleMatcher.matching()
-                    .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
-                    .withIgnoreNullValues();
-
-            return kontRepo.findByObjednatelLikeIgnoreCase(likeFilter, mapSortOrdersToSpring(sortOrders));
-
-            // Make a copy of each matching item to keep entities and DTOs separated
-            //        return personRepo.findAllByUsername(filter).stream()
-//            return fetchAll().stream()
-//                    //                .filter(c -> c.getUsername().toLowerCase().contains(normalizedFilter))
-//                    .filter(u -> u.getUsername().toLowerCase().contains(normalizedFilter))
-//                    //              .map(Person::new)
-//                    //                .sorted((c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()))
-//                    .collect(Collectors.toList());
-        }
-    }
-
-    @Override
-    public long countByFilter(String filter) {
-        if (filter == null) {
-            return countAll();
-        } else {
-            String likeFilter = "%" + filter.toLowerCase() + "%";
-
-            // Make a copy of each matching item to keep entities and DTOs separated
-            //        return personRepo.findAllByUsername(filter).stream()
-            return kontRepo.countByObjednatelLikeIgnoreCase(likeFilter);
-
-//            return fetchAll().stream()
-//                    //                .filter(c -> c.getUsername().toLowerCase().contains(normalizedFilter))
-//                    .filter(u -> u.getUsername().toLowerCase().contains(normalizedFilter))
-//                    //              .map(Person::new)
-//                    //                .sorted((c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()))
-//                    .collect(Collectors.toList());
-        }
-    }
+//    @Override
+//    public long countByFilter(String filter) {
+//        if (filter == null) {
+//            return countAll();
+//        } else {
+//            String likeFilter = "%" + filter.toLowerCase() + "%";
+//
+//            // Make a copy of each matching item to keep entities and DTOs separated
+//            //        return personRepo.findAllByUsername(filter).stream()
+//            return kontRepo.countByObjednatelLikeIgnoreCase(likeFilter);
+//
+////            return fetchAll().stream()
+////                    //                .filter(c -> c.getUsername().toLowerCase().contains(normalizedFilter))
+////                    .filter(u -> u.getUsername().toLowerCase().contains(normalizedFilter))
+////                    //              .map(Person::new)
+////                    //                .sorted((c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()))
+////                    .collect(Collectors.toList());
+//        }
+//    }
 
 }

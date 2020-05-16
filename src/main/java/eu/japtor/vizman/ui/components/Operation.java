@@ -30,17 +30,17 @@ public enum Operation {
     private final String titleOperNameForNeuter;
     private final String titleOperNameForUnknown;
     private final String opNameInText;
-    private final boolean deleteEnabled;
+    private final boolean deleteAllowed;
 
     Operation(String titleOperNameForMasculine, String titleOperNameForFeminine,
               String titleOperNameForNeuter, String titleOperNameForUnknown,
-              String opNameInText, boolean deleteEnabled) {
+              String opNameInText, boolean deleteAllowed) {
         this.titleOperNameForMasculine = titleOperNameForMasculine;
         this.titleOperNameForFeminine = titleOperNameForFeminine;
         this.titleOperNameForNeuter = titleOperNameForNeuter;
         this.titleOperNameForUnknown = titleOperNameForUnknown;
         this.opNameInText = opNameInText;
-        this.deleteEnabled = deleteEnabled;
+        this.deleteAllowed = deleteAllowed;
     }
 
     public String getTitleOperName(final GrammarGender gender) {
@@ -52,7 +52,7 @@ public enum Operation {
         }
     }
 
-    public boolean isDeleteEnabled() {
-        return deleteEnabled;
+    public boolean isDeleteAllowed() {
+        return deleteAllowed;
     }
 }

@@ -196,7 +196,7 @@ public class WageFormDialog extends AbstractSimpleFormDialog<PersonWage> {
         saveAndCloseButton.setEnabled(false);
 //        saveButton.setEnabled(false);
         revertButton.setEnabled(false);
-        deleteAndCloseButton.setEnabled(currentOperation.isDeleteEnabled() && canDeleteItem(getCurrentItem()));
+        deleteAndCloseButton.setEnabled(currentOperation.isDeleteAllowed() && canDeleteItem(getCurrentItem()));
     }
 
 //    private Component initYmFromSelector() {

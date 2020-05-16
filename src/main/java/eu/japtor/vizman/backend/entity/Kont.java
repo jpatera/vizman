@@ -47,9 +47,9 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     @Column(name = "INVESTOR")
     private String investor;
 
-    @Basic
-    @Column(name = "OBJEDNATEL")
-    private String objednatel;
+//    @Basic
+//    @Column(name = "OBJEDNATEL")
+//    private String objednatel;
 
     @Column(name = "MENA")
     @Enumerated(EnumType.STRING)
@@ -153,12 +153,12 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
         this.investor = investor;
     }
 
-    public String getObjednatel() {
-        return objednatel;
-    }
-    public void setObjednatel(String objednatel) {
-        this.objednatel = objednatel;
-    }
+//    public String getObjednatel() {
+//        return objednatel;
+//    }
+//    public void setObjednatel(String objednatel) {
+//        this.objednatel = objednatel;
+//    }
 
     public Mena getMena() {
         return mena;

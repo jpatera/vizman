@@ -90,18 +90,6 @@ public class ZakBasicListView extends VerticalLayout {
         initView();
     }
 
-    private void initView() {
-        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-//        this.setAlignItems(Alignment.STRETCH);
-//        setHeight("90%");
-//        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        this.setPadding(false);
-        this.setMargin(false);
-        this.add(
-                buildGridContainer()
-        );
-    }
-
     @PostConstruct
     public void postInit() {
         loadViewContent();
@@ -120,23 +108,51 @@ public class ZakBasicListView extends VerticalLayout {
         return zakBasicFilterParams;
     }
 
-    private Component buildGridBarComponent() {
-        HorizontalLayout gridToolBar = new HorizontalLayout();
-//        gridToolBar.setWidth("100%");
-//        gridToolBar.setPadding(true);
-        gridToolBar.setSpacing(false);
-        gridToolBar.setAlignItems(Alignment.END);
-        gridToolBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
+    private void initView() {
+        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+//        this.setAlignItems(Alignment.STRETCH);
+//        setHeight("90%");
+//        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+        this.setPadding(false);
+        this.setMargin(false);
+        this.add(
+                buildGridContainer()
+        );
+    }
 
-        expXlsAnchor = initReportXlsExpAnchor();
-        gridToolBar.add(
+    private Component buildGridContainer() {
+        VerticalLayout gridContainer = new VerticalLayout();
+        gridContainer.setClassName("view-container");
+        gridContainer.getStyle().set("marginTop", "0.5em");
+        gridContainer.setAlignItems(Alignment.STRETCH);
+
+        gridContainer.add(
+                buildGridBarComponent()
+                , initZakGrid()
+        );
+        return gridContainer;
+    }
+
+    private Component initZakGrid() {
+        zakGrid = new ZakSimpleGrid(false, null, null,true, true, null, null);
+        zakGrid.setMultiSort(true);
+        zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        return zakGrid;
+    }
+
+    private Component buildGridBarComponent() {
+        HorizontalLayout gridBar = new HorizontalLayout();
+        gridBar.setSpacing(false);
+        gridBar.setAlignItems(Alignment.END);
+        gridBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        gridBar.add(
                 buildTitleComponent()
                 , new Ribbon()
 //                , buildGridBarControlsComponent()
-                , new Ribbon()
-                , expXlsAnchor
+//                , new Ribbon()
+                , buildToolBarComponent()
         );
-        return gridToolBar;
+        return gridBar;
     }
 
     private Component buildTitleComponent() {
@@ -152,6 +168,17 @@ public class ZakBasicListView extends VerticalLayout {
                 , initReloadButton()
         );
         return titleComponent;
+    }
+
+
+    private Component buildToolBarComponent() {
+        HorizontalLayout toolBar = new HorizontalLayout();
+        toolBar.setDefaultVerticalComponentAlignment(Alignment.CENTER);
+        toolBar.setSpacing(false);
+        toolBar.add(
+                initReportXlsExpAnchor()
+        );
+        return toolBar;
     }
 
     private Anchor initReportXlsExpAnchor() {
@@ -180,27 +207,6 @@ public class ZakBasicListView extends VerticalLayout {
 
     private Component initReloadButton() {
         return reloadButton = new ReloadButton(event -> loadViewContent());
-    }
-
-    private Component buildGridContainer() {
-        VerticalLayout gridContainer = new VerticalLayout();
-        gridContainer.setClassName("view-container");
-        gridContainer.getStyle().set("marginTop", "0.5em");
-        gridContainer.setAlignItems(Alignment.STRETCH);
-
-        gridContainer.add(
-                buildGridBarComponent()
-                , initZakGrid()
-        );
-        return gridContainer;
-    }
-
-
-    private Component initZakGrid() {
-        zakGrid = new ZakSimpleGrid(false, null, null,true, true, null, null);
-        zakGrid.setMultiSort(true);
-        zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        return zakGrid;
     }
 
     private void loadViewContent() {

@@ -68,7 +68,7 @@ public class CalyHolFormDialog extends AbstractComplexFormDialog<CalyHol> {
 
         holDateField.setLocale(new Locale("cs", "CZ"));
 
-        openInternal(calyHol, operation, new Gap(), titleEndText);
+        openInternal(calyHol, operation, false, true, new Gap(), titleEndText);
     }
 
 

@@ -69,7 +69,7 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
 
 //        this.kontFolderOrig = kontFolderOrig;
 
-        openInternal(klient, operation, new Gap(), null);
+        openInternal(klient, operation, false, true, new Gap(), null);
     }
 
 

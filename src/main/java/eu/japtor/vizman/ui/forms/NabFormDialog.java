@@ -1,59 +1,73 @@
 package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.textfield.PasswordField;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.validator.StringLengthValidator;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.shared.Registration;
-import eu.japtor.vizman.backend.entity.NabView;
-import eu.japtor.vizman.backend.entity.Role;
+import eu.japtor.vizman.backend.entity.Klient;
+import eu.japtor.vizman.backend.entity.KontView;
+import eu.japtor.vizman.backend.entity.Nab;
+import eu.japtor.vizman.backend.service.KlientService;
+import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.NabViewService;
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Operation;
 import eu.japtor.vizman.ui.components.OperationResult;
-import eu.japtor.vizman.ui.components.TwinColGrid;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class NabFormDialog extends AbstractComplexFormDialog<NabView> {
+public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
 
 //    private ComboBox<PersonState> statusField; // = new ComboBox("Status");
+    private Checkbox vzCheckBox;
+    private TextField rokField;
     private TextField cnabField;
-    private PasswordField passwordField; // = new TextField("Password");
-    private TextField poznamkaField; // = new TextField("Jméno");
-    private TextField prijmeniField; // = new TextField("Příjmení");
-    private TextField sazbaField; // = new TextField("Sazba");
+    private TextField textField;
+    private ComboBox<Klient> objednatelCombo;
+    private ComboBox<KontView> ckontCombo;
+    private TextField poznamkaField;
     private DatePicker nastupField; // = new DatePicker("Nástup");
     private DatePicker vystupField; // = new DatePicker("Výstup");
-    private TwinColGrid<Role> twinRolesGridField;
 
-    private Binder<NabView> binder = new Binder<>();
-    private NabView currentItem;
-    private NabView origItem;
+    private Binder<Nab> binder = new Binder<>();
+    private Nab currentItem;
+    private Nab origItem;
     private Operation currentOperation;
     private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
-    private boolean readonly;
+    private boolean readOnly;
 
     private Registration binderChangeListener = null;
+
     private NabViewService nabViewService;
+    private KontService kontService;
+    private KlientService klientService;
+    private List<Klient> klientList;
+    private List<KontView> kontViewList;
 
 
     public NabFormDialog(
-            BiConsumer<NabView, Operation> itemSaver
-            , Consumer<NabView> itemDeleter
+            BiConsumer<Nab, Operation> itemSaver
+            , Consumer<Nab> itemDeleter
             , NabViewService nabViewService
+            , KontService kontService
+            , KlientService klientService
     ){
-//    public NabFormDialog(
-//            NabViewService nabViewService
-//    ){
-        super("800px", "600px"
+        super("800px", null
                 , false, false
-                , itemSaver, itemDeleter, false
+                , itemSaver, itemDeleter, true
         );
 
 //        getFormLayout().setResponsiveSteps(
@@ -62,18 +76,41 @@ public class NabFormDialog extends AbstractComplexFormDialog<NabView> {
 //                new FormLayout.ResponsiveStep("12em", 3));
 
         this.nabViewService = nabViewService;
+        this.kontService = kontService;
+        this.klientService = klientService;
 
         getFormLayout().add(
-                initCnabField()
+                initRokField()
+                , initCnabField()
+                , initTextField()
+                , initObjednatelCombo()
+                , initCkontCombo()
                 , initPoznamkaField()
         );
+        initVzCheckBox();
+
     }
 
     public void openDialog(
-            NabView nabView, Operation operation
-            , String titleItemNameText, String titleEndText
+            boolean readonly
+            , Nab nab
+            , Operation operation
     ){
+        this.readOnly = readonly;
+        this.currentItem = nab;
+        this.origItem = Nab.getNewInstance(nab);
+        this.currentOperation = operation;
+
 //        setItemNames(nabView.getTyp());
+
+        klientList = klientService.fetchAll();
+        kontViewList = kontService.fetchAllFromView();
+
+//        // Following series of commands replacing combo box are here because of a bug
+//        // Initialize $connector if values were not set in ComboBox element prior to page load. #188
+        // TODO: checkout if the bug is fixed
+        fixObjednatelComboOpening();
+        fixCkontComboOpening();
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -82,7 +119,25 @@ public class NabFormDialog extends AbstractComplexFormDialog<NabView> {
 
 //        this.kontFolderOrig = kontFolderOrig;
 
-        openInternal(nabView, operation, new Gap(), titleEndText);
+        openInternal(nab, operation, false, true, new Gap(), null);
+    }
+
+
+    private Component initVzCheckBox() {
+        vzCheckBox = new Checkbox("Veřejná zak."); // = new TextField("Username");
+        vzCheckBox.getElement().setAttribute("theme", "secondary");
+        getBinder().forField(vzCheckBox)
+                .bind(Nab::getVz, Nab::setVz);
+        return vzCheckBox;
+    }
+
+    private Component initRokField() {
+        rokField = new TextField("Rok nabídky");
+        getBinder().forField(rokField)
+                .withConverter(new VzmFormatUtils.ValidatedIntegerYearConverter())
+                .bind(Nab::getRok, Nab::setRok);
+        rokField.setValueChangeMode(ValueChangeMode.EAGER);
+        return rokField;
     }
 
     private Component initCnabField() {
@@ -95,15 +150,62 @@ public class NabFormDialog extends AbstractComplexFormDialog<NabView> {
                         cnab -> (currentOperation != Operation.ADD) ?
                             true : nabViewService.fetchNabByCnab(cnab) == null,
                         "Nabídka s tímto číslem již existuje, zvol jiné")
-                .bind(NabView::getCnab, NabView::setCnab);
+                .bind(Nab::getCnab, Nab::setCnab);
+        cnabField.setValueChangeMode(ValueChangeMode.EAGER);
         return cnabField;
     }
 
+    private Component initObjednatelCombo() {
+        objednatelCombo = new ComboBox<>("Objednatel");
+        objednatelCombo.getElement().setAttribute("colspan", "1");
+        objednatelCombo.setItems(new ArrayList<>());
+        objednatelCombo.setItemLabelGenerator(Klient::getName);
+        return objednatelCombo;
+    }
+
+    private void fixObjednatelComboOpening() {
+        binder.removeBinding(objednatelCombo);
+        getFormLayout().remove(objednatelCombo);
+        getFormLayout().addComponentAtIndex(3, initObjednatelCombo());
+        objednatelCombo.setItems(this.klientList);
+        getBinder().forField(objednatelCombo)
+                .bind(Nab::getKlient, Nab::setKlient);
+        objednatelCombo.setPreventInvalidInput(true);
+    }
+
+    private Component initCkontCombo() {
+        ckontCombo = new ComboBox<>("Kontrakt");
+        ckontCombo.getElement().setAttribute("colspan", "1");
+        ckontCombo.setItems(new ArrayList<>());
+        ckontCombo.setItemLabelGenerator(KontView::getCkont);
+        return ckontCombo;
+    }
+
+    private void fixCkontComboOpening() {
+        binder.removeBinding(ckontCombo);
+        getFormLayout().remove(ckontCombo);
+        getFormLayout().addComponentAtIndex(4, initCkontCombo());
+        ckontCombo.setItems(this.kontViewList);
+        getBinder().forField(ckontCombo)
+                .bind(Nab::getKont, Nab::setKont);
+        ckontCombo.setPreventInvalidInput(true);
+    }
+
+    private Component initTextField() {
+        textField = new TextField("Text");
+        textField.getElement().setAttribute("colspan", "2");
+        getBinder().forField(textField)
+                .bind(Nab::getText, Nab::setText);
+        textField.setValueChangeMode(ValueChangeMode.EAGER);
+        return textField;
+    }
 
     private Component initPoznamkaField() {
         poznamkaField = new TextField("Poznámka");
+        poznamkaField.getElement().setAttribute("colspan", "2");
         getBinder().forField(poznamkaField)
-                .bind(NabView::getPoznamka, NabView::setPoznamka);
+                .bind(Nab::getPoznamka, Nab::setPoznamka);
+        poznamkaField.setValueChangeMode(ValueChangeMode.EAGER);
         return poznamkaField;
     }
 
@@ -241,19 +343,66 @@ public class NabFormDialog extends AbstractComplexFormDialog<NabView> {
 //    }
 
     @Override
-    protected void refreshHeaderMiddleBox(NabView item) {
-        // Do nothing
+    protected void refreshHeaderMiddleBox(Nab item) {
+        FlexLayout headerMiddleComponent = new FlexLayout();
+        headerMiddleComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
+        headerMiddleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        headerMiddleComponent.add(
+                vzCheckBox
+        );
+        getHeaderMiddleBox().removeAll();
+        if (null != headerMiddleComponent) {
+            getHeaderMiddleBox().add(headerMiddleComponent);
+        }
     }
 
     @Override
     protected void activateListeners() {
-        // Do nothing
+        if (null != binder) {
+            binderChangeListener = binder.addValueChangeListener(e -> {
+                adjustControlsOperability(false, true, true, isDirty(),  binder.isValid());
+            });
+        }
     }
 
     @Override
     protected void deactivateListeners() {
-        // Do nothing
+        if (null != binderChangeListener) {
+            try {
+                binderChangeListener.remove();
+            } catch (Exception e)  {
+                // do nothing
+            }
+        }
     }
+
+
+    @Override
+    public void initControlsOperability(final boolean readOnly, final boolean deleteAllowed, final boolean canDelete) {
+        super.initControlsOperability(readOnly, deleteAllowed, canDelete);
+        rokField.setReadOnly(readOnly);
+        cnabField.setReadOnly(readOnly);
+        vzCheckBox.setReadOnly(readOnly);
+        textField.setReadOnly(readOnly);
+        objednatelCombo.setReadOnly(readOnly);
+        poznamkaField.setReadOnly(readOnly);
+    }
+
+    @Override
+    public void adjustControlsOperability(
+            final boolean readOnly
+            , final boolean deleteAllowed
+            , final boolean canDelete
+            , final boolean hasChanges
+            , final boolean isValid
+    ) {
+        super.adjustControlsOperability(readOnly, deleteAllowed, canDelete, hasChanges, isValid);
+    }
+
+    private boolean canDeleteItem(final Nab itemToDelete) {
+        return true;
+    }
+
 
 //    private void closeDialog() {
 //        this.close();

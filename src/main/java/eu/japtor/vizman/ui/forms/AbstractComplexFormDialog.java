@@ -71,6 +71,9 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
 
     private T currentItem;
     private T origItem;
+    private boolean readOnly;
+    private boolean canDelete;
+    private boolean deleteAllowed;
 
     private VerticalLayout upperRightPane;
     private VerticalLayout lowerPane;
@@ -216,41 +219,12 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
     }
 
     public void setupEventListeners() {
-
         binder.addValueChangeListener(e -> onValueChange(isDirty()));
-
-//        getGrid().addSelectionListener(e -> {
-//            e.getF``irstSelectedItem().ifPresent(entity -> {
-//                navigateToEntity(entity.getId().toString());
-//                getGrid().deselectAll();
-//            });
-//        });
-//
-//        getForm().getButtons().addSaveListener(e -> getPresenter().save());
-//        getForm().getButtons().addCancelListener(e -> getPresenter().cancel());
-//
-//        getDialog().getElement().addEventListener("opened-changed", e -> {
-//            if (!getDialog().isOpened()) {
-//                getPresenter().cancel();
-//            }
-//        });
-//
-//        getForm().getButtons().addDeleteListener(e -> getPresenter().delete());
-//
-//        getSearchBar().addActionClickListener(e -> getPresenter().createNew());
-//        getSearchBar()
-//                .addFilterChangeListener(e -> getPresenter().filter(getSearchBar().getFilter()));
-//
-//        getSearchBar().setActionText("New " + entityName);
-//        getBinder().addValueChangeListener(e -> getPresenter().onValueChange(isDirty()));
     }
 
     public void onValueChange(boolean isDirty) {
         saveAndCloseButton.setEnabled(isDirty);
-    }
-
-    private boolean canDelete(final T itemToDelete) {
-        return true;
+        revertButton.setEnabled(isDirty);
     }
 
     public boolean isDirty() {
@@ -368,10 +342,10 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
         cancelButton = new Button(CANCEL_STR);
         cancelButton.addClickListener(e -> close());
 
-        revertButton = new Button(CANCEL_STR);
+        revertButton = new Button(REVERT_STR);
         revertButton.addClickListener(e -> revertClicked());
 
-        saveAndCloseButton = new Button(SAVE_AND_CLOSE_STR + " " +  itemTypeAccuS.toLowerCase());
+        saveAndCloseButton = new Button(SAVE_AND_CLOSE_STR);
         saveAndCloseButton.setAutofocus(true);
         saveAndCloseButton.getElement().setAttribute("theme", "primary");
         if (registrationForSave != null) {
@@ -385,15 +359,15 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
             registrationForDelete.remove();
         }
         registrationForDelete = deleteAndCloseButton.addClickListener(e -> deleteClicked());
-//        deleteAndCloseButton.setEnabled(currentOperation.isDeleteEnabled());
+//        deleteAndCloseButton.setEnabled(currentOperation.isDeleteAllowed());
 
         leftBarPart = new HorizontalLayout();
         leftBarPart.setSpacing(true);
-        leftBarPart.add(saveAndCloseButton, deleteAndCloseButton);
+        leftBarPart.add(revertButton, deleteAndCloseButton);
 
         HorizontalLayout rightBarPart = new HorizontalLayout();
         rightBarPart.setSpacing(true);
-        rightBarPart.add(cancelButton);
+        rightBarPart.add(saveAndCloseButton, cancelButton);
 
 //        buttonBar.getStyle().set("margin-top", "0.2em");
         buttonBar.setSpacing(false);
@@ -430,14 +404,21 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
     /**
      * Opens the given item for editing in the dialog.
      */
-    protected void openInternal(T item, final Operation operation
-            , Component titleMiddleComponent, String titleEndText)
-    {
+    protected void openInternal(
+            T item
+            , final Operation operation
+            , final boolean readOnly
+            , final boolean canDelete
+            , Component titleMiddleComponent
+            , String titleEndText
+    ) {
         this.headerDevider.getStyle().set("background-color", VzmFormatUtils.getItemTypeColorBrighter(item.getTyp()));
         this.currentOperation = operation;
         this.currentItem = item;
         this.origItem = item;
-//        this.readonly = readonly;
+        this.readOnly = readOnly;
+        this.canDelete = canDelete;
+        this.deleteAllowed = currentOperation.isDeleteAllowed();
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -445,14 +426,10 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
         setItemNames((currentItem).getTyp());  // Set default generic names
 
 
-        initControlsForItemAndOperation(item, operation, titleMiddleComponent, titleEndText);
-        initControlsOperability();
+        initControlsForItemAndOperation(currentItem, this.currentOperation, titleMiddleComponent, titleEndText);
+        initControlsOperability(this.readOnly, this.deleteAllowed, this.canDelete);
         populateItemToControls(currentItem);
         this.open();
-    }
-
-    public void formFieldValuesChanged() {
-        saveAndCloseButton.setEnabled(true);
     }
 
     public void setDefaultItemNames() {
@@ -521,11 +498,10 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
     ) {
         refreshHeaderMiddleBox(item);
 
-
-        headerMiddleBox.removeAll();
-        if (null != titleMiddleComponent) {
-            headerMiddleBox.add(titleMiddleComponent);
-        }
+//        headerMiddleBox.removeAll();
+//        if (null != titleMiddleComponent) {
+//            headerMiddleBox.add(titleMiddleComponent);
+//        }
         headerRightBox.setText(getHeaderEndComponentValue(titleEndText));
 
 
@@ -539,12 +515,24 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
         return operation.getTitleOperName(itemGender) + " " + getItemName(operation).toUpperCase();
     }
 
-    private void initControlsOperability() {
+    public void initControlsOperability(boolean readOnly, boolean deleteAllowed, boolean canDelete) {
         saveAndCloseButton.setEnabled(false);
-//        saveAndCloseButton.setEnabled(false);
         revertButton.setEnabled(false);
-        deleteAndCloseButton.setEnabled(currentOperation.isDeleteEnabled() && canDelete(currentItem));
+        deleteAndCloseButton.setEnabled(!readOnly && deleteAllowed && canDelete);
+        cancelButton.setEnabled(true);
     }
+
+    public void adjustControlsOperability(
+            final boolean readOnly
+            , final boolean deleteAllowed
+            , final boolean canDelete
+            , final boolean hasChanges
+            , final boolean isValid
+    ) {
+        saveAndCloseButton.setEnabled(!readOnly && hasChanges && isValid);
+        revertButton.setEnabled(!readOnly && hasChanges);
+        deleteAndCloseButton.setEnabled(!readOnly && deleteAllowed && canDelete);
+    };
 
     private void saveClicked(Operation operation) {
         if (!isItemValidForSave()) {
@@ -594,7 +582,7 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
 
     private void revertClicked() {
         revertFormChanges();
-        initControlsOperability();
+        initControlsOperability(readOnly, deleteAllowed, canDelete);
     }
 
     private void revertFormChanges() {
@@ -656,6 +644,14 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
 
     public Button getSaveAndCloseButton() {
         return saveAndCloseButton;
+    }
+
+    public Button getRevertButton() {
+        return revertButton;
+    }
+
+    public Button getCancelButton() {
+        return cancelButton;
     }
 
     public Button getDeleteAndCloseButton() {

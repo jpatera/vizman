@@ -169,7 +169,7 @@ public class SubFormDialog extends AbstractSimpleFormDialog<Fakt> implements Has
         saveAndCloseButton.setEnabled(false);
 //        saveButton.setEnabled(false);
         revertButton.setEnabled(false);
-        deleteAndCloseButton.setEnabled(currentOperation.isDeleteEnabled() && canDeleteFakt(currentItem));
+        deleteAndCloseButton.setEnabled(currentOperation.isDeleteAllowed() && canDeleteFakt(currentItem));
     }
 
 //    private void adjustControlsOperability(final boolean hasChanges, final boolean isValid) {

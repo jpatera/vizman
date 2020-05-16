@@ -3,6 +3,7 @@ package eu.japtor.vizman.ui.views;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.Anchor;
@@ -19,11 +20,11 @@ import com.vaadin.flow.server.VaadinSession;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.dataprovider.NabFiltPagDataProvider;
 import eu.japtor.vizman.backend.dataprovider.spring.FilterablePageableDataProvider;
-import eu.japtor.vizman.backend.entity.ItemNames;
-import eu.japtor.vizman.backend.entity.ItemType;
-import eu.japtor.vizman.backend.entity.NabView;
-import eu.japtor.vizman.backend.entity.Perm;
+import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.report.NabListReportBuilder;
+import eu.japtor.vizman.backend.service.KlientService;
+import eu.japtor.vizman.backend.service.KontService;
+import eu.japtor.vizman.backend.service.NabService;
 import eu.japtor.vizman.backend.service.NabViewService;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
@@ -33,6 +34,7 @@ import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,38 +50,35 @@ public class NabListView extends VerticalLayout {
 
     private final static String REPORT_FILE_NAME = "vzm-rep-nab";
 
-    private List<NabView> nabViewList;
     private NabGrid nabGrid;
-    private List<GridSortOrder<NabView>> initialSortOrder;
-    private ReloadButton reloadButton;
-    private Anchor expXlsAnchor;
+//    private List<GridSortOrder<NabView>> initialSortOrder;
     private ReportExporter<NabView> xlsReportExporter;
-
     private NabFormDialog nabFormDialog;
+
+    private ReloadButton reloadButton;;
+    private ResetFiltersButton resetFiltersButton;
     private NewItemButton newItemButton;
+    private Anchor expXlsAnchor;
 
     private DataProvider<NabView, NabViewService.NabFilter> gridDataProvider; // Second type  param  must not be Void
-//    private ConfigurableFilterDataProvider<NabView, Void, NabViewService.NabFilter> filtPagGridDataProvider;
     private FilterablePageableDataProvider<NabView, NabViewService.NabFilter> filtPagGridDataProvider;
+    private List<NabView> nabViewList = new ArrayList<>();  // Temporary placeholder for report
 
     @Autowired
     public NabViewService nabViewService;
 
+    @Autowired
+    public NabService nabService;
+
+    @Autowired
+    public KontService kontService;
+
+    @Autowired
+    public KlientService klientService;
+
     public NabListView() {
         xlsReportExporter = new ReportExporter((new NabListReportBuilder()).buildReport());
         initView();
-    }
-
-    private void initView() {
-        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-//        this.setAlignItems(Alignment.STRETCH);
-//        setHeight("90%");
-//        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        this.setPadding(false);
-        this.setMargin(false);
-        this.add(
-                buildGridContainer()
-        );
     }
 
     @PostConstruct
@@ -111,6 +110,7 @@ public class NabListView extends VerticalLayout {
 //                            .countByNabFilter(query.getFilter().orElse(null));
 //                }
 //        );
+
 //        filtPagGridDataProvider = gridDataProvider.withConfigurableFilter();
         filtPagGridDataProvider = new NabFiltPagDataProvider(nabViewService);
         nabGrid.setGridDataProvider(filtPagGridDataProvider);
@@ -119,6 +119,8 @@ public class NabListView extends VerticalLayout {
                 this::saveItem
                 , this::deleteItem
                 , nabViewService
+                , kontService
+                , klientService
         );
         nabFormDialog.addOpenedChangeListener(event -> {
             if (!event.isOpened()) {
@@ -130,6 +132,88 @@ public class NabListView extends VerticalLayout {
         // TODO: inital sort order markers
         //        nabGrid.sort(initialSortOrder);
         //        UI.getCurrent().getPage().executeJavaScript("document.querySelectorAll(\"vaadin-grid-sorter\")[1].click()");
+    }
+
+    private void initView() {
+        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+//        this.setAlignItems(Alignment.STRETCH);
+//        setHeight("90%");
+//        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+        this.setPadding(false);
+        this.setMargin(false);
+        this.add(
+                buildGridContainer()
+        );
+    }
+
+    private Component buildGridContainer() {
+        VerticalLayout gridContainer = new VerticalLayout();
+        gridContainer.setClassName("view-container");
+        gridContainer.getStyle().set("marginTop", "0.5em");
+        gridContainer.setAlignItems(Alignment.STRETCH);
+
+        gridContainer.add(
+                buildGridBarComponent()
+                , initNabGrid()
+        );
+        return gridContainer;
+    }
+
+    private Component initNabGrid() {
+        nabGrid = new NabGrid(
+                false
+                , null
+                , null
+                ,true
+                , this::openItem
+        );
+        nabGrid.setMultiSort(true);
+        nabGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        return nabGrid;
+    }
+
+    private Component buildGridBarComponent() {
+        HorizontalLayout gridBar = new HorizontalLayout();
+        gridBar.setSpacing(false);
+        gridBar.setAlignItems(Alignment.END);
+        gridBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        gridBar.add(
+                buildTitleComponent()
+                , new Ribbon()
+//                , buildGridBarControlsComponent()
+//                , new Ribbon()
+                , buildToolBarComponent()
+        );
+        return gridBar;
+    }
+
+    private Component buildTitleComponent() {
+        HorizontalLayout titleComponent = new HorizontalLayout();
+        titleComponent.setMargin(false);
+        titleComponent.setPadding(false);
+        titleComponent.setSpacing(false);
+        titleComponent.setAlignItems(Alignment.CENTER);
+        titleComponent.setJustifyContentMode(JustifyContentMode.START);
+        titleComponent.add(
+                new GridTitle(ItemNames.getNomP(ItemType.NAB))
+                , new Ribbon()
+                , initReloadButton()
+                , new Ribbon()
+                , initResetFiltersButton()
+        );
+        return titleComponent;
+    }
+
+    private Component buildToolBarComponent() {
+        HorizontalLayout toolBar = new HorizontalLayout();
+        toolBar.setDefaultVerticalComponentAlignment(Alignment.CENTER);
+        toolBar.setSpacing(false);
+        toolBar.add(
+                initNewItemButton()
+                , new Ribbon()
+                , initReportXlsExpAnchor()
+        );
+        return toolBar;
     }
 
     private ComponentEventListener anchorExportListener = event -> {
@@ -173,12 +257,21 @@ public class NabListView extends VerticalLayout {
 //    }
 
 
-    public void saveItem(NabView itemToSave, Operation operation) {
-        nabViewService.saveNab(itemToSave, operation);
+    public void openItem(NabView itemFromView, Operation operation) {
+        nabGrid.select(itemFromView);
+        nabFormDialog.openDialog(
+                false
+                , nabService.fetchOne(itemFromView.getId())
+                , operation
+        );
     }
 
-    private void deleteItem(final NabView itemToDelete) {
-        nabViewService.deleteNab(itemToDelete);
+    public void saveItem(Nab itemToSave, Operation operation) {
+        nabService.saveNab(itemToSave, operation);
+    }
+
+    private void deleteItem(final Nab itemToDelete) {
+        nabService.deleteNab(itemToDelete);
     }
 
 
@@ -195,8 +288,8 @@ public class NabListView extends VerticalLayout {
 
     void finishNabEdit(NabFormDialog nabFormDialog) {
         OperationResult operResult = nabFormDialog.getLastOperationResult();
-        NabView resultItem = nabFormDialog.getCurrentItem();  // Modified, just added or just deleted
-        NabView origItem = nabFormDialog.getOrigItem();
+        Nab resultItem = nabFormDialog.getCurrentItem();  // Modified, just added or just deleted
+        Nab origItem = nabFormDialog.getOrigItem();
 
 //        syncGridAfterEdit(
 //                resultItem
@@ -243,37 +336,24 @@ public class NabListView extends VerticalLayout {
 //        return nabFilterParams;
 //    }
 
-
-    private Component buildGridBarComponent() {
-        HorizontalLayout gridToolBar = new HorizontalLayout();
-        gridToolBar.setSpacing(false);
-        gridToolBar.setAlignItems(Alignment.END);
-        gridToolBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
-
-        expXlsAnchor = initReportXlsExpAnchor();
-        gridToolBar.add(
-                buildTitleComponent()
-                , new Ribbon()
-//                , buildGridBarControlsComponent()
-                , new Ribbon()
-                , expXlsAnchor
+    private Component initNewItemButton() {
+        newItemButton = new NewItemButton("Nová nabíka",
+                event -> nabFormDialog.openDialog(false, new Nab(ItemType.NAB), Operation.ADD)
         );
-        return gridToolBar;
+        return  newItemButton;
     }
 
-    private Component buildTitleComponent() {
-        HorizontalLayout titleComponent = new HorizontalLayout();
-        titleComponent.setMargin(false);
-        titleComponent.setPadding(false);
-        titleComponent.setSpacing(false);
-        titleComponent.setAlignItems(Alignment.CENTER);
-        titleComponent.setJustifyContentMode(JustifyContentMode.START);
-        titleComponent.add(
-                new GridTitle(ItemNames.getNomP(ItemType.NAB))
-                , new Ribbon()
-                , initReloadButton()
-        );
-        return titleComponent;
+    private Component initReloadButton() {
+        reloadButton = new ReloadButton(event -> loadInitialViewContent());
+        return reloadButton;
+    }
+
+    private Component initResetFiltersButton() {
+        resetFiltersButton = new ResetFiltersButton(event -> doNothing());
+        return resetFiltersButton;
+    }
+
+    private void doNothing() {
     }
 
     private Anchor initReportXlsExpAnchor() {
@@ -299,38 +379,6 @@ public class NabListView extends VerticalLayout {
         UI.getCurrent().getPage().setLocation(registration.getResourceUri());
     }
 
-
-    private Component initReloadButton() {
-        return reloadButton = new ReloadButton(event -> loadInitialViewContent());
-    }
-
-    private Component buildGridContainer() {
-        VerticalLayout gridContainer = new VerticalLayout();
-        gridContainer.setClassName("view-container");
-        gridContainer.getStyle().set("marginTop", "0.5em");
-        gridContainer.setAlignItems(Alignment.STRETCH);
-
-        gridContainer.add(
-                buildGridBarComponent()
-                , initNabGrid()
-        );
-        return gridContainer;
-    }
-
-
-    private Component initNabGrid() {
-        nabGrid = new NabGrid(
-                false
-                , null
-                , null
-                ,true
-                , (nab, operation) -> nabFormDialog.openDialog(
-                        nab, operation, "aaaaa", "bbbbb")
-        );
-        nabGrid.setMultiSort(true);
-        nabGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        return nabGrid;
-    }
 
     private void loadInitialViewContent() {
 //        loadGridDataAndRebuildFilterFields();

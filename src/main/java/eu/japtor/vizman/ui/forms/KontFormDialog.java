@@ -201,15 +201,10 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         this.kontItemOrig = kont;
 
         klientList = klientService.fetchAll();
+
 //        // Following series of commands replacing combo box are here because of a bug
 //        // Initialize $connector if values were not set in ComboBox element prior to page load. #188
-        binder.removeBinding(objednatelCombo);
-        getFormLayout().remove(objednatelCombo);
-        getFormLayout().addComponentAtIndex(3, initObjednatelCombo());
-        objednatelCombo.setItems(this.klientList);
-        getBinder().forField(objednatelCombo)
-                .bind(Kont::getKlient, Kont::setKlient);
-        objednatelCombo.setPreventInvalidInput(true);
+        fixObjednatelComboOpening();
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -219,6 +214,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         initKontDataAndControls(currentItem, currentOperation);
         this.open();
     }
+
 
     private void initKontDataAndControls(final Kont kontItem, final Operation kontOperation) {
 
@@ -343,7 +339,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         revertButton.setEnabled(false);
         newAkvButton.setEnabled(true);
         newZakButton.setEnabled(true);
-        deleteAndCloseButton.setEnabled(currentOperation.isDeleteEnabled() && canDeleteKont(currentItem));
+        deleteAndCloseButton.setEnabled(currentOperation.isDeleteAllowed() && canDeleteKont(currentItem));
     }
 
     private void adjustControlsOperability(final boolean hasChanges, final boolean isValid) {
@@ -875,6 +871,16 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         objednatelCombo.setItems(new ArrayList<>());
         objednatelCombo.setItemLabelGenerator(Klient::getName);
         return objednatelCombo;
+    }
+
+    private void fixObjednatelComboOpening() {
+        binder.removeBinding(objednatelCombo);
+        getFormLayout().remove(objednatelCombo);
+        getFormLayout().addComponentAtIndex(3, initObjednatelCombo());
+        objednatelCombo.setItems(this.klientList);
+        getBinder().forField(objednatelCombo)
+                .bind(Kont::getKlient, Kont::setKlient);
+        objednatelCombo.setPreventInvalidInput(true);
     }
 
     private Component initInvestorField() {

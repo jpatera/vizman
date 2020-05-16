@@ -56,19 +56,19 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
     @Column(name = "POZNAMKA")
     private String poznamka;
 
-    @Basic
-    @Column(name = "OBJEDNATEL")
-    private String objednatel;
+//    @Basic
+//    @Column(name = "OBJEDNATEL")
+//    private String objednatel;
 
 //    @Basic
 //    @Column(name = "CKONT")
 //    private String ckont;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_KONT")
-    private Kont kont;
+    private KontView kont;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_KLIENT")
     private Klient klient;
 
@@ -83,33 +83,32 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
 //        n.setCkont(null);
         n.setVz(null);
         n.setText(null);
-        n.setObjednatel(null);
+//        n.setObjednatel(null);
         n.setPoznamka(null);
         return n;
     }
 
-    public static Nab getInstanceFromFilter(NabViewService.NabFilter nabFilter) {
-        if (null == nabFilter) {
+    public static Nab getNewInstance(Nab nab) {
+        if (null == nab) {
             return Nab.getEmptyInstance();
         } else {
-            Nab n = Nab.getEmptyInstance();
-                n.setRok(nabFilter.getRok());
-                n.setCnab(nullIfBlank(nabFilter.getCnab()));
-//                n.setCkont(nullIfBlank(nabFilter.getCkont()));
-                n.setVz(nabFilter.getVz());
-                n.setText(nullIfBlank(nabFilter.getText()));
-                n.setObjednatel(nullIfBlank(nabFilter.getObjednatel()));
-                n.setPoznamka(nullIfBlank(nabFilter.getPoznamka()));
-            return n;
+            Nab newNab = Nab.getEmptyInstance();
+                newNab.setRok(nab.getRok());
+                newNab.setCnab(nab.getCnab());
+                newNab.setKont(nab.getKont());
+                newNab.setVz(nab.getVz());
+                newNab.setText(nab.getText());
+                newNab.setPoznamka(nab.getPoznamka());
+            return newNab;
         }
     }
 
-    private static String nullIfBlank(String str) {
-        if (StringUtils.isBlank(str)) {
-            return null;
-        }
-        return str;
-    }
+//    private static String nullIfBlank(String str) {
+//        if (StringUtils.isBlank(str)) {
+//            return null;
+//        }
+//        return str;
+//    }
 
     public ItemType getTyp() {
         return typ;
@@ -160,13 +159,6 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
         this.poznamka = poznamka;
     }
 
-    public String getObjednatel() {
-        return objednatel;
-    };
-    public void setObjednatel(String objednatel) {
-        this.objednatel = objednatel;
-    }
-
     public LocalDate getDateCreate() {
         return dateCreate;
     }
@@ -181,6 +173,19 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
         this.datetimeUpdate = datetimeUpdate;
     }
 
+    public KontView getKont() {
+        return kont;
+    }
+    public void setKont(KontView kont) {
+        this.kont = kont;
+    }
+
+    public Klient getKlient() {
+        return klient;
+    }
+    public void setKlient(Klient klient) {
+        this.klient = klient;
+    }
 
 
     // Transient fields
@@ -198,6 +203,13 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
 //        this.kont.setCkont(ckont);
 //    }
 
+    public String getObjednatel() {
+        return klient.getName();
+    };
+//    public void setObjednatel(String objednatel) {
+//        this.klient.set.... (....);
+//    }
+
 //    @Transient
 //    private Predicate<Fakt> afterTermsPredicate = fakt ->
 //        ((null == fakt.getDateVystav()) && (null != fakt.getDateDuzp()) && (fakt.getDateDuzp().plusDays(1).isBefore(LocalDate.now())))
@@ -210,7 +222,7 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
 
     // ========================================
 
-    public Nab() {
+    private Nab() {
         super();
     }
 
