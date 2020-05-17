@@ -1,6 +1,7 @@
 package eu.japtor.vizman.backend.service;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
+import eu.japtor.vizman.backend.entity.Nab;
 import eu.japtor.vizman.backend.entity.NabView;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.data.domain.Page;
@@ -20,10 +21,15 @@ public interface NabViewService {
 
     NabView fetchNabByCnab(String cnab);
 
+    List<Integer> fetchRokList();
+
+    List<NabView> fetchFilteredList(NabFilter nabFilter);
+
 //    List<NabView> fetchByFiltersDescOrder(NabListView.NabFilterParams nabFilterParams);
 
     Page<NabView> fetchByNabFilter(NabFilter nabFilter, List<QuerySortOrder> sortOrders, Pageable pageable);
     long countByNabFilter(NabFilter nabFilter);
+
 
     // -----------------------------------------------
 

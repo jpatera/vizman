@@ -1,31 +1,41 @@
 package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.shared.Registration;
+import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.KontView;
 import eu.japtor.vizman.backend.entity.Nab;
+import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.KlientService;
 import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.backend.service.NabViewService;
+import eu.japtor.vizman.backend.utils.VzmFileUtils;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
-import eu.japtor.vizman.ui.components.Gap;
-import eu.japtor.vizman.ui.components.Operation;
-import eu.japtor.vizman.ui.components.OperationResult;
+import eu.japtor.vizman.ui.components.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
+import static eu.japtor.vizman.backend.utils.VzmFormatUtils.vzmFileIconNameProvider;
+import static eu.japtor.vizman.backend.utils.VzmFormatUtils.vzmFileIconStyleProvider;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -64,10 +74,14 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
             , NabViewService nabViewService
             , KontService kontService
             , KlientService klientService
+            , CfgPropsCache cfgPropsCache
     ){
-        super("800px", null
-                , false, false
-                , itemSaver, itemDeleter, true
+        super("1100px", null
+                , true
+                , false
+                , itemSaver
+                , itemDeleter
+                , true
         );
 
 //        getFormLayout().setResponsiveSteps(
@@ -78,6 +92,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
         this.nabViewService = nabViewService;
         this.kontService = kontService;
         this.klientService = klientService;
+        this.cfgPropsCache = cfgPropsCache;
 
         getFormLayout().add(
                 initRokField()
@@ -89,7 +104,169 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
         );
         initVzCheckBox();
 
+        getUpperRightPane().add(
+                initNabDocFolderComponent()
+                , initDocGridBar()
+                , initDocGrid()
+        );
+        fileViewerDialog = new FileViewerDialog();
     }
+
+    private FlexLayout nabDocFolderComponent;
+    private NabFolderField nabFolderField;
+    private TreeGrid<VzmFileUtils.VzmFile> nabDocGrid;
+    private Button docRefreshButton;
+    private FileViewerDialog fileViewerDialog;
+//    private List<GridSortOrder<VzmFileUtils.VzmFile>> initialZakDocSortOrder;
+    private CfgPropsCache cfgPropsCache;
+
+
+    private Component initNabDocFolderComponent() {
+        nabDocFolderComponent = new FlexLayout();
+        nabDocFolderComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
+        nabDocFolderComponent.setWidth("100%");
+        nabDocFolderComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        nabDocFolderComponent.add(initNabFolderField());
+        return nabDocFolderComponent;
+    }
+
+    private Component initDocGridBar() {
+        FlexLayout docGridBar = new FlexLayout();
+        docGridBar.setWidth("100%");
+//        docGridBar.setHeight("3em");
+        docGridBar.setAlignItems(FlexComponent.Alignment.BASELINE);
+        docGridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        docGridBar.add(
+                initDocGridTitle(),
+                new Ribbon(),
+                initDocRefreshButton()
+        );
+        return docGridBar;
+    }
+
+
+    private Component initDocGridTitle() {
+        H4 docGridTitle = new H4();
+        docGridTitle.setText("Tady budou pédéefka");
+        return docGridTitle;
+    }
+
+    private Component initDocRefreshButton() {
+        docRefreshButton = new ReloadButton("Načte adresáře", event -> {
+            updateNabDocViewContent(null);
+        });
+        return docRefreshButton;
+    }
+
+    private void updateNabDocViewContent(final VzmFileUtils.VzmFile itemToSelect) {
+//        nabDocGrid.deselectAll();
+//        Path kontDocRootPath = getKontDocRootPath(cfgPropsCache.getDocRootServer(), currentItem.getKontFolder());
+//        TreeData<VzmFileUtils.VzmFile> zakDocTreeData
+//                = VzmFileUtils.getExpectedZakDocFolderFilesTree(kontDocRootPath.toString(), currentItem);
+//
+//        Path zakDocRootPath = getZakDocRootPath(cfgPropsCache.getDocRootServer(), currentItem.getKontFolder(), currentItem.getFolder());
+//        File zakDocRootDir = new File(zakDocRootPath.toString());
+//        addFilesToExpectedVzmTreeData(zakDocTreeData, zakDocRootDir.listFiles(), null);
+//
+//        addNotExpectedKontSubDirs(zakDocTreeData
+//                , new VzmFileUtils.VzmFile(zakDocRootPath, true, VzmFolderType.OTHER, 0)
+//        );
+//        addNotExpectedKontSubDirs(zakDocTreeData
+//                , new VzmFileUtils.VzmFile(getExpectedZakFolder(currentItem), true, VzmFolderType.OTHER, 0));
+//
+//        assignDataProviderToGridAndSort(zakDocTreeData);
+//        nabDocGrid.getDataProvider().refreshAll();
+////        if (null != itemToSelect) {
+////            kontDocGrid.getSelectionModel().select(itemToSelect);
+////        }
+    }
+
+    private Component initDocGrid() {
+        nabDocGrid = new TreeGrid<>();
+        nabDocGrid.setHeight("3em");
+        nabDocGrid.setColumnReorderingAllowed(false);
+        nabDocGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        nabDocGrid.setId("nab-doc-grid");
+        nabDocGrid.setClassName("vizman-simple-grid");
+
+        nabDocGrid.addItemDoubleClickListener(event -> {
+            VzmFileUtils.VzmFile vzmFile = event.getItem();
+            fileViewerDialog.openDialog(vzmFile);
+        });
+
+        Grid.Column hCol = nabDocGrid.addColumn(fileIconTextRenderer);
+        hCol.setHeader("Název")
+                .setFlexGrow(1)
+                .setWidth("30em")
+                .setKey("nab-doc-file-name")
+                .setResizable(true)
+        ;
+
+        return nabDocGrid;
+    }
+
+    private TemplateRenderer fileIconTextRenderer = TemplateRenderer.<VzmFileUtils.VzmFile> of("<vaadin-grid-tree-toggle "
+            + "leaf='[[item.leaf]]' expanded='{{expanded}}' level='[[level]]'>"
+            + "<iron-icon style=\"[[item.icon-style]]\" icon=\"[[item.icon-name]]\"></iron-icon>&nbsp;&nbsp;"
+            + "[[item.name]]"
+            + "</vaadin-grid-tree-toggle>")
+            .withProperty("leaf", file -> !nabDocGrid.getDataCommunicator().hasChildren(file))
+            .withProperty("icon-name", file -> String.valueOf(vzmFileIconNameProvider.apply(file)))
+            .withProperty("icon-style", file -> String.valueOf(vzmFileIconStyleProvider.apply(file)))
+            .withProperty("name", File::getName)
+            ;
+
+    private Component initNabFolderField() {
+        nabFolderField = new NabFolderField(
+                null
+                , ItemType.UNKNOWN
+                , cfgPropsCache.getDocRootLocal()
+                , cfgPropsCache.getProjRootLocal()
+        );
+        nabFolderField.setWidth("100%");
+        nabFolderField.getStyle().set("padding-top", "0em");
+        nabFolderField.setReadOnly(true);
+        getBinder().forField(nabFolderField)
+//                .withValidator(
+//                        folder ->
+////                                ((Operation.ADD == currentOperation) && StringUtils.isNotBlank(folder))
+//                                // TODO: check add to beta 1.3
+//                                (StringUtils.isNotBlank(getCurrentItem().getCkont()) && null != getCurrentItem().getCzak())
+//                                        || (StringUtils.isNotBlank(folder))
+//                        , "Složka zakázky není definována, je třeba zadat číslo a text zakázky"
+//                )
+//                .withValidator(
+//                        folder ->
+//                                // TODO: check add to beta 1.3
+//                                (StringUtils.isBlank(folder)) ||
+//                                        ((Operation.ADD == currentOperation) &&
+//                                                !VzmFileUtils.zakDocRootExists(cfgPropsCache.getDocRootServer(), kontFolder, folder))
+//                                        ||
+//                                        ((Operation.EDIT == currentOperation) &&
+//                                                ((folder.equals(evidZakOrig.getFolder())) ||
+//                                                        !VzmFileUtils.zakDocRootExists(cfgPropsCache.getDocRootServer(), kontFolder, folder))
+//                                        )
+//                        , "Dokumentový adresář zakázky stejného jména již existuje, změň text zakázky."
+//                )
+//                .withValidator(
+//                        folder ->
+//                                // TODO: check add to beta 1.3
+//                                (StringUtils.isBlank(folder)) ||
+//                                        ((Operation.ADD == currentOperation) &&
+//                                                !VzmFileUtils.zakProjRootExists(cfgPropsCache.getProjRootServer(), kontFolder, folder))
+//                                        ||
+//                                        ((Operation.EDIT == currentOperation) &&
+//                                                ((folder.equals(evidZakOrig.getFolder())) ||
+//                                                        !VzmFileUtils.zakProjRootExists(cfgPropsCache.getProjRootServer(), kontFolder, folder))
+//                                        )
+//                        , "Projektový adresář zakázky stejného jména již existuje, změň text zakázky."
+//                )
+
+                .bind(Nab::getFolder, Nab::setFolder);
+
+        return nabFolderField;
+    }
+
 
     public void openDialog(
             boolean readonly

@@ -3,14 +3,11 @@ package eu.japtor.vizman.ui.views;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -19,13 +16,9 @@ import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.VaadinSession;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.dataprovider.NabFiltPagDataProvider;
-import eu.japtor.vizman.backend.dataprovider.spring.FilterablePageableDataProvider;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.report.NabListReportBuilder;
-import eu.japtor.vizman.backend.service.KlientService;
-import eu.japtor.vizman.backend.service.KontService;
-import eu.japtor.vizman.backend.service.NabService;
-import eu.japtor.vizman.backend.service.NabViewService;
+import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.NabFormDialog;
@@ -34,9 +27,10 @@ import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
@@ -60,9 +54,11 @@ public class NabListView extends VerticalLayout {
     private NewItemButton newItemButton;
     private Anchor expXlsAnchor;
 
-    private DataProvider<NabView, NabViewService.NabFilter> gridDataProvider; // Second type  param  must not be Void
-    private FilterablePageableDataProvider<NabView, NabViewService.NabFilter> filtPagGridDataProvider;
-    private List<NabView> nabViewList = new ArrayList<>();  // Temporary placeholder for report
+//    private DataProvider<NabView, NabViewService.NabFilter> gridDataProvider; // Second type  param  must not be Void
+//    private NabFiltPagDataProvider gridDataProvider; // Second type  param  must not be Void
+//    private FilterablePageableDataProvider<NabView, NabViewService.NabFilter> filtPagGridDataProvider;
+    private NabFiltPagDataProvider filtPagGridDataProvider;
+//    private List<NabView> nabViewList = new ArrayList<>();  // Temporary placeholder for report
 
     @Autowired
     public NabViewService nabViewService;
@@ -76,13 +72,17 @@ public class NabListView extends VerticalLayout {
     @Autowired
     public KlientService klientService;
 
+    @Autowired
+    public CfgPropsCache cfgPropsCache;
+
     public NabListView() {
-        xlsReportExporter = new ReportExporter((new NabListReportBuilder()).buildReport());
-        initView();
     }
 
     @PostConstruct
     public void postInit() {
+
+        xlsReportExporter = new ReportExporter((new NabListReportBuilder()).buildReport());
+        initView();
 
 //        // Person provider for grid
 //        // -------------------------
@@ -121,6 +121,7 @@ public class NabListView extends VerticalLayout {
                 , nabViewService
                 , kontService
                 , klientService
+                , cfgPropsCache
         );
         nabFormDialog.addOpenedChangeListener(event -> {
             if (!event.isOpened()) {
@@ -166,6 +167,7 @@ public class NabListView extends VerticalLayout {
                 , null
                 ,true
                 , this::openItem
+                , nabViewService
         );
         nabGrid.setMultiSort(true);
         nabGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
@@ -217,11 +219,11 @@ public class NabListView extends VerticalLayout {
     }
 
     private ComponentEventListener anchorExportListener = event -> {
-        try {
-            updateExpXlsAnchorResource(nabViewList);
-        } catch (JRException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            updateExpXlsAnchorResource(filtPagGridDataProvider.getFilteredList());
+//        } catch (JRException e) {
+//            e.printStackTrace();
+//        }
     };
 
 //    public void saveItem(NabView itemToSave, Operation operation) {
@@ -344,12 +346,12 @@ public class NabListView extends VerticalLayout {
     }
 
     private Component initReloadButton() {
-        reloadButton = new ReloadButton(event -> loadInitialViewContent());
+        reloadButton = new ReloadButton(event -> nabGrid.reloadGridData());
         return reloadButton;
     }
 
     private Component initResetFiltersButton() {
-        resetFiltersButton = new ResetFiltersButton(event -> doNothing());
+        resetFiltersButton = new ResetFiltersButton(event -> nabGrid.resetFilterValues());
         return resetFiltersButton;
     }
 
@@ -381,27 +383,11 @@ public class NabListView extends VerticalLayout {
 
 
     private void loadInitialViewContent() {
-//        loadGridDataAndRebuildFilterFields();
-        nabGrid.setVzFilterItems(Arrays.asList(Boolean.FALSE, Boolean.TRUE));
-        nabGrid.setInitialFilterValues();
+        nabGrid.rebuildFilterFields();
+        nabGrid.resetFilterValues();
         nabGrid.doFilter(NabViewService.NabFilter.getEmpty());
 //        nabGrid.getDataProvider().refreshAll();
     }
-
-//    private void loadGridDataAndRebuildFilterFields() {
-//        nabViewList = nabViewService.fetchByFiltersDescOrder(buildNabFilterParams());
-//        nabGrid.setItems(nabViewList);
-//        nabGrid.setRokFilterItems(nabViewList.stream()
-//                .filter(z -> null != z.getRok())
-//                .map(NabView::getRok)
-//                .distinct().collect(Collectors.toCollection(LinkedList::new))
-//        );
-//        nabGrid.setVzFilterItems(nabViewList.stream()
-//                .map(NabView::getVz)
-//                .filter(s -> null != s)
-//                .distinct().collect(Collectors.toCollection(LinkedList::new))
-//        );
-//    }
 
 
 //    public static class NabFilterParams {

@@ -7,6 +7,7 @@ import eu.japtor.vizman.backend.repository.NabViewRepo;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -44,6 +45,15 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
     }
 
     @Override
+    public List<NabView> fetchFilteredList(NabFilter nabFilter) {
+        if (nabFilter == null) {
+            return nabViewRepo.findAll();
+        } else {
+            return nabViewRepo.findAll(Example.of(NabView.getInstanceFromFilter(nabFilter)));
+        }
+    }
+
+    @Override
     public long countByNabFilter(NabFilter nabFilter) {
         if (nabFilter == null) {
             return nabViewRepo.count();
@@ -71,6 +81,11 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
     public NabView fetchNabByCnab(String cnab) {
         return nabViewRepo.findTopByCnab(cnab);
     }
+
+    @Override
+    public List<Integer> fetchRokList() {
+        return nabViewRepo.findNabRokAll();
+    };
 
     @Override
     public NabView fetchOne(Long id) {

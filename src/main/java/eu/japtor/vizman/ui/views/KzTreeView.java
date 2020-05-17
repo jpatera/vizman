@@ -1540,7 +1540,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //            kzTreeGrid.getSelectionModel().select(itemForSelection);
 //        }
 
-//        kzTreeGrid.setInitialFilterValues();
+//        kzTreeGrid.resetFilterValues();
 //        kzTreeGrid.doFilter();
 //        kzTreeGrid.getDataProvider().refreshAll();
 //    }

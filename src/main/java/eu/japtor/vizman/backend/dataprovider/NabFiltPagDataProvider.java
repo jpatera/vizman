@@ -4,6 +4,7 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.backend.dataprovider.spring.FilterablePageableDataProvider;
+import eu.japtor.vizman.backend.entity.Nab;
 import eu.japtor.vizman.backend.entity.NabView;
 import eu.japtor.vizman.backend.service.NabViewService;
 import org.springframework.data.domain.*;

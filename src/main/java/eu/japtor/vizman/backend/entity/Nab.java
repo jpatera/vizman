@@ -232,6 +232,7 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
         this.rok = LocalDate.now().getYear();
         this.uuid = UUID.randomUUID();
         this.vz = false;
+        this.folder = "-";
     }
 
     // ========================================

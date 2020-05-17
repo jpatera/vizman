@@ -92,7 +92,7 @@ public class ZakBasicListView extends VerticalLayout {
 
     @PostConstruct
     public void postInit() {
-        loadViewContent();
+        loadInitialViewContent();
         // TODO: inital sort order markers
         //        zakGrid.sort(initialSortOrder);
         //        UI.getCurrent().getPage().executeJavaScript("document.querySelectorAll(\"vaadin-grid-sorter\")[1].click()");
@@ -206,10 +206,10 @@ public class ZakBasicListView extends VerticalLayout {
 
 
     private Component initReloadButton() {
-        return reloadButton = new ReloadButton(event -> loadViewContent());
+        return reloadButton = new ReloadButton(event -> loadInitialViewContent());
     }
 
-    private void loadViewContent() {
+    private void loadInitialViewContent() {
         loadGridDataAndRebuildFilterFields();
         zakGrid.setInitialFilterValues();
         zakGrid.doFilter();

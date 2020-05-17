@@ -258,7 +258,7 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
     private void loadInitialViewContent() {
 ////        loadGridDataAndRebuildFilterFields();
 //        klientGrid.setVzFilterItems(Arrays.asList(Boolean.FALSE, Boolean.TRUE));
-//        klientGrid.setInitialFilterValues();
+//        klientGrid.resetFilterValues();
 //        klientGrid.doFilter(KlientService.NabFilter.getEmpty());
 ////        nabGrid.getDataProvider().refreshAll();
     }

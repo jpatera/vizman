@@ -7,6 +7,8 @@ import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 
 @Service
 public class NabServiceImpl implements NabService, HasLogger {
@@ -27,11 +29,12 @@ public class NabServiceImpl implements NabService, HasLogger {
     @Override
     public Nab saveNab(Nab itemToSave, Operation oper) {
         try {
-            Nab nabViewSaved = nabRepo.save(itemToSave);
+            itemToSave.setDatetimeUpdate(LocalDateTime.now());
+            Nab nabSaved = nabRepo.save(itemToSave);
             getLogger().info("{} saved: [operation: {}]"
-                    , nabViewSaved.getTyp().name(), oper.name());
+                    , nabSaved.getTyp().name(), oper.name());
 
-            return nabViewSaved;
+            return nabSaved;
         } catch (Exception e) {
             String errMsg = "Error while saving {} : [operation: {}]";
             getLogger().error(errMsg, itemToSave.getTyp().name(), oper.name(), e);

@@ -18,6 +18,9 @@ public interface NabViewRepo extends JpaRepository<NabView, Long> {
     NabView findTopByCnab(String cnab);
     List<NabView> findAllByOrderByCnabDescTextAsc();
 
+    @Query("SELECT DISTINCT nv.rok FROM NabView nv ORDER BY nv.rok DESC")
+    List<Integer> findNabRokAll();
+
 //    List<NabView> findByTextLikeIgnoreCase(String text, Sort sort);
     // TODO: more versatile might be using Example matchers
     // See: https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example

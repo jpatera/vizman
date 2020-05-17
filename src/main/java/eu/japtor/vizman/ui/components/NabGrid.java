@@ -15,6 +15,7 @@ import eu.japtor.vizman.backend.entity.NabView;
 import eu.japtor.vizman.backend.service.NabViewService;
 
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -53,18 +54,22 @@ public class NabGrid extends Grid<NabView> {
     HeaderRow filterRow;
     BiConsumer<NabView, Operation> editDialogOpener;
 
+    NabViewService nabViewService;
+
     public NabGrid(
             boolean selectFieldVisible
             , Function<NabView, Boolean> checkBoxEnabler
             , Consumer<Integer> selectionChanger
             , boolean vzFieldVisible
             , BiConsumer<NabView, Operation> editDialogOpener
+            , NabViewService nabViewService
     ) {
         this.checkBoxEnabler = checkBoxEnabler;
         this.vzFieldVisible = vzFieldVisible;
         this.selectFieldVisible = selectFieldVisible;
         this.selectionChanger = selectionChanger;
         this.editDialogOpener = editDialogOpener;
+        this.nabViewService = nabViewService;
 
         this.getStyle().set("marginTop", "0.5em");
         this.setColumnReorderingAllowed(true);
@@ -142,7 +147,7 @@ public class NabGrid extends Grid<NabView> {
 
         filterRow = this.appendHeaderRow();
 
-        rokFilterField = new SelectorFilterField<>((event -> doFilter()));
+        rokFilterField = buildSelectorFilterField();
         filterRow.getCell(this.getColumnByKey(ROK_COL_KEY))
                 .setComponent(rokFilterField);
 
@@ -191,10 +196,17 @@ public class NabGrid extends Grid<NabView> {
         }
     }
 
-    public void setInitialFilterValues() {
+    private <T> Select buildSelectorFilterField() {
+        Select <T> selectorFilterField = new SelectorFilterField<>();
+        selectorFilterField.addValueChangeListener(event -> doFilter());
+        return selectorFilterField;
+    }
+
+    public void resetFilterValues() {
 //        ((ListDataProvider<NabView>) this.getDataProvider()).clearFilters();
 //        ((onfigurableFilterDataProvider<NabView, Void, NabViewService.NabFilter>) this.getDataProvider()).clearFilters();
 //        gridDataProvider.setFilter(NabViewService.NabFilter.getEmpty());
+
         rokFilterField.clear();
         cnabFilterField.clear();
         ckontFilterField.clear();
@@ -202,6 +214,16 @@ public class NabGrid extends Grid<NabView> {
         textFilterField.clear();
         poznamkaFilterField.clear();
         objednatelFilterField.clear();
+    }
+
+    public void reloadGridData() {
+        doFilter(buildNabFilter());
+        getDataProvider().refreshAll();
+    }
+
+    public void rebuildFilterFields() {
+        setRokFilterItems(nabViewService.fetchRokList());
+        setVzFilterItems(Arrays.asList(Boolean.FALSE, Boolean.TRUE));
     }
 
     public void doFilter() {
@@ -214,8 +236,10 @@ public class NabGrid extends Grid<NabView> {
 //        ((ConfigurableFilterDataProvider) this.getDataProvider()).setFilter(buildNabFilter());
         gridDataProvider.setFilter(filter);
 
-        gridDataProvider.refreshAll();
-        getDataProvider().refreshAll();
+// ??        gridDataProvider.refreshAll();
+// ??        getDataProvider().refreshAll();
+
+
 
 //        ConfigurableFilterDataProvider listDataProvider = ((ConfigurableFilterDataProvider) this.getDataProvider());
 ////        listDataProvider.clearFilters();
@@ -288,7 +312,7 @@ public class NabGrid extends Grid<NabView> {
     });
 
     public void setRokFilterItems(final List<Integer> rokItems) {
-        rokFilterField = new SelectorFilterField<>((event -> doFilter()));
+        rokFilterField = buildSelectorFilterField();
         filterRow.getCell(this.getColumnByKey(ROK_COL_KEY))
                 .setComponent(rokFilterField);
         rokFilterField.setItems(rokItems);

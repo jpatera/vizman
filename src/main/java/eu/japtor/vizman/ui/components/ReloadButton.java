@@ -6,7 +6,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 public class ReloadButton extends Button {
-    private static final String DEFAULT_TOOLTIP_TEXT = "Načte data a vynuluje filtry";
+    private static final String DEFAULT_TOOLTIP_TEXT = "Načte znova data";
 
 //    Tooltip tooltip;
 
