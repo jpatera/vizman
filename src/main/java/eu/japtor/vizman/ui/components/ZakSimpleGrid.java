@@ -235,6 +235,12 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         }
     }
 
+
+    public void reloadGridData() {
+        doFilter();
+        getDataProvider().refreshAll();
+    }
+
     private void setResizable(Grid.Column column) {
         column.setResizable(true);
         Element parent = column.getElement().getParent();
@@ -277,20 +283,24 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         }
     }
 
-    public void populateGridDataAndRebuildFilterFields(List<ZakBasic> zakBasicList) {
-        this.setItems(zakBasicList);
-        this.setRokFilterItems(zakBasicList.stream()
+    public void rebuildFilterFields(List<ZakBasic> zakBasicList) {
+        setRokFilterItems(zakBasicList.stream()
                 .filter(z -> null != z.getRok())
                 .map(ZakBasic::getRok)
                 .distinct().collect(Collectors.toCollection(LinkedList::new))
         );
-        this.setSkupinaFilterItems(zakBasicList.stream()
+        setSkupinaFilterItems(zakBasicList.stream()
                 .map(ZakBasic::getSkupina)
                 .filter(s -> null != s)
                 .distinct().collect(Collectors.toCollection(LinkedList::new))
         );
-        this.setArchFilterItems(zakBasicList.stream()
+        setArchFilterItems(zakBasicList.stream()
                 .map(ZakBasic::getArch)
+                .filter(a -> null != a)
+                .distinct().collect(Collectors.toCollection(LinkedList::new))
+        );
+        setDigiFilterItems(zakBasicList.stream()
+                .map(ZakBasic::getDigi)
                 .filter(a -> null != a)
                 .distinct().collect(Collectors.toCollection(LinkedList::new))
         );
@@ -316,6 +326,28 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         textZakFilterField.clear();
         objednatelFilterField.clear();
     }
+
+    public void resetFilterValues() {
+        ((ListDataProvider<ZakBasic>) this.getDataProvider()).clearFilters();
+        if (null == this.initFilterArchValue) {
+            archFilterField.clear();
+        } else {
+            archFilterField.setValue(this.initFilterArchValue);
+        }
+        if (null == this.initFilterDigiValue) {
+            digiFilterField.clear();
+        } else {
+            digiFilterField.setValue(this.initFilterDigiValue);
+        }
+        rokFilterField.clear();
+        skupinaFilterField.clear();
+        ckzFilterField.clear();
+//        kzTextFilterField.clear();
+        textKontFilterField.clear();
+        textZakFilterField.clear();
+        objednatelFilterField.clear();
+    }
+
 
     public void doFilter() {
         ListDataProvider<ZakBasic> listDataProvider = ((ListDataProvider<ZakBasic>) this.getDataProvider());

@@ -207,6 +207,7 @@ public class NabGrid extends Grid<NabView> {
 //        ((onfigurableFilterDataProvider<NabView, Void, NabViewService.NabFilter>) this.getDataProvider()).clearFilters();
 //        gridDataProvider.setFilter(NabViewService.NabFilter.getEmpty());
 
+        // TODO: disable refiltering before all filters ale cleared
         rokFilterField.clear();
         cnabFilterField.clear();
         ckontFilterField.clear();
@@ -218,7 +219,7 @@ public class NabGrid extends Grid<NabView> {
 
     public void reloadGridData() {
         doFilter(buildNabFilter());
-        getDataProvider().refreshAll();
+//        getDataProvider().refreshAll();
     }
 
     public void rebuildFilterFields() {

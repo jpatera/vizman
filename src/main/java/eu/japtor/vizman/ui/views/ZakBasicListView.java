@@ -43,11 +43,10 @@ import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
+
 
 @Route(value = ROUTE_ZAK_LIST, layout = MainView.class)
 @PageTitle(PAGE_TITLE_ZAK_LIST)
@@ -61,6 +60,7 @@ public class ZakBasicListView extends VerticalLayout {
     private ZakSimpleGrid zakGrid;
     private List<GridSortOrder<ZakBasic>> initialSortOrder;
     private ReloadButton reloadButton;
+    private ResetFiltersButton resetFiltersButton;
     private Anchor expXlsAnchor;
     private ReportExporter<ZakBasic> xlsReportExporter;
 
@@ -98,14 +98,14 @@ public class ZakBasicListView extends VerticalLayout {
         //        UI.getCurrent().getPage().executeJavaScript("document.querySelectorAll(\"vaadin-grid-sorter\")[1].click()");
     }
 
-    private ZakBasicFilterParams buildZakBasicFilterParams() {
-        ZakBasicFilterParams zakBasicFilterParams = new ZakBasicFilterParams();
-        zakBasicFilterParams.setArch(zakGrid.getArchFilterValue());
-        zakBasicFilterParams.setDigi(zakGrid.getDigiFilterValue());
-        zakBasicFilterParams.setCkz(zakGrid.getCkzFilterField());
-        zakBasicFilterParams.setRokZak(zakGrid.getRokFilterValue());
-        zakBasicFilterParams.setSkupina(zakGrid.getSkupinaFilterValue());
-        return zakBasicFilterParams;
+    private ZakBasicFilter buildZakBasicFilterParams() {
+        ZakBasicFilter zakBasicFilter = ZakBasicFilter.getEmpty();
+        zakBasicFilter.setArch(zakGrid.getArchFilterValue());
+        zakBasicFilter.setDigi(zakGrid.getDigiFilterValue());
+        zakBasicFilter.setCkz(zakGrid.getCkzFilterField());
+        zakBasicFilter.setRokZak(zakGrid.getRokFilterValue());
+        zakBasicFilter.setSkupina(zakGrid.getSkupinaFilterValue());
+        return zakBasicFilter;
     }
 
     private void initView() {
@@ -166,6 +166,8 @@ public class ZakBasicListView extends VerticalLayout {
                 new GridTitle(ItemNames.getNomP(ItemType.ZAK))
                 , new Ribbon()
                 , initReloadButton()
+                , new Ribbon()
+                , initResetFiltersButton()
         );
         return titleComponent;
     }
@@ -206,49 +208,51 @@ public class ZakBasicListView extends VerticalLayout {
 
 
     private Component initReloadButton() {
-        return reloadButton = new ReloadButton(event -> loadInitialViewContent());
+        reloadButton = new ReloadButton(event -> zakGrid.reloadGridData());
+        return reloadButton;
+    }
+
+    private Component initResetFiltersButton() {
+        resetFiltersButton = new ResetFiltersButton(event -> zakGrid.resetFilterValues());
+        return resetFiltersButton;
     }
 
     private void loadInitialViewContent() {
-        loadGridDataAndRebuildFilterFields();
-        zakGrid.setInitialFilterValues();
-        zakGrid.doFilter();
-        zakGrid.getDataProvider().refreshAll();
-    }
-
-    private void loadGridDataAndRebuildFilterFields() {
         zakList = zakBasicRepo.findAllByOrderByCkontDescCzakDesc();
         zakGrid.setItems(zakList);
-        zakGrid.setRokFilterItems(zakList.stream()
-                .filter(z -> null != z.getRok())
-                .map(ZakBasic::getRok)
-                .distinct().collect(Collectors.toCollection(LinkedList::new))
-        );
-        zakGrid.setSkupinaFilterItems(zakList.stream()
-                .map(ZakBasic::getSkupina)
-                .filter(s -> null != s)
-                .distinct().collect(Collectors.toCollection(LinkedList::new))
-        );
-        zakGrid.setArchFilterItems(zakList.stream()
-                .map(ZakBasic::getArch)
-                .filter(a -> null != a)
-                .distinct().collect(Collectors.toCollection(LinkedList::new))
-        );
-        zakGrid.setDigiFilterItems(zakList.stream()
-                .map(ZakBasic::getDigi)
-                .filter(a -> null != a)
-                .distinct().collect(Collectors.toCollection(LinkedList::new))
-        );
+        zakGrid.rebuildFilterFields(zakList);
+        zakGrid.resetFilterValues();
+        zakGrid.reloadGridData();
+
+//        zakGrid.doFilter();
+////        nabGrid.getDataProvider().refreshAll();
     }
 
-
-    public static class ZakBasicFilterParams {
+    public static class ZakBasicFilter {
 
         String ckz;
         Integer rokZak;
         String skupina;
         Boolean arch;
         Boolean digi;
+
+        public ZakBasicFilter(
+                String ckz
+                , Integer rokZak
+                , String skupina
+                , Boolean arch
+                , Boolean digi
+        ) {
+            this.ckz = ckz;
+            this.rokZak = rokZak;
+            this.skupina = skupina;
+            this.arch = arch;
+            this.digi = digi;
+        }
+
+        public static final ZakBasicFilter getEmpty() {
+            return new ZakBasicFilter(null, null, null, null, null);
+        }
 
         public Boolean getArch() {
             return arch;

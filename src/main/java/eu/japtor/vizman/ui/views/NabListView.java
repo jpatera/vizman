@@ -27,17 +27,13 @@ import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
 @Route(value = ROUTE_NAB_LIST, layout = MainView.class)
 @PageTitle(PAGE_TITLE_NAB_LIST)
 @Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL,
-        Perm.ZAK_BASIC_READ, Perm.ZAK_BASIC_MODIFY,
         Perm.ZAK_EXT_READ, Perm.ZAK_EXT_MODIFY
 })
 public class NabListView extends VerticalLayout {
@@ -355,9 +351,6 @@ public class NabListView extends VerticalLayout {
         return resetFiltersButton;
     }
 
-    private void doNothing() {
-    }
-
     private Anchor initReportXlsExpAnchor() {
         expXlsAnchor = new ReportExpButtonAnchor(ReportExporter.Format.XLS, anchorExportListener);
         return expXlsAnchor;
@@ -385,7 +378,9 @@ public class NabListView extends VerticalLayout {
     private void loadInitialViewContent() {
         nabGrid.rebuildFilterFields();
         nabGrid.resetFilterValues();
-        nabGrid.doFilter(NabViewService.NabFilter.getEmpty());
+//        nabGrid.doFilter(NabViewService.NabFilter.getEmpty());
+        nabGrid.reloadGridData();
+//        doFilter(NabViewService.NabFilter.getEmpty());
 //        nabGrid.getDataProvider().refreshAll();
     }
 

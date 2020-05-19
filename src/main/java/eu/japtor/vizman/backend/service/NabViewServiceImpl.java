@@ -67,12 +67,12 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
         return ExampleMatcher.matching()
                 .withIgnoreNullValues()
                 .withMatcher("rok", new ExampleMatcher.GenericPropertyMatcher().exact())
-                .withMatcher("cnab", new ExampleMatcher.GenericPropertyMatcher().startsWith())
-                .withMatcher("ckont", new ExampleMatcher.GenericPropertyMatcher().startsWith())
+                .withMatcher("cnab", new ExampleMatcher.GenericPropertyMatcher().ignoreCase().startsWith())
+                .withMatcher("ckont", new ExampleMatcher.GenericPropertyMatcher().ignoreCase().contains())
                 .withMatcher("vz", new ExampleMatcher.GenericPropertyMatcher().exact())
-                .withMatcher("text", new ExampleMatcher.GenericPropertyMatcher().startsWith())
-                .withMatcher("objednatel", new ExampleMatcher.GenericPropertyMatcher().startsWith())
-                .withMatcher("poznamka", new ExampleMatcher.GenericPropertyMatcher().startsWith())
+                .withMatcher("text", new ExampleMatcher.GenericPropertyMatcher().ignoreCase().contains())
+                .withMatcher("objednatel", new ExampleMatcher.GenericPropertyMatcher().ignoreCase().contains())
+                .withMatcher("poznamka", new ExampleMatcher.GenericPropertyMatcher().ignoreCase().contains())
                 ;
     }
 
