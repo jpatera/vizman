@@ -84,16 +84,36 @@ public class ReportExporter<T> {
         setItems(dataProvider.fetch(new Query<>()).collect(Collectors.toList()));
     }
 
-    public StreamResource getStreamResource(String fileName, SerializableSupplier<List<? extends T>> itemsSupplier, Format format) {
+    public StreamResource getStreamResource(
+            String fileName
+            , SerializableSupplier<List<? extends T>> itemsSupplier
+            , Format format
+    ) {
         return getStreamResource(fileName, itemsSupplier, format.exporterSupplier, format.exporterOutputFunction);
     }
 
-    private StreamResource getStreamResource(String fileName, SerializableSupplier<List<? extends T>> itemsSupplier, SerializableSupplier<JRAbstractExporter> exporterSupplier, SerializableFunction<OutputStream, ExporterOutput> exporterOutputFunction) {
+    private StreamResource getStreamResource(
+            String fileName
+            , SerializableSupplier<List<? extends T>> itemsSupplier
+            , SerializableSupplier<JRAbstractExporter> exporterSupplier
+            , SerializableFunction<OutputStream, ExporterOutput> exporterOutputFunction
+    ) {
         List<? extends T> items = itemsSupplier.get();
         setItems(items);
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             JRAbstractExporter exporter = exporterSupplier.get();
+//            if (exporterSupplier instanceof JRXlsExporter) {
+                SimpleXlsReportConfiguration configuration = new SimpleXlsReportConfiguration();
+                configuration.setOnePagePerSheet(true);
+                configuration.setRemoveEmptySpaceBetweenRows(true);
+                configuration.setRemoveEmptySpaceBetweenColumns(true);
+                configuration.setWhitePageBackground(false);
+                exporter.setConfiguration(configuration);
+//                exporter.setParameter(JRXlsExporterParameter.IS_ONE_PAGE_PER_SHEET, Boolean.FALSE);
+//                exporter.setParameter(JRXlsExporterParameter.IS_REMOVE_EMPTY_SPACE_BETWEEN_ROWS, Boolean.TRUE);
+//                exporter.setParameter(JRXlsExporterParameter.IS_WHITE_PAGE_BACKGROUND, Boolean.FALSE);
+//            }
             exporter.setExporterOutput(exporterOutputFunction.apply(outputStream));
             exporter.setExporterInput(new SimpleExporterInput(print));
             exporter.exportReport();

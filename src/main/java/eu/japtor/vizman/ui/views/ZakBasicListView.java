@@ -64,7 +64,7 @@ public class ZakBasicListView extends VerticalLayout {
     private Anchor expXlsAnchor;
     private ReportExporter<ZakBasic> xlsReportExporter;
 
-    private final static String REPORT_FILE_NAME = "vzm-rep-zak";
+    private final static String REPORT_FILE_NAME = "vzm-rep-zakb";
 
 
     @Autowired

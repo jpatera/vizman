@@ -1,10 +1,13 @@
 package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.FooterRow;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -14,15 +17,23 @@ import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamRegistration;
+import com.vaadin.flow.server.VaadinSession;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Zakn;
 import eu.japtor.vizman.backend.entity.Zakr;
+import eu.japtor.vizman.backend.report.ZakNaklXlsReportBuilder;
 import eu.japtor.vizman.backend.service.ZaknService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.AbstractGridDialog;
+import eu.japtor.vizman.ui.components.ReportExpButtonAnchor;
+import eu.japtor.vizman.ui.components.ReportExporter;
 import eu.japtor.vizman.ui.components.Ribbon;
 import eu.japtor.vizman.ui.views.ZakrListView;
+import net.sf.jasperreports.engine.JRException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -43,6 +54,8 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     private HorizontalLayout rightBarPart;
     private Button closeButton;
     private Button zakNaklRepButton;
+    private Anchor expXlsAnchor;
+    private ReportExporter<Zakn> xlsReportExporter;
 
     private TextField rezieParamField;
     private Label rezieParamLabel;
@@ -61,7 +74,18 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     private ZakNaklReportDialog zakNaklRepDialog;
     private ZaknService zaknService;
 
+    private final static String REPORT_FILE_NAME = "vzm-exp-zakn";
+    private ComponentEventListener anchorExportListener = event -> {
+        try {
+            updateExpXlsAnchorResource(currentItemList);
+        } catch (JRException e) {
+            e.printStackTrace();
+        }
+    };
 
+    private SerializableSupplier<List<? extends Zakn>> itemsSupplier = () ->
+            zaknService.fetchByZakIdSumByYm(zakr.getId(), zakrParams)
+            ;
 
     public ZakNaklGridDialog(ZaknService zaknService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
@@ -70,6 +94,8 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
 
         this.zaknService = zaknService;
         this.paramsBinder = new Binder<>();
+        xlsReportExporter = new ReportExporter((new ZakNaklXlsReportBuilder()).buildReport());
+
 
         zakNaklRepDialog = new ZakNaklReportDialog(zaknService);
 
@@ -213,6 +239,37 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
 
 
 
+    private Component initZakNaklXlsExpAnchor() {
+        expXlsAnchor = new ReportExpButtonAnchor(ReportExporter.Format.XLS, anchorExportListener);
+        return expXlsAnchor;
+//        zakNaklExpButton = new Button("Export"
+//                , event -> {
+//            openZakNaklRepDialog();
+//        });
+////        this.addClassName("view-toolbar__button");
+//        zakNaklExpButton.getElement().setAttribute("theme", "small secondary");
+//        return zakNaklExpButton;
+    }
+
+    private String getReportFileName(ReportExporter.Format format) {
+        return REPORT_FILE_NAME + "." + format.name().toLowerCase();
+    }
+
+    private void updateExpXlsAnchorResource(List<Zakn> items) throws JRException {
+        ReportExporter.Format expFormat = ReportExporter.Format.XLS;
+        AbstractStreamResource xlsResource =
+                xlsReportExporter.getStreamResource(getReportFileName(expFormat), itemsSupplier, expFormat);
+        expXlsAnchor.setHref(xlsResource);
+
+        // Varianta 1
+//        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
+
+        // Varianta 2
+        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
+        UI.getCurrent().getPage().setLocation(registration.getResourceUri());
+    }
+
+
     private Component initZakNaklRepButton() {
         zakNaklRepButton = new Button("Report"
                 , event -> {
@@ -286,6 +343,8 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
 //                buildTitleComponent()
 //                , new Ribbon()
                 buildGridBarControlsComponent()
+                , new Ribbon()
+                , initZakNaklXlsExpAnchor()
                 , new Ribbon()
                 , initZakNaklRepButton()
         );
