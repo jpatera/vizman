@@ -109,6 +109,8 @@ public class ReportExporter<T> {
                 configuration.setRemoveEmptySpaceBetweenRows(true);
                 configuration.setRemoveEmptySpaceBetweenColumns(true);
                 configuration.setWhitePageBackground(false);
+                configuration.setDetectCellType(true);
+
                 exporter.setConfiguration(configuration);
 //                exporter.setParameter(JRXlsExporterParameter.IS_ONE_PAGE_PER_SHEET, Boolean.FALSE);
 //                exporter.setParameter(JRXlsExporterParameter.IS_REMOVE_EMPTY_SPACE_BETWEEN_ROWS, Boolean.TRUE);
