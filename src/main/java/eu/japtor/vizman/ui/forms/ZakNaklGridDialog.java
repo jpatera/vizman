@@ -344,11 +344,22 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
 //                , new Ribbon()
                 buildGridBarControlsComponent()
                 , new Ribbon()
-                , initZakNaklXlsExpAnchor()
+                , buildToolBarComponent()
+        );
+        return gridBarComp;
+    }
+
+
+    private Component buildToolBarComponent() {
+        HorizontalLayout toolBar = new HorizontalLayout();
+        toolBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        toolBar.setSpacing(false);
+        toolBar.add(
+                initZakNaklXlsExpAnchor()
                 , new Ribbon()
                 , initZakNaklRepButton()
         );
-        return gridBarComp;
+        return toolBar;
     }
 
     private Component initGrid() {

@@ -42,18 +42,22 @@ public class VzmFormatReport {
     public static final String DEFAULT_STYLE_NAME;
     public static final Style DEFAULT_STYLE;
 
-    public static final String DEFAULT_XLS_STYLE_NAME;
-    public static final Style DEFAULT_XLS_STYLE;
+//    public static final String DEFAULT_XLS_STYLE_NAME;
+//    public static final Style DEFAULT_XLS_STYLE;
 
     public static final Style DEFAULT_GRID_STYLE;
     public static final String DEFAULT_GRID_STYLE_NAME;
     public static final Style CENTER_GRID_STYLE;
     public static final String CENTER_GRID_STYLE_NAME;
 
-    public static final Style DEFAULT_GRID_XLS_STYLE;
-    public static final String DEFAULT_GRID_XLS_STYLE_NAME;
-    public static final Style CENTER_GRID_XLS_STYLE;
-    public static final String CENTER_GRID_XLS_STYLE_NAME;
+//    public static final Style DEFAULT_GRID_XLS_STYLE;
+//    public static final String DEFAULT_GRID_XLS_STYLE_NAME;
+    public static final Style DEFAULT_GRID_XLS_TEXT_STYLE;
+    public static final String DEFAULT_GRID_XLS_TEXT_STYLE_NAME;
+    public static final Style DEFAULT_GRID_XLS_NUM_STYLE;
+    public static final String DEFAULT_GRID_XLS_NUM_STYLE_NAME;
+//    public static final Style CENTER_GRID_XLS_STYLE;
+//    public static final String CENTER_GRID_XLS_STYLE_NAME;
 
     public static final Style TITLE_STYLE;
     public static final Style TITLE_XLS_STYLE;
@@ -72,25 +76,25 @@ public class VzmFormatReport {
 
     public static final String WORK_HOUR_GRID_STYLE_NAME;
     public static final Style WORK_HOUR_GRID_STYLE;
-    public static final String WORK_HOUR_GRID_XLS_STYLE_NAME;
-    public static final Style WORK_HOUR_GRID_XLS_STYLE;
+//    public static final String WORK_HOUR_GRID_XLS_STYLE_NAME;
+//    public static final Style WORK_HOUR_GRID_XLS_STYLE;
     public static final Style WORK_HOUR_SUM_GRID_STYLE;
     public static final Style WORK_HOUR_TOT_GRID_STYLE;
 
     public static final String MONEY_NO_FRACT_GRID_STYLE_NAME;
     public static final Style MONEY_NO_FRACT_GRID_STYLE;
-    public static final String MONEY_NO_FRACT_GRID_XLS_STYLE_NAME;
-    public static final Style MONEY_NO_FRACT_GRID_XLS_STYLE;
+//    public static final String MONEY_NO_FRACT_GRID_XLS_STYLE_NAME;
+//    public static final Style MONEY_NO_FRACT_GRID_XLS_STYLE;
     public static final Style MONEY_NO_FRACT_SUM_GRID_STYLE;
     public static final Style MONEY_NO_FRACT_TOT_GRID_STYLE;
 
     public static final Style INT_GRID_STYLE;
     public static final Style YM_GRID_STYLE;
-    public static final Style YM_GRID_XLS_STYLE;
+//    public static final Style YM_GRID_XLS_STYLE;
     public static final Style PROC_GRID_STYLE;
     public static final Style PERCENT_GRID_STYLE;
     public static final Style MONEY_GRID_STYLE;
-    public static final Style MONEY_GRID_XLS_STYLE;
+//    public static final Style MONEY_GRID_XLS_STYLE;
     public static final Style SHORT_DATE_GRID_STYLE;
 //    public static final Style SHORT_DATE_WEEKEND_GRID_STYLE;
     public static final Style WEEKEND_BLACK_GRID_STYLE;
@@ -135,11 +139,11 @@ public class VzmFormatReport {
                 .setHorizontalAlign(HorizontalAlign.LEFT)
                 .build();
 
-        DEFAULT_XLS_STYLE_NAME = "default-style";
-        DEFAULT_XLS_STYLE = new StyleBuilder(false, "default-xls-style")
-                .setFont(DEFAULT_FONT_XLS)
-                .setHorizontalAlign(HorizontalAlign.LEFT)
-                .build();
+//        DEFAULT_XLS_STYLE_NAME = "default-xls-style";
+//        DEFAULT_XLS_STYLE = new StyleBuilder(false, DEFAULT_XLS_STYLE_NAME)
+//                .setFont(DEFAULT_FONT_XLS)
+////                .setHorizontalAlign(HorizontalAlign.LEFT)
+//                .build();
 
         DEFAULT_GRID_STYLE_NAME = "default-grid-style";
         DEFAULT_GRID_STYLE = new StyleBuilder(false, DEFAULT_GRID_STYLE_NAME)
@@ -159,23 +163,41 @@ public class VzmFormatReport {
                 .setBorder(Border.THIN())
                 .build();
 
-        DEFAULT_GRID_XLS_STYLE_NAME = "default-grid-xls-style";
-        DEFAULT_GRID_XLS_STYLE = new StyleBuilder(false, DEFAULT_GRID_XLS_STYLE_NAME)
-                .setFont(DEFAULT_FONT_XLS)
-                .setHorizontalAlign(HorizontalAlign.LEFT)
-                .setPaddingLeft(3)
-                .setPaddingRight(5)
+//        DEFAULT_GRID_XLS_STYLE_NAME = "default-grid-xls-style";
+//        DEFAULT_GRID_XLS_STYLE = new StyleBuilder(false, DEFAULT_GRID_XLS_STYLE_NAME)
+////                .setFont(DEFAULT_FONT_XLS)
+////                .setHorizontalAlign(HorizontalAlign.LEFT)
+////                .setPaddingLeft(3)
+////                .setPaddingRight(5)
+////                .setBorder(Border.THIN())
+//                .build();
+
+        DEFAULT_GRID_XLS_TEXT_STYLE_NAME = "default-grid-xls-text-style";
+        DEFAULT_GRID_XLS_TEXT_STYLE = new StyleBuilder(false, DEFAULT_GRID_XLS_TEXT_STYLE_NAME)
+//                .setFont(DEFAULT_FONT_XLS)
+//                .setHorizontalAlign(HorizontalAlign.LEFT)
+//                .setPaddingLeft(3)
+//                .setPaddingRight(5)
 //                .setBorder(Border.THIN())
                 .build();
 
-        CENTER_GRID_XLS_STYLE_NAME = "center-grid-xls-style";
-        CENTER_GRID_XLS_STYLE = new StyleBuilder(false, CENTER_GRID_XLS_STYLE_NAME)
-                .setFont(DEFAULT_FONT_XLS)
-                .setHorizontalAlign(HorizontalAlign.CENTER)
-                .setPaddingLeft(3)
-                .setPaddingRight(5)
+        DEFAULT_GRID_XLS_NUM_STYLE_NAME = "default-grid-xls-num-style";
+        DEFAULT_GRID_XLS_NUM_STYLE = new StyleBuilder(false, DEFAULT_GRID_XLS_NUM_STYLE_NAME)
+//                .setFont(DEFAULT_FONT_XLS)
+                .setHorizontalAlign(HorizontalAlign.RIGHT)
+//                .setPaddingLeft(3)
+//                .setPaddingRight(5)
 //                .setBorder(Border.THIN())
                 .build();
+
+//        CENTER_GRID_XLS_STYLE_NAME = "center-grid-xls-style";
+//        CENTER_GRID_XLS_STYLE = new StyleBuilder(false, CENTER_GRID_XLS_STYLE_NAME)
+//                .setFont(DEFAULT_FONT_XLS)
+//                .setHorizontalAlign(HorizontalAlign.CENTER)
+//                .setPaddingLeft(3)
+//                .setPaddingRight(5)
+////                .setBorder(Border.THIN())
+//                .build();
 
         TITLE_STYLE = new StyleBuilder(true,"title-style")
                 .setParentStyleName(DEFAULT_STYLE_NAME)
@@ -272,10 +294,10 @@ public class VzmFormatReport {
                 .setPaddingLeft(20)
                 .build();
 
-        YM_GRID_XLS_STYLE = new StyleBuilder(true, "ym-grid-xls-style")
-                .setParentStyleName(DEFAULT_GRID_XLS_STYLE_NAME)
-                .setPaddingLeft(20)
-                .build();
+//        YM_GRID_XLS_STYLE = new StyleBuilder(true, "ym-grid-xls-style")
+//                .setParentStyleName(DEFAULT_GRID_XLS_STYLE_NAME)
+//                .setPaddingLeft(20)
+//                .build();
 
         INT_GRID_STYLE = new StyleBuilder(true, "ym-grid-int-style")
                 .setParentStyleName(DEFAULT_GRID_STYLE_NAME)
@@ -370,12 +392,12 @@ public class VzmFormatReport {
                 .setPattern("#,##0.0;-#,##0.0")
                 .build();
 
-        WORK_HOUR_GRID_XLS_STYLE_NAME = "work-hour-grid-xls-style";
-        WORK_HOUR_GRID_XLS_STYLE = new StyleBuilder(true, "work-hour-grid-xls-style")
-                .setParentStyleName(DEFAULT_GRID_XLS_STYLE_NAME)
-                .setHorizontalAlign(HorizontalAlign.RIGHT)
-                .setPattern("#,##0.0;-#,##0.0")
-                .build();
+//        WORK_HOUR_GRID_XLS_STYLE_NAME = "work-hour-grid-xls-style";
+//        WORK_HOUR_GRID_XLS_STYLE = new StyleBuilder(true, "work-hour-grid-xls-style")
+//                .setParentStyleName(DEFAULT_GRID_XLS_STYLE_NAME)
+//                .setHorizontalAlign(HorizontalAlign.RIGHT)
+////                .setPattern("#,##0.0;-#,##0.0")
+//                .build();
 
         WORK_HOUR_SUM_GRID_STYLE = new StyleBuilder(true, "work-hour-sum-grid-style")
                 .setParentStyleName(WORK_HOUR_GRID_STYLE_NAME)
@@ -401,13 +423,13 @@ public class VzmFormatReport {
                 .build()
         ;
 
-        MONEY_NO_FRACT_GRID_XLS_STYLE_NAME =  "money-no-fract-grid-xls-style";
-        MONEY_NO_FRACT_GRID_XLS_STYLE = new StyleBuilder(true, MONEY_NO_FRACT_GRID_XLS_STYLE_NAME)
-                .setParentStyleName(DEFAULT_GRID_XLS_STYLE_NAME)
-                .setHorizontalAlign(HorizontalAlign.RIGHT)
-                .setPattern("#,##0;-#,##0")
-                .build()
-        ;
+//        MONEY_NO_FRACT_GRID_XLS_STYLE_NAME =  "money-no-fract-grid-xls-style";
+//        MONEY_NO_FRACT_GRID_XLS_STYLE = new StyleBuilder(true, MONEY_NO_FRACT_GRID_XLS_STYLE_NAME)
+//                .setParentStyleName(DEFAULT_GRID_XLS_STYLE_NAME)
+//                .setHorizontalAlign(HorizontalAlign.RIGHT)
+//                .setPattern("#,##0;-#,##0")
+//                .build()
+//        ;
 
         MONEY_NO_FRACT_SUM_GRID_STYLE = new StyleBuilder(true, "money-no-fract-sum-grid-style")
                 .setParentStyleName(MONEY_NO_FRACT_GRID_STYLE_NAME)
@@ -429,11 +451,11 @@ public class VzmFormatReport {
                 .setPattern("#,##0.00;-#,##0.00")
                 .build();
 
-        MONEY_GRID_XLS_STYLE = new StyleBuilder(true, "money-grid-xls-style")
-                .setParentStyleName(DEFAULT_GRID_XLS_STYLE_NAME)
-                .setHorizontalAlign(HorizontalAlign.RIGHT)
-                .setPattern("#,##0.00;-#,##0.00")
-                .build();
+//        MONEY_GRID_XLS_STYLE = new StyleBuilder(true, "money-grid-xls-style")
+//                .setParentStyleName(DEFAULT_GRID_XLS_STYLE_NAME)
+//                .setHorizontalAlign(HorizontalAlign.RIGHT)
+//                .setPattern("#,##0.00;-#,##0.00")
+//                .build();
 
         PERCENT_GRID_STYLE = new StyleBuilder(true, "percent-grid-style")
                 .setParentStyleName(DEFAULT_GRID_STYLE_NAME)
