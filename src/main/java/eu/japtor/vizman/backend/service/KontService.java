@@ -1,6 +1,6 @@
 package eu.japtor.vizman.backend.service;
 
-import com.vaadin.flow.data.provider.QuerySortOrder;
+import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.KontView;
 import eu.japtor.vizman.ui.components.Operation;
@@ -40,6 +40,8 @@ public interface KontService {
     List<Integer> fetchKontRoks();
 
     long countAll();
+
+    long countAssignedByClient(Klient klient);
 
 //    List<Kont> fetchBySearchFilter(String serachString, List<QuerySortOrder> sortOrders);
 

@@ -577,7 +577,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Zrušení zakázky")
-                    .withMessage(String.format("Zakázku %s nelze zrušit, obsahuje zakázky / akvizice.", ckzDel))
+                    .withMessage(String.format("Zakázku %s nelze zrušit, obsahuje faktury.", ckzDel))
                     .open()
             ;
             return;

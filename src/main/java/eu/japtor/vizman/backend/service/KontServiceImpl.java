@@ -3,6 +3,7 @@ package eu.japtor.vizman.backend.service;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.app.HasLogger;
+import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.Kont;
 import eu.japtor.vizman.backend.entity.KontView;
 import eu.japtor.vizman.backend.repository.KontRepo;
@@ -124,13 +125,14 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
+    public long countAssignedByClient(Klient klient) {
+        return kontRepo.countAllByKlient(klient);
+    }
+
+    @Override
     @Transactional
     public Kont saveKont(Kont kontToSave, Operation oper) throws VzmServiceException {
         try {
-//            kontRepo.save(kont);
-//            kontRepo.detachKont(kont);
-//            kontRepo.flush();
-//            Kont kontSaved = kontRepo.saveAndFlush(kontToSave);
             Kont kontSaved = kontRepo.save(kontToSave);
             getLogger().info("{} saved: {} [operation: {}]", kontSaved.getTyp().name()
                     , kontSaved.getCkont(), oper.name());

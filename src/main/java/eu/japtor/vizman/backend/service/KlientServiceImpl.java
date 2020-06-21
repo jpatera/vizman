@@ -2,10 +2,10 @@ package eu.japtor.vizman.backend.service;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
+import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Klient;
-import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.repository.KlientRepo;
-import eu.japtor.vizman.backend.repository.RoleRepo;
+import eu.japtor.vizman.backend.repository.KontRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
@@ -14,13 +14,16 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
-public class KlientServiceImpl  extends AbstractSortableService implements KlientService {
+public class KlientServiceImpl  extends AbstractSortableService implements KlientService, HasLogger {
 
     private static final List<QuerySortOrder> DEFAULT_SORT_ORDER =
             Collections.singletonList(new QuerySortOrder("name", SortDirection.ASCENDING));
 
     @Autowired
     KlientRepo klientRepo;
+
+    @Autowired
+    KontRepo kontRepo;
 
 //    @Autowired
 //    public KlientServiceImpl() {
@@ -53,8 +56,15 @@ public class KlientServiceImpl  extends AbstractSortableService implements Klien
     }
 
     @Override
-    public void deleteKlient(Klient klient) {
-        klientRepo.deleteById(klient.getId());
+    public void deleteKlient(Klient itemToDel) {
+        try {
+            klientRepo.deleteById(itemToDel.getId());
+            getLogger().info("{} deleted: ID={}, Name={}", itemToDel.getTyp().name(), itemToDel.getId(), itemToDel.getName());
+        } catch (Exception e) {
+            String errMsg = "Error while deleting {} : ID={}, Name={}";
+            getLogger().error(errMsg, itemToDel.getTyp().name(), itemToDel.getId(), itemToDel.getName(), e);
+            throw new VzmServiceException(errMsg);
+        }
     }
 
 

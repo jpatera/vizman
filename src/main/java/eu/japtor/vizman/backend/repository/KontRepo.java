@@ -1,17 +1,11 @@
 package eu.japtor.vizman.backend.repository;
 
+import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.Kont;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
 
 public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
@@ -32,6 +26,8 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
     List<Kont> findAllByOrderByCkontDescRokDesc();
 
     List<Kont> findAllByRokOrderByCkontDesc(Integer rok);
+
+    int countAllByKlient(Klient klient);
 
     @Query(value = "SELECT distinct rok FROM vizman.kont ORDER BY ROK DESC",
             nativeQuery = true)
