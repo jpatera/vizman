@@ -70,7 +70,7 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
     private Registration registrationForDelete;
 
     private T currentItem;
-    private T origItem;
+//    private T origItem;
     private boolean readOnly;
     private boolean canDelete;
     private boolean deleteAllowed;
@@ -196,6 +196,7 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
 
     private Component initUpperPane(boolean useUpperRightPane) {
         upperPane = new HorizontalLayout();
+//        upperPane.setSizeFull();
         upperPane.add(initUpperLeftPane());
         if (useUpperRightPane) {
             upperPane.add(
@@ -415,7 +416,7 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
         this.headerDevider.getStyle().set("background-color", VzmFormatUtils.getItemTypeColorBrighter(item.getTyp()));
         this.currentOperation = operation;
         this.currentItem = item;
-        this.origItem = item;
+//        this.origItem = item;
         this.readOnly = readOnly;
         this.canDelete = canDelete;
         this.deleteAllowed = currentOperation.isDeleteAllowed();
@@ -424,7 +425,6 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
         // and next openings show date in US format
 
         setItemNames((currentItem).getTyp());  // Set default generic names
-
 
         initControlsForItemAndOperation(currentItem, this.currentOperation, titleMiddleComponent, titleEndText);
         initControlsOperability(this.readOnly, this.deleteAllowed, this.canDelete);
@@ -619,13 +619,6 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
                 .open();
     }
 
-    private void showDeleteErrMessage() {
-        ConfirmDialog.createError()
-                .withCaption("Editace subdodávky")
-                .withMessage("Subdodávku se nepodařilo zrušit")
-                .open()
-        ;
-    }
 
     /**
      * Removes the {@code item} from the backend and close the dialog.
@@ -667,9 +660,9 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
         return currentItem;
     }
 
-    public final T getOrigItem()  {
-        return origItem;
-    }
+//    public final T getOrigItem()  {
+//        return origItem;
+//    }
 
     public final OperationResult getLastOperationResult()  {
         return lastOperationResult;

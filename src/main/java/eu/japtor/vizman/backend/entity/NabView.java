@@ -88,18 +88,18 @@ public class NabView extends AbstractGenIdEntity implements HasItemType, HasVzSt
         return n;
     }
 
-    public static NabView getInstanceFromFilter(NabViewService.NabFilter nabFilter) {
-        if (null == nabFilter) {
+    public static NabView getInstanceFromFilter(NabViewService.NabViewFilter nabViewFilter) {
+        if (null == nabViewFilter) {
             return NabView.getEmptyInstance();
         } else {
             NabView n = NabView.getEmptyInstance();
-                n.setRok(nabFilter.getRok());
-                n.setCnab(nullIfBlank(nabFilter.getCnab()));
-                n.setCkont(nullIfBlank(nabFilter.getCkont()));
-                n.setVz(nabFilter.getVz());
-                n.setText(nullIfBlank(nabFilter.getText()));
-                n.setObjednatel(nullIfBlank(nabFilter.getObjednatel()));
-                n.setPoznamka(nullIfBlank(nabFilter.getPoznamka()));
+                n.setRok(nabViewFilter.getRok());
+                n.setCnab(nullIfBlank(nabViewFilter.getCnab()));
+                n.setCkont(nullIfBlank(nabViewFilter.getCkont()));
+                n.setVz(nabViewFilter.getVz());
+                n.setText(nullIfBlank(nabViewFilter.getText()));
+                n.setObjednatel(nullIfBlank(nabViewFilter.getObjednatel()));
+                n.setPoznamka(nullIfBlank(nabViewFilter.getPoznamka()));
             return n;
         }
     }

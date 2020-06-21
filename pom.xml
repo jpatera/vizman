@@ -12,7 +12,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <vaadin.version>14.1.5</vaadin.version>
+        <vaadin.version>14.2.1</vaadin.version>
 
         <drivers.dir>${project.basedir}/drivers</drivers.dir>
         <drivers.downloader.phase>pre-integration-test</drivers.downloader.phase>
@@ -34,7 +34,7 @@
 
     <repositories>
         <repository>
-            <id>central</id>
+            <id>Maven Central</id>
             <url>https://repo1.maven.org/maven2/</url>
             <snapshots><enabled>false</enabled></snapshots>
         </repository>
@@ -133,6 +133,12 @@
                     <artifactId>slf4j-simple</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.flowingcode.vaadin.addons</groupId>
+            <artifactId>twincolgrid</artifactId>
+            <version>2.0.3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->

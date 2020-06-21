@@ -5,6 +5,7 @@ import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Person;
 import eu.japtor.vizman.backend.repository.PersonRepo;
+import eu.japtor.vizman.backend.repository.PersonRoleRepo;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -17,15 +18,20 @@ import java.util.List;
 @Service
 public class PersonServiceImpl extends AbstractSortableService implements PersonService, HasLogger {
 
-    private final PersonRepo personRepo;
     private static final List<QuerySortOrder> DEFAULT_SORT_ORDER =
             Collections.singletonList(new QuerySortOrder("username", SortDirection.ASCENDING));
 
     @Autowired
-    public PersonServiceImpl(PersonRepo personRepo) {
-        super();
-        this.personRepo = personRepo;
-    }
+    private PersonRepo personRepo;
+
+    @Autowired
+    private PersonRoleRepo personRoleRepo;
+
+//    @Autowired
+//    public PersonServiceImpl(PersonRepo personRepo) {
+//        super();
+//        this.personRepo = personRepo;
+//    }
 
     @Override
     public List<QuerySortOrder> getDefaultSortOrders() {
@@ -159,5 +165,10 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
                     ;
             return personRepo.count(Example.of(probe, matcher));
         }
+    }
+
+    @Override
+    public long countOfAssignedPerson(Long roleId) {
+        return personRoleRepo.countByRoleId(roleId);
     }
 }

@@ -21,6 +21,7 @@ import eu.japtor.vizman.backend.entity.KzTreeAware;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.entity.ZakBasic;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
+import eu.japtor.vizman.backend.service.ZaknService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Ribbon;
@@ -46,6 +47,7 @@ public class ZakTreeSelectDialog extends Dialog {
     private Grid<ZakBasic> zakGrid;
     private List<ZakBasic> zakList;
     private ComponentRenderer<HtmlComponent, ZakBasic> kzTextRenderer;
+    private ZaknService zaknService;
 
     VerticalLayout mainPanel;
     HorizontalLayout buttonBar;
@@ -62,15 +64,11 @@ public class ZakTreeSelectDialog extends Dialog {
     public ZakBasicRepo zakBasicRepo;
 
 
-    public ZakTreeSelectDialog()
-    {
-//        this.zaksSelector = itemSelector;
-//        super(itemSaver);
+    public ZakTreeSelectDialog(ZaknService zaknService) {
         this.setWidth("1200px");
         this.setHeight("700px");
-//        this.zakService = zakService;
-//        setupEventListeners();
 
+        this.zaknService = zaknService;
         initKzTextRenderer();
 
         zakList = new ArrayList<>();
@@ -194,7 +192,16 @@ public class ZakTreeSelectDialog extends Dialog {
         gridContainer.setAlignItems(FlexComponent.Alignment.STRETCH);
 
         gridContainer.add(initKzToolBar());
-        zakGrid = new ZakSimpleGrid(true, null, null, false, false,  Boolean.FALSE, null);
+        zakGrid = new ZakSimpleGrid(
+                true
+                , null
+                , null
+                , false
+                , false
+                ,  Boolean.FALSE
+                , null
+                , zaknService
+        );
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 //        gridContainer.add(initKzTreeGrid());

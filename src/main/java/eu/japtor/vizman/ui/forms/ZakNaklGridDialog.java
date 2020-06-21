@@ -23,6 +23,7 @@ import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.VaadinSession;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.ItemType;
+import eu.japtor.vizman.backend.entity.ZakBasic;
 import eu.japtor.vizman.backend.entity.Zakn;
 import eu.japtor.vizman.backend.entity.Zakr;
 import eu.japtor.vizman.backend.report.ZakNaklXlsReportBuilder;
@@ -74,6 +75,9 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     private ZakNaklReportDialog zakNaklRepDialog;
     private ZaknService zaknService;
 
+    private Long zakId;
+    private String ckzTextFull;
+
     private final static String REPORT_FILE_NAME = "vzm-exp-zakn";
     private ComponentEventListener anchorExportListener = event -> {
         try {
@@ -84,7 +88,7 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     };
 
     private SerializableSupplier<List<? extends Zakn>> itemsSupplier = () ->
-            zaknService.fetchByZakIdSumByYm(zakr.getId(), zakrParams)
+            zaknService.fetchByZakIdSumByYm(zakId, zakrParams)
             ;
 
     public ZakNaklGridDialog(ZaknService zaknService) {
@@ -120,13 +124,21 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
         return zakInfoBox;
     }
 
-    //    public void openDialog(LinkedList<PersonWage> personWages) {
-    public void openDialog(Zakr zakr, ZakrListView.ZakrParams zakrParams) {
+    public void openDialogFromZakBasicView(ZakBasic zakBasic, ZakrListView.ZakrParams zakrParams) {
+        this.zakId = zakBasic.getId();
+        this.ckzTextFull = zakBasic.getCkzTextFull();
+        openDialog(zakId, ckzTextFull);
+    }
 
-//        this.origItemList = Collections.unmodifiableList(new LinkedList<>(currentItemList));
+    public void openDialogFromZakr(Zakr zakr, ZakrListView.ZakrParams zakrParams) {
+        this.zakId = zakr.getId();
+        this.ckzTextFull = zakr.getCkzTextFull();
+        openDialog(zakId, ckzTextFull);
+    }
 
-//        this.itemsChanged = false;
-        this.zakr = zakr;
+    private void openDialog(Long zakId, String ckzTextFull) {
+        this.zakId = zakId;
+        this.ckzTextFull = ckzTextFull;
         this.zakrParams = zakrParams;
         paramsBinder.setBean(zakrParams);
 //        paramsBinder.addValueChangeListener(event -> calcButton.setIconDirty());
@@ -291,9 +303,9 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     private void initDataAndControls() {
         deactivateListeners();
 
-        zakInfoBox.setText(zakr.getCkzTextFull());
+        zakInfoBox.setText(ckzTextFull);
 
-        this.currentItemList = zaknService.fetchByZakId(zakr.getId(), zakrParams);
+        this.currentItemList = zaknService.fetchByZakId(zakId, zakrParams);
         grid.setItems(currentItemList);
         updateFooterFields();
         initControlsOperability();

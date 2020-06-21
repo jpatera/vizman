@@ -19,10 +19,11 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -30,17 +31,22 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.security.Permissions;
+import eu.japtor.vizman.backend.dataprovider.RoleFiltPagDataProvider;
+import eu.japtor.vizman.backend.entity.ItemNames;
+import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Role;
+import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.service.RoleService;
 import eu.japtor.vizman.ui.components.*;
+import eu.japtor.vizman.ui.forms.PersonGridDialog;
 import eu.japtor.vizman.ui.forms.RoleFormDialog;
+import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.TITLE_PERSON;
 
@@ -51,63 +57,203 @@ import static eu.japtor.vizman.ui.util.VizmanConst.TITLE_PERSON;
 @UIScope    // Without this annotation browser refresh throws exception
 public class CfgRoleListView extends VerticalLayout implements BeforeEnterObserver {
 
-    private RoleFormDialog roleFormDialog;
-//    private final TextField searchField;
-    private final Button newItemButton;
-    private final Button reloadViewButton;
     private Grid<Role> roleGrid;
     private Grid<Perm> permGrid;
-    private final VerticalLayout gridContainer;
-    private final Component viewToolbar;
+//    private List<Perm> perms;
+    private RoleFiltPagDataProvider roleFiltPagDataProvider;
+
+
+    private PersonGridDialog assignedPersonsDialog;
+    private RoleFormDialog roleFormDialog;
+    private Button newItemButton;
+    private Button reloadButton;
 
     @Autowired
     public RoleService roleService;
 
     @Autowired
-    public CfgRoleListView() {
-        setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-        setAlignItems(Alignment.STRETCH);
+    public PersonService personService;
 
-        newItemButton = new NewItemButton("Nová role",
-                event -> roleFormDialog.openDialog(new Role(), Operation.ADD)
-        );
-
-        reloadViewButton = new ReloadButton("Znovu načíst tabulku",
-                event -> reloadView()
-        );
-
-        viewToolbar = buildViewToolBar(reloadViewButton, newItemButton);
-
-        roleGrid = buildRoleGrid();
-        permGrid = buildPermGrid();
-        gridContainer = buildGridContainer(roleGrid, permGrid);
-        add(viewToolbar, gridContainer);
-    }
+//    public CfgRoleListView() {
+//    }
 
     @PostConstruct
-    public void init() {
+    public void postInit() {
 
-        DataProvider<Role, String> roleDataProvider = DataProvider.fromFilteringCallbacks(
-                query -> {
-                    query.getOffset();
-                    query.getLimit();
-//                          query.skip(query.getOffset())
-//                            .take(query.getLimit())
-//                    personService.fetchBySearchFilter(filter)
-//                    findByExample(repository, query.getFilter())
-//                            .skip(query.getOffset())
-//                            .take(query.getLimit())
+        initView();
 
-                            List<Role> roles = roleService.fetchAllRoles();
-                            return roles.stream();
-                },
-                query -> (int) roleService.countAllRoles()
-        );
-//        ConfigurableFilterDataProvider<Role, Void, String> roleDataProvider = roleDataProv.withConfigurableFilter();
-        roleGrid.setDataProvider(roleDataProvider);
-        permGrid.setDataProvider(new ListDataProvider<>(new ArrayList<>()));
+        roleFiltPagDataProvider = new RoleFiltPagDataProvider(roleService);
+        roleGrid.setDataProvider(roleFiltPagDataProvider);
+
         roleFormDialog = new RoleFormDialog(
-                this::saveRole, this::deleteRole, roleService, Arrays.asList(Perm.values()));
+                this::saveItem
+                , this::deleteItem
+                , roleService
+                , personService
+                , Arrays.asList(Perm.values())
+
+        );
+        roleFormDialog.addOpenedChangeListener(event -> {
+            if (!event.isOpened()) {
+                finishRoleEdit((RoleFormDialog) event.getSource());
+            }
+        });
+
+        assignedPersonsDialog = new PersonGridDialog(
+                personService
+                , "Uživatelé s přidělenou rolí"
+        );
+
+        loadInitialViewContent();
+    }
+
+    private void initView() {
+        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+//        setAlignItems(Alignment.STRETCH);
+        this.setPadding(false);
+        this.setMargin(false);
+        this.add(
+                buildGridContainer()
+        );
+    }
+
+    private Component buildGridContainer() {
+        VerticalLayout gridContainer = new VerticalLayout();
+        gridContainer.setClassName("view-container");
+        gridContainer.getStyle().set("marginTop", "0.5em");
+        gridContainer.setAlignItems(Alignment.STRETCH);
+
+        gridContainer.add(
+                buildRoleGridBarComponent()
+                , initRoleGrid()
+                , buildPermTitleComponent()
+                , initPermGrid()
+        );
+        return gridContainer;
+    }
+
+
+    private Component buildToolBarComponent() {
+        HorizontalLayout toolBar = new HorizontalLayout();
+        toolBar.setDefaultVerticalComponentAlignment(Alignment.CENTER);
+        toolBar.setSpacing(false);
+        toolBar.add(
+                initNewItemButton()
+        );
+        return toolBar;
+    }
+
+    private Component initNewItemButton() {
+        newItemButton = new NewItemButton("Nová role",
+                event -> roleFormDialog.openDialog(false, new Role(ItemType.ROLE), Operation.ADD)
+        );
+        return  newItemButton;
+    }
+
+    private Component buildRoleGridBarComponent() {
+        HorizontalLayout gridBar = new HorizontalLayout();
+        gridBar.setSpacing(false);
+        gridBar.setAlignItems(Alignment.END);
+        gridBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
+//        gridBar.getStyle().set("padding-bottom", "5px");
+
+        HorizontalLayout toolBar = new HorizontalLayout(
+                initNewItemButton()
+        );
+        toolBar.setDefaultVerticalComponentAlignment(Alignment.CENTER);
+
+//        Ribbon ribbon = new Ribbon();
+        gridBar.add(
+                buildRoleTitleComponent()
+                , new Ribbon()
+//                , buildGridBarControlsComponent()
+//                , new Ribbon()
+                , buildToolBarComponent()
+        );
+//        gridBar.expand(ribbon);
+
+        return gridBar;
+    }
+
+    private Component buildRoleTitleComponent() {
+//        Span viewTitle = new Span(TITLE_KLIENT.toUpperCase());
+//        viewTitle.getStyle()
+//                .set("font-size", "var(--lumo-font-size-l)")
+//                .set("font-weight", "600")
+//                .set("padding-right", "0.75em");
+
+        HorizontalLayout titleComponent = new HorizontalLayout();
+        titleComponent.setMargin(false);
+        titleComponent.setPadding(false);
+        titleComponent.setSpacing(false);
+        titleComponent.setAlignItems(Alignment.CENTER);
+        titleComponent.setJustifyContentMode(JustifyContentMode.START);
+        titleComponent.add(
+                new GridTitle(ItemNames.getNomP(ItemType.ROLE))
+                , new Ribbon()
+                , initReloadButton()
+//                , new Ribbon()
+//                , initResetFiltersButton()
+        );
+        return titleComponent;
+    }
+
+    private Component buildPermTitleComponent() {
+//        Span viewTitle = new Span(TITLE_KLIENT.toUpperCase());
+//        viewTitle.getStyle()
+//                .set("font-size", "var(--lumo-font-size-l)")
+//                .set("font-weight", "600")
+//                .set("padding-right", "0.75em");
+
+        HorizontalLayout titleComponent = new HorizontalLayout();
+        titleComponent.setMargin(false);
+        titleComponent.setPadding(false);
+        titleComponent.setSpacing(false);
+        titleComponent.setAlignItems(Alignment.CENTER);
+        titleComponent.setJustifyContentMode(JustifyContentMode.START);
+        titleComponent.add(
+                new GridTitle("PŘIDĚLENÁ OPRÁVNĚNÍ")
+                , new Ribbon()
+                , initReloadButton()
+//                , new Ribbon()
+//                , initResetFiltersButton()
+        );
+        return titleComponent;
+    }
+
+    private Component initReloadButton() {
+        reloadButton = new ReloadButton(event -> reloadGridData());
+        return reloadButton;
+    }
+
+    private void loadInitialViewContent() {
+        // No filters
+        //  No filter values
+        reloadGridData();
+    }
+
+    private void reloadGridData() {
+        doFilter(buildRoleFilter());
+    }
+
+    public void doFilter(RoleService.RoleFilter filter) {
+        roleFiltPagDataProvider.setFilter(filter);
+    }
+
+    // Needed for getting items for report by current grid filter until Vaadin does not  have it implemented
+    public RoleService.RoleFilter buildRoleFilter() {
+        return new RoleService.RoleFilter(
+                getNameValue()
+                , getDescriptionValue()
+        );
+    }
+
+    private String getNameValue() {
+        return null;    //  Name filter not provided for roles
+    }
+
+    private String getDescriptionValue() {
+        return null;    //  Description filter not provided for roles
     }
 
     @Override
@@ -125,88 +271,76 @@ public class CfgRoleListView extends VerticalLayout implements BeforeEnterObserv
         return gridContainer;
     }
 
-    private Grid<Role> buildRoleGrid() {
-        Grid<Role> grid = new Grid<>();
-        grid.setMultiSort(false);
-        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
-//        rGrid.setImmediate(true);
+    private Grid<Role> initRoleGrid() {
+        roleGrid = new Grid<>();
+        roleGrid.setHeight("15em");
+        roleGrid.setMaxHeight("15em");
+        roleGrid.setMultiSort(false);
+        roleGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 
-
-//        GridSingleSelectionModel<Role> singleSelectModel = (GridSingleSelectionModel<Role>) grid
-//                .getSelectionModel();
-//        singleSelectModel.addSingleSelectionListener(ssEvent -> {
-//            ((ConfigurableFilterDataProvider)permGrid.getDataProvider()).setFilter(
-//                    ssEvent.getSelectedItem());
-////                    rGrid.getSelectedItems().stream().findFirst();
-//        });
-//        ConfigurableFilterDataProvider<Role, Void, String> roleDataProvider = roleDataProv.withConfigurableFilter();
-
-        grid.asSingleSelect().addValueChangeListener(e -> {
-            if (null == e.getValue().getPerms()) {
+        roleGrid.asSingleSelect().addValueChangeListener(e -> {
+            if (null == e.getValue() || null == e.getValue().getPerms()) {
                 permGrid.setDataProvider(new ListDataProvider<>(new ArrayList<>()));
             } else {
                 permGrid.setDataProvider(new ListDataProvider<>(e.getValue().getPerms()));
             }
         });
 
+        roleGrid.setId("role-grid");
+        roleGrid.setClassName("vizman-simple-grid");
 
-        // TODO:
-        grid.setId("role-grid");  // .. same ID as is used in shared-styles grid's dom module
-
-        grid.addColumn(Role::getName).setHeader("Název").setWidth("3em").setResizable(true)
+        roleGrid.addColumn(new ComponentRenderer<>(this::buildPersonsViewBtn)).setFlexGrow(0);
+        roleGrid.addColumn(new ComponentRenderer<>(this::buildEditBtn)).setFlexGrow(0);
+        roleGrid.addColumn(Role::getName).setHeader("Název").setWidth("3em").setResizable(true)
             .setSortProperty("name");
-        grid.addColumn(Role::getDescription).setHeader("Popis").setWidth("8em").setResizable(true);
-        grid.addColumn(new ComponentRenderer<>(this::buildEditButton)).setFlexGrow(0);
-        return grid;
+        roleGrid.addColumn(Role::getDescription).setHeader("Popis").setWidth("8em").setResizable(true);
+
+        roleGrid.getColumns().forEach(column -> column.setAutoWidth(true));
+
+        return roleGrid;
     }
 
-    private Grid<Perm> buildPermGrid() {
-        Grid<Perm> grid = new Grid<>();
-        grid.setMultiSort(false);
-        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+    private Grid<Perm> initPermGrid() {
+        permGrid = new Grid<>();
+        permGrid.setHeightByRows(true);
+        permGrid.setMaxHeight("20em");
+        permGrid.setMultiSort(false);
+        permGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
 
-        // TODO:
-        grid.setId("perm-grid");  // .. same ID as is used in shared-styles grid's dom module
+        permGrid.setId("perm-grid");
+        permGrid.setClassName("vizman-simple-grid");
 
-        grid.addColumn(Perm::getAuthority).setHeader("Název").setWidth("3em").setResizable(true)
+        permGrid.addColumn(Perm::getAuthority).setHeader("Název").setWidth("3em").setResizable(true)
                 .setSortProperty("name");
-        grid.addColumn(Perm::getDescription).setHeader("Popis").setWidth("8em").setResizable(true);
-//        pGrid.addColumn(new ComponentRenderer<>(this::buildEditButton)).setFlexGrow(0);
+        permGrid.addColumn(Perm::getDescription).setHeader("Popis").setWidth("8em").setResizable(true);
 
-//        grid.setDataProvider(new ListDataProvider(new ArrayList<>()));
+        permGrid.getColumns().forEach(column -> column.setAutoWidth(true));
 
-
-
-
-//        DataProvider<Perm, String> personDataProv = DataProvider.fromFilteringCallbacks(
-//                query -> {
-////                            int offset = query.getOffset();
-////                            int limit = query.getLimit();
-//
-////                    personService.fetchBySearchFilter(filter)
-////                    findByExample(repository, query.getFilter())
-////                            .skip(query.getOffset())
-////                            .take(query.getLimit())
-//
-//                    List<Person> persons = personService.fetchByFilter(
-//                            query.getFilter().orElse(null),
-//                            query.getSortOrders());
-//                    return persons.stream();
-//                },
-//                query -> (int) personService.countBySearchFilter(query.getFilter().orElse(null))
-//        );
-//
-//        ConfigurableFilterDataProvider<Person, Void, String> filterawarePersonDataProvider = personDataProv.withConfigurableFilter();
-//
-//        personGrid.setDataProvider(filterawarePersonDataProvider);
-//
-
-
-        return grid;
+        return permGrid;
     }
 
-    private Button buildEditButton(Role role) {
-        return new GridItemEditBtn(event -> roleFormDialog.openDialog(role, Operation.EDIT));
+    private Button buildEditBtn(Role itemFromView) {
+        return new GridItemEditBtn(event -> {
+                roleGrid.select(itemFromView);
+                roleFormDialog.openDialog(
+                        false
+                        , itemFromView
+                        , Operation.EDIT
+                );
+            }
+        );
+    }
+
+    Component buildPersonsViewBtn(Role itemFromView) {
+        return new GridItemBtn(event -> {
+                roleGrid.select(itemFromView);
+                assignedPersonsDialog.openDialog(
+                        roleService.fetchByIdWithLazyPersons(itemFromView.getId())
+                );
+            }
+            , new Icon(VaadinIcon.USERS)
+            , null
+        );
     }
 
     private Component buildViewToolBar(final Button reloadViewButton, final Button newItemButton) {
@@ -239,31 +373,50 @@ public class CfgRoleListView extends VerticalLayout implements BeforeEnterObserv
         return viewToolBar;
     }
 
-    private void updateGridContent() {
-//        filterawarePersonDataProvider.refreshAll();
-//        grid.setItems(service.findAll())
+    void finishRoleEdit(RoleFormDialog roleFormDialog) {
+        Role resultItem = roleFormDialog.getCurrentItem(); // Modified, just added or just deleted
+        Role origItem = roleFormDialog.getOrigItemCopy();
+        OperationResult operResult = roleFormDialog.getLastOperationResult();
 
-//        personGrid.getDataProvider().fetch();
+        syncGridAfterRoleEdit();
 
-//        Person newInstance = personGrid.getDataCommunicator().getKeyMapper().removeAll();
-//        Person newInstance = service.save(personToChange);
-//        dataProvider.refreshItem(newInstance);
-//        personGrid.getDataProvider().refreshAll();
+        if (OperationResult.ITEM_SAVED == operResult) {
+            Notification.show(String.format("Role %s uložena", resultItem.getName())
+                    , 2500, Notification.Position.TOP_CENTER);
 
-//        List<Person> personList = personService.fetchBySearchFilter(searchField.getStringValue());
-
-//        ListDataProvider<Person> filterawarePersonDataProvider =
-//                DataProvider.ofCollection(personService.fetchBySearchFilter(searchField.getStringValue()));
-//
-//        filterawarePersonDataProvider.setSortOrder(Person::getUsername,
-//                SortDirection.ASCENDING);
-
-//        personGrid.setItems(personList);
-//        personGrid.setDataProvider(filteredDataProvider);
-//        personGrid.setDataProvider(SpringDataProviderBuilder.forRepository(personRepo));
-//        personGrid.setDataProvider(filterawarePersonDataProvider);
+        } else if (OperationResult.ITEM_DELETED == operResult) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Editace role")
+                    .withMessage(String.format("Role % zrušena.", origItem.getName()))
+                    .open();
+        }
     }
 
+    private void syncGridAfterRoleEdit() {
+        roleGrid.getDataCommunicator().getKeyMapper().removeAll();
+        roleGrid.getDataProvider().refreshAll();
+    }
+
+    private void updateGridAfterAdd(Role newRole) {
+        reloadGridData();
+        roleGrid.select(newRole);
+    }
+
+    private void updateGridAfterEdit(Role modifiedRole) {
+        roleGrid.getDataProvider().refreshItem(modifiedRole);
+        roleGrid.select(modifiedRole);
+    }
+
+//    private void updateGridAfterDelete(int itemIndexNew) {
+    private void updateGridAfterDelete() {
+        reloadGridData();
+        roleGrid.getDataCommunicator().getKeyMapper().removeAll();
+        roleGrid.getDataProvider().refreshAll();
+//        roleGrid.select(roles.get(itemIndexNew));
+//        klientGrid.getDataProvider().refreshAll();
+//        scrollToIndex(klientGrid, itemIndexOrig);
+    }
 
     private void reloadView() {
 //        filterawarePersonDataProvider.clearFilters();
@@ -274,23 +427,26 @@ public class CfgRoleListView extends VerticalLayout implements BeforeEnterObserv
     }
 
 
-    private void saveRole(Role role, Operation operation) {
-        Role newInstance = roleService.saveRole(role);
-        roleGrid.getDataProvider().refreshItem(newInstance);
+    private void saveItem(Role role, Operation operation) {
+        Role roleSaved = roleService.saveRole(role);
+        roleGrid.getDataProvider().refreshItem(roleSaved);
         Notification.show(
 //                "User successfully " + operation.getOpNameInText() + "ed.", 3000, Position.BOTTOM_START);
                 "Změny role uloženy", 2000, Notification.Position.BOTTOM_END);
-        updateGridContent();
+        if (Operation.ADD == operation) {
+            updateGridAfterAdd(roleSaved);
+        } else {
+            updateGridAfterEdit(roleSaved);
+        }
     }
 
-    private void deleteRole(Role role) {
+    private void deleteItem(Role role) {
+//        int itemIndexOrig = roles.indexOf(role);
+//        int itemIndexNew = itemIndexOrig >= klients.size() - 1 ? itemIndexOrig - 1 : itemIndexOrig;
         String roleName = role.getName();
         roleService.deleteRole(role);
-        roleGrid.getDataCommunicator().getKeyMapper().removeAll();
-        roleGrid.getDataProvider().refreshAll();
-
         Notification.show(String.format("Role '%s' zrušena.", roleName), 2000, Notification.Position.BOTTOM_END);
-        updateGridContent();
+        updateGridAfterDelete();
     }
 
 //    private Component createComponent(Integer id, String color) {

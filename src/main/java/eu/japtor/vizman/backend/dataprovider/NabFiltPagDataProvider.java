@@ -4,20 +4,20 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.backend.dataprovider.spring.FilterablePageableDataProvider;
-import eu.japtor.vizman.backend.entity.Nab;
 import eu.japtor.vizman.backend.entity.NabView;
 import eu.japtor.vizman.backend.service.NabViewService;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class NabFiltPagDataProvider
-                extends FilterablePageableDataProvider<NabView, NabViewService.NabFilter>
+                extends FilterablePageableDataProvider<NabView, NabViewService.NabViewFilter>
 {
     private final NabViewService nabViewService;
 
-    private final NabViewService.NabFilter defaultFilter = NabViewService.NabFilter.getEmpty();
+    private final NabViewService.NabViewFilter defaultFilter = NabViewService.NabViewFilter.getEmpty();
     private final NabView defaultProbe = NabView.getEmptyInstance();
 
     private final List<QuerySortOrder> defaultSortOrders = Arrays.asList(
@@ -26,9 +26,9 @@ public class NabFiltPagDataProvider
 //            , new QuerySortOrder("ym", SortDirection.ASCENDING)
     );
 
-    private final ExampleMatcher matcher = ExampleMatcher.matching()
-            .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
-            .withIgnoreNullValues();
+//    private final ExampleMatcher matcher = ExampleMatcher.matching()
+//            .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
+//            .withIgnoreNullValues();
 
     public NabFiltPagDataProvider(NabViewService nabViewService) {
         this.nabViewService = nabViewService;
@@ -44,23 +44,23 @@ public class NabFiltPagDataProvider
 //        return Example.of(probe, matcher);
 //    }
 
-    private static Sort.Order queryOrderToSpringOrder(QuerySortOrder queryOrder) {
-        return new Sort.Order(queryOrder.getDirection() == SortDirection.ASCENDING
-                ? Sort.Direction.ASC : Sort.Direction.DESC
-                , queryOrder.getSorted());
-    }
+//    private static Sort.Order queryOrderToSpringOrder(QuerySortOrder queryOrder) {
+//        return new Sort.Order(queryOrder.getDirection() == SortDirection.ASCENDING
+//                ? Sort.Direction.ASC : Sort.Direction.DESC
+//                , queryOrder.getSorted());
+//    }
 
     @Override
-    protected Page<NabView> fetchFromBackEnd(Query<NabView, NabViewService.NabFilter> query, Pageable pageable) {
+    protected Page<NabView> fetchFromBackEnd(Query<NabView, NabViewService.NabViewFilter> query, Pageable pageable) {
         return nabViewService.fetchByNabFilter(getNabFilter(), query.getSortOrders(), pageable);
     }
 
     @Override
-    protected int sizeInBackEnd(Query<NabView, NabViewService.NabFilter> query) {
+    protected int sizeInBackEnd(Query<NabView, NabViewService.NabViewFilter> query) {
         return (int) nabViewService.countByNabFilter(getNabFilter());
     }
 
-    private NabViewService.NabFilter getNabFilter() {
+    private NabViewService.NabViewFilter getNabFilter() {
         return getOptionalFilter().orElse(defaultFilter);
 //        return "%" + filter + "%";
     }

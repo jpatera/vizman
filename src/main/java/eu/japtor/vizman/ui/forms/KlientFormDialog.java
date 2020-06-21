@@ -1,39 +1,22 @@
 package eu.japtor.vizman.ui.forms;
 
-import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import eu.japtor.vizman.backend.entity.Klient;
-import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.service.KlientService;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Operation;
-import eu.japtor.vizman.ui.components.TwinColGrid;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-//@SpringComponent
-//@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
 
-//    private ComboBox<PersonState> statusField; // = new ComboBox("Status");
-    private TextField nameField; // = new TextField("Username");
-    private PasswordField passwordField; // = new TextField("Password");
-    private TextField noteField; // = new TextField("Jméno");
-    private TextField prijmeniField; // = new TextField("Příjmení");
-    private TextField sazbaField; // = new TextField("Sazba");
-    private DatePicker nastupField; // = new DatePicker("Nástup");
-    private DatePicker vystupField; // = new DatePicker("Výstup");
-    private TwinColGrid<Role> twinRolesGridField;
-
-//    private final VerticalLayout roleGridContainer;
-//    private Grid<Role> roleTwinGrid;
+    private TextField nameField;
+    private TextField noteField;
 
 //    @Autowired
     private KlientService klientService;
-
 
     public KlientFormDialog(BiConsumer<Klient, Operation> itemSaver
             , Consumer<Klient> itemDeleter
@@ -60,15 +43,6 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
     }
 
     public void openDialog(Klient klient, Operation operation) {
-//        setItemNames(klient.getTyp());
-
-        // Set locale here, because when it is set in constructor, it is effective only in first open,
-        // and next openings show date in US format
-//        datZadComp.setLocale(new Locale("cs", "CZ"));
-//        vystupField.setLocale(new Locale("cs", "CZ"));
-
-//        this.kontFolderOrig = kontFolderOrig;
-
         openInternal(klient, operation, false, true, new Gap(), null);
     }
 

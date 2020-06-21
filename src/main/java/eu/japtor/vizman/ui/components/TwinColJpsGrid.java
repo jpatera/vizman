@@ -3,7 +3,7 @@ package eu.japtor.vizman.ui.components;
 
     /*-
  * #%L
- * TwinColGrid add-on
+ * TwinColJpsGrid add-on
  * %%
  * Copyright (C) 2017 - 2018 FlowingCode S.A.
  * %%
@@ -21,6 +21,7 @@ package eu.japtor.vizman.ui.components;
  * #L%
  */
 
+import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
@@ -39,51 +40,24 @@ import com.vaadin.flow.shared.Registration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-//import com.vaadin.data.HasValue;
-//import com.vaadin.data.ValueProvider;
-//import com.vaadin.data.provider.DataProvider;
-//import com.vaadin.data.provider.ListDataProvider;
-//import com.vaadin.event.selection.SelectionListener;
-//import com.vaadin.icons.VaadinIcons;
-//import com.vaadin.shared.Registration;
-//import com.vaadin.shared.ui.dnd.DropEffect;
-//import com.vaadin.shared.ui.dnd.EffectAllowed;
-//import com.vaadin.shared.ui.grid.DropMode;
-//import com.vaadin.ui.Button;
-//import com.vaadin.ui.CustomComponent;
-//import com.vaadin.ui.Grid;
-//import com.vaadin.ui.Grid.SelectionMode;
-//import com.vaadin.ui.HorizontalLayout;
-//import com.vaadin.ui.VerticalLayout;
-//import com.vaadin.ui.components.grid.GridDragSource;
-//import com.vaadin.ui.components.grid.GridDropTarget;
-//import com.vaadin.ui.components.grid.NoSelectionModel;
-//import com.vaadin.ui.renderers.TextRenderer;
+// public final class TwinColJpsGrid<T> extends Composite implements HasValue<Set<T>> {
+// public final class TwinColJpsGrid<T> extends AbstractCompositeField<VerticalLayout> {
+// public final class TwinColJpsGrid<T> extends AbstractCompositeField<VerticalLayout> implements HasValue<Set<T>> {
+public final class TwinColJpsGrid<T> extends Composite<VerticalLayout> implements HasValue {
 
-//    public final class TwinColGrid<T> extends Component implements HasValue<Set<T>> {
-//    public final class TwinColGrid<T> extends Composite implements HasValue<Set<T>> {
+    private boolean twinReadOnly;
+    private final Grid<T> leftGrid = new Grid<>();
+    private final Grid<T> rightGrid = new Grid<>();
 
+    private final List<T> itemPool;
 
-//public final class TwinColGrid<T> extends AbstractCompositeField<VerticalLayout> {
-//public final class TwinColGrid<T> extends AbstractCompositeField<VerticalLayout> implements HasValue<Set<T>> {
-public final class TwinColGrid<T> extends Composite<VerticalLayout> implements HasValue {
-
-        private final Grid<T> leftGrid = new Grid<>();
-
-        private final Grid<T> rightGrid = new Grid<>();
-
-        private final Collection<T> itemPool;
-
+    private boolean hasChanges;
         private ListDataProvider<T> leftGridDataProvider;
-
         private ListDataProvider<T> rightGridDataProvider;
 
         private final Button moveAllItemsToLeftButton = new Button();
-
         private final Button moveSelectedItemsToLeftButton = new Button();
-
         private final Button moveSelectedItemsToRightButton = new Button();
-
         private final Button moveAllItemsToRightButton = new Button();
 
         private final VerticalLayout buttonContainer;
@@ -91,37 +65,37 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 //        private Grid<T> draggedGrid;
 
 
-//        public TwinColGrid(final Collection<T> itemPool) {
+//        public TwinColJpsGrid(final Collection<T> itemPool) {
 //            this.itemPool = itemPool;
 //            this(DataProvider.ofCollection(new LinkedHashSet<>(itemPool)));
 //        }
 
 //        /**
-//         * Constructs a new TwinColGrid with caption and data provider for options.
+//         * Constructs a new TwinColJpsGrid with caption and data provider for options.
 //         *
 //         * @param caption the caption to set, can be {@code null}
 //         * @param dataProvider the data provider, not {@code null}
 //         */
-//        public TwinColGrid(final String caption, final ListDataProvider<T> dataProvider) {
+//        public TwinColJpsGrid(final String caption, final ListDataProvider<T> dataProvider) {
 //            this(dataProvider);
 ////            setCaption(caption);
 //        }
 
 //        /**
-//         * Constructs a new TwinColGrid with caption and the given options.
+//         * Constructs a new TwinColJpsGrid with caption and the given options.
 //         *
 //         * @param caption the caption to set, can be {@code null}
 //         * @param options the options, cannot be {@code null}
 //         */
-//        public TwinColGrid(final String caption, final Collection<T> options) {
+//        public TwinColJpsGrid(final String caption, final Collection<T> options) {
 //            this(caption, DataProvider.ofCollection(new LinkedHashSet<>(options)));
 //        }
 
         /**
-         * Constructs a new TwinColGrid with data provider for options.
+         * Constructs a new TwinColJpsGrid with data provider for options.
          */
-//        public TwinColGrid(final ListDataProvider<T> allItemsDataProvider) {
-        public TwinColGrid(final Collection<T> itemPool) {
+//        public TwinColJpsGrid(final ListDataProvider<T> allItemsDataProvider) {
+        public TwinColJpsGrid(final List<T> itemPool) {
             this.itemPool = itemPool;
 //            super();
 //            itemPool = allItemsDataProvider.getItems();
@@ -137,12 +111,12 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
             this.rightGridDataProvider = DataProvider.ofCollection(new LinkedHashSet<>());
             rightGrid.setDataProvider(this.rightGridDataProvider);
 
-            leftGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+//            leftGrid.setSelectionMode(Grid.SelectionMode.MULTI);
             leftGrid.setId("left-grid");
             leftGrid.setClassName("vizman-simple-grid");
 //            setPoolDataProvider(itemPool);
 
-            rightGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+//            rightGrid.setSelectionMode(Grid.SelectionMode.MULTI);
             rightGrid.setId("right-grid");
             rightGrid.setClassName("vizman-simple-grid");
 
@@ -217,7 +191,7 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 //            updateLeftGridItems(new LinkedHashSet<>(items), new HashSet<>());
         }
 
-        public TwinColGrid<T> withHeight(final String height) {
+        public TwinColJpsGrid<T> withHeight(final String height) {
             leftGrid.setHeight(height);
             rightGrid.setHeight(height);
             return this;
@@ -227,12 +201,12 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
          * Sets the number of rows in the selects. If the number of rows is set to 0 or less, the actual number of displayed rows is determined implicitly by the
          * selects.
          * <p>
-         * If a height is set (using {@link #withHeight(String)} or {@link #withHeight(float, Unit)}) it overrides the number of rows. Leave the height undefined to
-         * use this method.
+         * If a height is set (using {@link #withHeight(String)} or #withHeight(float, Unit) it overrides the number of rows.
+         * Leave the height undefined to use this method.
          *
          * @param rows the number of rows to set.
          */
-        public TwinColGrid<T> withRows(int rows) {
+        public TwinColJpsGrid<T> withRows(int rows) {
             if (rows < 0) {
                 rows = 0;
             }
@@ -255,45 +229,49 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 //        }
 
 
-    /**
-     * Sets the text shown above the right column. {@code null} clears the caption.
-     *
-     * @param rightColumnCaption The text to show, {@code null} to clear
-     */
-//        public TwinColGrid<T> withRightColumnCaption(final String rightColumnCaption) {
+//    /**
+//     * Sets the text shown above the right column. {@code null} clears the caption.
+//     *
+//     * @param rightColumnCaption The text to show, {@code null} to clear
+//     */
+//        public TwinColJpsGrid<T> withRightColumnCaption(final String rightColumnCaption) {
 //            rightGrid.setCaption(rightColumnCaption);
 //            markAsDirty();
 //            return this;
 //        }
 
-        /**
-         * Adds a new text column to this {@link Grid} with a value provider. The column will use a {@link TextRenderer}. The value is converted to a String using
-         * {@link Object#toString()}. In-memory sorting will use the natural ordering of elements if they are mutually comparable and otherwise fall back to
-         * comparing the string representations of the values.
-         *
-         * @param valueProvider the value provider
-         *
-         * @return the new column
-         */
-        public <V> TwinColGrid<T> addColumn(final ValueProvider<T, V> valueProvider, final String caption) {
-            leftGrid.addColumn(valueProvider).setHeader(caption);
-            rightGrid.addColumn(valueProvider).setHeader(caption);
-            return this;
-        }
+    /**
+     * Adds a new text column to this {@link Grid} with a value provider. The column will use a {@link TextRenderer}. The value is converted to a String using
+     * {@link Object#toString()}. In-memory sorting will use the natural ordering of elements if they are mutually comparable and otherwise fall back to
+     * comparing the string representations of the values.
+     *
+     * @param valueProvider the value provider
+     *
+     * @return the new column
+     */
+    public <V> TwinColJpsGrid<T> addColumn(
+            final ValueProvider<T, V> valueProvider
+            , final String leftCaption
+            , final String rightCaption
+    ) {
+        leftGrid.addColumn(valueProvider).setHeader(leftCaption);
+        rightGrid.addColumn(valueProvider).setHeader(rightCaption);
+        return this;
+    }
 
-        public TwinColGrid<T> showAddAllButton() {
+        public TwinColJpsGrid<T> showAddAllButton() {
 //            buttonContainer.addComponent(moveAllItemsToLeftButton, 0);
             buttonContainer.add(moveAllItemsToLeftButton);
             return this;
         }
 
-        public TwinColGrid<T> showRemoveAllButton() {
+        public TwinColJpsGrid<T> showRemoveAllButton() {
 //            buttonContainer.addComponent(moveAllItemsToRightButton, buttonContainer.getComponentCount());
             buttonContainer.add(moveAllItemsToRightButton);
             return this;
         }
 
-        public TwinColGrid<T> withSizeFull() {
+        public TwinColJpsGrid<T> withSizeFull() {
 //            super.setSizeFull();
             getContent().setSizeFull();
             return this;
@@ -321,6 +299,11 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 
         leftGrid.getSelectionModel().deselectAll();
         rightGrid.getSelectionModel().deselectAll();
+
+//        ComponentUtil.fireEvent(this,
+//                new AbstractField.ComponentValueChangeEvent<>(this, this, null,false)
+//        );
+        hasChanges = true;
     }
 
     private void updateRightGridItems(final Set<T> selectedLeftItems) {
@@ -332,6 +315,8 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 
         leftGrid.getSelectionModel().deselectAll();
         rightGrid.getSelectionModel().deselectAll();
+
+        hasChanges = true;
     }
 
 
@@ -343,6 +328,8 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
         final Set<T> valueItems = ((Set<T>)value).stream().map(Objects::requireNonNull)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         setLeftItems(valueItems);
+//        ComponentUtil.fireEvent(this,
+//                createValueChange(oldValue, fromClient));
     }
 
 
@@ -369,24 +356,26 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 //
 //    }
 
-    @Override
-    public Registration addValueChangeListener(ValueChangeListener valueChangeListener) {
-        return null;
-    }
+//    @Override
+//    public Registration addValueChangeListener(ValueChangeListener valueChangeListener) {
+//        return null;
+//    }
 
 //    @Override
-//    public Registration addValueChangeListener(ValueChangeListener<Set<T>> valueChangeListener) {
-////    public Registration addValueChangeListener(final ValueChangeListener<Set<T>> listener) {
-//        return rightGridDataProvider.addDataProviderListener(
-//                e -> {
-//                    listener.valueChange(new ValueChangeEvent<>(TwinColGrid.this, new LinkedHashSet<>(rightGridDataProvider.getItems()), true));
-//                });
-//    }
+////    public Registration addValueChangeListener(ValueChangeListener<Set<T>> valueChangeListener) {
+//    public Registration addValueChangeListener(final ValueChangeListener<Set<T>> listener) {
+    public Registration addValueChangeListener(ValueChangeListener listener) {
+        return leftGridDataProvider.addDataProviderListener(
+                e -> {
+                    listener.valueChanged(new AbstractField.ComponentValueChangeEvent<>(this, this, null,false));
+//                    listener.valueChanged(new AbstractField.ComponentValueChangeEvent<>(this, this, null,false));
+//                    listener.valueChanged(new ValueChangeEvent<>(TwinColJpsGrid.this, new LinkedHashSet<>(leftGridDataProvider.getItems()), true));
+                });
+    }
 
     @Override
     public boolean isReadOnly() {
-//        return super.isReadOnly();
-        return false;
+        return twinReadOnly;
     }
 
     @Override
@@ -397,8 +386,14 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 
     @Override
     public void setReadOnly(final boolean readOnly) {
-//        leftGrid.setSelectionMode(readOnly?SelectionMode.NONE:SelectionMode.MULTI);
-//        rightGrid.setSelectionMode(readOnly?SelectionMode.NONE:SelectionMode.MULTI);
+        leftGrid.setSelectionMode(readOnly ? Grid.SelectionMode.NONE : Grid.SelectionMode.MULTI);
+        rightGrid.setSelectionMode(readOnly ? Grid.SelectionMode.NONE : Grid.SelectionMode.MULTI);
+
+        moveSelectedItemsToLeftButton.setEnabled(!readOnly);
+        moveSelectedItemsToRightButton.setEnabled(!readOnly);
+
+        this.twinReadOnly = readOnly;
+
 //        addButton.setEnabled(!readOnly);
 //        removeButton.setEnabled(!readOnly);
 //        addAllButton.setEnabled(!readOnly);
@@ -418,7 +413,7 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 //         *
 //         * @return
 //         */
-//        public TwinColGrid<T> withDragAndDropSupport() {
+//        public TwinColJpsGrid<T> withDragAndDropSupport() {
 //            configDragAndDrop(leftGrid, rightGrid);
 //            configDragAndDrop(rightGrid, leftGrid);
 //            return this;
@@ -438,7 +433,7 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
          *
          * @param leftColumnCaption The text to show, {@code null} to clear
          */
-//        public TwinColGrid<T> withLeftColumnCaption(final String leftColumnCaption) {
+//        public TwinColJpsGrid<T> withLeftColumnCaption(final String leftColumnCaption) {
 //            leftGrid.setCaption(leftColumnCaption);
 //            markAsDirty();
 //            return this;
@@ -497,7 +492,7 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 ////    public Registration addValueChangeListener(final ValueChangeListener<Set<T>> listener) {
 ////        return rightGridDataProvider.addDataProviderListener(
 ////                e -> {
-////                    listener.valueChange(new ValueChangeEvent<>(TwinColGrid.this, new LinkedHashSet<>(rightGridDataProvider.getItems()), true));
+////                    listener.valueChange(new ValueChangeEvent<>(TwinColJpsGrid.this, new LinkedHashSet<>(rightGridDataProvider.getItems()), true));
 ////                });
 ////    }
 //
@@ -588,4 +583,12 @@ public final class TwinColGrid<T> extends Composite<VerticalLayout> implements H
 //            return rightGrid.addSelectionListener(listener);
 //        }
 
+    public boolean ishasChanges() {
+        return hasChanges;
     }
+
+    public void setHasChanges(boolean hasChanges) {
+        this.hasChanges = hasChanges;
+    }
+
+}

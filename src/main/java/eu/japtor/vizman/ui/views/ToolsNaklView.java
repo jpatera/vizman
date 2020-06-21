@@ -132,11 +132,11 @@ public class ToolsNaklView extends VerticalLayout  implements HasLogger {
         return controlToolBar;
     }
 
-    private Component initReloadButton() {
-//        reloadButton = new ReloadButton(event -> mzdyInfoViewContent());
-        reloadButton = new ReloadButton(null);
-        return reloadButton;
-    }
+//    private Component initReloadButton() {
+////        reloadButton = new ReloadButton(event -> mzdyInfoViewContent());
+//        reloadButton = new ReloadButton(null);
+//        return reloadButton;
+//    }
 
 //    private void mzdyInfoViewContent() {
 //        mzdyInfoViewContent(null);

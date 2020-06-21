@@ -12,4 +12,6 @@ public interface RoleRepo extends JpaRepository<Role, Long>, RoleRepoCustom {
     Role findTopByName(String name);
 
     List<Role> findAllByOrderByName();
+
+    Role findFirstByNameIgnoreCase(String name);
 }

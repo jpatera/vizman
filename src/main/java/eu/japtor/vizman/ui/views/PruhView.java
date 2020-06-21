@@ -193,6 +193,9 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
     @Autowired
     public CalService calService;
 
+    @Autowired
+    public ZaknService zaknService;
+
 
     public PruhView() {
         super();
@@ -248,9 +251,10 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
 //        !SecurityUtils.isAccessGranted(event.getNavigationTarget())
         authUsername = SecurityUtils.getUsername();
         initPruhData();
-        zakSelectDialog = new ZakSelectDialog(
+        zakSelectDialog = new ZakSelectDialog (
                 this::addSelectedZaksToGrid
                 , zakBasicRepo
+                , zaknService
         );
     }
 

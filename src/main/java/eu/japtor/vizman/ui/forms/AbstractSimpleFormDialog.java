@@ -69,18 +69,16 @@ public abstract class AbstractSimpleFormDialog<T extends Serializable> extends D
 
         setDefaultItemNames();  // Set general default names
 
-        formLayout = buildFormLayout();
-        buttonBar = initDialogButtonBar();
-
         dialogContent = new VerticalLayout();
         dialogContent.getStyle().set("flex", "auto");
-        dialogContent.setAlignItems(FlexComponent.Alignment.STRETCH);
+//        dialogContent.setAlignItems(FlexComponent.Alignment.STRETCH);
 
         dialogContent.add(
                 initHeaderDevider()
-                , formLayout
-                , new Paragraph("")
-                , buttonBar
+//                , initFormLayout()
+                , initMainPane()
+//                , new Paragraph("")
+//                , initDialogButtonBar()
         );
 
         this.getElement().getStyle().set("padding", "0");
@@ -160,6 +158,21 @@ public abstract class AbstractSimpleFormDialog<T extends Serializable> extends D
         return headerEndBox;
     }
 
+    private VerticalLayout mainPane;
+
+    private Component initMainPane() {
+        mainPane = new VerticalLayout();
+        mainPane.setAlignItems(FlexComponent.Alignment.STRETCH);
+        mainPane.setSpacing(false);
+        mainPane.setPadding(false);
+        mainPane.add(
+                initFormLayout()
+                , new Paragraph("")
+                , initDialogButtonBar()
+        );
+        return mainPane;
+    }
+
     protected HtmlContainer getHeaderEndBox() {
         return headerEndBox;
     }
@@ -172,14 +185,14 @@ public abstract class AbstractSimpleFormDialog<T extends Serializable> extends D
         return headerDevider;
     }
 
-    private FormLayout buildFormLayout() {
-        FormLayout layout = new FormLayout();
-        layout.addClassName("has-padding");
-        layout.setResponsiveSteps(
+    private FormLayout initFormLayout() {
+        formLayout = new FormLayout();
+        formLayout.addClassName("has-padding");
+        formLayout.setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("20em", 2)
         );
-        return layout;
+        return formLayout;
     }
 
     protected final FormLayout getFormLayout() {

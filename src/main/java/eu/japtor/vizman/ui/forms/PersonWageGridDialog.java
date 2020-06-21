@@ -157,7 +157,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
         personWageGrid.getDataCommunicator().getKeyMapper().removeAll();
         personWageGrid.setItems(person.getWages());
         personWageGrid.getDataProvider().refreshAll();
-//        personWageGrid.select(personWageModified);
+//        personGrid.select(personWageModified);
     }
 
 
@@ -361,9 +361,9 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
         personWageGrid = new Grid<>();
         personWageGrid.setColumnReorderingAllowed(true);
         personWageGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-//        personWageGrid.setWidth( "100%" );
-//        personWageGrid.setHeightFull();
-//        personWageGrid.setHeight("0");
+//        personGrid.setWidth( "100%" );
+//        personGrid.setHeightFull();
+//        personGrid.setHeight("0");
 
 //        zakGrid.getElement().setProperty("flexGrow", (double)0);
 //        alignSelf auto
@@ -376,7 +376,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
         personWageGrid.setClassName("vizman-simple-grid");
         personWageGrid.getStyle().set("marginTop", "0.5em");
 
-//        personWageGrid.addColumn(new ComponentRenderer<>(VzmFormatUtils::getItemTypeColoredTextComponent))
+//        personGrid.addColumn(new ComponentRenderer<>(VzmFormatUtils::getItemTypeColoredTextComponent))
 //                .setHeader("Typ")
 //                .setWidth("5em")
 //                .setFlexGrow(0)
@@ -594,7 +594,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
 
 //    private void revertFormChanges() {
 //        currentItemList = new LinkedList(origItemList);
-////        personWageGrid.setData
+////        personGrid.setData
 //    }
 
 //    public List<PersonWage> savePersonWageList(LinkedList<PersonWage> personWageListToSave) throws VzmServiceException {
