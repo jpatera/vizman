@@ -50,9 +50,9 @@ public class NabListView extends VerticalLayout {
     private NewItemButton newItemButton;
     private Anchor expXlsAnchor;
 
-//    private DataProvider<NabView, NabViewService.NabFilter> gridDataProvider; // Second type  param  must not be Void
+//    private DataProvider<NabView, NabViewService.NabViewFilter> gridDataProvider; // Second type  param  must not be Void
 //    private NabFiltPagDataProvider gridDataProvider; // Second type  param  must not be Void
-//    private FilterablePageableDataProvider<NabView, NabViewService.NabFilter> filtPagGridDataProvider;
+//    private FilterablePageableDataProvider<NabView, NabViewService.NabViewFilter> filtPagGridDataProvider;
     private NabFiltPagDataProvider filtPagGridDataProvider;
 //    private List<NabView> nabViewList = new ArrayList<>();  // Temporary placeholder for report
 
@@ -287,7 +287,7 @@ public class NabListView extends VerticalLayout {
     void finishNabEdit(NabFormDialog nabFormDialog) {
         OperationResult operResult = nabFormDialog.getLastOperationResult();
         Nab resultItem = nabFormDialog.getCurrentItem();  // Modified, just added or just deleted
-        Nab origItem = nabFormDialog.getOrigItem();
+//        Nab origItem = nabFormDialog.getOrigItem();
 
 //        syncGridAfterEdit(
 //                resultItem
@@ -306,7 +306,7 @@ public class NabListView extends VerticalLayout {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Editace nabídky")
-                    .withMessage(String.format("Nabídka %s zrušena.", origItem.getCnab()))
+                    .withMessage(String.format("Nabídka %s zrušena.", nabFormDialog.getOrigItemCopy().getCnab()))
                     .open();
         }
     }
@@ -378,9 +378,9 @@ public class NabListView extends VerticalLayout {
     private void loadInitialViewContent() {
         nabGrid.rebuildFilterFields();
         nabGrid.resetFilterValues();
-//        nabGrid.doFilter(NabViewService.NabFilter.getEmpty());
+//        nabGrid.doFilter(NabViewService.NabViewFilter.getEmpty());
         nabGrid.reloadGridData();
-//        doFilter(NabViewService.NabFilter.getEmpty());
+//        doFilter(NabViewService.NabViewFilter.getEmpty());
 //        nabGrid.getDataProvider().refreshAll();
     }
 

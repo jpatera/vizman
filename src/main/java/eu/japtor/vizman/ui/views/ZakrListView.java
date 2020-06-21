@@ -115,12 +115,7 @@ public class ZakrListView extends VerticalLayout {
 
     @PostConstruct
     public void postInit() {
-        zakrParams = new ZakrParams();
-        zakrParams.setKurzEur(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
-        zakrParams.setRx(null);
-        zakrParams.setRy(null);
-        zakrParams.setKoefRezie(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KOEF_REZIE.getName()));
-        zakrParams.setKoefPojist(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KOEF_POJIST.getName()));
+        zakrParams = ZakrParams.getDefaultInstance(cfgPropsCache);
         paramsBinder = new Binder<>();
         paramsBinder.setBean(zakrParams);
         paramsBinder.addValueChangeListener(event -> calcButton.setIconDirty());
@@ -486,6 +481,30 @@ public class ZakrListView extends VerticalLayout {
         String rx;
         String ry;
         Boolean arch;
+
+        public static ZakrParams getEmptyInstance() {
+            ZakrParams zakrParams =  new ZakrParams();
+//            zakrParams.setKurzEur(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
+            zakrParams.setKurzEur(null);
+            zakrParams.setRx(null);
+            zakrParams.setRy(null);
+//            zakrParams.setKoefRezie(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KOEF_REZIE.getName()));
+            zakrParams.setKoefRezie(null);
+//            zakrParams.setKoefPojist(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KOEF_POJIST.getName()));
+            zakrParams.setKoefPojist(null);
+            return zakrParams;
+        }
+
+        public static ZakrParams getDefaultInstance(final CfgPropsCache cfgPropsCache) {
+            ZakrParams zakrParams = new ZakrParams();
+            zakrParams = new ZakrParams();
+            zakrParams.setKurzEur(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
+            zakrParams.setRx(null);
+            zakrParams.setRy(null);
+            zakrParams.setKoefRezie(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KOEF_REZIE.getName()));
+            zakrParams.setKoefPojist(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KOEF_POJIST.getName()));
+            return zakrParams;
+        }
 
         public Boolean getArch() {
             return arch;

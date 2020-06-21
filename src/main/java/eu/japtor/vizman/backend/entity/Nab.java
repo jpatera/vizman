@@ -77,15 +77,15 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
 
 
     public static Nab getEmptyInstance() {
-        Nab n = new Nab();
-        n.setRok(null);
-        n.setCnab(null);
+        Nab nab = new Nab();
+        nab.setRok(null);
+        nab.setCnab(null);
 //        n.setCkont(null);
-        n.setVz(null);
-        n.setText(null);
+        nab.setVz(null);
+        nab.setText(null);
 //        n.setObjednatel(null);
-        n.setPoznamka(null);
-        return n;
+        nab.setPoznamka(null);
+        return nab;
     }
 
     public static Nab getNewInstance(Nab nab) {

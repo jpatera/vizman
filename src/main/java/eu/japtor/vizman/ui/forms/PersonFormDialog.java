@@ -11,6 +11,7 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
+import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.shared.Registration;
@@ -24,7 +25,7 @@ import eu.japtor.vizman.backend.service.WageService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.Operation;
 import eu.japtor.vizman.ui.components.OperationResult;
-import eu.japtor.vizman.ui.components.TwinColGrid;
+import eu.japtor.vizman.ui.components.TwinColJpsGrid2;
 import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,9 +39,6 @@ import static eu.japtor.vizman.app.security.SecurityUtils.isWagesAccessGranted;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 // public class PersonFormDialog extends AbstractComplexFormDialog<Person> {
 public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
-
-    private static final String DIALOG_WIDTH = "900px";
-    private static final String DIALOG_HEIGHT = "600x";
 
     private final static String DELETE_STR = "Zrušit";
     private final static String REVERT_STR = "Vrátit změny";
@@ -68,14 +66,14 @@ public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
     private Button wageGridOpenButton;
     private DatePicker nastupField;
     private DatePicker vystupField;
-    private TwinColGrid<Role> twinRolesGridField;
+    private TwinColJpsGrid2<Role> rolesTwinGrid;
 
     private PersonWageGridDialog personWageGridDialog;
     private PersonService personService;
     private WageService wageService;
     private DochsumZakService dochsumZakService;
 
-    private Set<Role> rolesPool;
+    private List<Role> rolesPool;
 
 //    @Autowired
     private PasswordEncoder passwordEncoder;
@@ -104,13 +102,13 @@ public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
     {
 //        super(GrammarGender.MASCULINE, Person.NOMINATIVE_SINGULAR, Person.GENITIVE_SINGULAR, Person.ACCUSATIVE_SINGULAR, itemSaver, itemDeleter);
 //        super(itemSaver, itemDeleter);
-        super(DIALOG_WIDTH, DIALOG_HEIGHT);
+        super("1200px", null);
         setItemNames(ItemType.PERSON);
 
         this.personService = personService;
         this.wageService = wageService;
         this.dochsumZakService = dochsumZakService;
-        this.rolesPool = new HashSet<>(allRoles);
+        this.rolesPool = new ArrayList<>(allRoles);
         this.passwordEncoder = passwordEncoder;
 
         personWageGridDialog  = new PersonWageGridDialog(wageService, personService, dochsumZakService);
@@ -151,7 +149,7 @@ public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
                 , initPermittedCurrentSazbaField()
                 ,  initWagesGridOpenButton()
 //                , initPermittedYmFromCurrentField()
-                , initRolesField(rolesPool)
+                , initRolesTwinColGrid(rolesPool)
         );
 
         // Nastup field binder:
@@ -180,13 +178,15 @@ public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
         vystupField.setLocale(new Locale("cs", "CZ"));
 
         this.currentOperation = operation;
-        setCurrentItem(person);
-        setOrigItem(person);
 
-//        getBinder().forField(twinRolesGridField)
+        setCurrentItem(person);
+        // TODO: replace by
+        // setOrigItem(Person.getNewInstance(person);
+
+//        getBinder().forField(rolesTwinGrid)
 //                .bind(Person::getRoles, Person::setRoles);
 
-//        twinRolesGridField.initLeftItems(getCurrentItem().getRoles());
+//        rolesTwinGrid.initLeftItems(getCurrentItem().getRoles());
 
         initDataAndControls(getCurrentItem(), currentOperation);
         this.open();
@@ -413,14 +413,6 @@ public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
         }
     }
 
-//    private Component initPermittedYmFromCurrentField() {
-//        if (!isWagesAccessGranted()) {
-//            return initBlindSazbaCurrentField();
-//        } else {
-//            return initYmFromCurrentField();
-//        }
-//    }
-
     private Component initSazbaCurrentField() {
         sazbaCurrentField = new TextField("Sazba aktuální");
         sazbaCurrentField.setSuffixComponent(new Span("CZK"));
@@ -484,50 +476,29 @@ public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
     }
 
     private void openWageGridDialog() {
-//        PersonWageGridDialog personWageGridDialog  = new PersonWageGridDialog(
-//                wageService
-//        );
-//        personWageGridDialog.openDialog(wageService.fetchByPersonId(getCurrentItem().getId()));
         personWageGridDialog.openDialog(getCurrentItem());
     }
 
-    private Component initRolesField(final Set<Role> allRoles) {
-//        this.allRolesDataProvider = DataProvider.ofCollection(roleRepo.findAll());
-//        this.personRoles = DataProvider.ofCollection(getCurrentItem().getRoles());
-
-//        twinGrid = new Grid<>();
-//        roleTwinGrid.setLeftDataProvider(personRoles);
-//        initRoleGrid();
-//        roleTwinGrid.addColumn(Role::getName).setHeader("Název").setWidth("3em").setResizable(true);
-//        roleTwinGrid.addColumn(Role::getDescription).setHeader("Popis").setWidth("8em").setResizable(true);
-//        this.add(roleGridContainer);
-
-//        twinRolesGridField = new TwinColGrid<>(allRolesDataProvider)
-//        twinRolesGridField = new TwinColGrid<>(roleRepo.findAll())
-        twinRolesGridField = new TwinColGrid<>(allRoles)
-                .addColumn(Role::getName, "Role")
-//            .addColumn(Role::getDescription, "Popis")
-//            .withLeftColumnCaption("Available books")
-//            .withRightColumnCaption("Added books")
-//            .showAddAllButton()
-                .withSizeFull()
-                .withHeight("200px")
-//            .withRows(4)
-//            .withRows(availableBooks.size() - 3)
-//            .withDragAndDropSupport()
+    private Component initRolesTwinColGrid(final List<Role> allRoles) {
+        rolesTwinGrid = new TwinColJpsGrid2<>(allRoles, " ")
+                .addSortableColumn(Role::getName, Comparator.comparing(Role::getName),"Role")
+                .addColumn(Role::getDescription, "Popis")
+                .withLeftColumnCaption("Nepřidělené ROLE")
+                .withRightColumnCaption("Přidělené ROLE")
+                .withoutAddAllButton()
+                .withoutRemoveAllButton()
+                .withHeight("15em")
+                .withColAutoWidth()
+//                .withDragAndDropSupport()
         ;
-//        twinRolesGridField.setValue(getCurrentItem().getRoles());
-//        FormLayout.FormItem formItem = getFormLayout().addFormItem(twinRolesGridField, "Label");
-        twinRolesGridField.setId("twin-col-grid");
-        twinRolesGridField.getElement().setAttribute("colspan", "2");
-        twinRolesGridField.getContent().setAlignItems(FlexComponent.Alignment.STRETCH);
-        twinRolesGridField.getContent().getStyle().set("padding-right", "0em");
-        twinRolesGridField.getContent().getStyle().set("padding-left", "0em");
-        twinRolesGridField.getContent().getStyle().set("padding-top", "2.5em");
-        twinRolesGridField.getContent().getStyle().set("padding-bottom", "2.5em");
-//        getBinder().forField(twinRolesGridField).bind(Person::getRoles, Person::setRoles);
-        binder.bind(twinRolesGridField, Person::getRoles, Person::setRoles);
-        return twinRolesGridField;
+        rolesTwinGrid.setId("roles-twin-col-grid");
+        rolesTwinGrid.getElement().setAttribute("colspan", "2");
+        rolesTwinGrid.getLeftGrid().setClassName("vizman-simple-grid");
+        rolesTwinGrid.getRightGrid().setClassName("vizman-simple-grid");
+
+        binder.bind(rolesTwinGrid, Person::getRoles, Person::setRoles);
+        rolesTwinGrid.doInitialGridSorts(SortDirection.ASCENDING);
+        return rolesTwinGrid;
     }
 
     private Component initNastupField() {

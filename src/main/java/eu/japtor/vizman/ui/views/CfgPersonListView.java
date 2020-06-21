@@ -16,9 +16,7 @@
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -46,7 +44,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
-import java.util.List;
 
 
 @Permissions({Perm.VIEW_ALL, Perm.MODIFY_ALL
@@ -89,25 +86,15 @@ public class CfgPersonListView extends VerticalLayout implements BeforeEnterObse
     @Autowired
     public PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public CfgPersonListView() {
-        initView();
-    }
-
-    private void initView() {
-        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-        setAlignItems(Alignment.STRETCH);
-//        setHeight("90%");
-//        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        this.setPadding(false);
-        this.setMargin(false);
-        this.add(
-                buildGridContainer()
-        );
-    }
+//    @Autowired
+//    public CfgPersonListView() {
+//        initView();
+//    }
 
     @PostConstruct
     public void postInit() {
+
+        initView();
 
         // Person provider for grid
         // -------------------------
@@ -116,14 +103,6 @@ public class CfgPersonListView extends VerticalLayout implements BeforeEnterObse
                     return personService
                             .fetchByPersonFilter(query.getFilter().orElse(null), query.getSortOrders())
                             .stream();
-
-//                    int offset = query.getOffset();
-//                    int limit = query.getLimit();
-//                    personService.fetchBySearchFilter(filter)
-//                    findByExample(repository, query.getFilter())
-//                            .skip(query.getOffset())
-//                            .take(query.getLimit())
-//                    query.getFilter().orElse(null),
                 },
                 query -> {
                     return (int) personService.countByPersonFilter(query.getFilter().orElse(null));
@@ -158,7 +137,7 @@ public class CfgPersonListView extends VerticalLayout implements BeforeEnterObse
                 personService
                 , wageService
                 , dochsumZakService
-                , roleService.fetchAllRoles()
+                , roleService.fetchAll()
                 , passwordEncoder
         );
         personFormDialog.addOpenedChangeListener(event -> {
@@ -167,11 +146,18 @@ public class CfgPersonListView extends VerticalLayout implements BeforeEnterObse
             }
         });
 
-        loadViewContent();
-
-//        setupEventListeners();
+        loadInitialViewContent();
     }
 
+    private void initView() {
+        this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+        setAlignItems(Alignment.STRETCH);
+        this.setPadding(false);
+        this.setMargin(false);
+        this.add(
+                buildGridContainer()
+        );
+    }
 
 //    private Component initUsernameCombo() {
 //        usernameSearchCombo = new ComboBox<>("Username");
@@ -220,7 +206,7 @@ public class CfgPersonListView extends VerticalLayout implements BeforeEnterObse
 // ----------------------------------
 
 
-    private void loadViewContent() {
+    private void loadInitialViewContent() {
 //        RebuildFilterFields();
         personGrid.setHiddenFilterItems(Arrays.asList(Boolean.FALSE, Boolean.TRUE));
         personGrid.setInitialFilterValues();
@@ -310,7 +296,7 @@ public class CfgPersonListView extends VerticalLayout implements BeforeEnterObse
         titleComponent.add(
                 new GridTitle(ItemNames.getNomP(ItemType.PERSON))
                 , new Ribbon()
-                , new ReloadButton(event -> loadViewContent())
+                , new ReloadButton(event -> loadInitialViewContent())
         );
         return titleComponent;
     }

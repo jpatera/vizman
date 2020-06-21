@@ -1,60 +1,95 @@
 package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.SortDirection;
+import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.Role;
 import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.service.RoleService;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Operation;
-import eu.japtor.vizman.ui.components.TwinColGrid;
+import eu.japtor.vizman.ui.components.OperationResult;
+import eu.japtor.vizman.ui.components.TwinColJpsGrid2;
+import org.claspina.confirmdialog.ConfirmDialog;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-//@SpringComponent
-//@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class RoleFormDialog extends AbstractComplexFormDialog<Role> {
 
-    private TextField nameField; // = new TextField("Username");
-    private TextField descriptionField; // = new TextField("Jméno");
-    private TwinColGrid<Perm> twinPermsGrid;
+    private TextField nameField;
+    private TextField descriptionField;
+    private TwinColJpsGrid2<Perm> permsTwinGrid;
 
     private RoleService roleService;
     private PersonService personService;
-    private Set<Perm> permsPool;
+//    private List<Perm> permsPool;
+    private List<Perm> permsPool;
 
-    public RoleFormDialog(BiConsumer<Role, Operation> itemSaver,
-                          Consumer<Role> itemDeleter,
-                          RoleService roleService,
-                          List<Perm> allPerms)
-    {
-//        super(GrammarGender.FEMININE, "role", "role","roli", itemSaver, itemDeleter);
-        super(itemSaver, itemDeleter);
+//    private Binder<Role> binder = new Binder<>();
+    private Registration binderChangeListener = null;
+//    private Registration permsTwinGridListener = null;
+//    private Role curItem;
+    private Role origItemCopy;
+    private Operation currentOperation;
+    private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
+    private boolean readOnly;
 
-        setWidth("900px");
-//        setHeight("600px");
+    public RoleFormDialog(
+            BiConsumer<Role, Operation> itemSaver
+            , Consumer<Role> itemDeleter
+            , RoleService roleService
+            , PersonService personService
+            , List<Perm> allPerms
+    ){
+        super("1200px", null
+                , false
+                , false
+                , itemSaver
+                , itemDeleter
+                , true
+        );
 
         this.roleService = roleService;
         this.personService = personService;
-        this.permsPool = new HashSet<>(allPerms);
+        this.permsPool = new LinkedList<>(allPerms);
 
-        nameField = new TextField("Název");
-        descriptionField = new TextField("Popis");
-        getFormLayout().add(initNameField());
-        getFormLayout().add(initDescriptionField());
-        getFormLayout().add(initPermsField(permsPool));
-
-//        roleGridContainer = buildRoleGridContainer(roleTwinGrid);
+        getFormLayout().add(
+                initNameField()
+                , initDescriptionField()
+                , initPermsTwinColGrid(permsPool)
+        );
     }
 
-    public void openDialog(Role role, Operation  operation)  {
-        openInternal(role, operation, false, false, new Gap(), null);
+    public void openDialog(
+            boolean readonly
+            , Role role
+            , Operation  operation
+    ) {
+        this.readOnly = readonly;
+//        this.curItem = role;
+        this.origItemCopy = Role.getNewInstance(role);
+        this.currentOperation = operation;
+
+        if (null != permsTwinGrid) {
+            getFormLayout().remove(permsTwinGrid);  // ..otherwise one extra checkbox is always added
+        }
+        getFormLayout().add(
+//                initPermsTwinColJpsGrid(permsPool)
+                initPermsTwinColGrid(permsPool)
+        );
+
+        openInternal(role, operation, isRoleAdmin(role), !isRoleAdmin(role), new Gap(), null);
+
+        // Fix combos if necessary
+    }
+
+    private boolean isRoleAdmin(final Role role) {
+        return "ROLE_ADMIN".equals(role.getName());
     }
 
 //    private VerticalLayout buildRoleGridContainer(Grid<Role> grid) {
@@ -81,7 +116,8 @@ public class RoleFormDialog extends AbstractComplexFormDialog<Role> {
 //    }
 
     private TextField initNameField() {
-        nameField = new TextField();
+        nameField = new TextField("Název role");
+        nameField.getElement().setAttribute("colspan", "2");
         getBinder().forField(nameField)
                 .withConverter(String::trim, String::trim)
                 // TODO: fix validator
@@ -90,58 +126,44 @@ public class RoleFormDialog extends AbstractComplexFormDialog<Role> {
 //                        3, null))
                 .withValidator(
                         name -> (currentOperation != Operation.ADD) ?
-                            true : roleService.fetchRoleByName(name) == null,
+                            true : roleService.fetchRoleByNameIgnoreCase(name) == null,
                         "Role s tímto názvem již existuje, zvol jiný název")
                 .bind(Role::getName, Role::setName);
+        nameField.setValueChangeMode(ValueChangeMode.LAZY);
         return nameField;
     }
 
     private TextField initDescriptionField() {
-        descriptionField = new TextField();
+        descriptionField = new TextField("Popis role");
+        descriptionField.getElement().setAttribute("colspan", "2");
         getBinder().forField(descriptionField)
                 .bind(Role::getDescription, Role::setDescription);
+        descriptionField.setValueChangeMode(ValueChangeMode.LAZY);
         return descriptionField;
     }
 
-    private Component initPermsField(final Set<Perm> allPerms) {
-//        this.allRolesDataProvider = DataProvider.ofCollection(roleRepo.findAll());
-//        this.personRoles = DataProvider.ofCollection(getCurrentItem().getRoles());
 
-//        twinGrid = new Grid<>();
-//        roleTwinGrid.setLeftDataProvider(personRoles);
-//        initRoleGrid();
-//        roleTwinGrid.addColumn(Role::getName).setHeader("Název").setWidth("3em").setResizable(true);
-//        roleTwinGrid.addColumn(Role::getDesription).setHeader("Popis").setWidth("8em").setResizable(true);
-//        this.add(roleGridContainer);
-
-//        twinRolesGrid = new TwinColGrid<>(allRolesDataProvider)
-//        twinRolesGrid = new TwinColGrid<>(roleRepo.findAll())
-        twinPermsGrid = new TwinColGrid<>(allPerms)
-                .addColumn(Perm::getAuthority, "Oprávnění")
-//            .addColumn(Role::getDesription, "Popis")
-//            .withLeftColumnCaption("Available books")
-//            .withRightColumnCaption("Added books")
-//            .showAddAllButton()
-                .withSizeFull()
-                .withHeight("200px")
-//            .withRows(4)
-//            .withRows(availableBooks.size() - 3)
-//            .withDragAndDropSupport()
+    private Component initPermsTwinColGrid(final List<Perm> allPerms) {
+        permsTwinGrid = new TwinColJpsGrid2<>(allPerms, " ")
+                .addSortableColumn(Perm::getAuthority, Comparator.comparing(Perm::getAuthority), "Oprávnění")
+                .addColumn(Perm::getDescription, "Popis")
+                .withLeftColumnCaption("Nepřidělená OPRÁVNĚNÍ")
+                .withRightColumnCaption("Přidělená OPRÁVNĚNÍ")
+                .withoutAddAllButton()
+                .withoutRemoveAllButton()
+                .withHeight("25em")
+                .withColAutoWidth()
+//                .withDragAndDropSupport()
         ;
-//        twinRolesGrid.setValue(getCurrentItem().getRoles());
-//        FormLayout.FormItem formItem = getFormLayout().addFormItem(twinRolesGrid, "Label");
-        twinPermsGrid.setId("twin-col-grid");
-        twinPermsGrid.getElement().setAttribute("colspan", "2");
-        twinPermsGrid.getContent().setAlignItems(FlexComponent.Alignment.STRETCH);
-        twinPermsGrid.getContent().getStyle().set("padding-right", "0em");
-        twinPermsGrid.getContent().getStyle().set("padding-left", "0em");
-        twinPermsGrid.getContent().getStyle().set("padding-top", "2.5em");
-        twinPermsGrid.getContent().getStyle().set("padding-bottom", "2.5em");
-//        getBinder().forField(twinRolesGrid).bind(Person::getRoles, Person::setRoles);
-        getBinder().bind(twinPermsGrid, Role::getPerms, Role::setPerms);
-        return twinPermsGrid;
-    }
+        permsTwinGrid.setId("perms-twin-col-grid");
+        permsTwinGrid.getElement().setAttribute("colspan", "2");
+        permsTwinGrid.getLeftGrid().setClassName("vizman-simple-grid");
+        permsTwinGrid.getRightGrid().setClassName("vizman-simple-grid");
 
+        getBinder().bind(permsTwinGrid, Role::getPerms, Role::setPerms);
+        permsTwinGrid.doInitialGridSorts(SortDirection.ASCENDING);
+        return permsTwinGrid;
+    }
 
     @Override
     protected void refreshHeaderMiddleBox(Role item) {
@@ -150,23 +172,78 @@ public class RoleFormDialog extends AbstractComplexFormDialog<Role> {
 
     @Override
     protected void activateListeners() {
-
+        if (null != getBinder()) {
+            binderChangeListener = getBinder().addValueChangeListener(e -> {
+                adjustControlsOperability(false, true, true, isDirty(),  getBinder().isValid());
+            });
+        }
+//        permsTwinGridListener = permsTwinGrid.addValueChangeListener(e -> {
+//            adjustControlsOperability(false, true, true, true,  getBinder().isValid());
+//        });
     }
 
     @Override
     protected void deactivateListeners() {
+        if (null != binderChangeListener) {
+            try {
+                binderChangeListener.remove();
+            } catch (Exception e)  {
+                // do nothing
+            }
+        }
+//        if (null != permsTwinGridListener) {
+//            try {
+//                permsTwinGridListener.remove();
+//            } catch (Exception e)  {
+//                // do nothing
+//            }
+//        }
+    }
 
+
+    @Override
+    public void initControlsOperability(final boolean readOnly, final boolean deleteAllowed, final boolean canDelete) {
+        super.initControlsOperability(readOnly, deleteAllowed, canDelete);
+        nameField.setReadOnly(readOnly);
+        descriptionField.setReadOnly(readOnly);
+
+        // FIXME: https://github.com/FlowingCode/TwinColGridAddon/issues/11
+        //        Setting readonly to false adds an additional checkbox column
+        // permsTwinGrid.setReadOnly(readOnly);
+    }
+
+    @Override
+    public void adjustControlsOperability(
+            final boolean readOnly
+            , final boolean deleteAllowed
+            , final boolean canDelete
+            , final boolean hasChanges
+            , final boolean isValid
+    ) {
+        super.adjustControlsOperability(readOnly, deleteAllowed, canDelete, hasChanges, isValid);
     }
 
     @Override
     protected void confirmDelete() {
-        long roleCount = roleService.countAllRoles();
-//        if (personCount > 0) {
-            openConfirmDeleteDialog("Zrušit roli",
+        if (canDeleteItem(getCurrentItem())) {
+            openConfirmDeleteDialog("Zrušení role",
                     "Opravdu zrušit roli '" + getCurrentItem().getName() + "' ?",
                     "");
-//        } else {
-//            deleteKont(getCurrentItem());
-//        }
+        } else {
+            ConfirmDialog
+                    .createWarning()
+                    .withCaption("Zrušení role")
+                    .withMessage("Roli nelze zrušit, existují přiřazení uživatelé")
+                    .open();
+        }
+    }
+
+    private boolean canDeleteItem(final Role itemToDelete) {
+        long ret = personService.countOfAssignedPerson(itemToDelete.getId());
+        return ret <= 0L;
+    }
+
+    public Role getOrigItemCopy() {
+        return origItemCopy;
     }
 }

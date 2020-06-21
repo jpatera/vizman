@@ -1,7 +1,6 @@
 package eu.japtor.vizman.backend.service;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
-import eu.japtor.vizman.backend.entity.Nab;
 import eu.japtor.vizman.backend.entity.NabView;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.data.domain.Page;
@@ -23,18 +22,18 @@ public interface NabViewService {
 
     List<Integer> fetchRokList();
 
-    List<NabView> fetchFilteredList(NabFilter nabFilter);
+    List<NabView> fetchFilteredList(NabViewFilter nabViewFilter);
 
 //    List<NabView> fetchByFiltersDescOrder(NabListView.NabFilterParams nabFilterParams);
 
-    Page<NabView> fetchByNabFilter(NabFilter nabFilter, List<QuerySortOrder> sortOrders, Pageable pageable);
-    long countByNabFilter(NabFilter nabFilter);
+    Page<NabView> fetchByNabFilter(NabViewFilter nabViewFilter, List<QuerySortOrder> sortOrders, Pageable pageable);
+    long countByNabFilter(NabViewFilter nabViewFilter);
 
 
     // -----------------------------------------------
 
 
-    class NabFilter {
+    class NabViewFilter {
         Integer rok;
         String cnab;
         String ckont;
@@ -43,7 +42,7 @@ public interface NabViewService {
         String objednatel;
         String poznamka;
 
-        public NabFilter(
+        public NabViewFilter(
                 Integer rok
                 , String cnab
                 , String ckont
@@ -61,8 +60,8 @@ public interface NabViewService {
             this.poznamka = poznamka;
         }
 
-        public static final NabFilter getEmpty() {
-            return new NabFilter(null, null, null, null, null, null, null);
+        public static final NabViewFilter getEmpty() {
+            return new NabViewFilter(null, null, null, null, null, null, null);
         }
 
         public Integer getRok() {

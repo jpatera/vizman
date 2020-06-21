@@ -231,7 +231,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                     .setHeader("Zak")
                     .setFlexGrow(0)
                     .setWidth("3em")
-            ;
+         ;
 //        }
         this.addColumn(Zakr::getKzCislo)
                 .setHeader("ČK-ČZ")
@@ -400,7 +400,6 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(PERFORMANCE_COL_KEY)
                 .setResizable(true)
         ;
-
 
         this.addColumn(new ComponentRenderer<>(this::buildZaknViewBtn))
                 .setHeader("Nak")
@@ -807,7 +806,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     }
 
     Component buildZaknViewBtn(Zakr zakr) {
-        return new GridItemBtn(event -> zakNaklGridDialog.openDialog(zakr, zakrParams)
+        return new GridItemBtn(event -> zakNaklGridDialog.openDialogFromZakr(zakr, zakrParams)
                 , new Icon(VaadinIcon.COIN_PILES), VzmFormatUtils.getItemTypeColorName(zakr.getTyp())
         );
     }

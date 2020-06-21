@@ -11,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.function.ValueProvider;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
+import eu.japtor.vizman.backend.service.ZaknService;
 import eu.japtor.vizman.ui.components.*;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.util.CollectionUtils;
@@ -38,12 +39,18 @@ public class ZakSelectDialog extends Dialog {
 
     public ZakBasicRepo zakBasicRepo;
     private Consumer<List<ZakBasic>> itemsAder;
+    private ZaknService zaknService;
 
 
-    public ZakSelectDialog(Consumer<List<ZakBasic>> itemAdder, ZakBasicRepo zakBasicRepo) {
+    public ZakSelectDialog(
+            Consumer<List<ZakBasic>> itemAdder
+            , ZakBasicRepo zakBasicRepo
+            , ZaknService zaknService
+    ) {
 //        super(itemSaver);
         this.itemsAder = itemAdder;
         this.zakBasicRepo = zakBasicRepo;
+        this.zaknService = zaknService;
 
         this.setWidth("1400px");
         this.setHeight("750px");
@@ -145,7 +152,16 @@ public class ZakSelectDialog extends Dialog {
     }
 
     private Component initZakGrid(Consumer<Integer> selectionChanger) {
-        zakGrid = new ZakSimpleGrid(true, checkBoxEnabler, selectionChanger, false, false, Boolean.FALSE, null);
+        zakGrid = new ZakSimpleGrid(
+                true
+                , checkBoxEnabler
+                , selectionChanger
+                , false
+                , false
+                , Boolean.FALSE
+                , null
+                , zaknService
+        );
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.NONE);
         return zakGrid;

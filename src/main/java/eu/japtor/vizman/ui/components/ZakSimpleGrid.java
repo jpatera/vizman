@@ -6,6 +6,8 @@ import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -13,6 +15,10 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Element;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.service.ZaknService;
+import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import eu.japtor.vizman.ui.forms.ZakNaklGridDialog;
+import eu.japtor.vizman.ui.views.ZakrListView;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedList;
@@ -53,6 +59,9 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     private Consumer<Integer> selectionChanger;
     private Function<ZakBasic, Boolean> checkBoxEnabler;
 
+    private ZaknService zaknService;
+    private ZakNaklGridDialog zakNaklGridDialog;
+
     private int selCount;
 
     HeaderRow filterRow;
@@ -65,7 +74,10 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
             , boolean digiFieldVisible
             , Boolean initFilterArchValue
             , Boolean initFilterDigiValue
+            , ZaknService zaknService
     ) {
+        this.zaknService = zaknService;
+
         this.initFilterArchValue = initFilterArchValue;
         this.initFilterDigiValue = initFilterDigiValue;
         this.checkBoxEnabler = checkBoxEnabler;
@@ -79,6 +91,10 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         this.setMultiSort(false);
         this.setSelectionMode(Grid.SelectionMode.SINGLE);
         this.setId("zak-simple-grid");  // .. same ID as is used in shared-styles grid's dom module
+
+        zakNaklGridDialog = new ZakNaklGridDialog(
+                zaknService
+        );
 
 //        zakGrid.getElement().addEventListener("keypress", e -> {
 //            JsonObject eventData = e.getEventData();
@@ -121,6 +137,14 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 .setVisible(this.digiFieldVisible);
         //                .setFrozen(true)
         ;
+
+        // if (isZakFormsAccessGranted()) {
+        // if (isZaknBasicGranted()) {
+            this.addColumn(new ComponentRenderer<>(this::buildZaknViewBtn))
+                    .setHeader("Nak")
+                    .setFlexGrow(0)
+                    .setWidth("3em")
+            ;
         this.addColumn(ZakBasic::getCkz)
                 .setHeader("ČK-ČZ")
                 .setFlexGrow(0)
@@ -249,6 +273,16 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
             parent.setProperty("resizable", "true");
             parent = parent.getParent();
         }
+    }
+
+    Component buildZaknViewBtn(ZakBasic zakBasic) {
+        return new GridItemBtn(event ->
+                zakNaklGridDialog.openDialogFromZakBasicView(
+                        zakBasic
+                        , ZakrListView.ZakrParams.getEmptyInstance()
+                )
+                , new Icon(VaadinIcon.COIN_PILES), VzmFormatUtils.getItemTypeColorName(zakBasic.getTyp())
+        );
     }
 
     private TextField buildTextFilterField() {

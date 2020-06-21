@@ -7,7 +7,6 @@ import eu.japtor.vizman.backend.repository.NabViewRepo;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,31 +33,31 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
 //    }
 
     @Override
-    public Page<NabView> fetchByNabFilter(NabFilter nabFilter, List<QuerySortOrder> sortOrders, Pageable pageable) {
-        if (nabFilter == null) {
+    public Page<NabView> fetchByNabFilter(NabViewFilter nabViewFilter, List<QuerySortOrder> sortOrders, Pageable pageable) {
+        if (nabViewFilter == null) {
             return nabViewRepo.findAll(pageable);
         } else {
-            Page<NabView> pg = nabViewRepo.findAll(Example.of(NabView.getInstanceFromFilter(nabFilter), getNabMatcher()), pageable);
+            Page<NabView> pg = nabViewRepo.findAll(Example.of(NabView.getInstanceFromFilter(nabViewFilter), getNabMatcher()), pageable);
             return pg;
 //            return nabViewRepo.findAll(Example.of(probe, matcher));
         }
     }
 
     @Override
-    public List<NabView> fetchFilteredList(NabFilter nabFilter) {
-        if (nabFilter == null) {
+    public List<NabView> fetchFilteredList(NabViewFilter nabViewFilter) {
+        if (nabViewFilter == null) {
             return nabViewRepo.findAll();
         } else {
-            return nabViewRepo.findAll(Example.of(NabView.getInstanceFromFilter(nabFilter)));
+            return nabViewRepo.findAll(Example.of(NabView.getInstanceFromFilter(nabViewFilter)));
         }
     }
 
     @Override
-    public long countByNabFilter(NabFilter nabFilter) {
-        if (nabFilter == null) {
+    public long countByNabFilter(NabViewFilter nabViewFilter) {
+        if (nabViewFilter == null) {
             return nabViewRepo.count();
         } else {
-            return nabViewRepo.count(Example.of(NabView.getInstanceFromFilter(nabFilter), getNabMatcher()));
+            return nabViewRepo.count(Example.of(NabView.getInstanceFromFilter(nabViewFilter), getNabMatcher()));
         }
     }
 

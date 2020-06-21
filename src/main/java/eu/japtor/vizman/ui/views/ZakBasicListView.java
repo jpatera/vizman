@@ -37,6 +37,7 @@ import eu.japtor.vizman.backend.entity.ZakBasic;
 import eu.japtor.vizman.backend.report.ZakListReportBuilder;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
 import eu.japtor.vizman.backend.service.ZakBasicService;
+import eu.japtor.vizman.backend.service.ZaknService;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import net.sf.jasperreports.engine.JRException;
@@ -73,6 +74,9 @@ public class ZakBasicListView extends VerticalLayout {
     @Autowired
     public ZakBasicService zakBasicService;
 
+    @Autowired
+    public ZaknService zaknService;
+
 
     private ComponentEventListener anchorExportListener = event -> {
         try {
@@ -87,11 +91,12 @@ public class ZakBasicListView extends VerticalLayout {
 
     public ZakBasicListView() {
         xlsReportExporter = new ReportExporter((new ZakListReportBuilder()).buildReport());
-        initView();
+//        initView();
     }
 
     @PostConstruct
     public void postInit() {
+        initView();
         loadInitialViewContent();
         // TODO: inital sort order markers
         //        zakGrid.sort(initialSortOrder);
@@ -134,7 +139,16 @@ public class ZakBasicListView extends VerticalLayout {
     }
 
     private Component initZakGrid() {
-        zakGrid = new ZakSimpleGrid(false, null, null,true, true, null, null);
+        zakGrid = new ZakSimpleGrid(
+                false
+                , null
+                , null
+                ,true
+                , true
+                , null
+                , null
+                , zaknService
+        );
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         return zakGrid;

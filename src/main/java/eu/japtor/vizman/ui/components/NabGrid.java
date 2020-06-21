@@ -33,8 +33,8 @@ public class NabGrid extends Grid<NabView> {
     public static final String CKONT_COL_KEY = "nab-bg-ckont";
 
 
-//    private ConfigurableFilterDataProvider<NabView, Void, NabViewService.NabFilter> gridDataProvider;
-    private FilterablePageableDataProvider<NabView, NabViewService.NabFilter> gridDataProvider;
+//    private ConfigurableFilterDataProvider<NabView, Void, NabViewService.NabViewFilter> gridDataProvider;
+    private FilterablePageableDataProvider<NabView, NabViewService.NabViewFilter> gridDataProvider;
 
     private Select<Boolean> vzFilterField;
     private Select<Integer> rokFilterField;
@@ -204,8 +204,8 @@ public class NabGrid extends Grid<NabView> {
 
     public void resetFilterValues() {
 //        ((ListDataProvider<NabView>) this.getDataProvider()).clearFilters();
-//        ((onfigurableFilterDataProvider<NabView, Void, NabViewService.NabFilter>) this.getDataProvider()).clearFilters();
-//        gridDataProvider.setFilter(NabViewService.NabFilter.getEmpty());
+//        ((onfigurableFilterDataProvider<NabView, Void, NabViewService.NabViewFilter>) this.getDataProvider()).clearFilters();
+//        gridDataProvider.setFilter(NabViewService.NabViewFilter.getEmpty());
 
         // TODO: disable refiltering before all filters ale cleared
         rokFilterField.clear();
@@ -231,7 +231,7 @@ public class NabGrid extends Grid<NabView> {
         doFilter(buildNabFilter());
     }
 
-    public void doFilter(NabViewService.NabFilter filter) {
+    public void doFilter(NabViewService.NabViewFilter filter) {
 //        ListDataProvider<NabView> listDataProvider = ((ListDataProvider<NabView>) this.getDataProvider());
 
 //        ((ConfigurableFilterDataProvider) this.getDataProvider()).setFilter(buildNabFilter());
@@ -292,8 +292,8 @@ public class NabGrid extends Grid<NabView> {
     }
 
     // Needed for getting items for report by current grid filter until Vaadin does not  have it implemented
-    public NabViewService.NabFilter buildNabFilter() {
-        return new NabViewService.NabFilter(
+    public NabViewService.NabViewFilter buildNabFilter() {
+        return new NabViewService.NabViewFilter(
                 getRokFilterValue()
                 , getCnabFilterValue()
                 , getCkontFilterValue()

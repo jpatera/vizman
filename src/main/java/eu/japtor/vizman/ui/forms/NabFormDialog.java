@@ -11,7 +11,6 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
@@ -52,20 +51,28 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
     private DatePicker nastupField; // = new DatePicker("Nástup");
     private DatePicker vystupField; // = new DatePicker("Výstup");
 
-    private Binder<Nab> binder = new Binder<>();
-    private Nab currentItem;
-    private Nab origItem;
+//    private Binder<Nab> binder = new Binder<>();
+    private Registration binderChangeListener = null;
+//    private Nab currentItem;
+    private Nab origItemCopy;
     private Operation currentOperation;
     private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
     private boolean readOnly;
 
-    private Registration binderChangeListener = null;
 
     private NabViewService nabViewService;
     private KontService kontService;
     private KlientService klientService;
     private List<Klient> klientList;
     private List<KontView> kontViewList;
+
+    private FlexLayout nabDocFolderComponent;
+    private NabFolderField nabFolderField;
+    private TreeGrid<VzmFileUtils.VzmFile> nabDocGrid;
+    private Button docRefreshButton;
+    private FileViewerDialog fileViewerDialog;
+    //    private List<GridSortOrder<VzmFileUtils.VzmFile>> initialZakDocSortOrder;
+    private CfgPropsCache cfgPropsCache;
 
 
     public NabFormDialog(
@@ -111,15 +118,6 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
         );
         fileViewerDialog = new FileViewerDialog();
     }
-
-    private FlexLayout nabDocFolderComponent;
-    private NabFolderField nabFolderField;
-    private TreeGrid<VzmFileUtils.VzmFile> nabDocGrid;
-    private Button docRefreshButton;
-    private FileViewerDialog fileViewerDialog;
-//    private List<GridSortOrder<VzmFileUtils.VzmFile>> initialZakDocSortOrder;
-    private CfgPropsCache cfgPropsCache;
-
 
     private Component initNabDocFolderComponent() {
         nabDocFolderComponent = new FlexLayout();
@@ -274,8 +272,8 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
             , Operation operation
     ){
         this.readOnly = readonly;
-        this.currentItem = nab;
-        this.origItem = Nab.getNewInstance(nab);
+//        this.currentItem = nab;
+        this.origItemCopy = Nab.getNewInstance(nab);
         this.currentOperation = operation;
 
 //        setItemNames(nabView.getTyp());
@@ -313,7 +311,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
         getBinder().forField(rokField)
                 .withConverter(new VzmFormatUtils.ValidatedIntegerYearConverter())
                 .bind(Nab::getRok, Nab::setRok);
-        rokField.setValueChangeMode(ValueChangeMode.EAGER);
+        rokField.setValueChangeMode(ValueChangeMode.LAZY);
         return rokField;
     }
 
@@ -328,7 +326,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
                             true : nabViewService.fetchNabByCnab(cnab) == null,
                         "Nabídka s tímto číslem již existuje, zvol jiné")
                 .bind(Nab::getCnab, Nab::setCnab);
-        cnabField.setValueChangeMode(ValueChangeMode.EAGER);
+        cnabField.setValueChangeMode(ValueChangeMode.LAZY);
         return cnabField;
     }
 
@@ -341,7 +339,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
     }
 
     private void fixObjednatelComboOpening() {
-        binder.removeBinding(objednatelCombo);
+        getBinder().removeBinding(objednatelCombo);
         getFormLayout().remove(objednatelCombo);
         getFormLayout().addComponentAtIndex(3, initObjednatelCombo());
         objednatelCombo.setItems(this.klientList);
@@ -359,7 +357,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
     }
 
     private void fixCkontComboOpening() {
-        binder.removeBinding(ckontCombo);
+        getBinder().removeBinding(ckontCombo);
         getFormLayout().remove(ckontCombo);
         getFormLayout().addComponentAtIndex(4, initCkontCombo());
         ckontCombo.setItems(this.kontViewList);
@@ -535,9 +533,9 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
 
     @Override
     protected void activateListeners() {
-        if (null != binder) {
-            binderChangeListener = binder.addValueChangeListener(e -> {
-                adjustControlsOperability(false, true, true, isDirty(),  binder.isValid());
+        if (null != getBinder()) {
+            binderChangeListener = getBinder().addValueChangeListener(e -> {
+                adjustControlsOperability(false, true, true, isDirty(),  getBinder().isValid());
             });
         }
     }
@@ -580,6 +578,10 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
         return true;
     }
 
+
+    public Nab getOrigItemCopy() {
+        return origItemCopy;
+    }
 
 //    private void closeDialog() {
 //        this.close();

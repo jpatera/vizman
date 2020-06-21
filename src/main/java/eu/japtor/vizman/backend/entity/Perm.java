@@ -14,8 +14,8 @@ public enum Perm implements GrantedAuthority {
 
     VIEW_OTHER_USERS("Má přístup k datům ostatních uživatelů"),
 
-    DOCH_USE("Lze používat docházku"),
-    PRUH_USE("Lze používat proužky"),
+    DOCH_USE("Lze používat docházku (prohlžení + editace)"),
+    PRUH_USE("Lze používat proužky (prohlžení + editace)"),
 
 //    KONT_VIEW_BASIC_READ("Lze prohlížet seznam kontraktů, přístup pouze k základním údajům"),
 //    KONT_VIEW_BASIC_MANAGE("Lze vytvářet/editovat/rušit kontrakty, přístup pouze k základním údajům"),
@@ -44,6 +44,8 @@ public enum Perm implements GrantedAuthority {
     CAL_MODIFY("Lze generovat záznamy aplikačního kalndáře"),
 
     CIN_READ("Lze prohlížet seznam činností"),
+
+    NAKL_BASIC_READ("Lze prohlížet základní nákladové údaje zakázek"),
     ;
 
     static private HashSet<String> permNames = new HashSet<>();

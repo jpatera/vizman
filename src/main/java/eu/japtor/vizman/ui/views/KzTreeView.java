@@ -1090,7 +1090,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        treeGrid.setDataProvider(kontDataProvider);
 
 //        personEditForm = new PersonFormDialog(
-//                this::savePerson, this::deletePerson, personService, roleService.fetchAllRoles(), passwordEncoder);
+//                this::savePerson, this::deletePerson, personService, roleService.fetchAll(), passwordEncoder);
 
 //    }
 

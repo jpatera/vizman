@@ -29,6 +29,8 @@ public interface PersonService {
     List<Person> fetchByPersonFilter(PersonFilter personFilter, List<QuerySortOrder> sortOrders);
     long countByPersonFilter(PersonFilter personFilter);
 
+    long countOfAssignedPerson(Long roleId);
+
     class PersonFilter {
         Boolean hidden;
         String username;

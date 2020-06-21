@@ -28,14 +28,12 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.ItemNames;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.service.KlientService;
-import eu.japtor.vizman.backend.service.KontService;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.KlientFormDialog;
@@ -58,7 +56,7 @@ import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_KLIENT;
 })
 // @SpringComponent
 // @UIScope    // Without this annotation browser refresh throws exception
-public class KlientListView extends VerticalLayout implements BeforeEnterObserver, HasLogger {
+public class KlientListView extends VerticalLayout implements BeforeEnterObserver {
 
     private Grid<Klient> klientGrid;
     private List<Klient> klients;
@@ -72,9 +70,6 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
     @Autowired
     public KlientService klientService;
 
-    @Autowired
-    public KontService kontService;
-
 //    @Autowired
     public KlientListView() {
         initView();
@@ -83,13 +78,12 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
     @PostConstruct
     public void init() {
 
-        reloadKlientGridData();
+        reloadGridData();
 
         klientFormDialog = new KlientFormDialog(
                 this::saveItem
                 , this::deleteItem
                 , klientService
-                , kontService
         );
 
         // TODO: same approach as in NablistView
@@ -124,7 +118,7 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
         return gridContainer;
     }
 
-    private void reloadKlientGridData() {
+    private void reloadGridData() {
         klients = klientService.fetchAll();
         klientGrid.setDataProvider(new ListDataProvider<>(klients));
         klientGrid.getDataProvider().refreshAll();
@@ -247,7 +241,7 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
     }
 
     private Component initReloadButton() {
-        reloadButton = new ReloadButton(event -> loadInitialViewContent());
+        reloadButton = new ReloadButton(event -> reloadGridData());
         return reloadButton;
     }
 
@@ -263,13 +257,13 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
 ////        loadGridDataAndRebuildFilterFields();
 //        klientGrid.setVzFilterItems(Arrays.asList(Boolean.FALSE, Boolean.TRUE));
 //        klientGrid.resetFilterValues();
-//        klientGrid.doFilter(KlientService.NabFilter.getEmpty());
+//        klientGrid.doFilter(KlientService.NabViewFilter.getEmpty());
 ////        nabGrid.getDataProvider().refreshAll();
     }
 
     private void updateGridAfterAdd(Klient newKlient) {
 //        klientGrid.getDataCommunicator().getKeyMapper().removeAll();
-        reloadKlientGridData();
+        reloadGridData();
         klientGrid.select(newKlient);
     }
 
@@ -284,9 +278,9 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
 
     private void updateGridAfterDelete(int itemIndexNew) {
 //        klientGrid.getDataCommunicator().getKeyMapper().removeAll();
-//        reloadKlientGridData();
+//        reloadGridData();
 //        klientGrid.getDataProvider().refreshAll();
-        reloadKlientGridData();
+        reloadGridData();
         klientGrid.select(klients.get(itemIndexNew));
 //        klientGrid.getDataProvider().refreshAll();
 
@@ -319,20 +313,15 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
         }
     }
 
-    private boolean deleteItem(Klient itemToDelete) {
-        int itemIndexOrig = klients.indexOf(itemToDelete);
+    private void deleteItem(Klient klient) {
+        int itemIndexOrig = klients.indexOf(klient);
         int itemIndexNew = itemIndexOrig >= klients.size() - 1 ? itemIndexOrig - 1 : itemIndexOrig;
-        try {
-            klientService.deleteKlient(itemToDelete);
-            getLogger().info("{} deleted: ID={},  Name={}", itemToDelete.getTyp().name(), itemToDelete.getName());
-        } catch (Exception e) {
-            String errMsg = "Error while deleting {}: ID={}, Name={}";
-            getLogger().error(errMsg, itemToDelete.getTyp().name(), itemToDelete.getId(), itemToDelete.getName(), e);
-            return false;
-        }
+        klientService.deleteKlient(klient);
+//        Klient newSelectedKlient = klients.get(itemIndexNew);
+//        klientGrid.getDataCommunicator().getKeyMapper().removeAll();
+//        klientGrid.getDataProvider().refreshAll();
         Notification.show(
                 "Klient zrušen.", 2000, Notification.Position.MIDDLE);
         updateGridAfterDelete(itemIndexNew);
-        return true;
     }
 }
