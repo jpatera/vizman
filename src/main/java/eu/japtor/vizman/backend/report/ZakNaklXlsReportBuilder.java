@@ -46,8 +46,8 @@ public class ZakNaklXlsReportBuilder {
         buildReportGroups(withMoneyColumns);
 
         reportBuilder = (new FastReportBuilder())
-                .setUseFullPageWidth(true)
-                .setIgnorePagination(true) // For Excel, we don't want pagination, just a plain list
+                .setUseFullPageWidth(false) // Otherwise "some" width is  counted for sheet
+                .setIgnorePagination(true)  // For Excel, we don't want pagination, just a plain list
                 .setWhenNoData("(no data)", new Style())
 //                .setTitle("NÁKLADY NA ZAKÁZKU")
                 .setReportLocale(new Locale("cs", "CZ"))
