@@ -15,6 +15,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Element;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.ZaknService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.forms.ZakNaklGridDialog;
@@ -56,11 +57,13 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     private boolean archFieldVisible;
     private boolean digiFieldVisible;
     private boolean selectFieldVisible;
+    private boolean zaknViewBtnVisible;
     private Consumer<Integer> selectionChanger;
     private Function<ZakBasic, Boolean> checkBoxEnabler;
 
     private ZaknService zaknService;
     private ZakNaklGridDialog zakNaklGridDialog;
+    CfgPropsCache cfgPropsCache;
 
     private int selCount;
 
@@ -72,17 +75,21 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
             , Consumer<Integer> selectionChanger
             , boolean archFieldVisible
             , boolean digiFieldVisible
+            , boolean zaknViewBtnVisible
             , Boolean initFilterArchValue
             , Boolean initFilterDigiValue
             , ZaknService zaknService
+            , CfgPropsCache cfgPropsCache
     ) {
         this.zaknService = zaknService;
+        this.cfgPropsCache = cfgPropsCache;
 
         this.initFilterArchValue = initFilterArchValue;
         this.initFilterDigiValue = initFilterDigiValue;
         this.checkBoxEnabler = checkBoxEnabler;
         this.archFieldVisible = archFieldVisible;
         this.digiFieldVisible = digiFieldVisible;
+        this.zaknViewBtnVisible = zaknViewBtnVisible;
         this.selectFieldVisible = selectFieldVisible;
         this.selectionChanger = selectionChanger;
 
@@ -140,11 +147,13 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
 
         // if (isZakFormsAccessGranted()) {
         // if (isZaknBasicGranted()) {
+        if (zaknViewBtnVisible) {
             this.addColumn(new ComponentRenderer<>(this::buildZaknViewBtn))
                     .setHeader("Nak")
                     .setFlexGrow(0)
                     .setWidth("3em")
             ;
+        }
         this.addColumn(ZakBasic::getCkz)
                 .setHeader("ČK-ČZ")
                 .setFlexGrow(0)
@@ -276,11 +285,13 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     }
 
     Component buildZaknViewBtn(ZakBasic zakBasic) {
-        return new GridItemBtn(event ->
-                zakNaklGridDialog.openDialogFromZakBasicView(
-                        zakBasic
-                        , ZakrListView.ZakrParams.getEmptyInstance()
-                )
+        return new GridItemBtn(event -> {
+                    this.select(zakBasic);
+                    zakNaklGridDialog.openDialogFromZakBasicView(
+                            zakBasic
+                            , ZakrListView.ZakrParams.getDefaultInstance(cfgPropsCache)
+                    );
+                }
                 , new Icon(VaadinIcon.COIN_PILES), VzmFormatUtils.getItemTypeColorName(zakBasic.getTyp())
         );
     }

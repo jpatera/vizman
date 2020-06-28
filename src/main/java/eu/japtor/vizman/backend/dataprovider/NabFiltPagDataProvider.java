@@ -4,7 +4,7 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.backend.dataprovider.spring.FilterablePageableDataProvider;
-import eu.japtor.vizman.backend.entity.NabView;
+import eu.japtor.vizman.backend.entity.NabVw;
 import eu.japtor.vizman.backend.service.NabViewService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,12 +13,12 @@ import java.util.Arrays;
 import java.util.List;
 
 public class NabFiltPagDataProvider
-                extends FilterablePageableDataProvider<NabView, NabViewService.NabViewFilter>
+                extends FilterablePageableDataProvider<NabVw, NabViewService.NabViewFilter>
 {
     private final NabViewService nabViewService;
 
     private final NabViewService.NabViewFilter defaultFilter = NabViewService.NabViewFilter.getEmpty();
-    private final NabView defaultProbe = NabView.getEmptyInstance();
+    private final NabVw defaultProbe = NabVw.getEmptyInstance();
 
     private final List<QuerySortOrder> defaultSortOrders = Arrays.asList(
             new QuerySortOrder("cnab", SortDirection.DESCENDING)
@@ -34,7 +34,7 @@ public class NabFiltPagDataProvider
         this.nabViewService = nabViewService;
     }
 
-//    private Example<NabView> buildNabExample(final HierarchicalQuery query) {
+//    private Example<NabVw> buildNabExample(final HierarchicalQuery query) {
 //        return Example.of(query.getFilter().orElse(null), matcher);
 //    }
 
@@ -51,12 +51,12 @@ public class NabFiltPagDataProvider
 //    }
 
     @Override
-    protected Page<NabView> fetchFromBackEnd(Query<NabView, NabViewService.NabViewFilter> query, Pageable pageable) {
+    protected Page<NabVw> fetchFromBackEnd(Query<NabVw, NabViewService.NabViewFilter> query, Pageable pageable) {
         return nabViewService.fetchByNabFilter(getNabFilter(), query.getSortOrders(), pageable);
     }
 
     @Override
-    protected int sizeInBackEnd(Query<NabView, NabViewService.NabViewFilter> query) {
+    protected int sizeInBackEnd(Query<NabVw, NabViewService.NabViewFilter> query) {
         return (int) nabViewService.countByNabFilter(getNabFilter());
     }
 

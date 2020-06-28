@@ -470,7 +470,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
 //        lastOperationResult = OperationResult.NO_CHANGE;
 //    }
 
-//    private boolean deleteFakt(NabView itemToDelete) {
+//    private boolean deleteFakt(NabVw itemToDelete) {
 //        String cnDel = String.format("%s", currentItem.getCnab());
 //        OperationResult lastOperResOrig = lastOperationResult;
 //        try {
@@ -489,7 +489,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
 //        }
 //    }
 
-//    public NabView saveFakt(NabView nabToSave) throws VzmServiceException {
+//    public NabVw saveFakt(NabVw nabToSave) throws VzmServiceException {
 //        try {
 //            currentItem = nabViewService.saveNab(nabToSave, currentOperation);
 //            lastOperationResult = OperationResult.ITEM_SAVED;
@@ -513,7 +513,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
 //        return true;
 //    }
 
-//    private boolean canDeleteNab(final NabView itemToDelete) {
+//    private boolean canDeleteNab(final NabVw itemToDelete) {
 //        return true;
 //    }
 

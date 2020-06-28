@@ -11,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.function.ValueProvider;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
+import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.ZaknService;
 import eu.japtor.vizman.ui.components.*;
 import org.claspina.confirmdialog.ConfirmDialog;
@@ -40,17 +41,20 @@ public class ZakSelectDialog extends Dialog {
     public ZakBasicRepo zakBasicRepo;
     private Consumer<List<ZakBasic>> itemsAder;
     private ZaknService zaknService;
+    private CfgPropsCache cfgPropsCache;
 
 
     public ZakSelectDialog(
             Consumer<List<ZakBasic>> itemAdder
             , ZakBasicRepo zakBasicRepo
             , ZaknService zaknService
+            , CfgPropsCache cfgPropsCache
     ) {
 //        super(itemSaver);
         this.itemsAder = itemAdder;
         this.zakBasicRepo = zakBasicRepo;
         this.zaknService = zaknService;
+        this.cfgPropsCache = cfgPropsCache;
 
         this.setWidth("1400px");
         this.setHeight("750px");
@@ -158,9 +162,11 @@ public class ZakSelectDialog extends Dialog {
                 , selectionChanger
                 , false
                 , false
+                , false
                 , Boolean.FALSE
                 , null
                 , zaknService
+                , cfgPropsCache
         );
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.NONE);

@@ -72,6 +72,19 @@ public class Zakn implements Serializable {
         return builder.toString();
     }
 
+    public String getCkzTextXlsRep() {
+        StringBuilder builder = new StringBuilder();
+        builder .append(getCkont())
+                .append("-")
+                .append(getCzak())
+                .append(" : ")
+                .append(getTextKontNotNull())
+                .append(" / ")
+                .append(getTextZakNotNull())
+        ;
+        return builder.toString();
+    }
+
 //    @Transient
     public String getKzTextFull() {
         StringBuilder builder = new StringBuilder();

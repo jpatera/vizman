@@ -22,14 +22,6 @@ public class ZakNaklXlsReportBuilder {
 //        return new Page(1111,1300,true);
 //    }
 
-//    static final Style AMOUNT_STYLE;
-//    static {
-//        AMOUNT_STYLE = new StyleBuilder(false)
-//                .setHorizontalAlign(HorizontalAlign.RIGHT)
-//                .setPaddingRight(Integer.valueOf(10))
-//                .build();
-//    }
-
     protected DynamicReportBuilder reportBuilder;
 
     private AbstractColumn ckzTextRepCol;
@@ -47,11 +39,11 @@ public class ZakNaklXlsReportBuilder {
     private DJGroup userGroup;
     private DJGroup zakGroup;
 
-    public ZakNaklXlsReportBuilder() {
+    public ZakNaklXlsReportBuilder(boolean withMoneyColumns) {
         super();
 
         buildReportColumns();
-        buildReportGroups();
+        buildReportGroups(withMoneyColumns);
 
         reportBuilder = (new FastReportBuilder())
                 .setUseFullPageWidth(true)
@@ -67,63 +59,49 @@ public class ZakNaklXlsReportBuilder {
 //                .setPageSizeAndOrientation(Page_xls())
 
                 .setPrintColumnNames(true)
-//                .setHeaderHeight(20)
 
-//                .addStyle(DEFAULT_STYLE)
-////                .addStyle(DEFAULT_XLS_STYLE)
-//                .addStyle(DEFAULT_GRID_STYLE)
-////                .addStyle(DEFAULT_GRID_XLS_STYLE)
-////                .addStyle(HEADER_STYLE)
-//                .addStyle(MONEY_NO_FRACT_GRID_STYLE)
-////                .addStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
-//                .addStyle(WORK_HOUR_GRID_STYLE)
-////                .addStyle(WORK_HOUR_GRID_XLS_STYLE)
-////                .setGrandTotalLegend("National Total")
                 .addStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
                 .addStyle(DEFAULT_GRID_XLS_NUM_STYLE)
 
-                // Add columns
+                // Add basic  columns
                 .addColumn(ckzTextRepCol)
                 .addColumn(prijmeniCol)
                 .addColumn(ymPruhCol)
                 .addColumn(workPruhCol)
-                .addColumn(naklMzdaCol)
-                .addColumn(naklMzdaPojistCol)
-                .addColumn(sazbaCol)
-                .addColumn(koefP8Col)
-                .addColumn(workPruhP8Col)
-                .addColumn(naklMzdaP8Col)
-                .addColumn(naklMzdaPojistP8Col)
 
                 // Add groups
                 .addGroup(zakGroup)
                 .addGroup(userGroup)
 
-                // Add totals
+                // Add basic totals
                 .setGrandTotalLegend("Nagruzka Total")
-//                .setGrandTotalLegendStyle(GROUP_HEADER_USER_STYLE)
-//                .addGlobalFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_GRID_XLS_STYLE)
-//                .addGlobalFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE)
-//                .addGlobalFooterVariable(naklMzdaPojistCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE)
-//                .addGlobalFooterVariable(workPruhP8Col, DJCalculation.SUM, WORK_HOUR_GRID_XLS_STYLE)
-//                .addGlobalFooterVariable(naklMzdaP8Col, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE)
-//                .addGlobalFooterVariable(naklMzdaPojistP8Col, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE)
                 .addGlobalFooterVariable(workPruhCol, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE)
-                .addGlobalFooterVariable(naklMzdaCol, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE)
-                .addGlobalFooterVariable(naklMzdaPojistCol, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE)
-                .addGlobalFooterVariable(workPruhP8Col, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE)
-                .addGlobalFooterVariable(naklMzdaP8Col, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE)
-                .addGlobalFooterVariable(naklMzdaPojistP8Col, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE)
         ;
+        if (withMoneyColumns) {
+            reportBuilder
+                    .addColumn(naklMzdaCol)
+                    .addColumn(naklMzdaPojistCol)
+                    .addColumn(sazbaCol)
+                    .addColumn(koefP8Col)
+                    .addColumn(workPruhP8Col)
+                    .addColumn(naklMzdaP8Col)
+                    .addColumn(naklMzdaPojistP8Col)
+
+                    .addGlobalFooterVariable(naklMzdaCol, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE)
+                    .addGlobalFooterVariable(naklMzdaPojistCol, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE)
+                    .addGlobalFooterVariable(workPruhP8Col, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE)
+                    .addGlobalFooterVariable(naklMzdaP8Col, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE)
+                    .addGlobalFooterVariable(naklMzdaPojistP8Col, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE)
+            ;
+        }
     }
 
     private void buildReportColumns() {
         ckzTextRepCol = ColumnBuilder.getNew()
-                .setColumnProperty("ckzTextRep", String.class)
+                .setColumnProperty("ckzTextXlsRep", String.class)
 //                .setCustomExpression(getCalcZakId())
 //                .setCustomExpressionForCalculation(getCalcZakId2())
                 .setTitle("Zakázka")
-//                .setStyle(GROUP_HEADER_ZAK_XLS_STYLE)
                 .setStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
 //                .setWidth(110)
 //                .setFixedWidth(true)
@@ -132,26 +110,23 @@ public class ZakNaklXlsReportBuilder {
         prijmeniCol = ColumnBuilder.getNew()
                 .setColumnProperty("prijmeni", String.class)
                 .setTitle("Příjmení")
-//                .setStyle(GROUP_HEADER_USER_XLS_STYLE)
                 .setStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
-//                .setWidth(110)
+                .setWidth(120)
 //                .setFixedWidth(true)
                 .build();
 
         ymPruhCol = ColumnBuilder.getNew()
                 .setColumnProperty("ymPruh", YearMonth.class)
                 .setTitle("Rok-Měs")
-//                .setStyle(YM_GRID_XLS_STYLE)
                 .setStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
 //                .setTextFormatter(DateTimeFormatter.ISO_DATE.toFormat())
-//                .setWidth(110)
+                .setWidth(120)
 //                .setFixedWidth(true)
                 .build();
 
         workPruhCol = ColumnBuilder.getNew()
                 .setColumnProperty("workPruh", BigDecimal.class)
                 .setTitle("Hodin")
-//                .setStyle(WORK_HOUR_GRID_XLS_STYLE)
                 .setStyle(DEFAULT_GRID_XLS_NUM_STYLE)
 //                .setWidth(60)
 //                .setFixedWidth(true)
@@ -160,7 +135,6 @@ public class ZakNaklXlsReportBuilder {
         workPruhP8Col = ColumnBuilder.getNew()
                 .setColumnProperty("workPruhP8", BigDecimal.class)
                 .setTitle("Hodin P8")
-//                .setStyle(WORK_HOUR_GRID_XLS_STYLE)
                 .setStyle(DEFAULT_GRID_XLS_NUM_STYLE)
 //                .setWidth(60)
 //                .setFixedWidth(true)
@@ -169,7 +143,6 @@ public class ZakNaklXlsReportBuilder {
         naklMzdaCol = ColumnBuilder.getNew()
                 .setColumnProperty("naklMzda", BigDecimal.class)
                 .setTitle("Mzda [CZK]")
-//                .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
                 .setStyle(DEFAULT_GRID_XLS_NUM_STYLE)
 //                .setWidth(80)
 //                .setFixedWidth(true)
@@ -178,7 +151,6 @@ public class ZakNaklXlsReportBuilder {
         naklMzdaPojistCol = ColumnBuilder.getNew()
                 .setColumnProperty("naklMzdaPojist", BigDecimal.class)
                 .setTitle("Mzda + Poj.")
-//                .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
                 .setStyle(DEFAULT_GRID_XLS_NUM_STYLE)
 //                .setWidth(80)
 //                .setFixedWidth(true)
@@ -187,7 +159,6 @@ public class ZakNaklXlsReportBuilder {
         naklMzdaP8Col = ColumnBuilder.getNew()
                 .setColumnProperty("naklMzdaP8", BigDecimal.class)
                 .setTitle("Mzda P8")
-//                .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
                 .setStyle(DEFAULT_GRID_XLS_NUM_STYLE)
 //                .setWidth(80)
 //                .setFixedWidth(true)
@@ -196,7 +167,6 @@ public class ZakNaklXlsReportBuilder {
         naklMzdaPojistP8Col = ColumnBuilder.getNew()
                 .setColumnProperty("naklMzdaPojistP8", BigDecimal.class)
                 .setTitle("Mzda + P. P8")
-//                .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
                 .setStyle(DEFAULT_GRID_XLS_NUM_STYLE)
 //                .setWidth(80)
 //                .setFixedWidth(true)
@@ -205,54 +175,48 @@ public class ZakNaklXlsReportBuilder {
         sazbaCol = ColumnBuilder.getNew()
                 .setColumnProperty("sazba", BigDecimal.class)
                 .setTitle("Sazba")
-//                .setStyle(MONEY_GRID_XLS_STYLE)
                 .setStyle(DEFAULT_GRID_XLS_NUM_STYLE)
 //                .setWidth(60)
-                .setFixedWidth(true)
+//                .setFixedWidth(true)
                 .build();
 
         koefP8Col = ColumnBuilder.getNew()
                 .setColumnProperty("koefP8", BigDecimal.class)
                 .setTitle("Koef P8")
-//                .setStyle(MONEY_GRID_XLS_STYLE)
                 .setStyle(DEFAULT_GRID_XLS_NUM_STYLE)
 //                .setWidth(60)
-                .setFixedWidth(true)
+//                .setFixedWidth(true)
                 .build();
     }
 
-    private void buildReportGroups() {
+    private void buildReportGroups(boolean withMoneyColumns) {
 
         // User group
         GroupBuilder userGroupBuilder = new GroupBuilder();
         DJGroupLabel userGroupWorkHourLabel = new DJGroupLabel("", GROUP_LABEL_STYLE, LabelPosition.LEFT);
         DJGroupLabel userGroupMzdaLabel = new DJGroupLabel("", GROUP_LABEL_STYLE, LabelPosition.LEFT);
         DJGroupLabel userGroupWorkMzdaPojistLabel = new DJGroupLabel("", GROUP_LABEL_STYLE, LabelPosition.LEFT);
-        userGroup = userGroupBuilder
+        userGroupBuilder
                 .setCriteriaColumn((PropertyColumn) prijmeniCol)
-//                .addHeaderVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_GRID_XLS_STYLE, null, userGroupWorkHourLabel)
-//                .addHeaderVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE, null, userGroupMzdaLabel)
-//                .addHeaderVariable(naklMzdaPojistCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE, null, userGroupWorkMzdaPojistLabel)
-//                .addHeaderVariable(workPruhP8Col, DJCalculation.SUM, WORK_HOUR_GRID_XLS_STYLE, null, null)
-//                .addHeaderVariable(naklMzdaP8Col, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE, null, null)
-//                .addHeaderVariable(naklMzdaPojistP8Col, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE, null, null)
                 .addHeaderVariable(workPruhCol, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE, null, userGroupWorkHourLabel)
-                .addHeaderVariable(naklMzdaCol, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE, null, userGroupMzdaLabel)
-                .addHeaderVariable(naklMzdaPojistCol, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE, null, userGroupWorkMzdaPojistLabel)
-                .addHeaderVariable(workPruhP8Col, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE, null, null)
-                .addHeaderVariable(naklMzdaP8Col, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE, null, null)
-                .addHeaderVariable(naklMzdaPojistP8Col, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE, null, null)
                 .setGroupLayout(GroupLayout.VALUE_IN_HEADER)
-//                .setGroupLayout(GroupLayout.DEFAULT)
-                .build()
         ;
-
+        if (withMoneyColumns) {
+            userGroupBuilder
+                    .addHeaderVariable(naklMzdaCol, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE, null, userGroupMzdaLabel)
+                    .addHeaderVariable(naklMzdaPojistCol, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE, null, userGroupWorkMzdaPojistLabel)
+                    .addHeaderVariable(workPruhP8Col, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE, null, null)
+                    .addHeaderVariable(naklMzdaP8Col, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE, null, null)
+                    .addHeaderVariable(naklMzdaPojistP8Col, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE, null, null)
+            ;
+        }
+        userGroup = userGroupBuilder.build();
 
         // ZAK group
         GroupBuilder zakGroupBuilder = new GroupBuilder();
         zakGroup = zakGroupBuilder
                 .setCriteriaColumn((PropertyColumn) ckzTextRepCol)
-                .setGroupLayout(GroupLayout.VALUE_IN_HEADER)
+                .setGroupLayout(GroupLayout.DEFAULT)
                 .build()
         ;
     }

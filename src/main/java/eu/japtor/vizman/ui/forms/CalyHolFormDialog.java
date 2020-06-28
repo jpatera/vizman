@@ -28,7 +28,7 @@ public class CalyHolFormDialog extends AbstractComplexFormDialog<CalyHol> {
             , Consumer<CalyHol> itemDeleter
             , CalService calService
     ){
-        super("800px", "300px"
+        super("800px", null
                 , false, false
                 , itemSaver, itemDeleter, true
         );

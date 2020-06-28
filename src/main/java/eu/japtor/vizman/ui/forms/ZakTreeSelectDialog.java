@@ -21,6 +21,7 @@ import eu.japtor.vizman.backend.entity.KzTreeAware;
 import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.entity.ZakBasic;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
+import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.ZaknService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.Gap;
@@ -40,6 +41,7 @@ import java.util.function.Consumer;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @UIScope    // Without this annotation browser refresh throws exception
 //public class KzSelectFormDialog<KzTreeAware> extends Dialog {
+// TODO: delete ?
 public class ZakTreeSelectDialog extends Dialog {
 
     private static final String SEL_COL_KEY = "zak-sel-col";
@@ -62,6 +64,9 @@ public class ZakTreeSelectDialog extends Dialog {
 
     @Autowired
     public ZakBasicRepo zakBasicRepo;
+
+    @Autowired
+    public CfgPropsCache cfgPropsCache;
 
 
     public ZakTreeSelectDialog(ZaknService zaknService) {
@@ -198,9 +203,11 @@ public class ZakTreeSelectDialog extends Dialog {
                 , null
                 , false
                 , false
+                , false
                 ,  Boolean.FALSE
                 , null
                 , zaknService
+                , cfgPropsCache
         );
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);

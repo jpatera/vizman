@@ -103,7 +103,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     private HeaderRow descHeaderRow;
     private HeaderRow filterHeaderRow;
     private FooterRow sumFooterRow;
-    private Registration zakrGridEditRegistration = null;
+//    private Registration zakrGridEditRegistration = null;
     private Zakr editedItem;
     private boolean editedItemChanged;
     private BiConsumer<Zakr, Operation> itemSaver;
@@ -151,7 +151,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 this.zakService, this.faktService, this.cfgPropsCache
         );
         zakNaklGridDialog = new ZakNaklGridDialog(
-                zaknService
+                this.zaknService
         );
 
 
@@ -205,7 +205,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
            attemptSaveFromEditor();
         });
 
-        zakrGridEditRegistration = this.addItemDoubleClickListener(event -> {
+        this.addItemDoubleClickListener(event -> {
             // TODO keyPress listeners...??
             zakrEditor.editItem(event.getItem());
 //            field.focus();
@@ -821,10 +821,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //                , VzmFormatUtils.getItemTypeColorName(zakr.getTyp()));
     }
 
-    public void setZakrParams(ZakrListView.ZakrParams zakrParams) {
-        this.zakrParams = zakrParams;
-
-    }
+//    public void setZakrParams(ZakrListView.ZakrParams zakrParams) {
+//        this.zakrParams = zakrParams;
+//
+//    }
 
     public ZakrListView.ZakrParams getZakrParams() {
         return zakrParams;

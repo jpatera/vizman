@@ -11,7 +11,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.dom.Element;
 import eu.japtor.vizman.backend.dataprovider.spring.FilterablePageableDataProvider;
-import eu.japtor.vizman.backend.entity.NabView;
+import eu.japtor.vizman.backend.entity.NabVw;
 import eu.japtor.vizman.backend.service.NabViewService;
 
 
@@ -21,9 +21,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class NabGrid extends Grid<NabView> {
+public class NabGrid extends Grid<NabVw> {
 
-    // NabView grid field keys:
+    // NabVw grid field keys:
     public static final String ROK_COL_KEY = "nab-bg-rok";
     public static final String CNAB_COL_KEY = "nab-bg-cnab";
     public static final String TEXT_COL_KEY = "nab-bg-text";
@@ -33,8 +33,8 @@ public class NabGrid extends Grid<NabView> {
     public static final String CKONT_COL_KEY = "nab-bg-ckont";
 
 
-//    private ConfigurableFilterDataProvider<NabView, Void, NabViewService.NabViewFilter> gridDataProvider;
-    private FilterablePageableDataProvider<NabView, NabViewService.NabViewFilter> gridDataProvider;
+//    private ConfigurableFilterDataProvider<NabVw, Void, NabViewService.NabViewFilter> gridDataProvider;
+    private FilterablePageableDataProvider<NabVw, NabViewService.NabViewFilter> gridDataProvider;
 
     private Select<Boolean> vzFilterField;
     private Select<Integer> rokFilterField;
@@ -47,21 +47,21 @@ public class NabGrid extends Grid<NabView> {
     private boolean vzFieldVisible;
     private boolean selectFieldVisible;
     private Consumer<Integer> selectionChanger;
-    private Function<NabView, Boolean> checkBoxEnabler;
+    private Function<NabVw, Boolean> checkBoxEnabler;
 
     private int selCount;
 
     HeaderRow filterRow;
-    BiConsumer<NabView, Operation> editDialogOpener;
+    BiConsumer<NabVw, Operation> editDialogOpener;
 
     NabViewService nabViewService;
 
     public NabGrid(
             boolean selectFieldVisible
-            , Function<NabView, Boolean> checkBoxEnabler
+            , Function<NabVw, Boolean> checkBoxEnabler
             , Consumer<Integer> selectionChanger
             , boolean vzFieldVisible
-            , BiConsumer<NabView, Operation> editDialogOpener
+            , BiConsumer<NabVw, Operation> editDialogOpener
             , NabViewService nabViewService
     ) {
         this.checkBoxEnabler = checkBoxEnabler;
@@ -92,7 +92,7 @@ public class NabGrid extends Grid<NabView> {
                 .setVisible(this.vzFieldVisible);
         //                .setFrozen(true)
         ;
-        this.addColumn(NabView::getRok)
+        this.addColumn(NabVw::getRok)
                 .setHeader("Rok nab.")
                 .setFlexGrow(0)
                 .setWidth("7em")
@@ -101,7 +101,7 @@ public class NabGrid extends Grid<NabView> {
                 .setKey(ROK_COL_KEY)
                 .setSortProperty("rok")
         ;
-        this.addColumn(NabView::getCnab)
+        this.addColumn(NabVw::getCnab)
                 .setHeader("Č. nab.")
                 .setFlexGrow(0)
                 .setWidth("8em")
@@ -110,7 +110,7 @@ public class NabGrid extends Grid<NabView> {
                 .setKey(CNAB_COL_KEY)
                 .setSortProperty("cnab")
         ;
-        this.addColumn(NabView::getCkont)
+        this.addColumn(NabVw::getCkont)
                 .setHeader("Č. kont.")
                 .setFlexGrow(0)
                 .setWidth("8em")
@@ -119,7 +119,7 @@ public class NabGrid extends Grid<NabView> {
                 .setKey(CKONT_COL_KEY)
                 .setSortProperty("ckont")
         ;
-        this.addColumn(NabView::getText)
+        this.addColumn(NabVw::getText)
                 .setHeader("Text")
                 .setFlexGrow(1)
                 .setWidth("13em")
@@ -127,7 +127,7 @@ public class NabGrid extends Grid<NabView> {
                 .setKey(TEXT_COL_KEY)
                 .setSortProperty("text")
         ;
-        this.addColumn(NabView::getObjednatel)
+        this.addColumn(NabVw::getObjednatel)
                 .setHeader("Objednatel")
                 .setFlexGrow(0)
                 .setWidth("18em")
@@ -135,7 +135,7 @@ public class NabGrid extends Grid<NabView> {
                 .setKey(OBJEDNATEL_COL_KEY)
                 .setSortProperty("objednatel")
         ;
-        this.addColumn(NabView::getPoznamka)
+        this.addColumn(NabVw::getPoznamka)
                 .setHeader("Poznámka")
                 .setFlexGrow(1)
                 .setWidth("13em")
@@ -181,8 +181,8 @@ public class NabGrid extends Grid<NabView> {
         }
     }
 
-    private Button buildEditBtn(NabView nabView) {
-        Button editBtn = new GridItemEditBtn(event -> editDialogOpener.accept(nabView, Operation.EDIT));
+    private Button buildEditBtn(NabVw nabVw) {
+        Button editBtn = new GridItemEditBtn(event -> editDialogOpener.accept(nabVw, Operation.EDIT));
         return editBtn;
     }
 
@@ -203,8 +203,8 @@ public class NabGrid extends Grid<NabView> {
     }
 
     public void resetFilterValues() {
-//        ((ListDataProvider<NabView>) this.getDataProvider()).clearFilters();
-//        ((onfigurableFilterDataProvider<NabView, Void, NabViewService.NabViewFilter>) this.getDataProvider()).clearFilters();
+//        ((ListDataProvider<NabVw>) this.getDataProvider()).clearFilters();
+//        ((onfigurableFilterDataProvider<NabVw, Void, NabViewService.NabViewFilter>) this.getDataProvider()).clearFilters();
 //        gridDataProvider.setFilter(NabViewService.NabViewFilter.getEmpty());
 
         // TODO: disable refiltering before all filters ale cleared
@@ -232,7 +232,7 @@ public class NabGrid extends Grid<NabView> {
     }
 
     public void doFilter(NabViewService.NabViewFilter filter) {
-//        ListDataProvider<NabView> listDataProvider = ((ListDataProvider<NabView>) this.getDataProvider());
+//        ListDataProvider<NabVw> listDataProvider = ((ListDataProvider<NabVw>) this.getDataProvider());
 
 //        ((ConfigurableFilterDataProvider) this.getDataProvider()).setFilter(buildNabFilter());
         gridDataProvider.setFilter(filter);
@@ -255,37 +255,37 @@ public class NabGrid extends Grid<NabView> {
 //        String poznamkaFilterValue = poznamkaFilterField.getValue();
 //
 //        if (null != vzFilterValue) {
-//            listDataProvider.addFilter(NabView::getVz
+//            listDataProvider.addFilter(NabVw::getVz
 //                    , vz -> vz.equals(vzFilterValue)
 //            );
 //        }
 //        if (null != rokFilterValue) {
-//            listDataProvider.addFilter(NabView::getRok
+//            listDataProvider.addFilter(NabVw::getRok
 //                    , rok -> rok.equals(rokFilterValue)
 //            );
 //        }
 //        if (StringUtils.isNotEmpty(cnabFilterValue)) {
-//            listDataProvider.addFilter(NabView::getCnab
+//            listDataProvider.addFilter(NabVw::getCnab
 //                    , cn -> StringUtils.containsIgnoreCase(cn, cnabFilterValue)
 //            );
 //        }
 //        if (StringUtils.isNotEmpty(ckontFilterValue)) {
-//            listDataProvider.addFilter(NabView::getCkont
+//            listDataProvider.addFilter(NabVw::getCkont
 //                    , ck -> StringUtils.containsIgnoreCase(ck, ckontFilterValue)
 //            );
 //        }
 //        if (StringUtils.isNotEmpty(textFilterValue)) {
-//            listDataProvider.addFilter(NabView::getText
+//            listDataProvider.addFilter(NabVw::getText
 //                    , tx -> StringUtils.containsIgnoreCase(tx, textFilterValue)
 //            );
 //        }
 //        if (StringUtils.isNotEmpty(objednatelFilterValue)) {
-//            listDataProvider.addFilter(NabView::getObjednatel
+//            listDataProvider.addFilter(NabVw::getObjednatel
 //                    , ob -> StringUtils.containsIgnoreCase(ob, objednatelFilterValue)
 //            );
 //        }
 //        if (StringUtils.isNotEmpty(poznamkaFilterValue)) {
-//            listDataProvider.addFilter(NabView::getPoznamka
+//            listDataProvider.addFilter(NabVw::getPoznamka
 //                    , po -> StringUtils.containsIgnoreCase(po, poznamkaFilterValue)
 //            );
 //        }
@@ -304,7 +304,7 @@ public class NabGrid extends Grid<NabView> {
         );
     }
 
-    private ComponentRenderer<Component, NabView> vzRenderer = new ComponentRenderer<>(nab -> {
+    private ComponentRenderer<Component, NabVw> vzRenderer = new ComponentRenderer<>(nab -> {
         VzIconBox vzBox = new VzIconBox();
         vzBox.setAlignItems(FlexComponent.Alignment.CENTER);
         vzBox.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
