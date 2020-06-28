@@ -343,7 +343,7 @@ public class TwinColJpsGrid2<T> extends VerticalLayout implements HasValue<HasVa
 //        leftGrid.recalculateColumnWidths();
 //        rightGrid.recalculateColumnWidths();
         // TODO: workaround until an issue https://github.com/vaadin/vaadin-grid-flow/issues/855 is fixed
-        leftGrid.getElement().executeJs("setTimeout(() => { this.recalculateColumnWidths() }, 0");
+        leftGrid.getElement().executeJs("setTimeout(() => { this.recalculateColumnWidths() }, 0)");
     }
 
     public void recalculateRightColWidths()  {
