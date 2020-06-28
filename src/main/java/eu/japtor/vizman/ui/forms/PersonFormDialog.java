@@ -273,6 +273,11 @@ public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
 
         deactivateListeners();
 
+        getFormLayout().remove(rolesTwinGrid);
+        getFormLayout().add (
+                initRolesTwinColGrid(rolesPool)
+        );
+
         binder.removeBean();
         binder.readBean(item);
 
