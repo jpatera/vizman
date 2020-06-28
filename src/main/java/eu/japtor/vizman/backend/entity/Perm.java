@@ -45,7 +45,8 @@ public enum Perm implements GrantedAuthority {
 
     CIN_READ("Lze prohlížet seznam činností"),
 
-    NAKL_BASIC_READ("Lze prohlížet základní nákladové údaje zakázek"),
+    NAKL_BASIC_USE("Lze prohlížet a exportovat pouze základní nákladové údaje zakázek"),
+    NAKL_COMPLETE_USE("Lze prohlížet a exportovat kompletní nákladové údaje zakázek"),
     ;
 
     static private HashSet<String> permNames = new HashSet<>();

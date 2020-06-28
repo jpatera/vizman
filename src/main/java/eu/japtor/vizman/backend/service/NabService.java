@@ -1,7 +1,6 @@
 package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.backend.entity.Nab;
-import eu.japtor.vizman.backend.entity.NabView;
 import eu.japtor.vizman.ui.components.Operation;
 
 

@@ -22,6 +22,7 @@ import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.VaadinSession;
 import eu.japtor.vizman.app.HasLogger;
+import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.ZakBasic;
 import eu.japtor.vizman.backend.entity.Zakn;
@@ -40,11 +41,13 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
+import static eu.japtor.vizman.app.security.SecurityUtils.isNaklCompleteAccessGranted;
+
 public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLogger {
 
-    public static final String DIALOG_WIDTH = "1300px";
-    public static final String DIALOG_HEIGHT = "850px";
-//    public static final String DIALOG_HEIGHT = null;
+    public static final String DIALOG_WIDTH = "900px";
+//    public static final String DIALOG_HEIGHT = "850px";
+    public static final String DIALOG_HEIGHT = null;
     private static final String CLOSE_STR = "Zavřít";
 
     public static final String HODIN_COL_KEY = "zakn-bg-hodin";
@@ -54,7 +57,6 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     private HorizontalLayout leftBarPart;
     private HorizontalLayout rightBarPart;
     private Button closeButton;
-    private Button zakNaklRepButton;
     private Anchor expXlsAnchor;
     private ReportExporter<Zakn> xlsReportExporter;
 
@@ -79,18 +81,24 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     private String ckzTextFull;
 
     private final static String REPORT_FILE_NAME = "vzm-exp-zakn";
+
+    private SerializableSupplier<List<? extends Zakn>> itemsSupplier = () ->
+            zaknService.fetchByZakIdSumByYm(zakId, zakrParams)
+    ;
     private ComponentEventListener anchorExportListener = event -> {
         try {
-            updateExpXlsAnchorResource(currentItemList);
+            updateExpXlsAnchorResource(itemsSupplier);
         } catch (JRException e) {
             e.printStackTrace();
         }
     };
 
-    private SerializableSupplier<List<? extends Zakn>> itemsSupplier = () ->
-            zaknService.fetchByZakIdSumByYm(zakId, zakrParams)
-            ;
 
+    /**
+     * Constructor
+     *
+     * @param zaknService
+     */
     public ZakNaklGridDialog(ZaknService zaknService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setItemNames(ItemType.UNKNOWN);
@@ -98,8 +106,9 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
 
         this.zaknService = zaknService;
         this.paramsBinder = new Binder<>();
-        xlsReportExporter = new ReportExporter((new ZakNaklXlsReportBuilder()).buildReport());
-
+        xlsReportExporter = new ReportExporter(
+                (new ZakNaklXlsReportBuilder(SecurityUtils.isNaklCompleteAccessGranted())).buildReport()
+        );
 
         zakNaklRepDialog = new ZakNaklReportDialog(zaknService);
 
@@ -125,21 +134,22 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     }
 
     public void openDialogFromZakBasicView(ZakBasic zakBasic, ZakrListView.ZakrParams zakrParams) {
-        this.zakId = zakBasic.getId();
-        this.ckzTextFull = zakBasic.getCkzTextFull();
-        openDialog(zakId, ckzTextFull);
+//        this.zakId = zakBasic.getId();
+//        this.ckzTextFull = zakBasic.getCkzTextFull();
+        this.zakrParams = zakrParams;
+        openDialog(zakBasic.getId(), ckzTextFull);
     }
 
     public void openDialogFromZakr(Zakr zakr, ZakrListView.ZakrParams zakrParams) {
-        this.zakId = zakr.getId();
-        this.ckzTextFull = zakr.getCkzTextFull();
-        openDialog(zakId, ckzTextFull);
+//        this.zakId = zakr.getId();
+//        this.ckzTextFull = zakr.getCkzTextFull();
+        this.zakrParams = zakrParams;
+        openDialog(zakr.getId(), ckzTextFull);
     }
 
     private void openDialog(Long zakId, String ckzTextFull) {
         this.zakId = zakId;
         this.ckzTextFull = ckzTextFull;
-        this.zakrParams = zakrParams;
         paramsBinder.setBean(zakrParams);
 //        paramsBinder.addValueChangeListener(event -> calcButton.setIconDirty());
         initDataAndControls();
@@ -267,30 +277,33 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
         return REPORT_FILE_NAME + "." + format.name().toLowerCase();
     }
 
-    private void updateExpXlsAnchorResource(List<Zakn> items) throws JRException {
+//    private void updateExpXlsAnchorResource(List<Zakn> items) throws JRException {
+    private void updateExpXlsAnchorResource(SerializableSupplier<List<? extends Zakn>> supplier) throws JRException {
         ReportExporter.Format expFormat = ReportExporter.Format.XLS;
         AbstractStreamResource xlsResource =
-                xlsReportExporter.getStreamResource(getReportFileName(expFormat), itemsSupplier, expFormat);
+                xlsReportExporter.getStreamResource(getReportFileName(expFormat), supplier, expFormat);
         expXlsAnchor.setHref(xlsResource);
 
         // Varianta 1
-//        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
+        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
 
-        // Varianta 2
-        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
-        UI.getCurrent().getPage().setLocation(registration.getResourceUri());
+//        // Varianta 2 - Has an issue: after returning to the parent dialog [Close] button does nothing
+//        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
+//        UI.getCurrent().getPage().setLocation(registration.getResourceUri());
     }
 
 
-    private Component initZakNaklRepButton() {
-        zakNaklRepButton = new Button("Report"
-                , event -> {
-            openZakNaklRepDialog();
-        });
-//        this.addClassName("view-toolbar__button");
-        zakNaklRepButton.getElement().setAttribute("theme", "small secondary");
-        return zakNaklRepButton;
-    }
+//    private Button zakNaklRepButton;
+//
+//    private Component initZakNaklRepButton() {
+//        zakNaklRepButton = new Button("Report"
+//                , event -> {
+//            openZakNaklRepDialog();
+//        });
+////        this.addClassName("view-toolbar__button");
+//        zakNaklRepButton.getElement().setAttribute("theme", "small secondary");
+//        return zakNaklRepButton;
+//    }
 
     private void openZakNaklRepDialog() {
 //        zakrParams.setRokZak(zakrGrid.getRokFilterValue());
@@ -368,8 +381,8 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
         toolBar.setSpacing(false);
         toolBar.add(
                 initZakNaklXlsExpAnchor()
-                , new Ribbon()
-                , initZakNaklRepButton()
+//                , new Ribbon()
+///                , initZakNaklRepButton()
         );
         return toolBar;
     }
@@ -406,35 +419,37 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
                 .setKey(HODIN_COL_KEY)
                 .setResizable(true)
         ;
-        grid.addColumn(zn -> {
-                    BigDecimal mzda = zn.getNaklMzda();
-                    return null == mzda ? "" : VzmFormatUtils.moneyNoFractFormat.format(mzda);
-                })
-                .setHeader("Mzda")
-                .setWidth("8em")
-                .setTextAlign(ColumnTextAlign.END)
-                .setFlexGrow(0)
-                .setKey(MZDA_COL_KEY)
-                .setResizable(true)
-        ;
-        grid.addColumn(zn -> {
-                    BigDecimal mzdaPojist = zn.getNaklMzdaPojist();
-                    return null == mzdaPojist ? "" : VzmFormatUtils.moneyNoFractFormat.format(mzdaPojist);
-                })
-                .setHeader("Mzda+Poj.")
-                .setWidth("8em")
-                .setTextAlign(ColumnTextAlign.END)
-                .setFlexGrow(0)
-                .setKey(MZDA_POJ_COL_KEY)
-                .setResizable(true)
-        ;
-        grid.addColumn(Zakn::getSazba)
-                .setHeader("Sazba")
-                .setWidth("8em")
-                .setTextAlign(ColumnTextAlign.END)
-                .setFlexGrow(0)
-                .setResizable(true)
-        ;
+        if (isNaklCompleteAccessGranted()) {
+            grid.addColumn(zn -> {
+                BigDecimal mzda = zn.getNaklMzda();
+                return null == mzda ? "" : VzmFormatUtils.moneyNoFractFormat.format(mzda);
+            })
+                    .setHeader("Mzda")
+                    .setWidth("8em")
+                    .setTextAlign(ColumnTextAlign.END)
+                    .setFlexGrow(0)
+                    .setKey(MZDA_COL_KEY)
+                    .setResizable(true)
+            ;
+            grid.addColumn(zn -> {
+                BigDecimal mzdaPojist = zn.getNaklMzdaPojist();
+                return null == mzdaPojist ? "" : VzmFormatUtils.moneyNoFractFormat.format(mzdaPojist);
+            })
+                    .setHeader("Mzda+Poj.")
+                    .setWidth("8em")
+                    .setTextAlign(ColumnTextAlign.END)
+                    .setFlexGrow(0)
+                    .setKey(MZDA_POJ_COL_KEY)
+                    .setResizable(true)
+            ;
+            grid.addColumn(Zakn::getSazba)
+                    .setHeader("Sazba")
+                    .setWidth("8em")
+                    .setTextAlign(ColumnTextAlign.END)
+                    .setFlexGrow(0)
+                    .setResizable(true)
+            ;
+        }
 
         sumFooterRow = grid.appendFooterRow();
         updateFooterFields();
@@ -444,8 +459,10 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
 
     private void updateFooterFields() {
         updateHodinSumField();
-        updateMzdaSumField();
-        updateMzdaPojistSumField();
+        if (isNaklCompleteAccessGranted()) {
+            updateMzdaSumField();
+            updateMzdaPojistSumField();
+        }
     }
 
 //    private void updateRecCountField() {
@@ -461,9 +478,9 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     }
 
     private void updateMzdaSumField() {
-        sumFooterRow
-                .getCell(grid.getColumnByKey(MZDA_COL_KEY))
-                .setText("" + (VzmFormatUtils.moneyNoFractFormat.format(calcMzdaSum())));
+            sumFooterRow
+                    .getCell(grid.getColumnByKey(MZDA_COL_KEY))
+                    .setText("" + (VzmFormatUtils.moneyNoFractFormat.format(calcMzdaSum())));
     }
 
     private void updateMzdaPojistSumField() {

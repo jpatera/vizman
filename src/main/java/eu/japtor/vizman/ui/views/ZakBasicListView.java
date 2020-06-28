@@ -36,6 +36,7 @@ import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.ZakBasic;
 import eu.japtor.vizman.backend.report.ZakListReportBuilder;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
+import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.ZakBasicService;
 import eu.japtor.vizman.backend.service.ZaknService;
 import eu.japtor.vizman.ui.MainView;
@@ -46,6 +47,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 import java.util.List;
 
+import static eu.japtor.vizman.app.security.SecurityUtils.isNaklBasicAccessGranted;
+import static eu.japtor.vizman.app.security.SecurityUtils.isNaklCompleteAccessGranted;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
 
@@ -76,6 +79,9 @@ public class ZakBasicListView extends VerticalLayout {
 
     @Autowired
     public ZaknService zaknService;
+
+    @Autowired
+    public CfgPropsCache cfgPropsCache;
 
 
     private ComponentEventListener anchorExportListener = event -> {
@@ -145,9 +151,11 @@ public class ZakBasicListView extends VerticalLayout {
                 , null
                 ,true
                 , true
+                , isNaklBasicAccessGranted() || isNaklCompleteAccessGranted()
                 , null
                 , null
                 , zaknService
+                , cfgPropsCache
         );
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
@@ -213,11 +221,11 @@ public class ZakBasicListView extends VerticalLayout {
         expXlsAnchor.setHref(xlsResource);
 
         // Varianta 1
-//        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
+        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
 
-        // Varianta 2
-        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
-        UI.getCurrent().getPage().setLocation(registration.getResourceUri());
+//        // Varianta 2 - Has an issue: after returning to the parent dialog [Close] button does nothing
+//        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
+//        UI.getCurrent().getPage().setLocation(registration.getResourceUri());
     }
 
 

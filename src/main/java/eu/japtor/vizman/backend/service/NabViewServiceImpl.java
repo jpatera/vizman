@@ -2,7 +2,7 @@ package eu.japtor.vizman.backend.service;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import eu.japtor.vizman.app.HasLogger;
-import eu.japtor.vizman.backend.entity.NabView;
+import eu.japtor.vizman.backend.entity.NabVw;
 import eu.japtor.vizman.backend.repository.NabViewRepo;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +24,8 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
     }
 
 //    @Override
-//    public List<NabView> fetchByFiltersDescOrder(NabListView.NabFilterParams nabFilterParams) {
-//        List<NabView> nabs = nabViewRepo.findNabByRokAndText(
+//    public List<NabVw> fetchByFiltersDescOrder(NabListView.NabFilterParams nabFilterParams) {
+//        List<NabVw> nabs = nabViewRepo.findNabByRokAndText(
 //                nabFilterParams.getRok()
 //                , nabFilterParams.getText()
 //        );
@@ -33,22 +33,22 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
 //    }
 
     @Override
-    public Page<NabView> fetchByNabFilter(NabViewFilter nabViewFilter, List<QuerySortOrder> sortOrders, Pageable pageable) {
+    public Page<NabVw> fetchByNabFilter(NabViewFilter nabViewFilter, List<QuerySortOrder> sortOrders, Pageable pageable) {
         if (nabViewFilter == null) {
             return nabViewRepo.findAll(pageable);
         } else {
-            Page<NabView> pg = nabViewRepo.findAll(Example.of(NabView.getInstanceFromFilter(nabViewFilter), getNabMatcher()), pageable);
+            Page<NabVw> pg = nabViewRepo.findAll(Example.of(NabVw.getInstanceFromFilter(nabViewFilter), getNabMatcher()), pageable);
             return pg;
 //            return nabViewRepo.findAll(Example.of(probe, matcher));
         }
     }
 
     @Override
-    public List<NabView> fetchFilteredList(NabViewFilter nabViewFilter) {
+    public List<NabVw> fetchFilteredList(NabViewFilter nabViewFilter) {
         if (nabViewFilter == null) {
             return nabViewRepo.findAll();
         } else {
-            return nabViewRepo.findAll(Example.of(NabView.getInstanceFromFilter(nabViewFilter)));
+            return nabViewRepo.findAll(Example.of(NabVw.getInstanceFromFilter(nabViewFilter)));
         }
     }
 
@@ -57,7 +57,7 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
         if (nabViewFilter == null) {
             return nabViewRepo.count();
         } else {
-            return nabViewRepo.count(Example.of(NabView.getInstanceFromFilter(nabViewFilter), getNabMatcher()));
+            return nabViewRepo.count(Example.of(NabVw.getInstanceFromFilter(nabViewFilter), getNabMatcher()));
         }
     }
 
@@ -77,7 +77,7 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
 
 
     @Override
-    public NabView fetchNabByCnab(String cnab) {
+    public NabVw fetchNabByCnab(String cnab) {
         return nabViewRepo.findTopByCnab(cnab);
     }
 
@@ -87,18 +87,18 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
     };
 
     @Override
-    public NabView fetchOne(Long id) {
+    public NabVw fetchOne(Long id) {
         return nabViewRepo.findTopById(id);
     }
 
     @Override
-    public NabView saveNab(NabView itemToSave, Operation oper) {
+    public NabVw saveNab(NabVw itemToSave, Operation oper) {
         try {
-            NabView nabViewSaved = nabViewRepo.save(itemToSave);
+            NabVw nabVwSaved = nabViewRepo.save(itemToSave);
             getLogger().info("{} saved: [operation: {}]"
-                    , nabViewSaved.getTyp().name(), oper.name());
+                    , nabVwSaved.getTyp().name(), oper.name());
 
-            return nabViewSaved;
+            return nabVwSaved;
         } catch (Exception e) {
             String errMsg = "Error while saving {} : [operation: {}]";
             getLogger().error(errMsg, itemToSave.getTyp().name(), oper.name(), e);
@@ -107,20 +107,20 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
     }
 
     @Override
-    public boolean deleteNab(NabView nabViewToDelete) {
+    public boolean deleteNab(NabVw nabVwToDelete) {
         try {
-            nabViewRepo.delete(nabViewToDelete);
-            getLogger().info("{} deleted: {}, {}", nabViewToDelete.getTyp().name(), nabViewToDelete.getCnab(), nabViewToDelete.getText());
+            nabViewRepo.delete(nabVwToDelete);
+            getLogger().info("{} deleted: {}, {}", nabVwToDelete.getTyp().name(), nabVwToDelete.getCnab(), nabVwToDelete.getText());
         } catch (Exception e) {
             String errMsg = "Error while deleting {} : {}, {}";
-            getLogger().error(errMsg, nabViewToDelete.getTyp().name(), nabViewToDelete.getCnab(), nabViewToDelete.getText(), e);
+            getLogger().error(errMsg, nabVwToDelete.getTyp().name(), nabVwToDelete.getCnab(), nabVwToDelete.getText(), e);
             return false;
         }
         return true;
     }
 
     @Override
-    public List<NabView> fetchAll() {
+    public List<NabVw> fetchAll() {
         return nabViewRepo.findAllByOrderByCnabDescTextAsc();
     }
 

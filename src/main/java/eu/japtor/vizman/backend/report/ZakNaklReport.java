@@ -122,7 +122,7 @@ public class ZakNaklReport extends PrintPreviewReport {
                 .setColumnProperty("prijmeni", String.class)
                 .setTitle("Příjmení")
                 .setStyle(GROUP_HEADER_USER_STYLE)
-                .setWidth(110)
+//                .setWidth(110)
                 .setFixedWidth(true)
                 .build();
 
@@ -131,7 +131,7 @@ public class ZakNaklReport extends PrintPreviewReport {
                 .setTitle("Rok-Měs")
                 .setStyle(YM_GRID_STYLE)
 //                .setTextFormatter(DateTimeFormatter.ISO_DATE.toFormat())
-                .setWidth(110)
+//                .setWidth(110)
 //                .setFixedWidth(true)
                 .build();
 
@@ -139,7 +139,7 @@ public class ZakNaklReport extends PrintPreviewReport {
                 .setColumnProperty("workPruh", BigDecimal.class)
                 .setTitle("Hodin")
                 .setStyle(WORK_HOUR_GRID_STYLE)
-                .setWidth(60)
+//                .setWidth(60)
 //                .setFixedWidth(true)
                 .build();
 
@@ -147,7 +147,7 @@ public class ZakNaklReport extends PrintPreviewReport {
                 .setColumnProperty("workPruhP8", BigDecimal.class)
                 .setTitle("Hodin P8")
                 .setStyle(WORK_HOUR_GRID_STYLE)
-                .setWidth(60)
+//                .setWidth(60)
 //                .setFixedWidth(true)
                 .build();
 
@@ -155,7 +155,7 @@ public class ZakNaklReport extends PrintPreviewReport {
                 .setColumnProperty("naklMzda", BigDecimal.class)
                 .setTitle("Mzda [CZK]")
                 .setStyle(MONEY_NO_FRACT_GRID_STYLE)
-                .setWidth(80)
+//                .setWidth(80)
 //                .setFixedWidth(true)
                 .build();
 
@@ -163,7 +163,7 @@ public class ZakNaklReport extends PrintPreviewReport {
                 .setColumnProperty("naklMzdaPojist", BigDecimal.class)
                 .setTitle("Mzda + Poj.")
                 .setStyle(MONEY_NO_FRACT_GRID_STYLE)
-                .setWidth(80)
+//                .setWidth(80)
 //                .setFixedWidth(true)
                 .build();
 
@@ -171,7 +171,7 @@ public class ZakNaklReport extends PrintPreviewReport {
                 .setColumnProperty("naklMzdaP8", BigDecimal.class)
                 .setTitle("Mzda P8")
                 .setStyle(MONEY_NO_FRACT_GRID_STYLE)
-                .setWidth(80)
+//                .setWidth(80)
 //                .setFixedWidth(true)
                 .build();
 
@@ -179,7 +179,7 @@ public class ZakNaklReport extends PrintPreviewReport {
                 .setColumnProperty("naklMzdaPojistP8", BigDecimal.class)
                 .setTitle("Mzda + P. P8")
                 .setStyle(MONEY_NO_FRACT_GRID_STYLE)
-                .setWidth(80)
+//                .setWidth(80)
 //                .setFixedWidth(true)
                 .build();
 
@@ -187,7 +187,7 @@ public class ZakNaklReport extends PrintPreviewReport {
                 .setColumnProperty("sazba", BigDecimal.class)
                 .setTitle("Sazba")
                 .setStyle(MONEY_GRID_STYLE)
-                .setWidth(60)
+//                .setWidth(60)
                 .setFixedWidth(true)
                 .build();
 
@@ -195,7 +195,7 @@ public class ZakNaklReport extends PrintPreviewReport {
                 .setColumnProperty("koefP8", BigDecimal.class)
                 .setTitle("Koef P8")
                 .setStyle(MONEY_GRID_STYLE)
-                .setWidth(60)
+//                .setWidth(60)
                 .setFixedWidth(true)
                 .build();
     }

@@ -1,6 +1,7 @@
 package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -158,8 +159,9 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         getLowerPane().add(
                 new Hr()
                 , initFaktGridBar()
-                , initFaktGrid(readonly)
         );
+        addLowerPaneFlexComponent(initFaktGrid(readonly), "10.8em");
+
 
         faktFormDialog = new FaktFormDialog(this.faktService, cfgPropsCache);
         faktFormDialog.addOpenedChangeListener(event -> {
@@ -1232,9 +1234,10 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         return faktGridBar;
     }
 
-    private Component initFaktGrid(boolean readonly) {
+    private HasSize initFaktGrid(boolean readonly) {
         faktGrid = new Grid<>();
-        faktGrid.setHeight("3em");
+//        faktGrid.setHeight("3em");    // 2020-06 stopped stretching to the rest of dialog height
+        faktGrid.setHeight("10.8em");
         faktGrid.setColumnReorderingAllowed(true);
         faktGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         faktGrid.setId("zak-fakt-grid");

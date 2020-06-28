@@ -87,6 +87,32 @@ public class SecurityUtils {
                 .anyMatch(moneyPermNames::contains);
     }
 
+    public static boolean isNaklBasicAccessGranted() {
+        Authentication userAuthentication = SecurityContextHolder.getContext().getAuthentication();
+        if (userAuthentication == null) {
+            return false;
+        }
+        Set<String> moneyPermNames =  Perm.getPermNames(Arrays.asList(
+                Perm.VIEW_ALL, Perm.MODIFY_ALL, Perm.NAKL_BASIC_USE)
+        );
+        return userAuthentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(moneyPermNames::contains);
+    }
+
+    public static boolean isNaklCompleteAccessGranted() {
+        Authentication userAuthentication = SecurityContextHolder.getContext().getAuthentication();
+        if (userAuthentication == null) {
+            return false;
+        }
+        Set<String> moneyPermNames =  Perm.getPermNames(Arrays.asList(
+                Perm.VIEW_ALL, Perm.MODIFY_ALL, Perm.NAKL_COMPLETE_USE)
+        );
+        return userAuthentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(moneyPermNames::contains);
+    }
+
     public static boolean isZakFormsAccessGranted() {
         Authentication userAuthentication = SecurityContextHolder.getContext().getAuthentication();
         if (userAuthentication == null) {

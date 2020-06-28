@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "NAB_VIEW")
-public class NabView extends AbstractGenIdEntity implements HasItemType, HasVzState, HasModifDates {
+public class NabVw extends AbstractGenIdEntity implements HasItemType, HasVzState, HasModifDates {
 
     @Column(columnDefinition = "BINARY(16)")
     private UUID uuid;
@@ -76,8 +76,8 @@ public class NabView extends AbstractGenIdEntity implements HasItemType, HasVzSt
 // -----------------------------------------------------
 
 
-    public static NabView getEmptyInstance() {
-        NabView n = new NabView();
+    public static NabVw getEmptyInstance() {
+        NabVw n = new NabVw();
         n.setRok(null);
         n.setCnab(null);
         n.setCkont(null);
@@ -88,11 +88,11 @@ public class NabView extends AbstractGenIdEntity implements HasItemType, HasVzSt
         return n;
     }
 
-    public static NabView getInstanceFromFilter(NabViewService.NabViewFilter nabViewFilter) {
+    public static NabVw getInstanceFromFilter(NabViewService.NabViewFilter nabViewFilter) {
         if (null == nabViewFilter) {
-            return NabView.getEmptyInstance();
+            return NabVw.getEmptyInstance();
         } else {
-            NabView n = NabView.getEmptyInstance();
+            NabVw n = NabVw.getEmptyInstance();
                 n.setRok(nabViewFilter.getRok());
                 n.setCnab(nullIfBlank(nabViewFilter.getCnab()));
                 n.setCkont(nullIfBlank(nabViewFilter.getCkont()));
@@ -210,11 +210,11 @@ public class NabView extends AbstractGenIdEntity implements HasItemType, HasVzSt
 
     // ========================================
 
-    public NabView() {
+    public NabVw() {
         super();
     }
 
-    public NabView(ItemType typ) {
+    public NabVw(ItemType typ) {
         super();
         this.typ = typ;
         this.rok = LocalDate.now().getYear();

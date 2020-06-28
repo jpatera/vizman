@@ -1,5 +1,6 @@
 package eu.japtor.vizman.ui.forms;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import eu.japtor.vizman.backend.entity.Klient;
@@ -22,7 +23,7 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
             , Consumer<Klient> itemDeleter
             , KlientService klientService
     ){
-        super("800px", "600px"
+        super("800px", null
                 , false, false
                 , itemSaver, itemDeleter, false
         );
@@ -35,11 +36,12 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
 
         this.klientService = klientService;
 
-        nameField = new TextField("Název firmy");
         noteField = new TextField("Poznámka");
 
-        initNameField();
-        addNoteField();
+        getFormLayout().add(
+                initNameField()
+                , initNoteField()
+        );
     }
 
     public void openDialog(Klient klient, Operation operation) {
@@ -47,9 +49,9 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
     }
 
 
-    private void initNameField() {
-        getFormLayout().add(nameField);
-
+    private Component initNameField() {
+        nameField = new TextField("Název firmy");
+        nameField.getElement().setAttribute("colspan", "4");
         getBinder().forField(nameField)
                 .withValidator(new StringLengthValidator(
                         "Název firmy klienta musí obsahovat aspoň 2-127 znaků",
@@ -59,14 +61,16 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
                             true : klientService.fetchKlientByName(name) == null,
                         "Firma klienta s tímto názvem již existuje, zvol jiný")
                 .bind(Klient::getName, Klient::setName);
+        return nameField;
     }
 
 
-    private void addNoteField() {
-        getFormLayout().add(noteField);
-
+    private Component initNoteField() {
+        noteField = new TextField("Poznámka");
+        noteField.getElement().setAttribute("colspan", "4");
         getBinder().forField(noteField)
                 .bind(Klient::getNote, Klient::setNote);
+        return noteField;
     }
 
 

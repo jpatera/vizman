@@ -2,6 +2,7 @@
 package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.button.Button;
@@ -228,6 +229,8 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         lowerPane.setClassName("view-container");
         lowerPane.setSpacing(false);
         lowerPane.setPadding(false);
+//
+//        lowerPane.setSizeFull();
         lowerPane.setAlignItems(FlexComponent.Alignment.STRETCH);
         return lowerPane;
     }
@@ -258,12 +261,33 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
 
     protected Consumer<Boolean> getLowerPaneResizeAction() {
         return isExpanded -> {
-            upperPane.setVisible(isExpanded);
+            if (isExpanded) {
+                upperPane.setVisible(isExpanded);
+                if (null != lowerFlexComponent) {
+                    lowerFlexComponent.setHeight(lowerFlexComponentDefaultHeight);
+                }
+            } else {
+                upperPane.setVisible(isExpanded);
+                if (null != lowerFlexComponent) {
+                    lowerFlexComponent.setHeight(null); // Note: result of setHeightFull zero height of the gridd
+                }
+            }
         };
     }
 
     protected final VerticalLayout getLowerPane() {
         return lowerPane;
+    }
+
+
+    private HasSize lowerFlexComponent;
+    private String lowerFlexComponentDefaultHeight = "100%";
+
+    public void addLowerPaneFlexComponent(HasSize lowerResizableComponent, String defaultHeight) {
+        this.lowerFlexComponentDefaultHeight = defaultHeight;
+        this.lowerFlexComponent = lowerResizableComponent;
+        this.lowerFlexComponent.setHeight(defaultHeight);
+        lowerPane.add((Component) this.lowerFlexComponent);
     }
 
     protected final HtmlContainer getMainTitle() {

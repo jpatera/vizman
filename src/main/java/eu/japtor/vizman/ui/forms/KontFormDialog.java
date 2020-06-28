@@ -176,8 +176,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         getLowerPane().add(
                 new Hr()
                 , initZakGridBar()
-                , initZakGrid()
         );
+        addLowerPaneFlexComponent(initZakGrid(), "13em");
 
         zakFormDialog = new ZakFormDialog(
                 zakService, faktService, cfgPropsCache
@@ -1187,15 +1187,10 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         return zakGridBar;
     }
 
-    private Component initZakGrid() {
+    private HasSize initZakGrid() {
         zakGrid = new Grid<>();
-        zakGrid.setHeight("0");
-
-//        zakGrid.getElement().setProperty("flexGrow", (double)0);
-//        alignSelf auto
-//        align items stretch
-//        zakGrid.setHeight(null);
-//        faktGrid.setWidth( "100%" );
+//        zakGrid.setHeight("0");   // 2020-06 started collapse lower sub frame
+//        zakGrid.setHeight("13em");
         zakGrid.setColumnReorderingAllowed(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
         zakGrid.setId("kont-zak-grid");

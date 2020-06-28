@@ -497,7 +497,6 @@ public class ZakrListView extends VerticalLayout {
 
         public static ZakrParams getDefaultInstance(final CfgPropsCache cfgPropsCache) {
             ZakrParams zakrParams = new ZakrParams();
-            zakrParams = new ZakrParams();
             zakrParams.setKurzEur(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
             zakrParams.setRx(null);
             zakrParams.setRy(null);
