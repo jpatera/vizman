@@ -114,7 +114,7 @@
         <dependency>
             <groupId>org.vaadin.reportui</groupId>
             <artifactId>report-ui</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.2</version>
             <exclusions>
                 <exclusion>  <!-- declare the exclusion here -->
                     <groupId>org.slf4j</groupId>
