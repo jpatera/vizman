@@ -113,6 +113,7 @@ public class ZakBasicListView extends VerticalLayout {
         ZakBasicFilter zakBasicFilter = ZakBasicFilter.getEmpty();
         zakBasicFilter.setArch(zakGrid.getArchFilterValue());
         zakBasicFilter.setDigi(zakGrid.getDigiFilterValue());
+        zakBasicFilter.setTyp(zakGrid.getTypFilterValue());
         zakBasicFilter.setCkz(zakGrid.getCkzFilterField());
         zakBasicFilter.setRokZak(zakGrid.getRokFilterValue());
         zakBasicFilter.setSkupina(zakGrid.getSkupinaFilterValue());
@@ -257,6 +258,7 @@ public class ZakBasicListView extends VerticalLayout {
         String skupina;
         Boolean arch;
         Boolean digi;
+        ItemType typ;
 
         public ZakBasicFilter(
                 String ckz
@@ -264,16 +266,18 @@ public class ZakBasicListView extends VerticalLayout {
                 , String skupina
                 , Boolean arch
                 , Boolean digi
+                , ItemType typ
         ) {
             this.ckz = ckz;
             this.rokZak = rokZak;
             this.skupina = skupina;
             this.arch = arch;
             this.digi = digi;
+            this.typ = typ;
         }
 
         public static final ZakBasicFilter getEmpty() {
-            return new ZakBasicFilter(null, null, null, null, null);
+            return new ZakBasicFilter(null, null, null, null, null, null);
         }
 
         public Boolean getArch() {
@@ -288,6 +292,13 @@ public class ZakBasicListView extends VerticalLayout {
         }
         public void setDigi(Boolean digi) {
             this.digi = digi;
+        }
+
+        public ItemType getTyp() {
+            return typ;
+        }
+        public void setTyp(ItemType typ) {
+            this.typ = typ;
         }
 
         public String getCkz() {

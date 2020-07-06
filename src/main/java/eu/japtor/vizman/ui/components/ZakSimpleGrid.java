@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -31,26 +32,26 @@ import java.util.stream.Collectors;
 public class ZakSimpleGrid extends Grid<ZakBasic> {
 
     // Zak simple grid field keys:
-    public static final String KZCISLO_COL_KEY = "zak-bg-kzcislo";
-    public static final String ROK_COL_KEY = "zak-bg-rok";
-    public static final String SKUPINA_COL_KEY = "zak-bg-skupina";
-    public static final String OBJEDNATEL_COL_KEY = "zak-bg-objednatel";
-//    public static final String KZTEXT_COL_KEY = "zak-bg-kztext";
-    public static final String TEXT_KONT_COL_KEY = "zak-bg-kont-text";
-    public static final String TEXT_ZAK_COL_KEY = "zak-bg-zak-text";
-    public static final String SEL_COL_KEY = "zak-bg-select";
-    public static final String ARCH_COL_KEY = "zak-bg-arch";
-    public static final String DIGI_COL_KEY = "zak-bg-digi";
+    private static final String TYP_COL_KEY = "zak-bg-typ";
+    private static final String KZCISLO_COL_KEY = "zak-bg-kzcislo";
+    private static final String ROK_COL_KEY = "zak-bg-rok";
+    private static final String SKUPINA_COL_KEY = "zak-bg-skupina";
+    private static final String OBJEDNATEL_COL_KEY = "zak-bg-objednatel";
+    private static final String TEXT_KONT_COL_KEY = "zak-bg-kont-text";
+    private static final String TEXT_ZAK_COL_KEY = "zak-bg-zak-text";
+    private static final String SEL_COL_KEY = "zak-bg-select";
+    private static final String ARCH_COL_KEY = "zak-bg-arch";
+    private static final String DIGI_COL_KEY = "zak-bg-digi";
 
-    TextField ckzFilterField;
-    Select<Boolean> archFilterField;
-    Select<Boolean> digiFilterField;
-    Select<Integer> rokFilterField;
-    Select<String> skupinaFilterField;
-    TextField objednatelFilterField;
-//    TextField kzTextFilterField;
-    TextField textKontFilterField;
-    TextField textZakFilterField;
+    private TextField ckzFilterField;
+    private Select<Boolean> archFilterField;
+    private Select<Boolean> digiFilterField;
+    private Select<ItemType> typFilterField;
+    private Select<Integer> rokFilterField;
+    private Select<String> skupinaFilterField;
+    private TextField objednatelFilterField;
+    private TextField textKontFilterField;
+    private TextField textZakFilterField;
 
     private Boolean initFilterArchValue;
     private Boolean initFilterDigiValue;
@@ -63,11 +64,11 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
 
     private ZaknService zaknService;
     private ZakNaklGridDialog zakNaklGridDialog;
-    CfgPropsCache cfgPropsCache;
+    private CfgPropsCache cfgPropsCache;
 
     private int selCount;
 
-    HeaderRow filterRow;
+    private HeaderRow filterRow;
 
     public ZakSimpleGrid(
             boolean selectFieldVisible
@@ -100,31 +101,8 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         this.setId("zak-simple-grid");  // .. same ID as is used in shared-styles grid's dom module
 
         zakNaklGridDialog = new ZakNaklGridDialog(
-                zaknService
+                this.zaknService
         );
-
-//        zakGrid.getElement().addEventListener("keypress", e -> {
-//            JsonObject eventData = e.getEventData();
-//            String enterKey = eventData.getString("event.key");
-//            if ("Enter".equals(enterKey)) {
-//                new Notification("ENTER pressed - will open form", 1500).open();
-//            }
-//        })
-//                .addEventData("event.key")
-//        ;
-
-//        DomEventListener gridKeyListener = new DomEventListener() {
-//            @Override
-//            public void handleEvent(DomEvent domEvent) {
-//                JsonObject eventData = domEvent.getEventData();
-//                String enterKey = eventData.getString("event.key");
-//                if ("Enter".equals(enterKey)) {
-//                    new Notification("ENTER pressed - will open form", 1500).open();
-//                }
-//
-//            }
-//        };
-
 
         this.addColumn(archRenderer)
                 .setHeader(("Arch"))
@@ -132,7 +110,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 .setWidth("6em")
                 .setResizable(true)
                 .setKey(ARCH_COL_KEY)
-                .setVisible(this.archFieldVisible);
+                .setVisible(this.archFieldVisible)
         //                .setFrozen(true)
         ;
         this.addColumn(digiRenderer)
@@ -141,19 +119,23 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 .setWidth("6em")
                 .setResizable(true)
                 .setKey(DIGI_COL_KEY)
-                .setVisible(this.digiFieldVisible);
+                .setVisible(this.digiFieldVisible)
         //                .setFrozen(true)
         ;
-
-        // if (isZakFormsAccessGranted()) {
-        // if (isZaknBasicGranted()) {
-        if (zaknViewBtnVisible) {
+        if (this.zaknViewBtnVisible) {
             this.addColumn(new ComponentRenderer<>(this::buildZaknViewBtn))
                     .setHeader("Nak")
                     .setFlexGrow(0)
                     .setWidth("3em")
             ;
         }
+        this.addColumn(ZakBasic::getTyp)
+                .setHeader("Typ")
+                .setFlexGrow(0)
+                .setWidth("6em")
+                .setSortable(true)
+                .setKey(TYP_COL_KEY)
+        ;
         this.addColumn(ZakBasic::getCkz)
                 .setHeader("ČK-ČZ")
                 .setFlexGrow(0)
@@ -190,15 +172,8 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 .setWidth("4.5em")
                 .setTextAlign(ColumnTextAlign.CENTER)
                 .setKey(SEL_COL_KEY)
-                .setVisible(this.selectFieldVisible);
+                .setVisible(this.selectFieldVisible)
         ;
-//        this.addColumn(ZakBasic::getKzText)
-//                .setHeader("Text")
-//                .setFlexGrow(1)
-//                .setWidth("25em")
-//                .setSortable(true)
-//                .setKey(KZTEXT_COL_KEY)
-//        ;
         this.addColumn(ZakBasic::getTextKont)
                 .setHeader("Kontrakt")
                 .setFlexGrow(1)
@@ -217,18 +192,20 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
 
         filterRow = this.appendHeaderRow();
 
-//        archFilterField = buildArchFilterField();
         archFilterField = buildSelectorFilterField();
-//        archFilterField.setItemLabelGenerator(this::archFilterLabelGenerator);
         archFilterField.setTextRenderer(this::archFilterLabelGenerator);
         filterRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
                 .setComponent(archFilterField);
 
         digiFilterField = buildSelectorFilterField();
-//        archFilterField.setItemLabelGenerator(this::archFilterLabelGenerator);
         digiFilterField.setTextRenderer(this::digiFilterLabelGenerator);
         filterRow.getCell(this.getColumnByKey(DIGI_COL_KEY))
                 .setComponent(digiFilterField);
+
+        typFilterField = buildSelectorFilterField();
+        typFilterField.setTextRenderer(this::typFilterLabelGenerator);
+        filterRow.getCell(this.getColumnByKey(TYP_COL_KEY))
+                .setComponent(typFilterField);
 
         ckzFilterField = buildTextFilterField();
         filterRow.getCell(this.getColumnByKey(KZCISLO_COL_KEY))
@@ -242,11 +219,6 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         filterRow.getCell(this.getColumnByKey(SKUPINA_COL_KEY))
                 .setComponent(skupinaFilterField)
         ;
-
-//        kzTextFilterField = buildTextFilterField();
-//        filterRow.getCell(this.getColumnByKey(KZTEXT_COL_KEY))
-//                .setComponent(kzTextFilterField)
-//        ;
 
         textKontFilterField = buildTextFilterField();
         filterRow.getCell(this.getColumnByKey(TEXT_KONT_COL_KEY))
@@ -284,7 +256,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         }
     }
 
-    Component buildZaknViewBtn(ZakBasic zakBasic) {
+    private Component buildZaknViewBtn(ZakBasic zakBasic) {
         return new GridItemBtn(event -> {
                     this.select(zakBasic);
                     zakNaklGridDialog.openDialogFromZakBasicView(
@@ -328,6 +300,14 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         }
     }
 
+    private String typFilterLabelGenerator(ItemType typ) {
+        if  (null == typ) {
+            return "Vše";
+        } else {
+            return typ.name();
+        }
+    }
+
     public void rebuildFilterFields(List<ZakBasic> zakBasicList) {
         setRokFilterItems(zakBasicList.stream()
                 .filter(z -> null != z.getRok())
@@ -336,40 +316,28 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         );
         setSkupinaFilterItems(zakBasicList.stream()
                 .map(ZakBasic::getSkupina)
-                .filter(s -> null != s)
+                .filter(Objects::nonNull)
                 .distinct().collect(Collectors.toCollection(LinkedList::new))
         );
         setArchFilterItems(zakBasicList.stream()
                 .map(ZakBasic::getArch)
-                .filter(a -> null != a)
+                .filter(Objects::nonNull)
                 .distinct().collect(Collectors.toCollection(LinkedList::new))
         );
         setDigiFilterItems(zakBasicList.stream()
                 .map(ZakBasic::getDigi)
-                .filter(a -> null != a)
+                .filter(Objects::nonNull)
+                .distinct().collect(Collectors.toCollection(LinkedList::new))
+        );
+        setTypFilterItems(zakBasicList.stream()
+                .map(ZakBasic::getTyp)
+                .filter(Objects::nonNull)
                 .distinct().collect(Collectors.toCollection(LinkedList::new))
         );
     }
 
     public void setInitialFilterValues() {
-        ((ListDataProvider<ZakBasic>) this.getDataProvider()).clearFilters();
-        if (null == this.initFilterArchValue) {
-            archFilterField.clear();
-        } else {
-            archFilterField.setValue(this.initFilterArchValue);
-        }
-        if (null == this.initFilterDigiValue) {
-            digiFilterField.clear();
-        } else {
-            digiFilterField.setValue(this.initFilterDigiValue);
-        }
-        rokFilterField.clear();
-        skupinaFilterField.clear();
-        ckzFilterField.clear();
-//        kzTextFilterField.clear();
-        textKontFilterField.clear();
-        textZakFilterField.clear();
-        objednatelFilterField.clear();
+        resetFilterValues();
     }
 
     public void resetFilterValues() {
@@ -384,10 +352,10 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         } else {
             digiFilterField.setValue(this.initFilterDigiValue);
         }
+        typFilterField.clear();
         rokFilterField.clear();
         skupinaFilterField.clear();
         ckzFilterField.clear();
-//        kzTextFilterField.clear();
         textKontFilterField.clear();
         textZakFilterField.clear();
         objednatelFilterField.clear();
@@ -400,11 +368,11 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
 
         Boolean archFilterValue = archFilterField.getValue();
         Boolean digiFilterValue = digiFilterField.getValue();
+        ItemType typFilterValue = typFilterField.getValue();
         Integer rokFilterValue = rokFilterField.getValue();
         String kzCisloFilterValue = ckzFilterField.getValue();
         String skupinaFilterValue = skupinaFilterField.getValue();
         String objednatelFilterValue = objednatelFilterField.getValue();
-//        String kzTextFilterValue = kzTextFilterField.getValue();
         String textKontFilterValue = textKontFilterField.getValue();
         String textZakFilterValue = textZakFilterField.getValue();
 
@@ -416,6 +384,11 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         if (null != digiFilterValue) {
             listDataProvider.addFilter(ZakBasic::getDigi
                     , digi -> digi.equals(digiFilterValue)
+            );
+        }
+        if (null != typFilterValue) {
+            listDataProvider.addFilter(ZakBasic::getTyp
+                    , typ -> typ.equals(typFilterValue)
             );
         }
         if (null != rokFilterValue) {
@@ -440,11 +413,6 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                     , obj -> StringUtils.containsIgnoreCase(obj, objednatelFilterValue)
             );
         }
-//        if (StringUtils.isNotEmpty(kzTextFilterValue)) {
-//            listDataProvider.addFilter(ZakBasic::getKzText
-//                    , kzt -> StringUtils.containsIgnoreCase(kzt, kzTextFilterValue)
-//            );
-//        }
         if (StringUtils.isNotEmpty(textKontFilterValue)) {
             listDataProvider.addFilter(ZakBasic::getTextKont
                     , tk -> StringUtils.containsIgnoreCase(tk, textKontFilterValue)
@@ -479,43 +447,46 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 selCount--;
             }
             if  (null != selectionChanger) {
-                selectionChanger.accept(Integer.valueOf(selCount));
+                selectionChanger.accept(selCount);
             }
         });
-//        if ((ItemType.ZAK == zakb.getTyp()) || (ItemType.REZ == zakb.getTyp()) || (ItemType.LEK == zakb.getTyp())) {
-        if ( ((ItemType.ZAK == zakb.getTyp()) || (ItemType.REZ == zakb.getTyp()))
-                && ((null != checkBoxEnabler && (checkBoxEnabler.apply(zakb)))) ) {
-            zakCheckBox.addValueChangeListener(event -> {
-                zakb.setChecked(event.getValue());
-            });
+        if ( zakb.isSelectableForPruh() && ((null != checkBoxEnabler && (checkBoxEnabler.apply(zakb)))) ) {
+            zakCheckBox.addValueChangeListener(event -> zakb.setChecked(event.getValue()));
             return zakCheckBox;
         } else {
             return new Span("X");
         }
     });
 
-    public void setArchFilterItems(final List<Boolean> archItems) {
+    private void setArchFilterItems(final List<Boolean> archItems) {
         archFilterField = buildSelectorFilterField();
         filterRow.getCell(this.getColumnByKey(ARCH_COL_KEY))
                 .setComponent(archFilterField);
         archFilterField.setItems(archItems);
     }
 
-    public void setDigiFilterItems(final List<Boolean> digiItems) {
+    private void setDigiFilterItems(final List<Boolean> digiItems) {
         digiFilterField = buildSelectorFilterField();
         filterRow.getCell(this.getColumnByKey(DIGI_COL_KEY))
                 .setComponent(digiFilterField);
         digiFilterField.setItems(digiItems);
     }
 
-    public void setRokFilterItems(final List<Integer> rokItems) {
+    private void setTypFilterItems(final List<ItemType> typItems) {
+        typFilterField = buildSelectorFilterField();
+        filterRow.getCell(this.getColumnByKey(TYP_COL_KEY))
+                .setComponent(typFilterField);
+        typFilterField.setItems(typItems);
+    }
+
+    private void setRokFilterItems(final List<Integer> rokItems) {
         rokFilterField = buildSelectorFilterField();
         filterRow.getCell(this.getColumnByKey(ROK_COL_KEY))
                 .setComponent(rokFilterField);
         rokFilterField.setItems(rokItems);
     }
 
-    public void setSkupinaFilterItems(final List<String> skupinaItems) {
+    private void setSkupinaFilterItems(final List<String> skupinaItems) {
         skupinaFilterField = buildSelectorFilterField();
         filterRow.getCell(this.getColumnByKey(SKUPINA_COL_KEY))
                 .setComponent(skupinaFilterField);
@@ -540,6 +511,10 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
 
     public String getCkzFilterField() {
         return ckzFilterField.getValue();
+    }
+
+    public ItemType getTypFilterValue() {
+        return typFilterField.getValue();
     }
 
     public Integer getRokFilterValue() {

@@ -197,6 +197,11 @@ public class ZakBasic implements Serializable, HasItemType, HasArchState {
         return builder.toString();
     }
 
+    @Transient
+    public boolean isSelectableForPruh() {
+        return ItemType.ZAK == typ || ItemType.REZ == typ || ItemType.AKV == typ;
+    }
+
     @Override
     public int hashCode() {
         return 31;
