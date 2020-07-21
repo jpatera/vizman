@@ -6,6 +6,7 @@ import com.vaadin.flow.data.validator.StringLengthValidator;
 import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.service.KlientService;
 import eu.japtor.vizman.backend.service.KontService;
+import eu.japtor.vizman.backend.service.NabService;
 import eu.japtor.vizman.backend.service.VzmServiceException;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Operation;
@@ -24,11 +25,13 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
 //    @Autowired
     private KlientService klientService;
     private KontService kontService;
+    private NabService nabService;
 
     public KlientFormDialog(BiConsumer<Klient, Operation> itemSaver
             , Consumer<Klient> itemDeleter
             , KlientService klientService
             , KontService kontService
+            , NabService nabService
     ){
         super("800px", null
                 , false, false
@@ -37,6 +40,7 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
 
         this.klientService = klientService;
         this.kontService = kontService;
+        this.nabService = nabService;
 
         noteField = new TextField("Poznámka");
 
@@ -79,11 +83,26 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
     @Override
     public void confirmDelete() {
 
-        if (!canDeleteKlient(getCurrentItem())) {
+        long countAssignedToKonts = getKlientCountAssignedToKonts(getCurrentItem());
+        if (countAssignedToKonts > 0) {
             ConfirmDialog
                     .createInfo()
                     .withCaption("Zrušení klienta")
-                    .withMessage(String.format("Klienta %s nelze zrušit, je přiřazen ke kontraktům.", getCurrentItem().getName()))
+                    .withMessage(String.format("Klienta “%s“ nelze zrušit, je přiřazen k %s kontraktům."
+                            , getCurrentItem().getName(), countAssignedToKonts)
+                    )
+                    .open()
+            ;
+            return;
+        }
+        long countAssignedToNabs = getKlientCountAssignedToNabs(getCurrentItem());
+        if (countAssignedToNabs > 0) {
+            ConfirmDialog
+                    .createInfo()
+                    .withCaption("Zrušení klienta")
+                    .withMessage(String.format("Klienta “%s“ nelze zrušit, je přiřazen k %s nabídkám."
+                            , getCurrentItem().getName(), countAssignedToNabs)
+                    )
                     .open()
             ;
             return;
@@ -107,8 +126,12 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
 
     }
 
-    private boolean canDeleteKlient(final Klient itemToDelete) {
-        return kontService.countAssignedByClient(itemToDelete) <= 0;
+    private long getKlientCountAssignedToKonts(final Klient itemToDelete) {
+        return kontService.getAssignedByKontsCount(itemToDelete);
+    }
+
+    private long getKlientCountAssignedToNabs(final Klient itemToDelete) {
+        return nabService.getAssignedByNabsCount(itemToDelete);
     }
 
     private void revertFormChanges() {

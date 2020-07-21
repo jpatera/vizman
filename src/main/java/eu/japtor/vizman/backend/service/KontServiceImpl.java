@@ -125,7 +125,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
-    public long countAssignedByClient(Klient klient) {
+    public long getAssignedByKontsCount(Klient klient) {
         return kontRepo.countAllByKlient(klient);
     }
 

@@ -1,6 +1,7 @@
 package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.app.HasLogger;
+import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.Nab;
 import eu.japtor.vizman.backend.repository.NabRepo;
 import eu.japtor.vizman.ui.components.Operation;
@@ -53,5 +54,10 @@ public class NabServiceImpl implements NabService, HasLogger {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public long getAssignedByNabsCount(Klient klient) {
+        return nabRepo.countAllByKlient(klient);
     }
 }

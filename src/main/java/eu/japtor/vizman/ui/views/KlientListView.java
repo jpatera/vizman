@@ -36,6 +36,7 @@ import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.service.KlientService;
 import eu.japtor.vizman.backend.service.KontService;
+import eu.japtor.vizman.backend.service.NabService;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.KlientFormDialog;
@@ -75,6 +76,9 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
     @Autowired
     public KontService kontService;
 
+    @Autowired
+    public NabService nabService;
+
 //    @Autowired
     public KlientListView() {
         initView();
@@ -90,6 +94,7 @@ public class KlientListView extends VerticalLayout implements BeforeEnterObserve
                 , this::deleteItem
                 , klientService
                 , kontService
+                , nabService
         );
 
         // TODO: same approach as in NablistView

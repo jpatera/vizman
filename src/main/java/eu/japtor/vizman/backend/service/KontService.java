@@ -41,7 +41,7 @@ public interface KontService {
 
     long countAll();
 
-    long countAssignedByClient(Klient klient);
+    long getAssignedByKontsCount(Klient klient);
 
 //    List<Kont> fetchBySearchFilter(String serachString, List<QuerySortOrder> sortOrders);
 
