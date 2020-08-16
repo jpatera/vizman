@@ -392,7 +392,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
         Grid.Column<Zakr> colRxRyVykon = this.addColumn(rxRyVykonGridValueProvider)
                 .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getRxRyVykonByKurz(zakr1), getRxRyVykonByKurz(zakr2)))
-                .setHeader("Výkon rx-ry")
+                .setHeader("Výk. rx..ry")
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setTextAlign(ColumnTextAlign.END)
@@ -531,7 +531,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
         Label rxRyVykonyDescLabel = new Label("Def.");
         rxRyVykonyDescLabel.getElement()
-                .setProperty("title", "[Výkon rx-ry] = [Honorář čistý] * ([RY] - [RX])")
+                .setProperty("title", "[Výkon rx..ry] = [Honorář čistý] * ([RY] - [RX])")
 //                .setProperty("text-align", "center")
         ;
         descHeaderRow.getCell(colRxRyVykon).setComponent(rxRyVykonyDescLabel);
@@ -1137,9 +1137,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //    public void recalcGrid(List<Zakr> zakrList) {
 //        setItems(zakrList);
         this.getColumnByKey(PERFORMANCE_COL_KEY).setHeader(
-                "Výkon "
+                "Výk. "
                 + (null == zakrParams.getRx() ? "rx" : zakrParams.getRx())
-                + "-"
+                + ".."
                 + (null == zakrParams.getRy() ? "ry" : zakrParams.getRy())
         );
         updateFooterFields();

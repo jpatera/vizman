@@ -7,8 +7,7 @@ import org.hibernate.annotations.Immutable;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Immutable
 //@ReadOnly
@@ -16,6 +15,10 @@ import java.util.List;
 @Table(name = "ZAK_ROZPRAC_VIEW")
 public class Zakr implements Serializable, HasItemType, HasArchState {
     private static final long serialVersionUID = 1L;
+
+    private static final List<String> rqParamSeq = new LinkedList<>(Arrays.asList(
+            "R-4", "R-3", "R-2", "R-1", "R0", "R1", "R2", "R3", "R4"
+    ));
 
     @Id
     @Column(name = "ID", updatable = false, nullable = false)
@@ -199,23 +202,14 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     public BigDecimal getHonorCisty() {
         return honorCisty;
     }
-//    public void setHonorCisty(BigDecimal honorCisty) {
-//        this.honorCisty = honorCisty;
-//    }
 
     public BigDecimal getHonorFakt() {
         return honorFakt;
     }
-//    public void setHonorFakt(BigDecimal honorFakt) {
-//        this.honorFakt = honorFakt;
-//    }
 
     public BigDecimal getHonorSub() {
         return honorSub;
     }
-//    public void setHonorSub(BigDecimal honorSub) {
-//        this.honorSub = honorSub;
-//    }
 
     public BigDecimal getNaklMzda() {
         return naklMzda;
@@ -224,26 +218,12 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         this.naklMzda = naklMzda;
     }
 
-//    public BigDecimal getNaklPojist() {
-//        return naklPojist;
-//    }
-//    public void setNaklPojist(BigDecimal naklPojist) {
-//        this.naklPojist = naklPojist;
-//    }
-
     public BigDecimal getNaklMzdaP8() {
         return naklMzdaP8;
     }
     public void setNaklMzdaP8(BigDecimal naklMzdaP8) {
         this.naklMzdaP8 = naklMzdaP8;
     }
-
-//    public BigDecimal getNaklPojistP8() {
-//        return naklPojistP8;
-//    }
-//    public void setNaklPojistP8(BigDecimal naklPojistP8) {
-//        this.naklPojistP8 = naklPojistP8;
-//    }
 
     public BigDecimal getRp() {
         return rp;
@@ -343,7 +323,6 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
     }
     public void setRxRyVykon(BigDecimal rxRyVykon) {
         this.rxRyVykon = rxRyVykon;
-//        this.rxRyVykon = calcRxRyVykon();
     }
 
     public BigDecimal getVysledekByKurz() {
@@ -384,11 +363,6 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 
 // =============================================
 
-
-//    @Transient
-//    private BigDecimal rpHotovo;
-
-//    @Transient
     public BigDecimal getRpHotovo() {
         if (null == rp || null == honorCisty) {
             return null;
@@ -397,10 +371,6 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         }
     }
 
-//    @Transient
-//    private BigDecimal rpZbyva;
-
-//    @Transient
     public BigDecimal getRpZbyva() {
         if (null == rp || null == honorCisty) {
             return null;
@@ -409,27 +379,8 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         }
     }
 
-
-//    @Transient
-//    private BigDecimal rpHotovoByKurz;
-
-//    @Transient
-//    public static BigDecimal calcRpHotovoByKurz(BigDecimal rpHotovo, BigDecimal kurzEur) {
-//        if (null == rpHotovo) {
-//            return null;
-//        } else {
-//            return getMena() == Mena.EUR ?
-//                    rpHotovo.multiply(kurzEur) :
-//                    rpHotovo;
-//        }
-//    }
-
-//    @Transient
-//    BigDecimal rpHotovoByKurz;
-
     @Transient
     public BigDecimal getHonorCistyByKurz() {
-//        BigDecimal honorCisty = getHonorCisty();
         return (null == honorCisty) ? null : honorCisty.multiply(kurzEur);
     }
 
@@ -455,122 +406,136 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
 
     @Transient
     public BigDecimal calcRxRyVykon(String rxParam, String ryParam) {
+        BigDecimal rx = getRqParamValue(rxParam);
         BigDecimal vykRx = BigDecimal.ZERO;
+        if (null != rx && null != honorCisty) {
+            vykRx = rx.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
+        }
+
+        String ryParamLastFilled = getLastFilledRyParam(rxParam, ryParam);
+        BigDecimal ry = getRqParamValue(ryParamLastFilled);
         BigDecimal vykRy = BigDecimal.ZERO;
-
-        if (rxParam == null) {
-            return vykRx;
-        }
-        switch (rxParam) {
-            case "R-4":
-                if (null != rm4 && null != honorCisty) {
-                    vykRx = rm4.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R-3":
-                if (null != rm3 && null != honorCisty) {
-                    vykRx = rm3.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R-2":
-                if (null != rm2 && null != honorCisty) {
-                    vykRx = rm2.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R-1":
-                if (null != rm1 && null != honorCisty) {
-                    vykRx = rm1.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R0":
-                if (null != r0 && null != honorCisty) {
-                    vykRx = r0.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R1":
-                if (null != r1 && null != honorCisty) {
-                    vykRx = r1.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R2":
-                if (null != r2 && null != honorCisty) {
-                    vykRx =  r2.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R3":
-                if (null != r3 && null != honorCisty) {
-                    vykRx =  r3.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R4":
-                if (null != r4 && null != honorCisty) {
-                    vykRx = r4.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            default:
-        }
-
-        if (ryParam == null) {
-            return vykRy;
-        }
-        switch (ryParam) {
-            case "R-4":
-                if (null != rm4 && null != honorCisty) {
-                    vykRy = rm4.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R-3":
-                if (null != rm3 && null != honorCisty) {
-                    vykRy = rm3.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R-2":
-                if (null != rm2 && null != honorCisty) {
-                    vykRy = rm2.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R-1":
-                if (null != rm1 && null != honorCisty) {
-                    vykRy = rm1.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R0":
-                if (null != r0 && null != honorCisty) {
-                    vykRy = r0.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R1":
-                if (null != r1 && null != honorCisty) {
-                    vykRy = r1.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R2":
-                if (null != r2 && null != honorCisty) {
-                    vykRy =  r2.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R3":
-                if (null != r3 && null != honorCisty) {
-                    vykRy =  r3.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            case "R4":
-                if (null != r4 && null != honorCisty) {
-                    vykRy = r4.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
-                break;
-            default:
-                if (null != rp && null != honorCisty) {
-                    vykRy = rp.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
-                }
+        if (null != ry && null != honorCisty) {
+            vykRy = ry.multiply(honorCisty).divide(BigDecimal.valueOf(100L));
         }
         return vykRy.subtract(vykRx);
-//        rxRyVykon = vykRy.subtract(vykRx);
     }
 
-//    @Transient
+    private BigDecimal getRqParamValue(String rqParam) {
+        BigDecimal rq = null;
+        if (null == rqParam) {
+            return rq;
+        }
+        switch (rqParam) {
+            case "R-4":
+                rq = rm4;
+                break;
+            case "R-3":
+                rq = rm3;
+                break;
+            case "R-2":
+                rq = rm2;
+                break;
+            case "R-1":
+                rq = rm1;
+                break;
+            case "R0":
+                rq = r0;
+                break;
+            case "R1":
+                rq = r1;
+                break;
+            case "R2":
+                rq = r2;
+                break;
+            case "R3":
+                rq = r3;
+                break;
+            case "R4":
+                rq = r4;
+                break;
+        }
+        return rq;
+    }
+
+    private String getLastFilledRyParam(final String rxParam, final String ryParam) {
+        int idxRx = rqParamSeq.indexOf(rxParam);
+        if (idxRx < 0) {
+            idxRx = 0;
+        }
+        int idxRy = rqParamSeq.indexOf(ryParam);
+        if (idxRy < 0) {
+            idxRy = rqParamSeq.size() - 1;
+        }
+
+        String ryParamLastFilled = ryParam;
+
+        boolean found = false;
+        for (int i = idxRy; i >= idxRx; i--)  {
+            switch (rqParamSeq.get(i)) {
+                case "R-4":
+                    if (null != rm4) {
+                        ryParamLastFilled = rqParamSeq.get(i);
+                        found = true;
+                    }
+                    break;
+                case "R-3":
+                    if (null != rm3) {
+                        ryParamLastFilled = rqParamSeq.get(i);
+                        found = true;
+                    }
+                    break;
+                case "R-2":
+                    if (null != rm2) {
+                        ryParamLastFilled = rqParamSeq.get(i);
+                        found = true;
+                    }
+                    break;
+                case "R-1":
+                    if (null != rm1) {
+                        ryParamLastFilled = rqParamSeq.get(i);
+                        found = true;
+                    }
+                    break;
+                case "R0":
+                    if (null != r0) {
+                        ryParamLastFilled = rqParamSeq.get(i);
+                        found = true;
+                    }
+                    break;
+                case "R1":
+                    if (null != r1) {
+                        ryParamLastFilled = rqParamSeq.get(i);
+                        found = true;
+                    }
+                    break;
+                case "R2":
+                    if (null != r2) {
+                        ryParamLastFilled = rqParamSeq.get(i);
+                        found = true;
+                    }
+                    break;
+                case "R3":
+                    if (null != r3) {
+                        ryParamLastFilled = rqParamSeq.get(i);
+                        found = true;
+                    }
+                    break;
+                case "R4":
+                    if (null != r4) {
+                        ryParamLastFilled = rqParamSeq.get(i);
+                        found = true;
+                    }
+                    break;
+            }
+            if (found) {
+                break;
+            }
+        }
+        return ryParamLastFilled;
+    }
+
     public BigDecimal calcVysledekByKurz(BigDecimal koefPojist, BigDecimal koefRezie) {
-//        BigDecimal honCalc= getHonorCistyByKurz();
         BigDecimal hotovoCalc = getRpHotovoByKurz();
         if (null == hotovoCalc) {
             hotovoCalc = BigDecimal.ZERO;
@@ -650,9 +615,6 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         return builder.toString();
     }
 
-//    @Transient
-//    private String kzText;
-
     @Transient
     public String getCkzTextFull() {
         StringBuilder builder = new StringBuilder();
@@ -684,7 +646,6 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         ;
         return builder.toString();
     }
-
 
     @Transient
     private String kzTextShort;
