@@ -354,7 +354,7 @@ public class PersonFormDialog extends AbstractSimpleFormDialog<Person> {
         binder.forField(hiddenField)
 //                .withConverter(Boolean::trim, String::trim)
 //                .withValidator(new StringLengthValidator(
-//                        "Uživatelské jméno musí obsahovat aspoň 3 znamky",
+//                        "Uživatelské jméno musí obsahovat aspoň 3 znaky",
 //                        3, null))
 //                .withValidator(
 //                        username -> (currentOperation != Operation.ADD) ?

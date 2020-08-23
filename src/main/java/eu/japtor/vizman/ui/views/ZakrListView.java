@@ -17,6 +17,7 @@ package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.notification.Notification;
@@ -74,6 +75,7 @@ public class ZakrListView extends VerticalLayout {
     private TextField pojistParamField;
     private Select<String> rxParamField;
     private Select<String> ryParamField;
+    private Checkbox activeParamField;
     private ZakrParams zakrParams;
     private Binder<ZakrParams> paramsBinder;
 
@@ -186,7 +188,9 @@ public class ZakrListView extends VerticalLayout {
         controlsComponent.setJustifyContentMode(JustifyContentMode.START);
         controlsComponent.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
         controlsComponent.add(
-                initRxParamField()
+                initActiveParamField()
+                , new Ribbon("3em")
+                , initRxParamField()
                 , new Ribbon()
                 , initRyParamField()
                 , new Ribbon("3em")
@@ -278,6 +282,14 @@ public class ZakrListView extends VerticalLayout {
         return rxParamField;
     }
 
+    private Checkbox initActiveParamField() {
+        activeParamField = new Checkbox("Aktivní"); // = new TextField("Username");
+        activeParamField.getElement().setAttribute("theme", "small");
+        paramsBinder.forField(activeParamField)
+                .bind(ZakrParams::isActive, ZakrParams::setActive);
+        return activeParamField;
+    }
+
     private Select<String> initRyParamField() {
         ryParamField = new Select<>();
         ryParamField.setLabel("RY (do)");
@@ -301,7 +313,7 @@ public class ZakrListView extends VerticalLayout {
             } else {
                 paramsBinder.writeBeanIfValid(zakrParams);
 //                zakrGrid.setZakrParams(zakrParams);
-                zakrList = zakrService.fetchAndCalcAllDescOrder(zakrParams);
+                zakrList = zakrService.fetchAndCalcByActiveFilterDescOrder(zakrParams);
                 zakrGrid.populateGridDataAndRestoreFilters(zakrList);
                 zakrGrid.recalcGrid();
                 zakrGrid.getDataProvider().refreshAll();
@@ -327,6 +339,7 @@ public class ZakrListView extends VerticalLayout {
 //        List<Zakr> zakrRep1 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataCommunicator().getDataProvider()).getItems();
 //        List<Zakr> zakrRep2 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataProvider()).getItems();
         zakrGrid.saveFilterValues();
+        zakrParams.setActive(activeParamField.getValue());
         zakrParams.setArch(zakrGrid.getArchFilterValue());
         zakrParams.setCkz(zakrGrid.getCkzFilterValue());
         zakrParams.setRokZak(zakrGrid.getRokFilterValue());
@@ -453,7 +466,7 @@ public class ZakrListView extends VerticalLayout {
         if (zakrGrid.getEditor().isOpen()) {
             zakrGrid.getEditor().closeEditor();
         }
-        zakrList = zakrService.fetchAndCalcAllDescOrder(zakrParams);
+        zakrList = zakrService.fetchAndCalcByActiveFilterDescOrder(zakrParams);
         zakrGrid.populateGridDataAndRestoreFilters(zakrList);
         calcButton.setIconClean();
         zakrGrid.getDataProvider().refreshAll();
@@ -464,7 +477,7 @@ public class ZakrListView extends VerticalLayout {
         if (zakrGrid.getEditor().isOpen()) {
             zakrGrid.getEditor().closeEditor();
         }
-        zakrList = zakrService.fetchAndCalcAllDescOrder(zakrParams);
+        zakrList = zakrService.fetchAndCalcByActiveFilterDescOrder(zakrParams);
         zakrGrid.populateGridDataAndRebuildFilterFields(zakrList);
         calcButton.setIconClean();
         zakrGrid.getDataProvider().refreshAll();
@@ -481,10 +494,12 @@ public class ZakrListView extends VerticalLayout {
         String rx;
         String ry;
         Boolean arch;
+        Boolean active;
 
         public static ZakrParams getEmptyInstance() {
             ZakrParams zakrParams =  new ZakrParams();
 //            zakrParams.setKurzEur(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
+            zakrParams.setActive(false);
             zakrParams.setKurzEur(null);
             zakrParams.setRx(null);
             zakrParams.setRy(null);
@@ -497,6 +512,7 @@ public class ZakrListView extends VerticalLayout {
 
         public static ZakrParams getDefaultInstance(final CfgPropsCache cfgPropsCache) {
             ZakrParams zakrParams = new ZakrParams();
+            zakrParams.setActive(true);
             zakrParams.setKurzEur(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
             zakrParams.setRx(null);
             zakrParams.setRy(null);
@@ -566,6 +582,13 @@ public class ZakrListView extends VerticalLayout {
         }
         public void setRy(String ry) {
             this.ry = ry;
+        }
+        
+        public Boolean isActive() {
+            return active;
+        }
+        public void setActive(Boolean active) {
+            this.active = active;
         }
     }
 }

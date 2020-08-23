@@ -14,18 +14,30 @@ public interface ZakrRepo extends JpaRepository<Zakr, Long> {
 
     List<Zakr> findAllByOrderByCkontDescCzakDesc();
 
+    @Query("SELECT zr AS AA FROM Zakr zr WHERE "
+            + " (:active = false  or (zr.rp = null or zr.rp <> 100 or ((zr.r0 <> null or zr.r1 <> null or zr.r2 <> null or zr.r3 <> null or zr.r4 <> null) and (zr.r0 <> 100 or zr.r1 <> 100 or zr.r2 <> 100 or zr.r3 <> 100 or zr.r4 <> 100)))) "
+            + " order by zr.ckont desc, zr.czak desc "
+    )
+    List<Zakr> findZakrByActiveFilterOrderByCkontDescCzakDesc(
+            @Param("active") Boolean active
+    );
+
     List<Zakr> findByRokOrderByCkontDescCzakDesc(Integer rok);
 
     @Query("SELECT zr AS AA FROM Zakr zr WHERE "
             + " (:arch is null or zr.arch = :arch) "
             + " and (:ckont is null or zr.ckont like %:ckont%) "
             + " and (:rok is null or zr.rok = :rok) "
-            + " and (:skup is null or zr.skupina = :skup) ")
+            + " and (:skup is null or zr.skupina = :skup) "
+            + " and (:active = false  or (zr.rp = null or zr.rp <> 100 or ((zr.r0 <> null or zr.r1 <> null or zr.r2 <> null or zr.r3 <> null or zr.r4 <> null) and (zr.r0 <> 100 or zr.r1 <> 100 or zr.r2 <> 100 or zr.r3 <> 100 or zr.r4 <> 100)))) "
+            + " order by zr.ckont desc, zr.czak desc "
+    )
     List<Zakr> findZakrByArchAndCkontAndRokAndSkupina(
             @Param("arch") Boolean arch
             , @Param("ckont") String ckont
             , @Param("rok") Integer rokZak
             , @Param("skup") String skup
+            , @Param("active") Boolean active
     );
 
     @Query(value = "SELECT distinct rok FROM vizman.zak_rozprac_view ORDER BY ROK DESC",

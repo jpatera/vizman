@@ -16,7 +16,7 @@ public interface ZakrService {
 
     Zakr fetchAndCalcOne(Long id, ZakrListView.ZakrParams zakrParams);
 
-    List<Zakr> fetchAndCalcAllDescOrder(ZakrListView.ZakrParams zakrParams);
+    List<Zakr> fetchAndCalcByActiveFilterDescOrder(ZakrListView.ZakrParams zakrParams);
 
     List<Zakr> fetchAndCalcByFiltersDescOrder(ZakrListView.ZakrParams zakrParams);
 

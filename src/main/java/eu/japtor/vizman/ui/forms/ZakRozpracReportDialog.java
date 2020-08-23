@@ -39,6 +39,7 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     private ZakRozpracReport report;
     private HorizontalLayout expAnchorsBox;
     private HorizontalLayout reportParamBox;
+    private Select<Boolean> activeFilterField;
     private Select<Boolean> archFilterField;
     private TextField ckzFilterField;
     private Select<Integer> rokZakFilterField;
@@ -63,6 +64,7 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     public void openDialog(ZakrListView.ZakrParams zakrParams) {
         this.zakrParams = zakrParams;
 
+        activeFilterField.setValue(zakrParams.isActive());
         archFilterField.setValue(zakrParams.getArch());
         ckzFilterField.setValue(zakrParams.getCkz());
         rokZakFilterField.setValue(zakrParams.getRokZak());
@@ -106,6 +108,7 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
         ;
 //        reportParamBox.add(
 //                genButton
+                initActiveParamComponent();
                 initArchiveParamComponent();
                 initCkzFilterComponent();
                 initZakRokFilterComponent();
@@ -127,6 +130,16 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
 
         report = new ZakRozpracReport();
         activateListeners();
+    }
+
+    private Component initActiveParamComponent() {
+        activeFilterField = new SelectorFilterField<>();
+        activeFilterField.setLabel("Aktivní");
+        activeFilterField.setWidth("6em");
+        activeFilterField.getStyle().set("theme", "small");
+        activeFilterField.setReadOnly(true);
+        activeFilterField.setItems(Boolean.valueOf(false), Boolean.valueOf(true));
+        return activeFilterField;
     }
 
     private Component initArchiveParamComponent() {
@@ -227,7 +240,8 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     public void generateAndShowReport() {
         deactivateListeners();
         report.setSubtitleText(
-                "Parametry: Arch=" + (null == archFilterField.getValue() ? "Vše" : archFilterField.getValue().toString()) +
+                "Parametry: Ativní=" + (null == activeFilterField.getValue() ? "false" : activeFilterField.getValue().toString()) +
+                "  Arch=" + (null == archFilterField.getValue() ? "Vše" : archFilterField.getValue().toString()) +
                 "  ČK-ČZ=" + (null == ckzFilterField.getValue() ? "Vše" : "*" + ckzFilterField.getValue() + "*") +
                 "  Rok zak.=" + (null == rokZakFilterField.getValue() ? "Vše" : rokZakFilterField.getValue().toString()) +
                 "  Skupina=" + (null == skupinaFilterField.getValue() ? "Vše" : skupinaFilterField.getValue().toString()) +
