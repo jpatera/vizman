@@ -124,7 +124,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     public ZakFormDialog(
 //                         BiConsumer<Zak, Operation> itemSaver,
 //                         Consumer<Zak> zakDeleter,
-                         ZakService zakService,
+//                         ZakService zakService,
                          FaktService faktService,
                          CfgPropsCache cfgPropsCache
     ){

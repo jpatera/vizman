@@ -45,7 +45,7 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
 
     @Basic
     @Column(name = "INVESTOR")
-    private String investor;
+    private String investorOrig;
 
 //    @Basic
 //    @Column(name = "OBJEDNATEL")
@@ -91,6 +91,17 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     }
     public void setKlient(Klient klient) {
         this.klient = klient;
+    }
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ID_INVESTOR")
+    private Klient investor;
+
+    public Klient getInvestor() {
+        return investor;
+    }
+    public void setInvestor(Klient investor) {
+        this.investor = investor;
     }
 
     @Transient
@@ -146,11 +157,11 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
         this.folder = docdir;
     }
 
-    public String getInvestor() {
-        return investor;
+    public String getInvestorOrig() {
+        return investorOrig;
     }
     public void setInvestor(String investor) {
-        this.investor = investor;
+        this.investorOrig = investorOrig;
     }
 
 //    public String getObjednatel() {
