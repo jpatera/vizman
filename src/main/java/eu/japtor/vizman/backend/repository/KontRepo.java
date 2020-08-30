@@ -27,7 +27,7 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
     List<Kont> findAllByRokOrderByCkontDesc(Integer rok);
 
-    int countAllByKlient(Klient klient);
+    int countAllByObjednatel(Klient objednatel);
 
     @Query(value = "SELECT distinct rok FROM vizman.kont ORDER BY ROK DESC",
             nativeQuery = true)

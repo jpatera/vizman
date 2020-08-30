@@ -13,8 +13,11 @@ public interface KzTreeAware<T extends KzTreeAware> {
     ItemType getTyp();
     ArchIconBox.ArchState getArchState();
     DigiIconBox.DigiState getDigiState();
-    Klient getKlient();
-    String getKlientName();
+    Klient getObjednatel();
+    String getObjednatelName();
+    Klient getInvestor();
+    String getInvestorName();
+    String getInvestorOrigName();
     String getText();
     BigDecimal getHonorarCisty();
     Mena getMena();

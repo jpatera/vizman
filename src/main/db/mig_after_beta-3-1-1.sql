@@ -2,7 +2,7 @@
 
 INSERT INTO VIZMAN.CIN
 (ID, VERSION, PORADI, AKCE_TYP, AKCE, CIN_KOD, CINNOST, CALCPRAC, TMP)
-VALUES(14, 1, 35, 'F', 'Služebka (celý den)', 'SC', 'Služebka', true, NULL)
+VALUES(14, 1, 35, 'F', 'Sluï¿½ebka (celï¿½ den)', 'SC', 'Sluï¿½ebka', true, NULL)
 ;
 
 COMMIT;
@@ -24,10 +24,10 @@ COMMIT;
 
 
 CREATE OR REPLACE VIEW VIZMAN.ZAK_BASIC_VIEW AS
-	SELECT zak.ID, zak.TYP, kont.CKONT, zak.CZAK, zak.ROK, zak.SKUPINA, kont.TEXT AS TEXT_KONT, zak.TEXT AS TEXT_ZAK, klient.NAME AS OBJEDNATEL, zak.ARCH, zak.ID_KONT
+	SELECT zak.ID, zak.TYP, kont.CKONT, zak.CZAK, zak.ROK, zak.SKUPINA, kont.TEXT AS TEXT_KONT, zak.TEXT AS TEXT_ZAK, objednatelName.NAME AS OBJEDNATEL, zak.ARCH, zak.ID_KONT
 	FROM VIZMAN.ZAK zak
 	LEFT JOIN VIZMAN.KONT kont ON zak.ID_KONT = kont.ID
-	LEFT JOIN VIZMAN.KLIENT klient ON kont.ID_KLIENT = klient.ID
+	LEFT JOIN VIZMAN.KLIENT objednatelName ON kont.ID_KLIENT = objednatelName.ID
 ;
 
 
@@ -78,11 +78,11 @@ ALTER TABLE VIZMAN.ZAK
 
 
 CREATE OR REPLACE VIEW VIZMAN.ZAK_ROZPRAC_VIEW AS
-	SELECT zak.ID, zak.TYP, kont.CKONT, zak.CZAK, zak.ROK, zak.SKUPINA, kont.TEXT AS TEXT_KONT, zak.TEXT AS TEXT_ZAK, klient.NAME AS OBJEDNATEL, zak.ARCH, zak.ID_KONT,
+	SELECT zak.ID, zak.TYP, kont.CKONT, zak.CZAK, zak.ROK, zak.SKUPINA, kont.TEXT AS TEXT_KONT, zak.TEXT AS TEXT_ZAK, objednatelName.NAME AS OBJEDNATEL, zak.ARCH, zak.ID_KONT,
 	       zak.ROZPRAC as R0, zak.R1, zak.R2, zak.R3, zak.R4
 	FROM VIZMAN.ZAK zak
 	LEFT JOIN VIZMAN.KONT kont ON zak.ID_KONT = kont.ID
-	LEFT JOIN VIZMAN.KLIENT klient ON kont.ID_KLIENT = klient.ID
+	LEFT JOIN VIZMAN.KLIENT objednatelName ON kont.ID_KLIENT = objednatelName.ID
 ;
 
 COMMIT;

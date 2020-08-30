@@ -3,7 +3,6 @@ package eu.japtor.vizman.ui.forms;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
@@ -72,7 +71,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 
     private TextField ckontField;
     private TextField rokField;
-    private TextField investorField;
+    private TextField investorOrigField;
     private TextField textField;
     private TextField honorarHrubyFieldCalc;
     private TextField honorarCistyFieldCalc;
@@ -147,7 +146,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         getFormLayout().add(
                 initCkontField()
                 , initRokField()
-                , initInvestorField()   // See also fixInvestorComboOpening
+                , initInvestorOrigField()   // See also fixInvestorComboOpening
                 , initTextField()
                 , initObjednatelCombo() // See also fixObjednatelComboOpening
                 , initInvestorCombo()
@@ -799,7 +798,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         getFormLayout().addComponentAtIndex(3, initObjednatelCombo());
         objednatelCombo.setItems(this.klientList);
         getBinder().forField(objednatelCombo)
-                .bind(Kont::getKlient, Kont::setKlient);
+                .bind(Kont::getObjednatel, Kont::setObjednatel);
         objednatelCombo.setPreventInvalidInput(true);
     }
 
@@ -821,19 +820,19 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         investorCombo.setPreventInvalidInput(true);
     }
 
-    private Component initInvestorField() {
-        investorField = new TextField("Investor (původní)");
-        investorField.getElement().setAttribute("colspan", "2");
-        getBinder().forField(investorField)
+    private Component initInvestorOrigField() {
+        investorOrigField = new TextField("Investor (původní)");
+        investorOrigField.getElement().setAttribute("colspan", "2");
+        getBinder().forField(investorOrigField)
 //                .withConverter(String::trim, String::trim)    // TODO: Gives NPE for null
 //                .bind(Kont::getInvestor, Kont::setInvestor);
                 .withValidator(new StringLengthValidator(
                         "Investor může mít max. 127 znaků",
                         0, 127)
                 )
-                .bind(Kont::getInvestorOrig, null);
-        investorField.setValueChangeMode(ValueChangeMode.EAGER);
-        return investorField;
+                .bind(Kont::getInvestorOrig, Kont::setInvestorOrig);
+        investorOrigField.setValueChangeMode(ValueChangeMode.EAGER);
+        return investorOrigField;
     }
 
     private Component initMenaCombo() {

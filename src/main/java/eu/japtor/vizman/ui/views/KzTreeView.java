@@ -89,6 +89,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private static final String AVIZO_COL_KEY = "avizo-col";
     private static final String TEXT_COL_KEY = "text-col";
     private static final String OBJEDNATEL_COL_KEY = "objednatel-col";
+    private static final String INVESTOR_COL_KEY = "investor-col";
+    private static final String INVESTOR_ORIG_COL_KEY = "investor-orig-col";
     private static final String SKUPINA_COL_KEY = "skupina-col";
     private static final String ROK_COL_KEY = "rok-col";
 
@@ -497,8 +499,14 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private ValueProvider<KzTreeAware, String> menaValProv =
         kz -> kz.getTyp() == ItemType.KONT ? (null == kz.getMena() ? null : kz.getMena().name()) : null;
 
-    private ValueProvider<KzTreeAware, String> klientValProv =
-        kz -> kz.getTyp() == ItemType.KONT ? (null == kz.getKlient() ? null : kz.getKlient().getName()) : null;
+    private ValueProvider<KzTreeAware, String> objednatelValProv =
+        kz -> kz.getTyp() == ItemType.KONT ? kz.getObjednatelName() : null;
+
+    private ValueProvider<KzTreeAware, String> investorValProv =
+        kz -> kz.getTyp() == ItemType.KONT ? kz.getInvestorName() : null;
+
+    private ValueProvider<KzTreeAware, String> investorOrigValProv =
+        kz -> kz.getTyp() == ItemType.KONT ? kz.getInvestorOrigName() : null;
 
 //    ValueProvider<KzTreeAware, Boolean> archBooleanProv =
 //            kz -> kz.getArch();
@@ -742,11 +750,25 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 .setKey(TEXT_COL_KEY)
                 .setResizable(true)
         ;
-        kzTreeGrid.addColumn(klientValProv)
+        kzTreeGrid.addColumn(objednatelValProv)
                 .setHeader("Objednatel")
                 .setFlexGrow(0)
                 .setWidth("18em")
                 .setKey(OBJEDNATEL_COL_KEY)
+                .setResizable(true)
+        ;
+        kzTreeGrid.addColumn(investorValProv)
+                .setHeader("Investor")
+                .setFlexGrow(0)
+                .setWidth("18em")
+                .setKey(INVESTOR_COL_KEY)
+                .setResizable(true)
+        ;
+        kzTreeGrid.addColumn(investorOrigValProv)
+                .setHeader("Investor (původní)")
+                .setFlexGrow(0)
+                .setWidth("18em")
+                .setKey(INVESTOR_ORIG_COL_KEY)
                 .setResizable(true)
         ;
 
@@ -799,16 +821,16 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //        TextField objednatelFilterField = new TextField();
 //
 ////        ValueProvider<KzTreeAware, String> kzObjednatelValueProvider
-////                        = KzTreeAware::getKlient;
+////                        = KzTreeAware::getObjednatelName;
 //        objednatelFilterField.addValueChangeListener(event -> {});
 //
 ////        objednatelFilterField.addValueChangeListener(event ->
 ////                        ((TreeDataProvider<KzTreeAware>)kzTreeGrid.getDataProvider())
-//////                            .addFilter(KzTreeAware::getObjednatel, t ->
+//////                            .addFilter(KzTreeAware::getObjednatelName, t ->
 //////                                    StringUtils.containsIgnoreCase(t, objednatelFilterField.getStringValue())
 //////                            )
 ////                            .addFilter(kz -> ItemType.KONT != kz.getTyp() || StringUtils.containsIgnoreCase(
-////                                kz.getObjednatel(), objednatelFilterField.getStringValue())
+////                                kz.getObjednatelName(), objednatelFilterField.getStringValue())
 ////                            )
 ////        );
 //        objednatelFilterField.setValueChangeMode(ValueChangeMode.EAGER);
@@ -842,6 +864,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         }
         kzTreeGrid.getColumnByKey(CKZ_COL_KEY).setSortable(true);
         kzTreeGrid.getColumnByKey(OBJEDNATEL_COL_KEY).setSortable(true);
+        kzTreeGrid.getColumnByKey(INVESTOR_COL_KEY).setSortable(true);
+        kzTreeGrid.getColumnByKey(INVESTOR_ORIG_COL_KEY).setSortable(true);
         kzTreeGrid.getColumnByKey(ROK_COL_KEY).setSortable(true);
         // TODO: nefunguje:
 //        kzTreeGrid.getColumnByKey(TEXT_COL_KEY).setSortable(true);
@@ -1589,7 +1613,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 , event -> {
                     Kont kont = new Kont( ItemType.KONT);
 //                    kont.setInvestor("Inv 1");
-//                    kont.setObjednatel("Obj 1");
+//                    kont.setObjednatelName("Obj 1");
                     kont.setMena(Mena.CZK);
                     kont.setDateCreate(LocalDate.now());
 //                    kont.setCkont("01234");

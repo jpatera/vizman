@@ -13,6 +13,6 @@ public interface NabRepo extends JpaRepository<Nab, Long> {
     //       Don't know which one is better. May be findTopById loads sub-items automatically?
     Nab findTopById(Long id);
 
-    int countAllByKlient(Klient klient);
+    int countAllByObjednatel(Klient objednatel);
 
 }

@@ -259,8 +259,16 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         return null == kont ? null : kont.getMena();
     }
 
-    public String getKlientName() {
-        return null == kont ? null : kont.getKlientName();
+    public String getObjednatelName() {
+        return null == kont ? null : kont.getObjednatelName();
+    }
+
+    public String getInvestorName() {
+        return null == kont ? null : kont.getInvestorName();
+    }
+
+    public String getInvestorOrigName() {
+        return null == kont ? null : kont.getInvestorOrigName();
     }
 
     public String getKontFolder() {
@@ -342,7 +350,13 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     }
 
     @Override
-    public Klient getKlient() {
+    public Klient getObjednatel() {
+        return null;
+    }
+
+
+    @Override
+    public Klient getInvestor() {
         return null;
     }
 

@@ -127,7 +127,7 @@ public class NabGrid extends Grid<NabVw> {
                 .setKey(TEXT_COL_KEY)
                 .setSortProperty("text")
         ;
-        this.addColumn(NabVw::getObjednatel)
+        this.addColumn(NabVw::getObjednatelName)
                 .setHeader("Objednatel")
                 .setFlexGrow(0)
                 .setWidth("18em")
@@ -280,7 +280,7 @@ public class NabGrid extends Grid<NabVw> {
 //            );
 //        }
 //        if (StringUtils.isNotEmpty(objednatelFilterValue)) {
-//            listDataProvider.addFilter(NabVw::getObjednatel
+//            listDataProvider.addFilter(NabVw::getObjednatelName
 //                    , ob -> StringUtils.containsIgnoreCase(ob, objednatelFilterValue)
 //            );
 //        }

@@ -344,7 +344,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
         getFormLayout().addComponentAtIndex(3, initObjednatelCombo());
         objednatelCombo.setItems(this.klientList);
         getBinder().forField(objednatelCombo)
-                .bind(Nab::getKlient, Nab::setKlient);
+                .bind(Nab::getObjednatel, Nab::setObjednatel);
         objednatelCombo.setPreventInvalidInput(true);
     }
 

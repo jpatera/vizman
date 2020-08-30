@@ -57,8 +57,8 @@ public class NabVw extends AbstractGenIdEntity implements HasItemType, HasVzStat
     private String poznamka;
 
     @Basic
-    @Column(name = "OBJEDNATEL")
-    private String objednatel;
+    @Column(name = "OBJEDNATEL")    // Should be renamed in DB to OBJEDNATEL_NAME
+    private String objednatelName;
 
     @Basic
     @Column(name = "CKONT")
@@ -69,8 +69,8 @@ public class NabVw extends AbstractGenIdEntity implements HasItemType, HasVzStat
     private Kont kont;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_KLIENT")
-    private Klient klient;
+    @JoinColumn(name = "ID_KLIENT")  // Should be renamed in DB to ID_OBJEDNATEL
+    private Klient objednatel;
 
 
 // -----------------------------------------------------
@@ -83,7 +83,7 @@ public class NabVw extends AbstractGenIdEntity implements HasItemType, HasVzStat
         n.setCkont(null);
         n.setVz(null);
         n.setText(null);
-        n.setObjednatel(null);
+        n.setObjednatelName(null);
         n.setPoznamka(null);
         return n;
     }
@@ -98,7 +98,7 @@ public class NabVw extends AbstractGenIdEntity implements HasItemType, HasVzStat
                 n.setCkont(nullIfBlank(nabViewFilter.getCkont()));
                 n.setVz(nabViewFilter.getVz());
                 n.setText(nullIfBlank(nabViewFilter.getText()));
-                n.setObjednatel(nullIfBlank(nabViewFilter.getObjednatel()));
+                n.setObjednatelName(nullIfBlank(nabViewFilter.getObjednatel()));
                 n.setPoznamka(nullIfBlank(nabViewFilter.getPoznamka()));
             return n;
         }
@@ -167,11 +167,11 @@ public class NabVw extends AbstractGenIdEntity implements HasItemType, HasVzStat
         this.poznamka = poznamka;
     }
 
-    public String getObjednatel() {
-        return objednatel;
+    public String getObjednatelName() {
+        return objednatelName;
     };
-    public void setObjednatel(String objednatel) {
-        this.objednatel = objednatel;
+    public void setObjednatelName(String objednatelName) {
+        this.objednatelName = objednatelName;
     }
 
     public LocalDate getDateCreate() {

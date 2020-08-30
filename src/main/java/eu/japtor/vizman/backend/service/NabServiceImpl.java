@@ -57,7 +57,7 @@ public class NabServiceImpl implements NabService, HasLogger {
     }
 
     @Override
-    public long getAssignedByNabsCount(Klient klient) {
-        return nabRepo.countAllByKlient(klient);
+    public long getCountOfNabsWithObjednatel(Klient objednatel) {
+        return nabRepo.countAllByObjednatel(objednatel);
     }
 }

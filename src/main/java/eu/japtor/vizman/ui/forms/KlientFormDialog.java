@@ -131,7 +131,7 @@ public class KlientFormDialog extends AbstractComplexFormDialog<Klient> {
     }
 
     private long getKlientCountAssignedToNabs(final Klient itemToDelete) {
-        return nabService.getAssignedByNabsCount(itemToDelete);
+        return nabService.getCountOfNabsWithObjednatel(itemToDelete);
     }
 
     private void revertFormChanges() {

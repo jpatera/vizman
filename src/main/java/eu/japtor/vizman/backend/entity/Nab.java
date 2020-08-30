@@ -1,8 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
-import eu.japtor.vizman.backend.service.NabViewService;
 import eu.japtor.vizman.ui.components.VzIconBox;
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
@@ -69,8 +67,8 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
     private KontView kont;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ID_KLIENT")
-    private Klient klient;
+    @JoinColumn(name = "ID_KLIENT") // Should be renamed in DB to ID_OBJEDNATEL
+    private Klient objednatel;
 
 
 // -----------------------------------------------------
@@ -83,7 +81,7 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
 //        n.setCkont(null);
         nab.setVz(null);
         nab.setText(null);
-//        n.setObjednatel(null);
+//        n.setObjednatelName(null);
         nab.setPoznamka(null);
         return nab;
     }
@@ -180,11 +178,11 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
         this.kont = kont;
     }
 
-    public Klient getKlient() {
-        return klient;
+    public Klient getObjednatel() {
+        return objednatel;
     }
-    public void setKlient(Klient klient) {
-        this.klient = klient;
+    public void setObjednatel(Klient objednatel) {
+        this.objednatel = objednatel;
     }
 
 
@@ -203,11 +201,11 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
 //        this.kont.setCkont(ckont);
 //    }
 
-    public String getObjednatel() {
-        return klient.getName();
+    public String getObjednatelName() {
+        return objednatel.getName();
     };
-//    public void setObjednatel(String objednatel) {
-//        this.klient.set.... (....);
+//    public void setObjednatelName(String objednatel) {
+//        this.objednatel.set.... (....);
 //    }
 
 //    @Transient

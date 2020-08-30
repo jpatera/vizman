@@ -150,7 +150,7 @@ public class ZakTreeSelectDialog extends Dialog {
     }
 
     private ValueProvider<KzTreeAware, String> klientValProv =
-            kz -> kz.getTyp() == ItemType.KONT ? (null == kz.getKlient() ? null : kz.getKlient().getName()) : null;
+            kz -> kz.getTyp() == ItemType.KONT ? (null == kz.getObjednatel() ? null : kz.getObjednatel().getName()) : null;
 
 
     private Component initView() {

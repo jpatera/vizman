@@ -13,5 +13,5 @@ public interface NabService {
 
     boolean deleteNab(Nab nabToDelete);
 
-    long getAssignedByNabsCount(Klient klient);
+    long getCountOfNabsWithObjednatel(Klient klient);
 }

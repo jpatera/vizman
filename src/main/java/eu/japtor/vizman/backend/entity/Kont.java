@@ -43,6 +43,8 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     @Column(name = "FOLDER")
     private String folder;
 
+
+    // TODO: remove when not needed anymore
     @Basic
     @Column(name = "INVESTOR")
     private String investorOrig;
@@ -83,14 +85,14 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
 
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ID_KLIENT")
-    private Klient klient;
+    @JoinColumn(name = "ID_OBJEDNATEL")
+    private Klient objednatel;
 
-    public Klient getKlient() {
-        return klient;
+    public Klient getObjednatel() {
+        return objednatel;
     }
-    public void setKlient(Klient klient) {
-        this.klient = klient;
+    public void setObjednatel(Klient objednatel) {
+        this.objednatel = objednatel;
     }
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -108,8 +110,18 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     private boolean checked;
 
     @Transient
-    public String getKlientName() {
-        return null == klient ? "" : (null == klient.getName() ? "" : klient.getName());
+    public String getObjednatelName() {
+        return null == objednatel ? "" : (null == objednatel.getName() ? "" : objednatel.getName());
+    }
+
+    @Transient
+    public String getInvestorName() {
+        return null == investor ? "" : (null == investor.getName() ? "" : investor.getName());
+    }
+
+    @Override
+    public String getInvestorOrigName() {
+        return null == investorOrig ? "" : investorOrig;
     }
 
     @Override
@@ -160,14 +172,14 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     public String getInvestorOrig() {
         return investorOrig;
     }
-    public void setInvestor(String investor) {
+    public void setInvestorOrig(String investorOrig) {
         this.investorOrig = investorOrig;
     }
 
-//    public String getObjednatel() {
+//    public String getObjednatelName() {
 //        return objednatel;
 //    }
-//    public void setObjednatel(String objednatel) {
+//    public void setObjednatelName(String objednatel) {
 //        this.objednatel = objednatel;
 //    }
 
