@@ -313,7 +313,7 @@ public class ToolsDirTreeView extends VerticalLayout  implements HasLogger {
 //    };
 
     private TemplateRenderer fileIconTextRenderer = TemplateRenderer.<VzmFileUtils.VzmFile> of("<vaadin-grid-tree-toggle "
-                            + "leaf='[[item.leaf]]' expanded='{{expanded}}' level='[[level]]'>"
+                            + "leaf$='[[item.leaf]]' expanded='{{expanded}}' level='[[level]]'>"
 //                            + "<img src='" + "[[item.icon]]" + "' alt=''>&nbsp;&nbsp;"
 //                            + "<iron-icon style=\"padding-left: 1em; width: 0.8em; height: 0.8em;\" icon=\"vaadin:check\"></iron-icon>&nbsp;&nbsp;"
 //                            + "<iron-icon style=\"padding-left: 1em; width: 0.8em; height: 0.8em;\" icon=\"vaadin:check\"></iron-icon>&nbsp;&nbsp;"

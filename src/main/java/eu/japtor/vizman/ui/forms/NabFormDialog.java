@@ -204,7 +204,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
     }
 
     private TemplateRenderer fileIconTextRenderer = TemplateRenderer.<VzmFileUtils.VzmFile> of("<vaadin-grid-tree-toggle "
-            + "leaf='[[item.leaf]]' expanded='{{expanded}}' level='[[level]]'>"
+            + "leaf$='[[item.leaf]]' expanded='{{expanded}}' level='[[level]]'>"
             + "<iron-icon style=\"[[item.icon-style]]\" icon=\"[[item.icon-name]]\"></iron-icon>&nbsp;&nbsp;"
             + "[[item.name]]"
             + "</vaadin-grid-tree-toggle>")
