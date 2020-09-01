@@ -147,8 +147,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 this.zaqaService, this.zakrService
         );
         zakFormDialog = new ZakFormDialog(
-//                this.zakService, this.faktService, this.cfgPropsCache
-                this.faktService, this.cfgPropsCache
+                this.zakService, this.faktService, this.cfgPropsCache
         );
         zakNaklGridDialog = new ZakNaklGridDialog(
                 this.zaknService

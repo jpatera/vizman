@@ -182,8 +182,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     public void postInit() {
 
         kontFormDialog = new KontFormDialog(
-//                kontService, zakService, faktService, klientService, dochsumZakService
-                kontService, faktService, klientService, dochsumZakService
+                kontService, zakService, faktService, klientService, dochsumZakService
                 , cfgPropsCache
         );
         kontFormDialog.addOpenedChangeListener(event -> {
@@ -196,8 +195,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         });
 
         zakFormDialog = new ZakFormDialog(
-//                zakService, faktService, cfgPropsCache
-                faktService, cfgPropsCache
+                zakService, faktService, cfgPropsCache
         );
         zakFormDialog.addOpenedChangeListener(event -> {
             if (!event.isOpened()) {

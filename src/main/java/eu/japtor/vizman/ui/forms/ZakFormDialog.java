@@ -124,7 +124,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     public ZakFormDialog(
 //                         BiConsumer<Zak, Operation> itemSaver,
 //                         Consumer<Zak> zakDeleter,
-//                         ZakService zakService,
+                         ZakService zakService,
                          FaktService faktService,
                          CfgPropsCache cfgPropsCache
     ){
@@ -163,7 +163,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         addLowerPaneFlexComponent(initFaktGrid(readonly), "10.8em");
 
 
-        faktFormDialog = new FaktFormDialog(this.faktService, cfgPropsCache);
+        faktFormDialog = new FaktFormDialog(this.faktService, this.cfgPropsCache);
         faktFormDialog.addOpenedChangeListener(event -> {
             if (!event.isOpened()) {
                 finishFaktEdit((FaktFormDialog) event.getSource());
