@@ -70,7 +70,7 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
                 .withMatcher("ckont", new ExampleMatcher.GenericPropertyMatcher().ignoreCase().contains())
                 .withMatcher("vz", new ExampleMatcher.GenericPropertyMatcher().exact())
                 .withMatcher("text", new ExampleMatcher.GenericPropertyMatcher().ignoreCase().contains())
-                .withMatcher("objednatel", new ExampleMatcher.GenericPropertyMatcher().ignoreCase().contains())
+                .withMatcher("objednatelName", new ExampleMatcher.GenericPropertyMatcher().ignoreCase().contains())
                 .withMatcher("poznamka", new ExampleMatcher.GenericPropertyMatcher().ignoreCase().contains())
                 ;
     }
