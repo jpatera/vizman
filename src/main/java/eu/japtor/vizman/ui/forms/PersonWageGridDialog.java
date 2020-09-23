@@ -18,7 +18,6 @@ import eu.japtor.vizman.backend.service.PersonService;
 import eu.japtor.vizman.backend.service.WageService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.*;
-import org.claspina.confirmdialog.ButtonOption;
 import org.claspina.confirmdialog.ConfirmDialog;
 
 import java.time.YearMonth;
@@ -417,7 +416,7 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
         if (null == wage.getTariff()) {
             return "";
         } else {
-            return VzmFormatUtils.moneyFormat.format(wage.getTariff());
+            return VzmFormatUtils.MONEY_FORMAT.format(wage.getTariff());
         }
     };
 

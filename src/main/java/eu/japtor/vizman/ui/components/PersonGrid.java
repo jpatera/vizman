@@ -147,7 +147,7 @@ public class PersonGrid extends Grid<Person> {
                 .setFlexGrow(0)
         ;
         if (isWagesAccessGranted()) {
-            addColumn(new NumberRenderer<>(Person::getWageCurrent, VzmFormatUtils.moneyFormat))
+            addColumn(new NumberRenderer<>(Person::getWageCurrent, VzmFormatUtils.MONEY_FORMAT))
                     .setTextAlign(ColumnTextAlign.END)
                     .setHeader("Sazba aktuální")
                     .setWidth("8em")

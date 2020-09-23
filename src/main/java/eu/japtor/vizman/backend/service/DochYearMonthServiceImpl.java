@@ -55,7 +55,7 @@ public class DochYearMonthServiceImpl implements DochYearMonthService, HasLogger
         LocalDate dateStart = dochYm.atDay(1);
         LocalDate dateEnd = dochYm.atEndOfMonth();
         BigDecimal monthHourFond = getMonthFondHours(dochYm);
-        String monthHourFondStr = null == monthHourFond ? "" : VzmFormatUtils.decHodFormat.format(monthHourFond);
+        String monthHourFondStr = null == monthHourFond ? "" : VzmFormatUtils.DEC_HOD_FORMAT.format(monthHourFond);
         List<DochMonth> dochMonthRecs = dochMonthRepo.findByPersonIdAndDochYm(personId, dateStart, dateEnd);
         for(DochMonth dm : dochMonthRecs) {
             dm.setMonthFondHours(monthHourFondStr);
@@ -70,10 +70,10 @@ public class DochYearMonthServiceImpl implements DochYearMonthService, HasLogger
         YearMonth ymEnd = YearMonth.of(dochYear, 12);
 
         BigDecimal yearFondHours = getYearFondHours(dochYear);
-        String yearFondHoursStr = null == yearFondHours ? "" : VzmFormatUtils.decHodFormat.format(yearFondHours);
+        String yearFondHoursStr = null == yearFondHours ? "" : VzmFormatUtils.DEC_HOD_FORMAT.format(yearFondHours);
 
         BigDecimal yearFondDays = getYearFondDays(dochYear);
-        String yearFondDaysStr = null == yearFondDays ? "" : VzmFormatUtils.decHodFormat.format(yearFondDays);
+        String yearFondDaysStr = null == yearFondDays ? "" : VzmFormatUtils.DEC_HOD_FORMAT.format(yearFondDays);
 
         List<DochYear> dochYearRecs = dochYearRepo.findByPersonIdAndDochYm(personId, ymStart, ymEnd);
         for(DochYear dy : dochYearRecs) {

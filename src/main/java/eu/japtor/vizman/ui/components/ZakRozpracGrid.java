@@ -608,43 +608,43 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     private void updateHotovoSumField() {
         sumFooterRow
                 .getCell(this.getColumnByKey(FINISHED_COL_KEY))
-                .setText("" + (VzmFormatUtils.moneyFormat.format(calcHotovokSum())));
+                .setText("" + (VzmFormatUtils.MONEY_FORMAT.format(calcHotovokSum())));
     }
 
     private void updateZbyvaSumField() {
         sumFooterRow
                 .getCell(this.getColumnByKey(REMAINS_COL_KEY))
-                .setText("" + (VzmFormatUtils.moneyFormat.format(calcZbyvaSum())));
+                .setText("" + (VzmFormatUtils.MONEY_FORMAT.format(calcZbyvaSum())));
     }
 
     private void updateVykonSumField() {
         sumFooterRow
                 .getCell(this.getColumnByKey(PERFORMANCE_COL_KEY))
-                .setText("" + (VzmFormatUtils.moneyFormat.format(calcVykonSum())));
+                .setText("" + (VzmFormatUtils.MONEY_FORMAT.format(calcVykonSum())));
     }
 
     private void updateMzdySumField() {
         sumFooterRow
                 .getCell(this.getColumnByKey(MZDY_COL_KEY))
-                .setText("" + (VzmFormatUtils.moneyFormat.format(calcMzdySum())));
+                .setText("" + (VzmFormatUtils.MONEY_FORMAT.format(calcMzdySum())));
     }
 
     private void updateMzdyPojRezSumField() {
         sumFooterRow
                 .getCell(this.getColumnByKey(MZDY_POJ_REZ_COL_KEY))
-                .setText("" + (VzmFormatUtils.moneyFormat.format(calcMzdyPojRezSum())));
+                .setText("" + (VzmFormatUtils.MONEY_FORMAT.format(calcMzdyPojRezSum())));
     }
 
     private void updateVysledekSumField() {
         sumFooterRow
                 .getCell(this.getColumnByKey(RESULT_COL_KEY))
-                .setText("" + (VzmFormatUtils.moneyFormat.format(calcVysledekSum())));
+                .setText("" + (VzmFormatUtils.MONEY_FORMAT.format(calcVysledekSum())));
     }
 
     private void updateVysledekP8SumField() {
         sumFooterRow
                 .getCell(this.getColumnByKey(RESULTP8_COL_KEY))
-                .setText("" + (VzmFormatUtils.moneyFormat.format(calcVysledekP8Sum())));
+                .setText("" + (VzmFormatUtils.MONEY_FORMAT.format(calcVysledekP8Sum())));
     }
 
     private BigDecimal calcHotovokSum() {
@@ -758,44 +758,6 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         return count;
     }
 
-    private void setVysledekSum() {
-//        sumTextComponent.setText(String.format("%s  [ Fond: %s ]", ZAK_TEXT_SUM, monthHourFond));
-
-//        sumTextComponent.setText(String.format("%s", ZAK_TEXT_SUM));
-//        sumHodsFooterRow.getCell(pruhZakGrid.getColumnByKey(ZAK_TEXT_COL_KEY))
-//                .setComponent(sumTextComponent);
-
-
-
-//        sumFooterRow.getCell(this.getColumnByKey(FINISHED_COL_KEY))
-//                .setText(getVysledekSumString());
-
-
-
-//        for (int day = 1; day <= 31; day++) {
-//            Grid.Column col = pruhZakGrid.getColumnByKey(DZ_KEY_PREF + String.valueOf(day));
-//            if (null != col) {
-//                sumHodsFooterRow.getCell(col).setText(getSumHodString(day));
-//            }
-//        }
-    }
-
-//    private String getVysledekSumString(int day) {
-//        BigDecimal sumVysledek = getDaySumHodSum(day);
-//        return (null == sumVysledek || sumVysledek.compareTo(BigDecimal.ZERO) == 0) ?
-//                "" : VzmFormatUtils.decHodFormat.format(sumVysledek);
-//    }
-
-
-//    private void calcAndSetPruhMissingHods() {
-//        for (int day = 1; day <= 31; day++) {
-//            Grid.Column col = pruhZakGrid.getColumnByKey(DZ_KEY_PREF + String.valueOf(day));
-//            if (null != col) {
-//                getMissingHodString(day);
-//                missingHodsFooterRow.getCell(col).setText(getMissingHodString(day));
-//            }
-//        }
-//    }
 
     Component buildZakViewBtn(Zakr zakr) {
         return new GridItemBtn(event -> zakFormDialog.openDialog(
@@ -815,15 +777,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 zakrService.fetchOne(zakr.getId()))
                 , new Icon(VaadinIcon.LINES_LIST), null
         );
-//        Button btn = new GridItemEditBtn(event -> zaqaFormDialog.openDialog(
-//                zaqaService.fetchAllByZakId(zakr.getId()), Operation.EDIT)
-//                , VzmFormatUtils.getItemTypeColorName(zakr.getTyp()));
     }
-
-//    public void setZakrParams(ZakrListView.ZakrParams zakrParams) {
-//        this.zakrParams = zakrParams;
-//
-//    }
 
     public ZakrListView.ZakrParams getZakrParams() {
         return zakrParams;
@@ -863,59 +817,44 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     }
 
 
-//    private boolean writeZakrToBeanIfValid(Binder zakrEditorBinder, Editor<Zakr> zakrEditor) {
-//        boolean isValid = zakrEditor.save();
-////        boolean isValid = zakrEditorBinder.writeBeanIfValid(zakrEditor.getItem());
-//        if (!isValid) {
-//            ConfirmDialog
-//                    .createWarning()
-//                    .withCaption("Editace zakázky")
-//                    .withMessage("Zakázku nelze uložit, některá pole zřejmě nejsou správně vyplněna.")
-//                    .open();
-//            return false;
-//        }
-//        editedItem = zakrEditor.getItem();
-//        return true;
-//    }
-
     private ValueProvider<Zakr, String> rpGridValueProvider =
-            zakr -> null == zakr.getRp() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getRp())
+            zakr -> null == zakr.getRp() ? "" : VzmFormatUtils.PROC_INT_FORMAT.format(zakr.getRp())
     ;
 
     private ValueProvider<Zakr, String> rm4GridValueProvider =
-            zakr -> null == zakr.getRm4() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getRm4())
+            zakr -> null == zakr.getRm4() ? "" : VzmFormatUtils.PROC_INT_FORMAT.format(zakr.getRm4())
     ;
 
     private ValueProvider<Zakr, String> rm3GridValueProvider =
-            zakr -> null == zakr.getRm3() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getRm3())
+            zakr -> null == zakr.getRm3() ? "" : VzmFormatUtils.PROC_INT_FORMAT.format(zakr.getRm3())
     ;
 
     private ValueProvider<Zakr, String> rm2GridValueProvider =
-            zakr -> null == zakr.getRm2() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getRm2())
+            zakr -> null == zakr.getRm2() ? "" : VzmFormatUtils.PROC_INT_FORMAT.format(zakr.getRm2())
     ;
 
     private ValueProvider<Zakr, String> rm1GridValueProvider =
-            zakr -> null == zakr.getRm1() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getRm1())
+            zakr -> null == zakr.getRm1() ? "" : VzmFormatUtils.PROC_INT_FORMAT.format(zakr.getRm1())
     ;
 
     private ValueProvider<Zakr, String> r0GridValueProvider =
-            zakr -> null == zakr.getR0() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR0())
+            zakr -> null == zakr.getR0() ? "" : VzmFormatUtils.PROC_INT_FORMAT.format(zakr.getR0())
     ;
 
     private ValueProvider<Zakr, String> r1GridValueProvider =
-            zakr -> null == zakr.getR1() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR1())
+            zakr -> null == zakr.getR1() ? "" : VzmFormatUtils.PROC_INT_FORMAT.format(zakr.getR1())
     ;
 
     private ValueProvider<Zakr, String> r2GridValueProvider =
-            zakr -> null == zakr.getR2() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR2())
+            zakr -> null == zakr.getR2() ? "" : VzmFormatUtils.PROC_INT_FORMAT.format(zakr.getR2())
     ;
 
     private ValueProvider<Zakr, String> r3GridValueProvider =
-            zakr -> null == zakr.getR3() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR3())
+            zakr -> null == zakr.getR3() ? "" : VzmFormatUtils.PROC_INT_FORMAT.format(zakr.getR3())
     ;
 
     private ValueProvider<Zakr, String> r4GridValueProvider =
-            zakr -> null == zakr.getR4() ? "" : VzmFormatUtils.procIntFormat.format(zakr.getR4())
+            zakr -> null == zakr.getR4() ? "" : VzmFormatUtils.PROC_INT_FORMAT.format(zakr.getR4())
     ;
 
 
@@ -924,7 +863,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         if (null == honorCistyByKurz) {
             return "";
         } else {
-            return VzmFormatUtils.moneyFormat.format(honorCistyByKurz);
+            return VzmFormatUtils.MONEY_FORMAT.format(honorCistyByKurz);
         }
     };
     private  BigDecimal getHonorCistyByKurz(Zakr zakr) {
@@ -943,7 +882,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         if (null == rxRyVykonByKurz) {
             return "";
         } else {
-            return VzmFormatUtils.moneyFormat.format(rxRyVykonByKurz);
+            return VzmFormatUtils.MONEY_FORMAT.format(rxRyVykonByKurz);
         }
     };
     private  BigDecimal getRxRyVykonByKurz(Zakr zakr) {
@@ -962,7 +901,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         if (null == rpZbyvaByKurz) {
             return "";
         } else {
-            return VzmFormatUtils.moneyFormat.format(rpZbyvaByKurz);
+            return VzmFormatUtils.MONEY_FORMAT.format(rpZbyvaByKurz);
         }
     };
 
@@ -971,25 +910,25 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             return "";
         } else {
             BigDecimal rpVysledek = zakr.getRpHotovoByKurz();
-            return null == rpVysledek ? "" : VzmFormatUtils.moneyFormat.format(rpVysledek);
+            return null == rpVysledek ? "" : VzmFormatUtils.MONEY_FORMAT.format(rpVysledek);
         }
     };
 
     private ValueProvider<Zakr, String> vysledekGridValueProvider = zakr ->
-            null == zakr.getVysledekByKurz() ? "" : VzmFormatUtils.moneyFormat.format(zakr.getVysledekByKurz());
+            null == zakr.getVysledekByKurz() ? "" : VzmFormatUtils.MONEY_FORMAT.format(zakr.getVysledekByKurz());
 
     private ValueProvider<Zakr, String> vysledekP8GridValueProvider = zakr ->
-            null == zakr.getVysledekP8ByKurz() ? "" : VzmFormatUtils.moneyFormat.format(zakr.getVysledekP8ByKurz());
+            null == zakr.getVysledekP8ByKurz() ? "" : VzmFormatUtils.MONEY_FORMAT.format(zakr.getVysledekP8ByKurz());
 
     private ValueProvider<Zakr, String> naklMzdyValueProvider = zakr ->
-            null == zakr.getNaklMzda() ? "" : VzmFormatUtils.moneyFormat.format(zakr.getNaklMzda());
+            null == zakr.getNaklMzda() ? "" : VzmFormatUtils.MONEY_FORMAT.format(zakr.getNaklMzda());
 
     private ValueProvider<Zakr, String> naklMzdyPojistRezieValueProvider = zakr -> {
             BigDecimal naklMzdy = zakr.calcNaklMzdyPojistRezie(zakrParams.getKoefPojist(), zakrParams.getKoefRezie());
             if (null == naklMzdy) {
                 return "";
             } else {
-                return VzmFormatUtils.moneyFormat.format(naklMzdy);
+                return VzmFormatUtils.MONEY_FORMAT.format(naklMzdy);
             }
     };
 
@@ -1033,27 +972,6 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
         return editComp;
     }
-
-//    private BigDecimal getRxRyVykon(final Zakr zakr) {
-//        BigDecimal activeRxValue = getActiveRxValue(zakr);
-//        return null == activeRxValue || null == zakr.getHonorCisty() ?
-//                null : activeRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L));
-//    }
-
-//    private BigDecimal getRpZbyva(final Zakr zakr) {
-//        BigDecimal lastRxValue = zakr.getRP();
-//        return null == lastRxValue || null == zakr.getHonorCisty() ? null :
-//                zakr.getHonorCisty().subtract(
-//                        lastRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L))
-//        );
-//    }
-//
-//    private BigDecimal getRpHotovo(final Zakr zakr) {
-//        BigDecimal lastRxValue = zakr.getRP();
-//        return null == lastRxValue || null == zakr.getHonorCisty() ? null :
-//                lastRxValue.multiply(zakr.getHonorCisty()).divide(BigDecimal.valueOf(100L)
-//        );
-//    }
 
     // TODO Probably  obsolete - remove ??
     public static BigDecimal getActiveRxValue(Zakr zakr) {
@@ -1294,11 +1212,6 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         skupinaFilterField.setItems(skupinaItems);
     }
 
-//    private static Comparator<BigDecimal> bigDecimalSafeComparator = Comparator.nullsFirst(BigDecimal::compareTo);
-//
-//    public int safeCompareTo(BigDecimal that) {
-//        return bigDecimalSafeComparator.compare(this, that);
-//    }
 
     public Boolean getArchFilterValue() {
         return archFilterValue;

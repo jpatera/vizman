@@ -19,8 +19,6 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.AbstractStreamResource;
-import com.vaadin.flow.server.StreamRegistration;
-import com.vaadin.flow.server.VaadinSession;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.backend.entity.ItemType;
@@ -422,7 +420,7 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
         if (isNaklCompleteAccessGranted()) {
             grid.addColumn(zn -> {
                 BigDecimal mzda = zn.getNaklMzda();
-                return null == mzda ? "" : VzmFormatUtils.moneyNoFractFormat.format(mzda);
+                return null == mzda ? "" : VzmFormatUtils.MONEY_NO_FRACT_FORMAT.format(mzda);
             })
                     .setHeader("Mzda")
                     .setWidth("8em")
@@ -433,7 +431,7 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
             ;
             grid.addColumn(zn -> {
                 BigDecimal mzdaPojist = zn.getNaklMzdaPojist();
-                return null == mzdaPojist ? "" : VzmFormatUtils.moneyNoFractFormat.format(mzdaPojist);
+                return null == mzdaPojist ? "" : VzmFormatUtils.MONEY_NO_FRACT_FORMAT.format(mzdaPojist);
             })
                     .setHeader("Mzda+Poj.")
                     .setWidth("8em")
@@ -474,19 +472,19 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     private void updateHodinSumField() {
         sumFooterRow
                 .getCell(grid.getColumnByKey(HODIN_COL_KEY))
-                .setText("" + (VzmFormatUtils.decHodFormat.format(calcHodinSum())));
+                .setText("" + (VzmFormatUtils.DEC_HOD_FORMAT.format(calcHodinSum())));
     }
 
     private void updateMzdaSumField() {
             sumFooterRow
                     .getCell(grid.getColumnByKey(MZDA_COL_KEY))
-                    .setText("" + (VzmFormatUtils.moneyNoFractFormat.format(calcMzdaSum())));
+                    .setText("" + (VzmFormatUtils.MONEY_NO_FRACT_FORMAT.format(calcMzdaSum())));
     }
 
     private void updateMzdaPojistSumField() {
         sumFooterRow
                 .getCell(grid.getColumnByKey(MZDA_POJ_COL_KEY))
-                .setText("" + (VzmFormatUtils.moneyNoFractFormat.format(calcMzdaPojistSum())));
+                .setText("" + (VzmFormatUtils.MONEY_NO_FRACT_FORMAT.format(calcMzdaPojistSum())));
     }
 
     private BigDecimal calcHodinSum() {

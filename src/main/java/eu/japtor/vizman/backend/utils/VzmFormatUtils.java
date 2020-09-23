@@ -34,20 +34,13 @@ import java.util.Map;
 
 public class VzmFormatUtils {
 
-    public static final DecimalFormat decimalFormat = new DecimalFormat("#,##0");
-    public static final NumberFormat yearFormat = getDecFormat(Locale.getDefault(), 4,0);
-    public static final NumberFormat moneyFormat = getDecFormat(Locale.getDefault(), 10,2, true);
-    public static final NumberFormat moneyNoFractFormat = getDecFormat(Locale.getDefault(), 10,0, true);
-    public static final NumberFormat procFormat = getDecFormat(Locale.getDefault(), 3, 1);
-    public static final NumberFormat procIntFormat = getDecFormat(Locale.getDefault(), 3,0);
-    public static final NumberFormat decHodFormat = getDecFormat(Locale.getDefault(), 4,1);
-    public static final NumberFormat dec2Format = getDecFormat(Locale.getDefault(), 10, 2);
-//    public final static NumberFormat moneyFormat = new MoneyFormat();
-//    public final static NumberFormat yearFormat = new YearFormat();
-//    public static final StringToBigDecimalConverter bigDecimalMoneyConverter;
-//    public static final StringToBigDecimalConverter bigDecimalPercentConverter;
-//    public static final StringToBigDecimalConverter integerYearConverter;
-//    public static final ValidatedDecHodToStringConverter VALIDATED_DEC_HOD_TO_STRING_CONVERTER;
+    public static final NumberFormat YEAR_FORMAT = getDecFormat(Locale.getDefault(), 4,0);
+    public static final NumberFormat MONEY_FORMAT = getDecFormat(Locale.getDefault(), 10,2, true);
+    public static final NumberFormat MONEY_NO_FRACT_FORMAT = getDecFormat(Locale.getDefault(), 10,0, true);
+    public static final NumberFormat PROC_FORMAT = getDecFormat(Locale.getDefault(), 3, 1);
+    public static final NumberFormat PROC_INT_FORMAT = getDecFormat(Locale.getDefault(), 3,0);
+    public static final NumberFormat DEC_HOD_FORMAT = getDecFormat(Locale.getDefault(), 4,1);
+    public static final NumberFormat DEC2_FORMAT = getDecFormat(Locale.getDefault(), 10, 2);
 
     public final static DateTimeFormatter shortTimeFormatter = DateTimeFormatter.ofPattern("H:mm");
     public final static DateTimeFormatter basicDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -280,7 +273,7 @@ public class VzmFormatUtils {
 
         @Override
         public String convertToPresentation(Integer year, ValueContext valueContext) {
-            return null == year ? "" : yearFormat.format(year);
+            return null == year ? "" : YEAR_FORMAT.format(year);
         }
     }
 
@@ -329,25 +322,24 @@ public class VzmFormatUtils {
         }
 
         @Override
-        public Result<BigDecimal> convertToModel(String s, ValueContext valueContext) {
+        public Result<BigDecimal> convertToModel(String str, ValueContext valueContext) {
+            String s = StringUtils.trimToEmpty(str);
             try {
                 if (StringUtils.isBlank(s)) {
                     return Result.ok(null);
                 }
-
-//                BigDecimal decHod = new BigDecimal(s);
-
-                DecimalFormat df = (DecimalFormat) NumberFormat.getInstance();
-                df.setParseBigDecimal(true);
                 BigDecimal decHod = null;
-                decHod = (BigDecimal) df.parse(s);
+                if (!StringUtils.isBlank(s)) {
+                    String newBdStr = s.replaceAll("\\,|\\.", ".");
+                    decHod = new BigDecimal(newBdStr);
+                }
 
                 if (decHod.compareTo(BigDecimal.valueOf(-1000000)) < 0
                         || decHod.compareTo(BigDecimal.valueOf(1000000)) > 0) {
                     return Result.error(errorMessage + " (číslo musí být v rozmezí -1000000 až +1000000)");
                 }
                 return Result.ok(decHod);
-            } catch (NumberFormatException | ParseException e) {
+            } catch (NumberFormatException e) {
                 return Result.error(errorMessage);
             } catch (Exception e) {
                 getLogger().error(e.getMessage(), e);
@@ -357,7 +349,7 @@ public class VzmFormatUtils {
 
         @Override
         public String convertToPresentation(BigDecimal decHod, ValueContext valueContext) {
-            return null == decHod ? "" : decHodFormat.format(decHod);
+            return null == decHod ? "" : DEC_HOD_FORMAT.format(decHod);
         }
     }
 
@@ -398,7 +390,7 @@ public class VzmFormatUtils {
 
         @Override
         public String convertToPresentation(BigDecimal proc, ValueContext valueContext) {
-            return null == proc ? "" : procIntFormat.format(proc);
+            return null == proc ? "" : PROC_INT_FORMAT.format(proc);
         }
     }
 
@@ -448,7 +440,7 @@ public class VzmFormatUtils {
 
         @Override
         public String convertToPresentation(BigDecimal decHod, ValueContext valueContext) {
-            return null == decHod ? "" : decHodFormat.format(decHod);
+            return null == decHod ? "" : DEC_HOD_FORMAT.format(decHod);
         }
     }
 
@@ -515,7 +507,7 @@ public class VzmFormatUtils {
                     .set("color", color)
             ;
         }
-        comp.setText(null == number ? "" : VzmFormatUtils.decHodFormat.format(number));
+        comp.setText(null == number ? "" : VzmFormatUtils.DEC_HOD_FORMAT.format(number));
         return comp;
     }
 
@@ -530,7 +522,7 @@ public class VzmFormatUtils {
             }
             comp.getStyle().set("color", color);
         }
-        comp.setText(null == number ? "" : VzmFormatUtils.procFormat.format(number));
+        comp.setText(null == number ? "" : VzmFormatUtils.PROC_FORMAT.format(number));
         return comp;
     }
 
@@ -551,7 +543,7 @@ public class VzmFormatUtils {
             }
             comp.getStyle().set("color", color);
         }
-        comp.setText(null == amount ? "" : VzmFormatUtils.moneyFormat.format(amount));
+        comp.setText(null == amount ? "" : VzmFormatUtils.MONEY_FORMAT.format(amount));
         return comp;
     }
 
@@ -660,7 +652,7 @@ public class VzmFormatUtils {
 
     public static BigDecimal stringLocalToBigDecimal(String numStr) {
         try {
-            return new BigDecimal(dec2Format.parse(numStr).toString());
+            return new BigDecimal(DEC2_FORMAT.parse(numStr).toString());
         } catch (ParseException e) {
             e.printStackTrace();
             throw new VzmServiceException("Chyba v převodu formátu čísla");

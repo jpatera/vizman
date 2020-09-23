@@ -506,49 +506,6 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private ValueProvider<KzTreeAware, String> investorOrigValProv =
         kz -> kz.getTyp() == ItemType.KONT ? kz.getInvestorOrigName() : null;
 
-//    ValueProvider<KzTreeAware, Boolean> archBooleanProv =
-//            kz -> kz.getArch();
-
-
-//    ValueProvider<KzTreeAware, String> RokzakProv = new ValueProvider() {
-//        @Override
-//        public Object apply(Object o) {
-//            if (((KzTreeAware)o).getTyp() == ItemType.KONT) {
-//                return null;
-//            } else {
-//                return ((KzTreeAware)o).getMena().name();
-////                return "";
-////                return ((KzTreeAware)o).getCkz().toString();
-//            }
-//        }
-//    };
-
-//    private ComponentRenderer<HtmlComponent, KzTreeAware> honorarCellRenderer = new ComponentRenderer<>(kz -> {
-//        HtmlComponent comp =  VzmFormatUtils.getMoneyComponent(kz.getHonorar());
-//        if (ItemType.KONT == kz.getTyp()) {
-//////            comp.getStyle().set("color", "darkmagenta");
-//////            return new Emphasis(kontZak.getHonorar().toString());
-////            comp.getElement().appendChild(ElementFactory.createEmphasis(
-////                    VzmFormatUtils.moneyFormat.format(kz.getHonorar())));
-//            comp.getStyle()
-////                    .set("color", "red")
-////                    .set("text-indent", "1em");
-//                    .set("padding-right", "1em");
-//        } else {
-//            comp.getStyle()
-////                        .set("color", "red")
-//                    .set("text-indent", "1em");
-////            if ((null != kz) && (kz.getHonorar().compareTo(BigDecimal.ZERO) < 0)) {
-////                comp.getStyle()
-////                        .set("color", "red")
-////                        .set("text-indent", "1em");
-////            }
-////            comp.getElement().appendChild(ElementFactory.createSpan(
-////                    VzmFormatUtils.moneyFormat.format(kz.getHonorar())));
-//        }
-//        return comp;
-//    });
-
     private ComponentRenderer<HtmlComponent, KzTreeAware> rokCellRenderer = new ComponentRenderer<>(kz -> {
         HtmlComponent comp =  VzmFormatUtils.getRokComponent(kz.getRok());
         if (ItemType.KONT == kz.getTyp()) {
@@ -585,16 +542,6 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         return digiBox;
     });
 
-  //    TextField searchField = new TextField("Hledej kontrakty...");
-////    SearchField searchField = new SearchField("Hledej uživatele..."
-////            , event -> ((ConfigurableFilterDataProvider) treeGrid.getDataProvider()).setFilter(event.getStringValue()));
-//
-//    ListDataProvider<Kont> kontDataProvider;
-//
-//
-
-
-
     private Component buildGridContainer() {
         VerticalLayout gridContainer = new VerticalLayout();
         gridContainer.setClassName("view-container");
@@ -605,19 +552,6 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         gridContainer.add(initKzTreeGrid());
         return gridContainer;
     }
-
-
-//    ComponentRenderer<HtmlComponent, BigDecimal> moneyCellRenderer = new ComponentRenderer<>(money -> {
-//        Div comp = new Div();
-//        if ((null != money) && (money.compareTo(BigDecimal.ZERO) < 0)) {
-//            comp.getStyle()
-//                    .set("color", "red")
-////                            .set("text-indent", "1em")
-//            ;
-//        }
-//        comp.setText(VzmFormatUtils.moneyFormat.format(money));
-//        return comp;
-//    });
 
     private Component initKzTreeGrid() {
 //        gridContainer.setClassName("view-container");

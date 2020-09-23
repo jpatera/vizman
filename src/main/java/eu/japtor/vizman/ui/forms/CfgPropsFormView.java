@@ -26,15 +26,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 
-import static eu.japtor.vizman.backend.utils.VzmFormatUtils.dec2Format;
 import static eu.japtor.vizman.backend.utils.VzmFormatUtils.stringLocalToBigDecimal;
-import static eu.japtor.vizman.ui.util.VizmanConst.CZ_LOCALE;
 
 
 @Permissions(
