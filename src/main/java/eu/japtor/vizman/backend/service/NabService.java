@@ -4,6 +4,8 @@ import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.Nab;
 import eu.japtor.vizman.ui.components.Operation;
 
+import java.util.List;
+
 
 public interface NabService {
 

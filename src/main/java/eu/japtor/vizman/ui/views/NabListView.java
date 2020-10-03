@@ -3,11 +3,15 @@ package eu.japtor.vizman.ui.views;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -20,7 +24,6 @@ import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.NabFormDialog;
-import net.sf.jasperreports.engine.JRException;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -36,7 +39,8 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 })
 public class NabListView extends VerticalLayout {
 
-    private final static String REPORT_FILE_NAME = "vzm-rep-nab";
+    private static final String REPORT_FILE_NAME = "vzm-rep-nab";
+    private static final String NAB_DOWN_ANCHOR_ID = "nab-down-anchor-id";
 
     private NabGrid nabGrid;
 //    private List<GridSortOrder<NabVw>> initialSortOrder;
@@ -46,7 +50,8 @@ public class NabListView extends VerticalLayout {
     private ReloadButton reloadButton;;
     private ResetFiltersButton resetFiltersButton;
     private NewItemButton newItemButton;
-    private Anchor expXlsAnchor;
+//    private Anchor expXlsAnchor;
+    private Anchor downloadAnchor;
 
 //    private DataProvider<NabVw, NabViewService.NabViewFilter> gridDataProvider; // Second type  param  must not be Void
 //    private NabFiltPagDataProvider gridDataProvider; // Second type  param  must not be Void
@@ -55,7 +60,7 @@ public class NabListView extends VerticalLayout {
 //    private List<NabVw> nabViewList = new ArrayList<>();  // Temporary placeholder for report
 
     @Autowired
-    public NabViewService nabViewService;
+    public NabViewService nabVwService;
 
     @Autowired
     public NabService nabService;
@@ -85,13 +90,13 @@ public class NabListView extends VerticalLayout {
 //                    int off = query.getOffset();
 //                    int lim = query.getLimit();
 //
-//                    return nabViewService
+//                    return nabVwService
 //                            .fetchByNabFilter(query.getFilter().orElse(null), query.getSortOrders(), )
 //                            .stream();
 //
 ////                    int offset = query.getOffset();
 ////                    int limit = query.getLimit();
-////                    nabViewService.fetchBySearchFilter(filter)
+////                    nabVwService.fetchBySearchFilter(filter)
 ////                    findByExample(repository, query.getFilter())
 ////                            .skip(query.getOffset())
 ////                            .take(query.getLimit())
@@ -100,19 +105,19 @@ public class NabListView extends VerticalLayout {
 //                query -> {
 //                    int off = query.getOffset();
 //                    int lim = query.getLimit();
-//                    return (int) nabViewService
+//                    return (int) nabVwService
 //                            .countByNabFilter(query.getFilter().orElse(null));
 //                }
 //        );
 
 //        filtPagGridDataProvider = gridDataProvider.withConfigurableFilter();
-        filtPagGridDataProvider = new NabFiltPagDataProvider(nabViewService);
+        filtPagGridDataProvider = new NabFiltPagDataProvider(nabVwService);
         nabGrid.setGridDataProvider(filtPagGridDataProvider);
 
         nabFormDialog = new NabFormDialog (
                 this::saveItem
                 , this::deleteItem
-                , nabViewService
+                , nabVwService
                 , kontService
                 , klientService
                 , cfgPropsCache
@@ -148,10 +153,20 @@ public class NabListView extends VerticalLayout {
         gridContainer.setAlignItems(Alignment.STRETCH);
 
         gridContainer.add(
-                buildGridBarComponent()
+                initDownloadAnchor()
+                , buildGridBarComponent()
                 , initNabGrid()
         );
         return gridContainer;
+    }
+
+    private Anchor initDownloadAnchor() {
+        downloadAnchor = new Anchor();
+        downloadAnchor.getElement().setAttribute("download", true);
+        downloadAnchor.setId(NAB_DOWN_ANCHOR_ID);
+        downloadAnchor.setText("Invisible NAB download link");    // setVisible  also disables a server part - cannot be useed
+        downloadAnchor.getStyle().set("display", "none");
+        return downloadAnchor;
     }
 
     private Component initNabGrid() {
@@ -161,7 +176,7 @@ public class NabListView extends VerticalLayout {
                 , null
                 ,true
                 , this::openItem
-                , nabViewService
+                , nabVwService
         );
         nabGrid.setMultiSort(true);
         nabGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
@@ -207,7 +222,7 @@ public class NabListView extends VerticalLayout {
         toolBar.add(
                 initNewItemButton()
                 , new Ribbon()
-                , initReportXlsExpAnchor()
+                , initXlsReportMenu()
         );
         return toolBar;
     }
@@ -222,7 +237,7 @@ public class NabListView extends VerticalLayout {
 
 //    public void saveItem(NabVw itemToSave, Operation operation) {
 //        try {
-//            currentItem = nabViewService.saveNab(itemToSave, operation);
+//            currentItem = nabVwService.saveNab(itemToSave, operation);
 //            lastOperationResult = OperationResult.ITEM_SAVED;
 ////            Notification.show(
 ////                    "Nabídka uložena", 2000, Notification.Position.MIDDLE);
@@ -236,7 +251,7 @@ public class NabListView extends VerticalLayout {
 //    private void deleteItem(final NabVw itemToDelete) {
 //        OperationResult lastOperResOrig = lastOperationResult;
 //        try {
-//            nabViewService.deleteNab(itemToDelete);
+//            nabVwService.deleteNab(itemToDelete);
 //            lastOperationResult = OperationResult.ITEM_DELETED;
 ////            return true;
 //        } catch (VzmServiceException e) {
@@ -273,13 +288,13 @@ public class NabListView extends VerticalLayout {
 
 //    private SerializableSupplier<List<? extends NabVw>> reportItemsSupplier =
 ////            () -> nabGrid.getDataCommunicator().Service.fetchByNabFilter(buildNabFilterParams(), nabGrid.getDataProvider().fetch()getSortOrder());
-//            () -> nabViewService.fetchByNabFilter(
+//            () -> nabVwService.fetchByNabFilter(
 //                    nabGrid.buildNabFilter()
 //                    , nabGrid.getDataCommunicator().getBackEndSorting());
-////            () -> nabViewService.fetchByFiltersDescOrder(buildNabFilterParams());
+////            () -> nabVwService.fetchByFiltersDescOrder(buildNabFilterParams());
 
     private SerializableSupplier<List<? extends NabVw>> reportItemsSupplier =
-            () -> nabViewService.fetchAll();
+            () -> nabVwService.fetchAll();
 
 
     void finishNabEdit(NabFormDialog nabFormDialog) {
@@ -349,29 +364,34 @@ public class NabListView extends VerticalLayout {
         return resetFiltersButton;
     }
 
-    private Anchor initReportXlsExpAnchor() {
-        expXlsAnchor = new ReportExpButtonAnchor(ReportExporter.Format.XLS, anchorExportListener);
-        return expXlsAnchor;
+
+    private SerializableSupplier<List<? extends NabVw>> nabListSupplier =
+            () -> nabVwService.fetchForReport(); // ..use params ?
+
+    private Component initXlsReportMenu() {
+        Button menuBtn = new Button(new Image("img/xls_down_24b.png", ""));
+        menuBtn.getElement().setAttribute("theme", "icon secondary small");
+
+        ContextMenu menu = new ContextMenu();
+        menu.addItem("Seznam nabídek", e -> updateXlsRepResourceAndDownload(nabListSupplier));
+        menu.setOpenOnClick(true);
+
+        menu.setTarget(menuBtn);
+        return menuBtn;
+    }
+
+    private void updateXlsRepResourceAndDownload(SerializableSupplier<List<? extends NabVw>> supplier) {
+        ReportExporter.Format expFormat = ReportExporter.Format.XLS;
+        final AbstractStreamResource xlsResource =
+                xlsReportExporter.getStreamResource(getReportFileName(expFormat), supplier, expFormat);
+        downloadAnchor.setHref(xlsResource);
+        Page page = UI.getCurrent().getPage();
+        page.executeJs("$0.click();", downloadAnchor.getElement());
     }
 
     private String getReportFileName(ReportExporter.Format format) {
         return REPORT_FILE_NAME + "." + format.name().toLowerCase();
     }
-
-    private void updateExpXlsAnchorResource(List<NabVw> items) throws JRException {
-        ReportExporter.Format expFormat = ReportExporter.Format.XLS;
-        AbstractStreamResource xlsResource =
-                xlsReportExporter.getStreamResource(getReportFileName(expFormat), reportItemsSupplier, expFormat);
-        expXlsAnchor.setHref(xlsResource);
-
-        // Varianta 1
-        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
-
-//        // Varianta 2 - Has an issue: after returning to the parent dialog [Close] button does nothing
-//        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
-//        UI.getCurrent().getPage().setLocation(registration.getResourceUri());
-    }
-
 
     private void loadInitialViewContent() {
         nabGrid.rebuildFilterFields();

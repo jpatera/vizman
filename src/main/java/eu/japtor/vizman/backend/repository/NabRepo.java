@@ -5,6 +5,8 @@ import eu.japtor.vizman.backend.entity.Nab;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 
 @Transactional(readOnly = false)
 public interface NabRepo extends JpaRepository<Nab, Long> {

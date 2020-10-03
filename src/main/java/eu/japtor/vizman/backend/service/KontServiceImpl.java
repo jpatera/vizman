@@ -5,9 +5,9 @@ import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.Kont;
-import eu.japtor.vizman.backend.entity.KontView;
+import eu.japtor.vizman.backend.entity.KontVw;
 import eu.japtor.vizman.backend.repository.KontRepo;
-import eu.japtor.vizman.backend.repository.KontViewRepo;
+import eu.japtor.vizman.backend.repository.KontVwRepo;
 import eu.japtor.vizman.ui.components.Operation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,16 +23,16 @@ import java.util.List;
 public class KontServiceImpl extends AbstractSortableService implements KontService, HasLogger {
 
     private final KontRepo kontRepo;
-    private final KontViewRepo kontViewRepo;
+    private final KontVwRepo kontVwRepo;
 
     private static final List<QuerySortOrder> DEFAULT_SORT_ORDER =
             Collections.singletonList(new QuerySortOrder("czak", SortDirection.ASCENDING));
 
     @Autowired
-    public KontServiceImpl(KontRepo kontRepo, KontViewRepo kontViewRepo) {
+    public KontServiceImpl(KontRepo kontRepo, KontVwRepo kontVwRepo) {
         super();
         this.kontRepo = kontRepo;
-        this.kontViewRepo = kontViewRepo;
+        this.kontVwRepo = kontVwRepo;
     }
 
 
@@ -73,8 +73,8 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
-    public List<KontView> fetchAllFromView() {
-        return kontViewRepo.findAllByOrderByCkontDescRokDesc();
+    public List<KontVw> fetchAllFromKontVw() {
+        return kontVwRepo.findAllByOrderByCkontDescRokDesc();
     }
 
     @Override
@@ -97,6 +97,11 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     @Override
     public List<? super Kont> fetchByRokFilter(final Integer rok) {
         return kontRepo.findAllByRokOrderByCkontDesc(rok);
+    }
+
+    @Override
+    public List<? extends Kont> fetchForReport() {
+        return kontRepo.findTop5By();
     }
 
     @Override

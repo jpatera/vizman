@@ -84,17 +84,6 @@ public class ZakBasicListView extends VerticalLayout {
     public CfgPropsCache cfgPropsCache;
 
 
-    private ComponentEventListener anchorExportListener = event -> {
-        try {
-            updateExpXlsAnchorResource(zakList);
-        } catch (JRException e) {
-            e.printStackTrace();
-        }
-    };
-
-    private SerializableSupplier<List<? extends ZakBasic>> itemsSupplier =
-            () -> zakBasicService.fetchAndCalcByFiltersDescOrder(buildZakBasicFilterParams());
-
     public ZakBasicListView() {
         xlsReportExporter = new ReportExporter((new ZakListReportBuilder()).buildReport());
 //        initView();
@@ -206,19 +195,30 @@ public class ZakBasicListView extends VerticalLayout {
         return toolBar;
     }
 
+    private String getReportFileName(ReportExporter.Format format) {
+        return REPORT_FILE_NAME + "." + format.name().toLowerCase();
+    }
+
+    private SerializableSupplier<List<? extends ZakBasic>> itemsSupplier =
+            () -> zakBasicService.fetchAndCalcByFiltersDescOrder(buildZakBasicFilterParams());
+
     private Anchor initReportXlsExpAnchor() {
         expXlsAnchor = new ReportExpButtonAnchor(ReportExporter.Format.XLS, anchorExportListener);
         return expXlsAnchor;
     }
 
-    private String getReportFileName(ReportExporter.Format format) {
-        return REPORT_FILE_NAME + "." + format.name().toLowerCase();
-    }
+    private ComponentEventListener anchorExportListener = event -> {
+        try {
+            updateExpXlsAnchorResource(itemsSupplier);
+        } catch (JRException e) {
+            e.printStackTrace();
+        }
+    };
 
-    private void updateExpXlsAnchorResource(List<ZakBasic> items) throws JRException {
+    private void updateExpXlsAnchorResource(SerializableSupplier<List<? extends ZakBasic>> supplier) throws JRException {
         ReportExporter.Format expFormat = ReportExporter.Format.XLS;
         AbstractStreamResource xlsResource =
-                xlsReportExporter.getStreamResource(getReportFileName(expFormat), itemsSupplier, expFormat);
+                xlsReportExporter.getStreamResource(getReportFileName(expFormat), supplier, expFormat);
         expXlsAnchor.setHref(xlsResource);
 
         // Varianta 1

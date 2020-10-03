@@ -17,7 +17,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Klient;
-import eu.japtor.vizman.backend.entity.KontView;
+import eu.japtor.vizman.backend.entity.KontVw;
 import eu.japtor.vizman.backend.entity.Nab;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.KlientService;
@@ -46,7 +46,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
     private TextField cnabField;
     private TextField textField;
     private ComboBox<Klient> objednatelCombo;
-    private ComboBox<KontView> ckontCombo;
+    private ComboBox<KontVw> ckontCombo;
     private TextField poznamkaField;
     private DatePicker nastupField; // = new DatePicker("Nástup");
     private DatePicker vystupField; // = new DatePicker("Výstup");
@@ -64,7 +64,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
     private KontService kontService;
     private KlientService klientService;
     private List<Klient> klientList;
-    private List<KontView> kontViewList;
+    private List<KontVw> kontVwList;
 
     private FlexLayout nabDocFolderComponent;
     private NabFolderField nabFolderField;
@@ -279,7 +279,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
 //        setItemNames(nabView.getTyp());
 
         klientList = klientService.fetchAll();
-        kontViewList = kontService.fetchAllFromView();
+        kontVwList = kontService.fetchAllFromKontVw();
 
 //        // Following series of commands replacing combo box are here because of a bug
 //        // Initialize $connector if values were not set in ComboBox element prior to page load. #188
@@ -352,7 +352,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
         ckontCombo = new ComboBox<>("Kontrakt");
         ckontCombo.getElement().setAttribute("colspan", "1");
         ckontCombo.setItems(new ArrayList<>());
-        ckontCombo.setItemLabelGenerator(KontView::getCkont);
+        ckontCombo.setItemLabelGenerator(KontVw::getCkont);
         return ckontCombo;
     }
 
@@ -360,7 +360,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
         getBinder().removeBinding(ckontCombo);
         getFormLayout().remove(ckontCombo);
         getFormLayout().addComponentAtIndex(4, initCkontCombo());
-        ckontCombo.setItems(this.kontViewList);
+        ckontCombo.setItems(this.kontVwList);
         getBinder().forField(ckontCombo)
                 .bind(Nab::getKont, Nab::setKont);
         ckontCombo.setPreventInvalidInput(true);
@@ -474,7 +474,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
 //        String cnDel = String.format("%s", currentItem.getCnab());
 //        OperationResult lastOperResOrig = lastOperationResult;
 //        try {
-//            nabViewService.deleteNab(itemToDelete);
+//            nabVwService.deleteNab(itemToDelete);
 //            lastOperationResult = OperationResult.ITEM_DELETED;
 //            return true;
 //        } catch (VzmServiceException e) {
@@ -491,7 +491,7 @@ public class NabFormDialog extends AbstractComplexFormDialog<Nab> {
 
 //    public NabVw saveFakt(NabVw nabToSave) throws VzmServiceException {
 //        try {
-//            currentItem = nabViewService.saveNab(nabToSave, currentOperation);
+//            currentItem = nabVwService.saveNab(nabToSave, currentOperation);
 //            lastOperationResult = OperationResult.ITEM_SAVED;
 //            return currentItem;
 //        } catch(VzmServiceException e) {
