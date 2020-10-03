@@ -49,7 +49,7 @@ import elemental.json.JsonObject;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.*;
-import eu.japtor.vizman.backend.report.KontTreeReportBuilder;
+import eu.japtor.vizman.backend.report.KontTreeXlsReportBuilder;
 import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
@@ -65,6 +65,7 @@ import javax.annotation.PostConstruct;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static eu.japtor.vizman.app.security.SecurityUtils.isHonorareAccessGranted;
 import static eu.japtor.vizman.app.security.SecurityUtils.isZakFormsAccessGranted;
@@ -119,7 +120,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private Select<Integer> rokFilterField;
     private List<GridSortOrder<KzTreeAware>> initialSortOrder;
 
-    private ReportExporter<Kont> xlsReportExporter;
+//    private ReportExporter<Kont> xlsReportExporter;
+    private ReportXlsExporter<Kont> xlsReportExporter;
     private Anchor downloadAnchor;
 
     @Autowired
@@ -168,7 +170,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     }
 
     public KzTreeView() {
-        xlsReportExporter = new ReportExporter((new KontTreeReportBuilder()).buildReport());
+        xlsReportExporter = new ReportXlsExporter(new KontTreeXlsReportBuilder());
         initView();
     }
 
@@ -1324,26 +1326,6 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private SerializableSupplier<List<? extends Kont>> kontListSupplier =
             () -> kontService.fetchForReport();  // ..(buildZakBasicFilterParams());
 
-    Button jpsExpButton = new Button("Click me", event -> {
-        boolean isCheckPassed = true;
-        if (!isCheckPassed) {
-            Notification.show("Unfortunately you can not download this file");
-        } else {
-//            final StreamResource resource = new StreamResource("foo.txt",
-//                    () -> new ByteArrayInputStream("foo".getBytes()));
-            ReportExporter.Format expFormat = ReportExporter.Format.XLS;
-            final AbstractStreamResource xlsResource =
-                    xlsReportExporter.getStreamResource(getReportFileName(expFormat), kontListSupplier, expFormat);
-            final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
-
-            UI.getCurrent().getPage().executeJs("window.open($0, $1)", registration.getResourceUri().toString(), "_blank");
-
-//            UI.getCurrent().getPage().setLocation(registration.getResourceUri());
-//            UI.getCurrent().getPage().reload();
-
-        }
-    });
-
     private Component initXlsReportMenu() {
 
         Button menuBtn = new Button(new Image("img/xls_down_24b.png", ""));
@@ -1358,10 +1340,16 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         return menuBtn;
     }
 
-    private void updateXlsRepResourceAndDownload(SerializableSupplier<List<? extends Kont>> supplier) {
+    private void updateXlsRepResourceAndDownload(SerializableSupplier<List<? extends Kont>> itemsSupplier) {
         ReportExporter.Format expFormat = ReportExporter.Format.XLS;
+//        List<String> sheetNames = itemsSupplier.get().stream()
+        String[] sheetNames = itemsSupplier.get().stream()
+                .map(item -> item.getCkont())
+                .toArray(String[]::new)
+        ;
         final AbstractStreamResource xlsResource =
-            xlsReportExporter.getStreamResource(getReportFileName(expFormat), supplier, expFormat);
+//            xlsReportExporter.getStreamResource(getReportFileName(expFormat), supplier, expFormat);
+            xlsReportExporter.getStreamResource(getReportFileName(expFormat), itemsSupplier, sheetNames);
 
         // Varianta 1
         downloadAnchor.setHref(xlsResource);

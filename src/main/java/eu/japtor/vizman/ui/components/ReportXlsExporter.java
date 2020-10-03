@@ -2,7 +2,6 @@ package eu.japtor.vizman.ui.components;
 
 import ar.com.fdvs.dj.core.DynamicJasperHelper;
 import ar.com.fdvs.dj.core.layout.ClassicLayoutManager;
-import ar.com.fdvs.dj.core.layout.ListLayoutManager;
 import ar.com.fdvs.dj.domain.ColumnProperty;
 import ar.com.fdvs.dj.domain.DynamicReport;
 import ar.com.fdvs.dj.domain.Style;
@@ -21,9 +20,6 @@ import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.*;
-import net.sf.jasperreports.engine.export.oasis.JROdtExporter;
-import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
-import net.sf.jasperreports.engine.export.ooxml.JRPptxExporter;
 import net.sf.jasperreports.export.*;
 import net.sf.jasperreports.j2ee.servlets.ImageServlet;
 
@@ -35,27 +31,33 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-public class ReportExporter<T> {
+public class ReportXlsExporter<T> {
+//
+//    public enum Format {
+//        // TODO: HTML(() -> new JRHtml...
+//        PDF(() -> new JRPdfExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
+//        XLS(() -> new JRXlsExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
+//        DOCX(() -> new JRDocxExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
+//        PPTX(() -> new JRPptxExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
+//        RTF(() -> new JRRtfExporter(), os -> new SimpleWriterExporterOutput(os)),
+//        ODT(() -> new JROdtExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
+//        CSV(() -> new JRCsvExporter(), os -> new SimpleWriterExporterOutput(os)),
+//        XML(() -> new JRXmlExporter(), os -> new SimpleXmlExporterOutput(os));
+//
+//        private final SerializableSupplier<JRAbstractExporter> exporterSupplier;
+//        private final SerializableFunction<OutputStream, ExporterOutput> exporterOutputFunction;
+//
+//        Format(SerializableSupplier<JRAbstractExporter> exporterSupplier, SerializableFunction<OutputStream, ExporterOutput> exporterOutputFunction) {
+//            this.exporterSupplier = exporterSupplier;
+//            this.exporterOutputFunction = exporterOutputFunction;
+//        }
+//    }
 
-    public enum Format {
-        // TODO: HTML(() -> new JRHtml...
-        PDF(() -> new JRPdfExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
-        XLS(() -> new JRXlsExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
-        DOCX(() -> new JRDocxExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
-        PPTX(() -> new JRPptxExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
-        RTF(() -> new JRRtfExporter(), os -> new SimpleWriterExporterOutput(os)),
-        ODT(() -> new JROdtExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
-        CSV(() -> new JRCsvExporter(), os -> new SimpleWriterExporterOutput(os)),
-        XML(() -> new JRXmlExporter(), os -> new SimpleXmlExporterOutput(os));
+//    JRXlsExporter jrXlsExporter;
 
-        private final SerializableSupplier<JRAbstractExporter> exporterSupplier;
-        private final SerializableFunction<OutputStream, ExporterOutput> exporterOutputFunction;
-
-        Format(SerializableSupplier<JRAbstractExporter> exporterSupplier, SerializableFunction<OutputStream, ExporterOutput> exporterOutputFunction) {
-            this.exporterSupplier = exporterSupplier;
-            this.exporterOutputFunction = exporterOutputFunction;
-        }
-    }
+//    public ReportXlsExporter() {
+//        jrXlsExporter = new JRXlsExporter();
+//    }
 
 //    public static final String DEFAULT_SERVLET_PATH = "/report-image";
 //    protected String imageServletPathPattern = "report-image?image={0}";
@@ -65,9 +67,15 @@ public class ReportExporter<T> {
     protected JasperPrint print;
 
 
-    public ReportExporter(final DynamicReport report) {
-        this.reportBuilder = buildReportBuilder();
-        this.report = report;
+    public ReportXlsExporter(final DynamicReportBuilder reportBuilder) {
+        this.reportBuilder = reportBuilder;
+        this.reportBuilder
+                .setUseFullPageWidth(true)
+                .setWhenNoData("(no data)", new Style())
+                .setMargins(0, 0,  0, 0)
+        ;
+
+        this.report = this.reportBuilder.build();
     }
 
     public void setItems(List<? extends T> items) {
@@ -85,42 +93,37 @@ public class ReportExporter<T> {
         setItems(dataProvider.fetch(new Query<>()).collect(Collectors.toList()));
     }
 
+//    public StreamResource getStreamResource(
+//            String fileName
+//            , SerializableSupplier<List<? extends T>> itemsSupplier
+//    ) {
+//        return getStreamResource(fileName, itemsSupplier);
+//    }
+
+//    private StreamResource getStreamResource(
     public StreamResource getStreamResource(
             String fileName
             , SerializableSupplier<List<? extends T>> itemsSupplier
-            , Format format
-    ) {
-        return getStreamResource(fileName, itemsSupplier, format.exporterSupplier, format.exporterOutputFunction);
-    }
-
-    private StreamResource getStreamResource(
-            String fileName
-            , SerializableSupplier<List<? extends T>> itemsSupplier
-            , SerializableSupplier<JRAbstractExporter> exporterSupplier
-            , SerializableFunction<OutputStream, ExporterOutput> exporterOutputFunction
+            , String[] sheetNames
     ) {
         List<? extends T> items = itemsSupplier.get();
         setItems(items);
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            JRAbstractExporter exporter = exporterSupplier.get();
+            JRAbstractExporter exporter = new JRXlsExporter();
 //            JRXlsExporter jrXlsExporter = exporterSupplier.get();
 //            if (exporterSupplier instanceof JRXlsExporter) {
                 SimpleXlsReportConfiguration configuration = new SimpleXlsReportConfiguration();
-                configuration.setOnePagePerSheet(true);
                 configuration.setRemoveEmptySpaceBetweenRows(true);
                 configuration.setRemoveEmptySpaceBetweenColumns(true);
                 configuration.setWhitePageBackground(false);
                 configuration.setDetectCellType(true);
-//                String[] sheetNames = {"aa","bb","cc","dd","ee","ff","gg"};
-//                configuration.setSheetNames(sheetNames);
-
+                configuration.setSheetNames(sheetNames);
+                configuration.setOnePagePerSheet(true);
+//                configuration.setForcePageBreaks(true);
                 exporter.setConfiguration(configuration);
-//                jrXlsExporter.setParameter(JRXlsExporterParameter.IS_ONE_PAGE_PER_SHEET, Boolean.FALSE);
-//                jrXlsExporter.setParameter(JRXlsExporterParameter.IS_REMOVE_EMPTY_SPACE_BETWEEN_ROWS, Boolean.TRUE);
-//                jrXlsExporter.setParameter(JRXlsExporterParameter.IS_WHITE_PAGE_BACKGROUND, Boolean.FALSE);
-//            }
-            exporter.setExporterOutput(exporterOutputFunction.apply(outputStream));
+
+            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
             exporter.setExporterInput(new SimpleExporterInput(print));
             exporter.exportReport();
             outputStream.flush();
@@ -133,35 +136,6 @@ public class ReportExporter<T> {
         }
     }
 
-
-    private JRAbstractExporter getXlsMultiSheetExporter() {
-        JRAbstractExporter exporter = new JRXlsExporter();
-//            JRXlsExporter jrXlsExporter = exporterSupplier.get();
-//            if (exporterSupplier instanceof JRXlsExporter) {
-        SimpleXlsReportConfiguration configuration = new SimpleXlsReportConfiguration();
-        configuration.setRemoveEmptySpaceBetweenRows(true);
-        configuration.setRemoveEmptySpaceBetweenColumns(true);
-        configuration.setWhitePageBackground(false);
-        configuration.setDetectCellType(true);
-        String[] sheetNames = {"aa","bb","cc","dd","ee","ff","gg"};
-        configuration.setSheetNames(sheetNames);
-        configuration.setOnePagePerSheet(true);
-//                configuration.setForcePageBreaks(true);
-        exporter.setConfiguration(configuration);
-        return exporter;
-    }
-//    public DynamicReportBuilder getReportBuilder() {
-//        return reportBuilder;
-//    }
-//
-//    public String getImageServletPathPattern() {
-//        return imageServletPathPattern;
-//    }
-//
-//    public void setImageServletPathPattern(String imageServletPathPattern) {
-//        this.imageServletPathPattern = imageServletPathPattern;
-//    }
-
     protected AbstractColumn addColumn(PropertyDefinition<T, ?> propertyDefinition) {
         AbstractColumn column = ColumnBuilder.getNew()
                 .setColumnProperty(new ColumnProperty(propertyDefinition.getName(), propertyDefinition.getType().getName()))
@@ -171,12 +145,6 @@ public class ReportExporter<T> {
         reportBuilder.addColumn(column);
 
         return column;
-    }
-
-    protected DynamicReportBuilder buildReportBuilder() {
-        return new FastReportBuilder()
-                .setUseFullPageWidth(true)
-                .setWhenNoData("(no data)", new Style());
     }
 
     protected JasperPrint buildJasperPrint(List<? extends T> items, DynamicReport report) throws JRException {
