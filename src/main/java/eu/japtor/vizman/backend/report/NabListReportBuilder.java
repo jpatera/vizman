@@ -1,7 +1,6 @@
 package eu.japtor.vizman.backend.report;
 
 import ar.com.fdvs.dj.domain.DJGroupLabel;
-import ar.com.fdvs.dj.domain.DynamicReport;
 import ar.com.fdvs.dj.domain.Style;
 import ar.com.fdvs.dj.domain.builders.*;
 import ar.com.fdvs.dj.domain.constants.*;
@@ -11,15 +10,13 @@ import ar.com.fdvs.dj.domain.entities.columns.PropertyColumn;
 import eu.japtor.vizman.backend.entity.Mena;
 
 import java.math.BigDecimal;
-import java.text.FieldPosition;
-import java.text.ParsePosition;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
 
-public class NabListReportBuilder {
+public class NabListReportBuilder extends FastReportBuilder {
 
     static Page Page_xls(){
         return new Page(1111,1300,true);
@@ -33,7 +30,7 @@ public class NabListReportBuilder {
                 .build();
     }
 
-    protected DynamicReportBuilder reportBuilder;
+//    protected DynamicReportBuilder reportBuilder;
 
     private java.text.Format digiStringFormat;
     private java.text.Format archStringFormat;
@@ -56,12 +53,13 @@ public class NabListReportBuilder {
     public NabListReportBuilder() {
         super();
 
-        digiStringFormat = new DigiStringFormat();
-        archStringFormat = new ArchStringFormat();
+//        digiStringFormat = new DigiStringFormat();
+//        archStringFormat = new ArchStringFormat();
 
         buildReportColumns();
+//        buildReportGroups();
 
-        reportBuilder = (new FastReportBuilder()).setUseFullPageWidth(true).setWhenNoData("(no data)", new Style());
+//        reportBuilder = (new FastReportBuilder()).setUseFullPageWidth(true).setWhenNoData("(no data)", new Style());
         GroupBuilder gb1 = new GroupBuilder();
 
         Style glabelStyle = new StyleBuilder(false).setFont(Font.ARIAL_SMALL)
@@ -79,54 +77,49 @@ public class NabListReportBuilder {
          		.setGroupLayout(GroupLayout.VALUE_IN_HEADER) // tells the group how to be shown, there are manyposibilities, see the GroupLayout for more.
    				.build();
 
-        reportBuilder
+        this
                 .setTitle("Zakázky - seznam")
-                .setReportLocale(new Locale("cs", "CZ"))
-//                .setSubtitle("Rok: " + paramRokStr)
-//                .addParameter("PARAM_ROK", String.class.getName())
-                .setMargins(0, 0, 0, 0)
-                .setPrintBackgroundOnOddRows(true)
-                .setDefaultStyles(TITLE_STYLE, DEFAULT_STYLE, HEADER_STYLE, DEFAULT_STYLE)
-                .setPageSizeAndOrientation(Page_xls())
-
-                .setPrintColumnNames(true)
-                .setIgnorePagination(true) // For Excel, we don't want pagination, just a plain list
                 .setUseFullPageWidth(true)
+                .setIgnorePagination(true) // For Excel, we don't want pagination, just a plain list
+                .setMargins(0, 0, 0, 0)
+                .setWhenNoData("(no data)", new Style())
+                .setReportLocale(new Locale("cs", "CZ"))
+                .setPrintBackgroundOnOddRows(true)
+                .setPageSizeAndOrientation(Page_xls())
+                .setPrintColumnNames(true)
 
+                .setDefaultStyles(TITLE_STYLE, DEFAULT_STYLE, HEADER_STYLE, DEFAULT_STYLE)
                 .addStyle(DEFAULT_STYLE)
                 .addStyle(DEFAULT_GRID_STYLE)
                 .addStyle(HEADER_STYLE)
                 .setGrandTotalLegend("National Total")
 
+                // Add basic  columns
                 .addColumn(rokCol)
-                .addColumn(archCol)
-                .addColumn(digiCol)
                 .addColumn(ckontCol)
-                .addColumn(czakCol)
-                .addColumn(objednatelCol)
-                .addColumn(kzTextCol)
-//                .addColumn(dateCreateCol)
-//                .addColumn(honorarCol)
-//                .addColumn(honorarCistyCol)
-//                .addColumn(honorarHrubyCol)
-//                .addColumn(menaCol)
+
+                // Add groups
+
+                // Add subreports
+
+                // Add totals
         ;
     }
 
     private void buildReportColumns() {
-        archCol = ColumnBuilder.getNew()
-                .setColumnProperty("arch", Boolean.class)
-                .setTitle("Arch")
-                .setTextFormatter(archStringFormat)
-                .setWidth(4)
-                .build();
+//        archCol = ColumnBuilder.getNew()
+//                .setColumnProperty("arch", Boolean.class)
+//                .setTitle("Arch")
+//                .setTextFormatter(archStringFormat)
+//                .setWidth(4)
+//                .build();
 
-        digiCol = ColumnBuilder.getNew()
-                .setColumnProperty("digi", Boolean.class)
-                .setTitle("DIGI")
-                .setTextFormatter(digiStringFormat)
-                .setWidth(4)
-                .build();
+//        digiCol = ColumnBuilder.getNew()
+//                .setColumnProperty("digi", Boolean.class)
+//                .setTitle("DIGI")
+//                .setTextFormatter(digiStringFormat)
+//                .setWidth(4)
+//                .build();
 
         ckontCol = ColumnBuilder.getNew()
                 .setColumnProperty("ckont", String.class)
@@ -140,11 +133,11 @@ public class NabListReportBuilder {
                 .setTitle("Rok")
                 .build();
 
-        czakCol = ColumnBuilder.getNew()
-                .setColumnProperty("czak", Integer.class)
-                .setWidth(3)
-                .setTitle("ČZ")
-                .build();
+//        czakCol = ColumnBuilder.getNew()
+//                .setColumnProperty("czak", Integer.class)
+//                .setWidth(3)
+//                .setTitle("ČZ")
+//                .build();
 
         dateCreateCol = ColumnBuilder.getNew()
                 .setColumnProperty("dateCreate", LocalDate.class)
@@ -176,81 +169,17 @@ public class NabListReportBuilder {
                 .setWidth(5)
                 .build();
 
-        objednatelCol = ColumnBuilder.getNew()
-                .setColumnProperty("objednatel", String.class)
-                .setTitle("Objednatel")
-                .setWidth(17)
-                .build();
+//        objednatelCol = ColumnBuilder.getNew()
+//                .setColumnProperty("objednatel", String.class)
+//                .setTitle("Objednatel")
+//                .setWidth(17)
+//                .build();
 
-        kzTextCol = ColumnBuilder.getNew()
-                .setColumnProperty("kzTextFull", String.class)
-                .setTitle("Text KONT/ZAK")
-                .setFixedWidth(false)
-//                .setWidth(500)
-                .build();
-    }
-
-    public DynamicReport buildReport()  {
-        return reportBuilder.build();
-    }
-
-    public static class DigiStringFormat extends java.text.Format {
-        @Override
-        public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
-            StringBuffer sbuf = new StringBuffer("");
-            if (null == obj) {
-                return sbuf;
-            }
-            sbuf.append(getAsDigiChar((Boolean)obj));
-            return sbuf;
-        }
-        @Override
-        public Object parseObject(String source, ParsePosition pos) {
-            if (null == source) {
-                return null;
-            }
-            return getAsBoolean(source);
-        }
-    }
-
-    public static class ArchStringFormat extends java.text.Format {
-        @Override
-        public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
-            StringBuffer sbuf = new StringBuffer("");
-            if (null == obj) {
-                return sbuf;
-            }
-            sbuf.append(getAsArchChar((Boolean)obj));
-            return sbuf;
-        }
-        @Override
-        public Object parseObject(String source, ParsePosition pos) {
-            if (null == source) {
-                return null;
-            }
-            return getAsBoolean(source);
-        }
-    }
-
-    public static final String getAsDigiChar(Boolean digi) {
-        if (null == digi) {
-            return null;
-        }
-        return digi ? "D" : "";
-    }
-
-    public static final String getAsArchChar(Boolean arch) {
-        if (null == arch) {
-            return null;
-        }
-        return arch ? "A" : "";
-    }
-
-    public static final Boolean getAsBoolean(String digiStr) {
-        if (null == digiStr) {
-            return null;
-        } else {
-            return ("D".equals(digiStr));
-        }
+//        kzTextCol = ColumnBuilder.getNew()
+//                .setColumnProperty("kzTextFull", String.class)
+//                .setTitle("Text KONT/ZAK")
+//                .setFixedWidth(false)
+////                .setWidth(500)
+//                .build();
     }
 }

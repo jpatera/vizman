@@ -5,9 +5,9 @@ import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.Kont;
-import eu.japtor.vizman.backend.entity.KontView;
+import eu.japtor.vizman.backend.entity.KontVw;
 import eu.japtor.vizman.backend.repository.KontRepo;
-import eu.japtor.vizman.backend.repository.KontViewRepo;
+import eu.japtor.vizman.backend.repository.KontVwRepo;
 import eu.japtor.vizman.ui.components.Operation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,16 +23,16 @@ import java.util.List;
 public class KontServiceImpl extends AbstractSortableService implements KontService, HasLogger {
 
     private final KontRepo kontRepo;
-    private final KontViewRepo kontViewRepo;
+    private final KontVwRepo kontVwRepo;
 
     private static final List<QuerySortOrder> DEFAULT_SORT_ORDER =
             Collections.singletonList(new QuerySortOrder("czak", SortDirection.ASCENDING));
 
     @Autowired
-    public KontServiceImpl(KontRepo kontRepo, KontViewRepo kontViewRepo) {
+    public KontServiceImpl(KontRepo kontRepo, KontVwRepo kontVwRepo) {
         super();
         this.kontRepo = kontRepo;
-        this.kontViewRepo = kontViewRepo;
+        this.kontVwRepo = kontVwRepo;
     }
 
 
@@ -73,8 +73,13 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
-    public List<KontView> fetchAllFromView() {
-        return kontViewRepo.findAllByOrderByCkontDescRokDesc();
+    public List<KontVw> fetchAllFromKontVw() {
+        return kontVwRepo.findAllByOrderByCkontDescRokDesc();
+    }
+
+    @Override
+    public List<? extends Kont> fetchTop() {
+        return kontRepo.findTop10ByOrderByCkontDesc();
     }
 
     @Override
@@ -95,13 +100,46 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
+    public List<? extends Kont> fetchTopByCkontFilter(final String ckont) {
+        if (StringUtils.isBlank(ckont)) {
+            return kontRepo.findTop10ByOrderByCkontDesc();
+        } else {
+            Kont probe = Kont.getEmptyInstance();
+//            probe.setHidden(personFilter.getHidden());
+            probe.setCkont(ckont);
+            ExampleMatcher matcher = ExampleMatcher.matching()
+                    .withMatcher("ckont", new ExampleMatcher.GenericPropertyMatcher().startsWith())
+//                    .withMatcher("rok", new ExampleMatcher.GenericPropertyMatcher().exact())
+//                    .withMatcher("arch", new ExampleMatcher.GenericPropertyMatcher().exact())
+                    ;
+            // return kontRepo.findTop10By(Example.of(probe, matcher)); -- Takhle to nefunguje
+//            return kontRepo.findAllByOrderByCkontDescRokDesc(Example.of(probe, matcher));
+            return kontRepo.findTop10LikeCkontOrderByCkontDesc(ckont);
+        }
+    }
+
+    @Override
+    public List<? extends Kont> fetchTopByCkont(final String ckont) {
+        return kontRepo.findTop1ByCkont(ckont);
+    }
+
+    @Override
     public List<? super Kont> fetchByRokFilter(final Integer rok) {
         return kontRepo.findAllByRokOrderByCkontDesc(rok);
     }
 
     @Override
+    public List<? extends Kont> fetchTopByRokFilter(final Integer rok) {
+        return kontRepo.findTop10ByRokOrderByCkontDesc(rok);
+    }
+
+    @Override
     public List<Kont> fetchHavingSomeZaksActiveFilter() {
         return kontRepo.findHavingSomeZaksActive();
+    }
+    @Override
+    public List<Kont> fetchTopHavingSomeZaksActiveFilter() {
+        return kontRepo.findTop10HavingSomeZaksActive();
     }
 
     @Override
@@ -110,8 +148,18 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
+    public List<Kont> fetchTopHavingAllZaksArchivedFilter() {
+        return kontRepo.findTop10HavingAllZaksArchived();
+    }
+
+    @Override
     public List<Kont> fetchHavingNoZaksFilter() {
         return kontRepo.findHavingNoZaks();
+    }
+
+    @Override
+    public List<Kont> fetchTopHavingNoZaksFilter() {
+        return kontRepo.findTop10HavingNoZaks();
     }
 
     @Override

@@ -17,6 +17,7 @@ package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
@@ -26,6 +27,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.treegrid.TreeGrid;
@@ -37,12 +39,15 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.*;
 import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.AbstractStreamResource;
 import elemental.json.JsonObject;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.report.KontTreeXlsReportBuilder;
 import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
@@ -94,6 +99,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private static final String SKUPINA_COL_KEY = "skupina-col";
     private static final String ROK_COL_KEY = "rok-col";
 
+    private static final String REP_KONT_SEL_FILE_NAME = "vzm-rep-kont";
+    private static final String KONT_DOWN_ANCHOR_ID = "kont-down-anchor-id";
+
     private KontFormDialog kontFormDialog;
     private ZakFormDialog zakFormDialog;
 
@@ -106,9 +114,12 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private RadioButtonGroup<String> archFilterRadio;
     private ComponentRenderer<HtmlComponent, KzTreeAware> kzTextRenderer;
     private ComponentRenderer<Component, KzTreeAware> avizoRenderer;
-    Select<Integer> rokFilterField;
-
+    private Select<Integer> rokFilterField;
     private List<GridSortOrder<KzTreeAware>> initialSortOrder;
+
+//    private ReportExporter<Kont> xlsReportExporter;
+    private ReportXlsExporter<Kont> xlsReportExporter;
+    private Anchor downloadAnchor;
 
     @Autowired
     public KontService kontService;
@@ -156,6 +167,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     }
 
     public KzTreeView() {
+//        xlsReportExporter = new ReportXlsExporter(new KontTreeXlsReportBuilder());
+        xlsReportExporter = new ReportXlsExporter();
         initView();
     }
 
@@ -211,6 +224,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
 //        // Triggers an event which will loadKzTreeData:
         archFilterRadio.setValue(RADIO_KONT_ACTIVE);
+        updateViewContent();
 
 //        archFilterRadio.getDataProvider().refreshItem();
 //        updateZakGridContent();
@@ -548,9 +562,21 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         gridContainer.getStyle().set("marginTop", "0.5em");
         gridContainer.setAlignItems(Alignment.STRETCH);
 
-        gridContainer.add(buildGridToolBar());
-        gridContainer.add(initKzTreeGrid());
+        gridContainer.add(
+                initDownloadAnchor()
+                , buildGridBarComponent()
+                , initKzTreeGrid()
+        );
         return gridContainer;
+    }
+
+    private Component initDownloadAnchor() {
+        downloadAnchor = new Anchor();
+        downloadAnchor.getElement().setAttribute("download", true);
+        downloadAnchor.setId(KONT_DOWN_ANCHOR_ID);
+        downloadAnchor.setText("Invisible KONT download link");    // setVisible  also disables a server part - cannot be useed
+        downloadAnchor.getStyle().set("display", "none");
+        return downloadAnchor;
     }
 
     private Component initKzTreeGrid() {
@@ -883,10 +909,17 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private TreeData<KzTreeAware> loadKzTreeData(
             final String ckontFilterValue, final Integer rokFilterValue, final String archFilterValue
     ) {
+        ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
+        return (new TreeData()).addItems(getFilteredKzList(ckontFilterValue, rokFilterValue, archFilterValue), kzNodesProvider);
+    }
+
+    private List<? super Kont> getFilteredKzList(
+            final String ckontFilterValue, final Integer rokFilterValue, final String archFilterValue
+    ) {
         List<? super Kont> kzList;
         if (null != rokFilterValue) {
             kzList = kontService.fetchByRokFilter(rokFilterValue);
-        } else if (null != rokFilterValue) {
+        } else if (null != archFilterValue) {
             if (RADIO_KONT_ACTIVE.equals(archFilterValue)) {
                 kzList = kontService.fetchHavingSomeZaksActiveFilter();
             } else if (RADIO_KONT_ARCH.equals(archFilterValue)) {
@@ -901,9 +934,35 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         } else {
             kzList = kontService.fetchAll();
         }
+        return kzList;
+    }
 
-        ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
-        return (new TreeData()).addItems(kzList, kzNodesProvider);
+    private List<? extends Kont> getTopFilteredKzListForReport(
+            final String ckontFilterValue, final Integer rokFilterValue, final String archFilterValue
+    ) {
+        List<? extends Kont> kzList;
+        if (null != rokFilterValue) {
+            kzList = kontService.fetchTopByRokFilter(rokFilterValue);
+        } else if (null != archFilterValue) {
+            if (RADIO_KONT_ACTIVE.equals(archFilterValue)) {
+                kzList = kontService.fetchTopHavingSomeZaksActiveFilter();
+            } else if (RADIO_KONT_ARCH.equals(archFilterValue)) {
+                kzList = kontService.fetchTopHavingAllZaksArchivedFilter();
+            } else if (RADIO_KONT_EMPTY.equals(archFilterValue)) {
+                kzList = kontService.fetchTopHavingNoZaksFilter();
+            } else {
+                kzList = kontService.fetchTop();
+            }
+        } else if (StringUtils.isNotBlank(ckontFilterValue)) {
+            kzList = kontService.fetchTopByCkontFilter(ckontFilterValue);
+        } else {
+            kzList = kontService.fetchTop();
+        }
+        return kzList;
+    }
+
+    private List<? extends Kont> getSelectedKontForReport(final String ckont) {
+        return kontService.fetchTopByCkont(ckont);
     }
 
     private void assignDataProviderToGridAndSort(TreeDataProvider<KzTreeAware> kzTreeDataProvider) {
@@ -1053,192 +1112,12 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //    }
 
 
+    private Component buildGridBarComponent() {
 
-//    protected void saveKontForGrid(Kont kont, Operation operation) {
-//
-////        Kont savedKont = kontFormDialog.saveKont(kont, operation);
-////
-//////        event -> {
-//////            try {
-//////                binder.writeBean(person);
-//////                // A real application would also save the updated person
-//////                // using the application's backend
-//////            } catch (ValidationException e) {
-//////                notifyValidationException(e);
-//////            }
-////
-////        if (Operation.EDIT == operation && null != kontFolderOrig && !kontFolderOrig.equals(kont.getFolder())) {
-//////            if (!VzmFileUtils.renameKontProjRoot(
-//////                    getProjRootServer(), kont.getFolder(), kontFolderOrig)) {
-//////                new OkDialog().open("Projektový adresář kontraktu"
-//////                        , "Adresář se nepodařilo přejmenovat", "");
-//////            };
-//////            if (!VzmFileUtils.renameKontDocRoot(
-//////                    getDocRootServer(), kont.getFolder(), kontFolderOrig)) {
-//////                new OkDialog().open("Dokumentový adresář kontraktu"
-//////                        , "Adresář se nepodařilo přejmenovat", "");
-//////            };
-////            if (!VzmFileUtils.kontDocRootExists(getDocRootServer(), kont.getFolder())) {
-////                new OkDialog().open("Dokumentový adresář kontraktu"
-////                        , "POZOR, dokumentový adresář kontraktu nenalezen, měl by se přejmenovat ručně", "");
-////            }
-////            if (!VzmFileUtils.kontProjRootExists(getProjRootServer(), kont.getFolder())) {
-////                new OkDialog().open("Projektový adresáře kontraktu"
-////                        , "POZOR, projektový adresář kontraktu nenalezen, měl by se přejmenovat ručně", "");
-////            }
-////
-////        } else if (Operation.ADD == operation){
-////            if (!VzmFileUtils.createKontProjDirs(getProjRootServer(), kont.getFolder())) {
-////                new OkDialog().open("Projektové adresáře kontraktu"
-////                        , "Adresářovou strukturu se nepodařilo vytvořit", "");
-////            };
-////            if (!VzmFileUtils.createKontDocDirs(getDocRootServer(), kont.getFolder())) {
-////                new OkDialog().open("Dokumentové adresáře kontraktu"
-////                        , "Adresářovou strukturu se nepodařilo vytvořit", "");
-////            };
-//////            File kontProjRootDir = Paths.get(getProjRootServer(), kont.getFolder()).toFile();
-//////            kontProjRootDir.setReadOnly();
-////        } else {
-////            new OkDialog().open("Adresáře zakázky"
-////                    , "NEZNÁMÁ OPERACE", "")
-////            ;
-////        }
-////
-////        Kont savedKont = kontService.saveKont(kont);
-//
-//
-////        if (Operation.EDIT == operation) {
-////            kzTreeGrid.getDataProvider().refreshItem(savedKont);
-////        } else {
-//////            if (null == archRadioValue || )
-////            kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-////            kzTreeGrid.getDataProvider().refreshAll();
-////
-////        }
-//
-//
-//
-//        Kont savedKont = kontFormDialog.saveKont(kont, operation);
-////
-////        Notification.show("Kontrakt " + savedKont.getCkont() + " uložen"
-////                , 2500, Notification.Position.TOP_CENTER);
-////
-////        if ((Operation.ADD == operation) && (archFilterRadio.getStringValue().equals(RADIO_KONT_ACTIVE))) {
-////                archFilterRadio.setValue(RADIO_KONT_ARCH);
-////        } else {
-////                loadKzTreeData(archFilterRadio.getStringValue());
-////        }
-////
-////        kzTreeGrid.expand(savedKont);
-////        kzTreeGrid.select(savedKont);
-//
-//
-//    }
-
-//    private void refreshTreeAfterEdit(final KzTreeAware neibourghItem) {
-//        loadKzTreeData(archFilterRadio.getStringValue());
-//        kzTreeGrid.getSelectionModel().select(neibourghItem);
-//    }
-
-//    private void deleteKontForGrid(final Kont kontToDelete) {
-//        int kontDelIdx = kzTreeGrid.getDataCommunicator().getIndex(kontToDelete);
-//        Stream<KzTreeAware> stream = kzTreeGrid.getDataCommunicator()
-//                .fetchFromProvider(kontDelIdx + 1, 1);
-//        KzTreeAware newSelectedKont = getNeighborItemFromTree(kontToDelete);
-//
-//        try {
-//            kontService.deleteKont(kontToDelete);
-//            loadKzTreeData(archFilterRadio.getStringValue());
-//            kzTreeGrid.getSelectionModel().select(newSelectedKont);
-//
-//            ConfirmDialog
-//                    .createInfo()
-//                    .withCaption("Zrušení kontraktu")
-//                    .withMessage("Kontrakt " + kontToDelete.getCkont() + " byl zrušen.")
-//                    .open()
-//            ;
-//
-//        } catch(Exception e) {
-////            getLogger().error("Error when deleting {} {} [operation: {}]", kontToDelete.getTyp().name()
-////                    , kontToDelete.getCkont(), Operation.DELETE.name());
-//            ConfirmDialog
-//                    .createError()
-//                    .withCaption("Zrušení kontraktu")
-//                    .withMessage("Kontrakt " + kontToDelete.getCkont() + " se nepodařilo zrušit.")
-//                    .open();
-//            throw e;
-//        }
-//    }
-
-
-//    private Grid<Zak> initZakGrid() {
-//        zakGrid.setSizeFull();
-//        zakGrid.getElement().setAttribute("colspan", "2");
-//        zakGrid.setMultiSort(false);
-//        zakGrid.setSelectionMode(Grid.SelectionMode.NONE);
-//        zakGrid.setHeightByRows(true);
-//        zakGrid.setWidth("900px");
-////        zakGrid.setHeight(null);
-////        zakGrid.getElement().setAlignItems(FlexComponent.Alignment.STRETCH);
-//
-//        // TODO: ID -> CSS ?
-//        zakGrid.setId("zak-grid");  // .. same ID as is used in shared-styles grid's dom module
-//        zakGrid.addColumn(Zak::getCkz).setHeader("ČZ").setWidth("3em").setResizable(true)
-//                .setSortProperty("poradi");
-////        zakGrid.addColumn(new ComponentRenderer<>(this::createOpenDirButton)).setFlexGrow(0);
-//        zakGrid.addColumn(Zak::getRokmeszad).setHeader("Zadáno").setWidth("3em").setResizable(true);
-//        zakGrid.addColumn(Zak::getText).setHeader("Text zak.").setWidth("5em").setResizable(true);
-//        zakGrid.addColumn(Zak::getHonorc).setHeader("Honorář").setWidth("3em").setResizable(true);
-//        zakGrid.addColumn(Zak::getSkupina).setHeader("Skupina").setWidth("4em").setResizable(true);
-//
-//        return zakGrid;
-//    }
-
-//    private void deleteZakForGrid(Zak zak) {
-//        String ckzDel = String.format("%s / %d", zak.getCkont(), zak.getCkz());
-//        try {
-//            boolean zakWasDeleted = zakService.deleteZak(zak);
-//
-//            if (!zakWasDeleted) {
-//                ConfirmDialog
-//                        .createError()
-//                        .withCaption("Zrušení zakázky")
-//                        .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
-//                        .open();
-//            } else {
-//                kzTreeGrid.getDataCommunicator().getKeyMapper().removeAll();
-//                kzTreeGrid.getDataProvider().refreshAll();
-//                getLogger().info(String.format("ZAKAZKA %s deleted", ckzDel));
-//                Notification.show(String.format("Zakázka %s zrušena.", ckzDel)
-//                        , 2500, Notification.Position.TOP_CENTER)
-//                ;
-//                ConfirmDialog
-//                        .createInfo()
-//                        .withCaption("Zrušení zakázky")
-//                        .withMessage("Zakázka " + ckzDel + " byla zrušena.")
-//                        .open()
-//                ;
-//            }
-//        } catch (Exception e) {
-//            getLogger().error(String.format("Error during deletion ZAKAZKA %s / %d", zak.getCkont(), zak.getCkz()), e);
-//            ConfirmDialog
-//                    .createError()
-//                    .withCaption("Zrušení zakázky")
-//                    .withMessage(String.format("Chyba při rušení zakázky %s .", ckzDel))
-//                    .open()
-//            ;
-//        }
-//    }
-
-
-    private Component buildGridToolBar() {
-
-//        kzToolBar = new HorizontalLayout();
-//        FlexLayout kzToolBar;
-        HorizontalLayout kzToolBar = new HorizontalLayout();
-        kzToolBar.setSpacing(false);
-        kzToolBar.setAlignItems(Alignment.END);
-        kzToolBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        HorizontalLayout gridBar = new HorizontalLayout();
+        gridBar.setSpacing(false);
+        gridBar.setAlignItems(Alignment.END);
+        gridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
 
         Button expandAllBtn = new Button("Rozbalit vše", VaadinIcon.CHEVRON_DOWN.create()
@@ -1258,8 +1137,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
             if (event.isFromClient()) {
                 rokFilterField.clear();
                 archFilterRadio.clear();
+                updateViewContent();
             }
-            updateViewContent();
+//            updateViewContent();
         });
 
         HorizontalLayout ckontFilterComponent = new HorizontalLayout();
@@ -1280,8 +1160,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
             if (event.isFromClient()) {
                 ckontFilterField.clear();
                 archFilterRadio.clear();
+                updateViewContent();
             }
-            updateViewContent();
+//            updateViewContent();
         });
 
         HorizontalLayout rokFilterComponent = new HorizontalLayout();
@@ -1304,8 +1185,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
             if (event.isFromClient()) {
                 ckontFilterField.clear();
                 rokFilterField.clear();
+                updateViewContent();
             }
-            updateViewContent();
+//            updateViewContent();
         });
 
         HorizontalLayout archFilterComponent = new HorizontalLayout();
@@ -1330,7 +1212,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 , initReloadButton()
         );
 
-        kzToolBar.add(
+        gridBar.add(
                 titleComponent
                 , new Ribbon()
                 , ckontFilterComponent
@@ -1340,94 +1222,11 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 , archFilterComponent
                 , new Ribbon()
                 , initNewKontButton()
-//                , initZakRepButton()
+                , new Ribbon()
+                , initXlsReportMenu()
         );
 //        kzToolBar.expand(ribbonExp);
-
-
-//        Button buttonPrevious = new Button("Previous", VaadinIcon.ANGLE_LEFT.create(), e -> calendar.previous());
-//        Button buttonNext = new Button("Next", VaadinIcon.ANGLE_RIGHT.create(), e -> calendar.next());
-//        buttonNext.setIconAfterText(true);
-//
-//
-//        // simulate the date picker light that we can use in polymer
-//        DatePicker gotoDate = new DatePicker();
-//        gotoDate.addValueChangeListener(event1 -> calendar.gotoDate(event1.getStringValue()));
-//        gotoDate.getElement().getStyle().set("visibility", "hidden");
-//        gotoDate.getElement().getStyle().set("position", "fixed");
-//        gotoDate.setWidth("0px");
-//        gotoDate.setHeight("0px");
-//        gotoDate.setWeekNumbersVisible(true);
-//        buttonDatePicker = new Button(VaadinIcon.CALENDAR.create());
-//        buttonDatePicker.getElement().appendChild(gotoDate.getElement());
-//        buttonDatePicker.addClickListener(event -> gotoDate.open());
-//
-//        Button buttonHeight = new Button("Calendar height", event -> new HeightDialog().open());
-//
-//        Checkbox cbWeekNumbers = new Checkbox("Week numbers", event -> calendar.setWeekNumbersVisible(event.getStringValue()));
-//
-//        ComboBox<Locale> comboBoxLocales = new ComboBox<>();
-//
-//        List<Locale> items = Arrays.asList(CalendarLocale.getAvailableLocales());
-//        comboBoxLocales.setItems(items);
-//        comboBoxLocales.setValue(CalendarLocale.getDefault());
-//        comboBoxLocales.addValueChangeListener(event -> calendar.setLocale(event.getStringValue()));
-//        comboBoxLocales.setRequired(true);
-//        comboBoxLocales.setPreventInvalidInput(true);
-//
-//        ComboBox<GroupEntriesBy> comboBoxGroupBy = new ComboBox<>("");
-//        comboBoxGroupBy.setPlaceholder("Group by...");
-//        comboBoxGroupBy.setItems(GroupEntriesBy.values());
-//        comboBoxGroupBy.setItemLabelGenerator(item -> {
-//            switch (item) {
-//                default:
-//                case NONE:
-//                    return "none";
-//                case RESOURCE_DATE:
-//                    return "group by resource / date";
-//                case DATE_RESOURCE:
-//                    return "group by date / resource";
-//            }
-//        });
-//        comboBoxGroupBy.addValueChangeListener(event -> ((Scheduler) calendar).setGroupEntriesBy(event.getStringValue()));
-//
-//        timezoneComboBox = new ComboBox<>("");
-//        timezoneComboBox.setItemLabelGenerator(Timezone::getClientSideValue);
-//        timezoneComboBox.setItems(Timezone.getAvailableZones());
-//        timezoneComboBox.setValue(Timezone.UTC);
-//        timezoneComboBox.addValueChangeListener(event -> {
-//            Timezone value = event.getStringValue();
-//            calendar.setTimezone(value != null ? value : Timezone.UTC);
-//        });
-//
-//        Button addThousand = new Button("Add 1000 entries", event -> {
-//            Button source = event.getSource();
-//            source.setEnabled(false);
-//            source.setText("Creating...");
-//            Optional<UI> optionalUI = getUI();
-//            optionalUI.ifPresent(ui -> {
-//                Executors.newSingleThreadExecutor().execute(() -> {
-//                    Timezone timezone = new Timezone(ZoneId.systemDefault());
-//                    Instant start = timezone.convertToUTC(LocalDate.now());
-//                    Instant end = timezone.convertToUTC(LocalDate.now().plusDays(1));
-//                    List<Entry> list = IntStream.range(0, 1000).mapToObj(i -> {
-//                        Entry entry = new Entry();
-//                        entry.setStart(start);
-//                        entry.setEnd(end);
-//                        entry.setAllDay(true);
-//                        entry.setTitle("Generated " + (i + 1));
-//                        return entry;
-//                    }).collect(Collectors.toList());
-//
-//                    ui.access(() -> {
-//                        calendar.addEntries(list);
-//                        source.setVisible(false);
-//                        Notification.show("Added 1,000 entries for today");
-//                    });
-//                });
-//            });
-//        });
-        return kzToolBar;
+        return gridBar;
     }
 
     Component initReloadButton() {
@@ -1554,6 +1353,70 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         return newKontButton;
     }
 
+
+    private String getReportFileName(ReportExporter.Format format) {
+        return REP_KONT_SEL_FILE_NAME + "." + format.name().toLowerCase();
+    }
+
+    private SerializableSupplier<List<? extends Kont>> kontListReportSupplier =
+            () -> {
+                String ckont = ckontFilterField.getValue();
+                Integer rok = rokFilterField.getValue();
+                String arch = archFilterRadio.getValue();
+                return getTopFilteredKzListForReport(ckont, rok, arch);  // ..(buildZakBasicFilterParams());
+            };
+
+    private SerializableSupplier<List<? extends Kont>> kontSelectionReportSupplier =
+            () -> {
+                Set<KzTreeAware> itemSelection = kzTreeGrid.getSelectedItems();  // Suppose: SingleSelectionModel is set, only one (or none) item is present
+                if (null == itemSelection || itemSelection.isEmpty()) {
+                    return Collections.EMPTY_LIST;
+                }
+                return getSelectedKontForReport(itemSelection.iterator().next().getCkont());
+            };
+
+    private Component initXlsReportMenu() {
+        Button menuBtn = new Button(new Image("img/xls_down_24b.png", ""));
+        menuBtn.getElement().setAttribute("theme", "icon secondary small");
+
+        ContextMenu menu = new ContextMenu();
+        menu.addItem("Aktuální", e -> updateXlsRepResourceAndDownload(kontSelectionReportSupplier));
+        menu.addItem("Prvních 10", e -> updateXlsRepResourceAndDownload(kontListReportSupplier));
+        menu.setOpenOnClick(true);
+
+        menu.setTarget(menuBtn);
+        return menuBtn;
+    }
+
+    private void updateXlsRepResourceAndDownload(SerializableSupplier<List<? extends Kont>> itemsSupplier) {
+        ReportExporter.Format expFormat = ReportExporter.Format.XLS;
+//        List<String> sheetNames = itemsSupplier.get().stream()
+        String[] sheetNames = itemsSupplier.get().stream()
+                .map(item -> item.getCkont())
+                .toArray(String[]::new)
+        ;
+        final AbstractStreamResource xlsResource =
+            xlsReportExporter.getStreamResource(
+                    new KontTreeXlsReportBuilder(), getReportFileName(expFormat), itemsSupplier, sheetNames
+            );
+
+        // Varianta 1
+        downloadAnchor.setHref(xlsResource);
+        Page page = UI.getCurrent().getPage();
+        page.executeJs("$0.click();", downloadAnchor.getElement());
+//      or:  page.executeJs("document.getElementById('" + KONT_REP_ID + "').click();");
+
+        // Varianta 2 - browsers can have pop-up opening disabled
+//        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
+//        Page page = UI.getCurrent().getPage();
+//        page.executeJs("window.open($0, $1)", registration.getResourceUri().toString(), "_blank");
+
+        // Varianta 3 - It is not clear how to activate source page again after download is finished
+//        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
+//        Page page = UI.getCurrent().getPage();
+//        page.setLocation(registration.getResourceUri());
+    }
+
     public List<Map<String, Object>> getReportData() {
         List<Map<String, Object>> result = new ArrayList<>();
         for (Zak zak : zakService.fetchAll()) {
@@ -1565,325 +1428,4 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         }
         return result;
     }
-// ===============================================================================
-
-
-//    public static class Person {
-//        private String name;
-//        private Person parent;
-//
-//        public String getName() {
-//            return name;
-//        }
-//
-//        public Person getParent() {
-//            return parent;
-//        }
-//
-//        public void setName(String name) {
-//            this.name = name;
-//        }
-//
-//        public void setParent(Person parent) {
-//            this.parent = parent;
-//        }
-//
-//        public Person(String name, Person parent) {
-//            this.name = name;
-//            this.parent = parent;
-//        }
-//
-////        @Override
-////        public String toString() {
-////            return name;
-////        }
-////
-////        @Override
-////        public boolean equals(Object o) {
-////            if (this == o) return true;
-////            if (o == null || getClass() != o.getClass()) return false;
-////
-////            Person person = (Person) o;
-////
-////            if (name != null ? !name.equals(person.name) : person.name != null) return false;
-////            return parent != null ? parent.equals(person.parent) : person.parent == null;
-////        }
-////
-////        @Override
-////        public int hashCode() {
-////            int result = name != null ? name.hashCode() : 0;
-////            result = 31 * result + (parent != null ? parent.hashCode() : 0);
-////            return result;
-////        }
-//    }
-//
-//
-////    private void initSimplePersonGrid() {
-////        TreeGrid<Person> personGrid = new TreeGrid<>(Person.class);
-////        personGrid.addColumn(Person::getName).setHeader("X-NAME");
-////        personGrid.setHierarchyColumn("name");
-////
-////
-//////        List<Person> all = generatePersons();
-//////
-////        Person dad = new Person("dad", null);
-////        Person son = new Person("son", dad);
-////        Person daughter = new Person("daughter", dad);
-//////        List<Person> all = Arrays.asList(dad, son, daughter);
-//////        return all;
-//////        all.forEach(p -> personGrid.getTreeData().addItem(p.getParent(), p));
-////        personGrid.getTreeData().addItem(null, dad);
-////        personGrid.getTreeData().addItem(dad, son);
-////        personGrid.getTreeData().addItem(dad, daughter);
-////
-////    }
-////
-////
-////    private List<Person> generatePersons() {
-////
-////        Person dad = new Person("dad", null);
-////        Person son = new Person("son", dad);
-////        Person daughter = new Person("daughter", dad);
-////        List<Person> all = Arrays.asList(dad, son, daughter);
-////        return all;
-////    }
-//
-//
-//
-////    public class HeightDialog extends Dialog {
-////        HeightDialog() {
-////            VerticalLayout dialogContainer = new VerticalLayout();
-////            add(dialogContainer);
-////
-////            TextField heightInput = new TextField("", "500", "e. g. 300");
-////            Button byPixels = new Button("Set by pixels", e -> {
-////                kzTreeGrid.setHeight(Integer.valueOf(heightInput.getStringValue()));
-////
-////                this.setSizeUndefined();
-////                setFlexStyles(false);
-////            });
-////            byPixels.getElement().setProperty("title", "Calendar height is fixed by pixels.");
-////            dialogContainer.add(new HorizontalLayout(heightInput, byPixels));
-////
-//////            Button autoHeight = new Button("Auto height", e -> {
-//////                kzTreeGrid.setHeightAuto();
-//////
-//////                this.setSizeUndefined();
-//////                setFlexStyles(false);
-//////            });
-//////            autoHeight.getElement().setProperty("title", "Calendar height is set to auto.");
-//////            dialogContainer.add(autoHeight);
-////
-//////            Button heightByBlockParent = new Button("Height by block parent", e -> {
-//////                kzTreeGrid.setHeightByParent();
-//////                kzTreeGrid.setSizeFull();
-//////
-//////                this.setSizeFull();
-//////                setFlexStyles(false);
-//////            });
-//////            heightByBlockParent.getElement().setProperty("title", "Container is display:block + setSizeFull(). Calendar height is set to parent + setSizeFull(). Body element kept unchanged.");
-//////            dialogContainer.add(heightByBlockParent);
-////
-//////            Button heightByBlockParentAndCalc = new Button("Height by block parent + calc()", e -> {
-//////                calendar.setHeightByParent();
-//////                calendar.getElement().getStyle().set("height", "calc(100vh - 450px)");
-//////
-//////                Demo.this.setSizeFull();
-//////                setFlexStyles(false);
-//////            });
-//////            heightByBlockParentAndCalc.getElement().setProperty("title", "Container is display:block + setSizeFull(). Calendar height is set to parent + css height is calculated by calc(100vh - 450px) as example. Body element kept unchanged.");
-//////            dialogContainer.add(heightByBlockParentAndCalc);
-////
-////            Button heightByFlexParent = new Button("Height by flex parent", e -> {
-////                calendar.setHeightByParent();
-////
-////                Demo.this.setSizeFull();
-////                setFlexStyles(true);
-////            });
-////            heightByFlexParent.getElement().setProperty("title", "Container is display:flex + setSizeFull(). Calendar height is set to parent + flex-grow: 1. Body element kept unchanged.");
-////            dialogContainer.add(heightByFlexParent);
-////
-////            Button heightByFlexParentAndBody = new Button("Height by flex parent and flex body", e -> {
-////                calendar.setHeightByParent();
-////
-////                Demo.this.setSizeUndefined();
-////                setFlexStyles(true);
-////
-////                UI.getCurrent().getElement().getStyle().set("display", "flex");
-////            });
-////            heightByFlexParentAndBody.getElement().setProperty("title", "Container is display:flex. Calendar height is set to parent + flex-grow: 1. Body element is set to display: flex.");
-////            dialogContainer.add(heightByFlexParentAndBody);
-////        }
-////    }
-
-// ===============================================================================
-
-//    public interface TreeAware {
-//
-//        String getName();
-//        int getHoursDone();
-//        Date getLastModified();
-//        Collection<TreeAware> getSubNodes();
-//        void setSubNodes(List<TreeAware> subNodes);
-//
-//    }
-//
-//    public static class Node implements TreeAware {
-//
-////        Long id;
-//        String name;
-////        Long parentId;
-//        private Collection<TreeAware> subNodes = new ArrayList<>();
-//
-////        public Node(Long id, String text, Long parentId) {
-//        public Node(String name) {
-////            this.id = id;
-//            this.name = name;
-////            this.parentId = parentId;
-//        }
-//
-////        public Long getId() {
-////          return id;
-////        }
-////
-////        public void setId(Long id) {
-////          this.id = id;
-////        }
-//
-//        public String getName() {
-//          return name;
-//        }
-//
-//        public void setName(String name) {
-//          this.name = name;
-//        }
-//
-//        public void setSubNodes(List<TreeAware> subNodes) {
-//            this.subNodes = subNodes;
-//        }
-//
-//        @Override
-//        public Collection<TreeAware> getSubNodes() {
-//            return this.subNodes;
-//        }
-//
-//        public void addSubNode(TreeAware subNode) {
-//           subNodes.add(subNode);
-//        }
-//
-//        @Override
-//        public int getHoursDone() {
-//            return getSubNodes().stream()
-//                    .map(TreeAware::getHoursDone)
-//                    .reduce(0, Integer::sum);
-//        }
-//
-//        @Override
-//        public Date getLastModified() {
-//            return getSubNodes().stream()
-//                    .map(TreeAware::getLastModified)
-//                    .max(Date::compareTo).orElse(null);
-//        }
-
-//        @Override
-//        public boolean equals(Object o) {
-//            if (this == o) return true;
-//            if (o == null || getClass() != o.getClass()) return false;
-//
-//            Node node = (Node) o;
-//
-//            if (name != null ? !name.equals(node.name) : node.name != null) return false;
-//            return subNodes != null ? subNodes.equals(node.subNodes) : node.subNodes == null;
-//        }
-//
-//        @Override
-//        public int hashCode() {
-//            int result = name != null ? name.hashCode() : 0;
-//            result = 31 * result + (subNodes != null ? subNodes.hashCode() : 0);
-//            return result;
-//        }
-//        public Long getParentId() {
-//          return parentId;
-//        }
-//
-//        public void setParentId(Long parentId) {
-//          this.parentId = parentId;
-//        }
-//    }
-
-//    private List<TreeAware> generateNodes() {
-//        List<TreeAware> rootNodes = new ArrayList<>();
-//
-//        for (int year = 2010; year <= 2016; year++) {
-//            Node rootNode = new Node("Node " + year);
-//
-//            for (int i = 1; i < 2 + rand.nextInt(5); i++) {
-////                Node nextNode = new LeafNode("Sub node " + year + " - " + i, rand.nextInt(100), year);
-//                TreeAware nextNode = new Node("Sub node " + year + " - " + i);
-//                nextNode.setSubNodes(Arrays.asList(
-//                        new LeafNode("Implementation", rand.nextInt(100), year),
-//                        new LeafNode("Planning", rand.nextInt(10), year),
-//                        new LeafNode("Prototyping", rand.nextInt(20), year)));
-//                rootNode.addSubNode(nextNode);
-//            }
-//            rootNodes.add(rootNode);
-//        }
-//        return rootNodes;
-//    }
-//
-//    class LeafNode extends Node {
-//
-//        private int hoursDone;
-//        private Date lastModified;
-//
-//
-//        private LeafNode(String name, int hoursDone, int year) {
-//            super(name);
-//            this.hoursDone = hoursDone;
-//            lastModified = new Date(year - 1900, rand.nextInt(12), rand.nextInt(10));
-//        }
-//
-//        @Override
-//        public int getHoursDone() {
-//            return hoursDone;
-//        }
-//
-//        @Override
-//        public Date getLastModified() {
-//            return lastModified;
-//        }
-//    }
-//
-//
-//    private void initNodeTreeGrid() {
-//        TreeGrid<TreeAware> treeGrid;
-//
-//        treeGrid = new TreeGrid<>();
-//        treeGrid.setWidth( "100%" );
-//        treeGrid.setHeight( null );
-//        treeGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-//
-//        treeGrid.addHierarchyColumn(TreeAware::getName).setHeader(("Name"))
-//                .setFlexGrow(0).setWidth("340px")
-//                .setResizable(true).setFrozen(true).setId("name-column");
-//        treeGrid.addColumn(TreeAware::getHoursDone).setHeader("Hours Done");
-//        treeGrid.addColumn(TreeAware::getLastModified).setHeader("Last Modified");
-////        treeGrid.setHierarchyColumn("name");
-//
-//        treeGrid.setItemDetailsRenderer(new ComponentRenderer<>(item -> {
-//            Label label = new Label("Details opened! " + item);
-//            label.setId("details-label");
-//            return label;
-//        }));
-//
-//        List<TreeAware> rootNodes = generateNodes();
-//        treeGrid.setItems(rootNodes, TreeAware::getSubNodes);
-//
-//        treeGrid.getDataProvider().refreshAll();
-//        treeGrid.expand(rootNodes.get(0));
-//        treeGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-////        treeGrid.getTreeData().getRootItems().contains(item);
-//    }
-
-
 }

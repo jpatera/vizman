@@ -64,7 +64,7 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_KONT")
-    private KontView kont;
+    private KontVw kont;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_KLIENT") // Should be renamed in DB to ID_OBJEDNATEL
@@ -171,10 +171,10 @@ public class Nab extends AbstractGenIdEntity implements HasItemType, HasVzState,
         this.datetimeUpdate = datetimeUpdate;
     }
 
-    public KontView getKont() {
+    public KontVw getKont() {
         return kont;
     }
-    public void setKont(KontView kont) {
+    public void setKont(KontVw kont) {
         this.kont = kont;
     }
 

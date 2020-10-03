@@ -16,19 +16,20 @@
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.AbstractStreamResource;
-import com.vaadin.flow.server.StreamRegistration;
-import com.vaadin.flow.server.VaadinSession;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.ItemNames;
 import eu.japtor.vizman.backend.entity.ItemType;
@@ -41,7 +42,6 @@ import eu.japtor.vizman.backend.service.ZakBasicService;
 import eu.japtor.vizman.backend.service.ZaknService;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
-import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -65,11 +65,11 @@ public class ZakBasicListView extends VerticalLayout {
     private List<GridSortOrder<ZakBasic>> initialSortOrder;
     private ReloadButton reloadButton;
     private ResetFiltersButton resetFiltersButton;
-    private Anchor expXlsAnchor;
+    private Anchor downloadAnchor;
     private ReportExporter<ZakBasic> xlsReportExporter;
 
     private final static String REPORT_FILE_NAME = "vzm-rep-zakb";
-
+    private final static String ZAKB_DOWN_ANCHOR_ID = "zakb-down-anchor-id";
 
     @Autowired
     public ZakBasicRepo zakBasicRepo;
@@ -84,19 +84,8 @@ public class ZakBasicListView extends VerticalLayout {
     public CfgPropsCache cfgPropsCache;
 
 
-    private ComponentEventListener anchorExportListener = event -> {
-        try {
-            updateExpXlsAnchorResource(zakList);
-        } catch (JRException e) {
-            e.printStackTrace();
-        }
-    };
-
-    private SerializableSupplier<List<? extends ZakBasic>> itemsSupplier =
-            () -> zakBasicService.fetchAndCalcByFiltersDescOrder(buildZakBasicFilterParams());
-
     public ZakBasicListView() {
-        xlsReportExporter = new ReportExporter((new ZakListReportBuilder()).buildReport());
+        xlsReportExporter = new ReportExporter();
 //        initView();
     }
 
@@ -169,7 +158,8 @@ public class ZakBasicListView extends VerticalLayout {
         gridBar.setAlignItems(Alignment.END);
         gridBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
         gridBar.add(
-                buildTitleComponent()
+                initDownloadAnchor()
+                , buildTitleComponent()
                 , new Ribbon()
 //                , buildGridBarControlsComponent()
 //                , new Ribbon()
@@ -201,32 +191,71 @@ public class ZakBasicListView extends VerticalLayout {
         toolBar.setDefaultVerticalComponentAlignment(Alignment.CENTER);
         toolBar.setSpacing(false);
         toolBar.add(
-                initReportXlsExpAnchor()
+                initXlsReportMenu()
         );
         return toolBar;
-    }
-
-    private Anchor initReportXlsExpAnchor() {
-        expXlsAnchor = new ReportExpButtonAnchor(ReportExporter.Format.XLS, anchorExportListener);
-        return expXlsAnchor;
     }
 
     private String getReportFileName(ReportExporter.Format format) {
         return REPORT_FILE_NAME + "." + format.name().toLowerCase();
     }
 
-    private void updateExpXlsAnchorResource(List<ZakBasic> items) throws JRException {
+    private SerializableSupplier<List<? extends ZakBasic>> zakBasiciListReportSupplier =
+            () -> zakBasicService.fetchAndCalcByFiltersDescOrder(buildZakBasicFilterParams());
+
+    private Component initDownloadAnchor() {
+//        downloadAnchor = new ReportExpButtonAnchor(ReportExporter.Format.XLS, anchorExportListener);
+        downloadAnchor = new Anchor();
+        downloadAnchor.getElement().setAttribute("download", true);
+        downloadAnchor.setId(ZAKB_DOWN_ANCHOR_ID);
+        downloadAnchor.setText("Invisible ZAK-BASIC download link");    // setVisible  also disables a server part - cannot be useed
+        downloadAnchor.getStyle().set("display", "none");
+        return downloadAnchor;
+    }
+
+//    private ComponentEventListener anchorExportListener = event -> {
+////        try {
+//            updateXlsRepResourceAndDownload(zakBasiciListReportSupplier);
+////        } catch (JRException e) {
+////            e.printStackTrace();
+////        }
+//    };
+
+    private Component initXlsReportMenu() {
+        Button menuBtn = new Button(new Image("img/xls_down_24b.png", ""));
+        menuBtn.getElement().setAttribute("theme", "icon secondary small");
+
+        ContextMenu menu = new ContextMenu();
+        menu.addItem("Seznam zakázek", e -> updateXlsRepResourceAndDownload(zakBasiciListReportSupplier));
+        menu.setOpenOnClick(true);
+
+        menu.setTarget(menuBtn);
+        return menuBtn;
+    }
+
+//    private void updateXlsRepResourceAndDownload(SerializableSupplier<List<? extends ZakBasic>> supplier) throws JRException {
+    private void updateXlsRepResourceAndDownload(SerializableSupplier<List<? extends ZakBasic>> itemsSupplier) {
         ReportExporter.Format expFormat = ReportExporter.Format.XLS;
-        AbstractStreamResource xlsResource =
-                xlsReportExporter.getStreamResource(getReportFileName(expFormat), itemsSupplier, expFormat);
-        expXlsAnchor.setHref(xlsResource);
+        final AbstractStreamResource xlsResource =
+                xlsReportExporter.getStreamResource(
+                        new ZakListReportBuilder(), getReportFileName(expFormat), itemsSupplier, expFormat, null
+                );
 
         // Varianta 1
-        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
+        downloadAnchor.setHref(xlsResource);
+        Page page = UI.getCurrent().getPage();
+        page.executeJs("$0.click();", downloadAnchor.getElement());
+//      or:  page.executeJs("document.getElementById('" + ZAK_BASIC_REP_ID + "').click();");
 
-//        // Varianta 2 - Has an issue: after returning to the parent dialog [Close] button does nothing
+        // Varianta 2 - browsers can have pop-up opening disabled
 //        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
-//        UI.getCurrent().getPage().setLocation(registration.getResourceUri());
+//        Page page = UI.getCurrent().getPage();
+//        page.executeJs("window.open($0, $1)", registration.getResourceUri().toString(), "_blank");
+
+        // Varianta 3 - It is not clear how to activate source page again after download is finished
+//        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
+//        Page page = UI.getCurrent().getPage();
+//        page.setLocation(registration.getResourceUri());
     }
 
 

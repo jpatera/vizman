@@ -15,17 +15,17 @@ import java.util.List;
 @Service
 public class NabViewServiceImpl implements NabViewService, HasLogger {
 
-    private NabViewRepo nabViewRepo;
+    private NabViewRepo nabVwRepo;
 
     @Autowired
-    public NabViewServiceImpl(NabViewRepo nabViewRepo) {
+    public NabViewServiceImpl(NabViewRepo nabVwRepo) {
         super();
-        this.nabViewRepo = nabViewRepo;
+        this.nabVwRepo = nabVwRepo;
     }
 
 //    @Override
 //    public List<NabVw> fetchByFiltersDescOrder(NabListView.NabFilterParams nabFilterParams) {
-//        List<NabVw> nabs = nabViewRepo.findNabByRokAndText(
+//        List<NabVw> nabs = nabVwRepo.findNabByRokAndText(
 //                nabFilterParams.getRok()
 //                , nabFilterParams.getText()
 //        );
@@ -33,34 +33,38 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
 //    }
 
     @Override
+    public List<NabVw> fetchForReport() {
+        return nabVwRepo.findTop10By();
+    }
+
+    @Override
     public Page<NabVw> fetchByNabFilter(NabViewFilter nabViewFilter, List<QuerySortOrder> sortOrders, Pageable pageable) {
         if (nabViewFilter == null) {
-            return nabViewRepo.findAll(pageable);
+            return nabVwRepo.findAll(pageable);
         } else {
-            Page<NabVw> pg = nabViewRepo.findAll(Example.of(NabVw.getInstanceFromFilter(nabViewFilter), getNabMatcher()), pageable);
+            Page<NabVw> pg = nabVwRepo.findAll(Example.of(NabVw.getInstanceFromFilter(nabViewFilter), getNabMatcher()), pageable);
             return pg;
-//            return nabViewRepo.findAll(Example.of(probe, matcher));
+//            return nabVwRepo.findAll(Example.of(probe, matcher));
         }
     }
 
     @Override
     public List<NabVw> fetchFilteredList(NabViewFilter nabViewFilter) {
         if (nabViewFilter == null) {
-            return nabViewRepo.findAll();
+            return nabVwRepo.findAll();
         } else {
-            return nabViewRepo.findAll(Example.of(NabVw.getInstanceFromFilter(nabViewFilter)));
+            return nabVwRepo.findAll(Example.of(NabVw.getInstanceFromFilter(nabViewFilter)));
         }
     }
 
     @Override
     public long countByNabFilter(NabViewFilter nabViewFilter) {
         if (nabViewFilter == null) {
-            return nabViewRepo.count();
+            return nabVwRepo.count();
         } else {
-            return nabViewRepo.count(Example.of(NabVw.getInstanceFromFilter(nabViewFilter), getNabMatcher()));
+            return nabVwRepo.count(Example.of(NabVw.getInstanceFromFilter(nabViewFilter), getNabMatcher()));
         }
     }
-
 
     private ExampleMatcher getNabMatcher()  {
         return ExampleMatcher.matching()
@@ -78,23 +82,23 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
 
     @Override
     public NabVw fetchNabByCnab(String cnab) {
-        return nabViewRepo.findTopByCnab(cnab);
+        return nabVwRepo.findTopByCnab(cnab);
     }
 
     @Override
     public List<Integer> fetchRokList() {
-        return nabViewRepo.findNabRokAll();
+        return nabVwRepo.findNabRokAll();
     };
 
     @Override
     public NabVw fetchOne(Long id) {
-        return nabViewRepo.findTopById(id);
+        return nabVwRepo.findTopById(id);
     }
 
     @Override
     public NabVw saveNab(NabVw itemToSave, Operation oper) {
         try {
-            NabVw nabVwSaved = nabViewRepo.save(itemToSave);
+            NabVw nabVwSaved = nabVwRepo.save(itemToSave);
             getLogger().info("{} saved: [operation: {}]"
                     , nabVwSaved.getTyp().name(), oper.name());
 
@@ -109,7 +113,7 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
     @Override
     public boolean deleteNab(NabVw nabVwToDelete) {
         try {
-            nabViewRepo.delete(nabVwToDelete);
+            nabVwRepo.delete(nabVwToDelete);
             getLogger().info("{} deleted: {}, {}", nabVwToDelete.getTyp().name(), nabVwToDelete.getCnab(), nabVwToDelete.getText());
         } catch (Exception e) {
             String errMsg = "Error while deleting {} : {}, {}";
@@ -121,7 +125,7 @@ public class NabViewServiceImpl implements NabViewService, HasLogger {
 
     @Override
     public List<NabVw> fetchAll() {
-        return nabViewRepo.findAllByOrderByCnabDescTextAsc();
+        return nabVwRepo.findAllByOrderByCnabDescTextAsc();
     }
 
 }

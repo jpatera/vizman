@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "KONT_VIEW")
-public class KontView extends AbstractGenIdEntity implements HasItemType, HasArchState, HasModifDates {
+public class KontVw extends AbstractGenIdEntity implements HasItemType, HasArchState, HasModifDates {
 
     @Column(columnDefinition = "BINARY(16)")
     private UUID uuid;
@@ -68,8 +68,8 @@ public class KontView extends AbstractGenIdEntity implements HasItemType, HasArc
 
 // ----------------------------------------------------------
 
-    public static KontView getEmptyInstance() {
-        KontView k = new KontView();
+    public static KontVw getEmptyInstance() {
+        KontVw k = new KontVw();
         k.setCkont(null);
         k.setRok(null);
         return k;

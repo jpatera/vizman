@@ -15,6 +15,8 @@ public interface NabViewRepo extends JpaRepository<NabVw, Long> {
     //       Don't know which one is better. May be findTopById loads sub-items automatically?
     NabVw findTopById(Long id);
 
+    List<NabVw> findTop10By();
+
     NabVw findTopByCnab(String cnab);
     List<NabVw> findAllByOrderByCnabDescTextAsc();
 

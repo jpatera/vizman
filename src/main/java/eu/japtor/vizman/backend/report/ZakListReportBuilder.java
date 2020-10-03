@@ -17,7 +17,7 @@ import java.util.Locale;
 
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
 
-public class ZakListReportBuilder {
+public class ZakListReportBuilder extends FastReportBuilder {
 
     static Page Page_xls(){
         return new Page(1111,1300,true);
@@ -31,7 +31,7 @@ public class ZakListReportBuilder {
                 .build();
     }
 
-    protected DynamicReportBuilder reportBuilder;
+//    protected DynamicReportBuilder reportBuilder;
 
     private java.text.Format digiStringFormat;
     private java.text.Format archStringFormat;
@@ -58,44 +58,29 @@ public class ZakListReportBuilder {
         archStringFormat = new ArchStringFormat();
 
         buildReportColumns();
+        buildReportGroups();
 
-        reportBuilder = (new FastReportBuilder()).setUseFullPageWidth(true).setWhenNoData("(no data)", new Style());
-        GroupBuilder gb1 = new GroupBuilder();
+//        reportBuilder = (new FastReportBuilder()).setUseFullPageWidth(true).setWhenNoData("(no data)", new Style());
 
-        Style glabelStyle = new StyleBuilder(false).setFont(Font.ARIAL_SMALL)
-            .setHorizontalAlign(HorizontalAlign.RIGHT)
-            .setBorderTop(Border.THIN())
-            .setStretchWithOverflow(false)
-            .build();
-        DJGroupLabel glabel1 = new DJGroupLabel("Total amount",glabelStyle, LabelPosition.TOP);
-        DJGroupLabel glabel2 = new DJGroupLabel("Total quantity",glabelStyle,LabelPosition.TOP);
-
-        //		 define a criteria column to group by (columnState)
-        DJGroup g1 = gb1.setCriteriaColumn((PropertyColumn) rokCol)
-//              	.addFooterVariable(honorarCistyCol, DJCalculation.SUM,headerVariables, null, glabel1) // tell the group place a variable footer of the column "columnAmount" with the SUM of allvalues of the columnAmount in this group.
-//          		.addFooterVariable(columnaQuantity,DJCalculation.SUM,headerVariables, null, glabel2) // idem for the columnaQuantity column
-         		.setGroupLayout(GroupLayout.VALUE_IN_HEADER) // tells the group how to be shown, there are manyposibilities, see the GroupLayout for more.
-   				.build();
-
-        reportBuilder
+        this
                 .setTitle("Zakázky - seznam")
-                .setReportLocale(new Locale("cs", "CZ"))
-//                .setSubtitle("Rok: " + paramRokStr)
-//                .addParameter("PARAM_ROK", String.class.getName())
-                .setMargins(0, 0, 0, 0)
-                .setPrintBackgroundOnOddRows(true)
-                .setDefaultStyles(TITLE_STYLE, DEFAULT_STYLE, HEADER_STYLE, DEFAULT_STYLE)
-                .setPageSizeAndOrientation(Page_xls())
-
-                .setPrintColumnNames(true)
-                .setIgnorePagination(true) // For Excel, we don't want pagination, just a plain list
+//                .setSubtitle("")
                 .setUseFullPageWidth(true)
+                .setIgnorePagination(true) // For Excel, we don't want pagination, just a plain list
+                .setMargins(0, 0, 0, 0)
+                .setWhenNoData("(no data)", new Style())
+                .setReportLocale(new Locale("cs", "CZ"))
+                .setPrintBackgroundOnOddRows(true)
+                .setPageSizeAndOrientation(Page_xls())
+                .setPrintColumnNames(true)
 
+                .setDefaultStyles(TITLE_STYLE, DEFAULT_STYLE, HEADER_STYLE, DEFAULT_STYLE)
                 .addStyle(DEFAULT_STYLE)
                 .addStyle(DEFAULT_GRID_STYLE)
                 .addStyle(HEADER_STYLE)
                 .setGrandTotalLegend("National Total")
 
+                // Add basic columns
                 .addColumn(rokCol)
                 .addColumn(archCol)
                 .addColumn(digiCol)
@@ -108,6 +93,12 @@ public class ZakListReportBuilder {
 //                .addColumn(honorarCistyCol)
 //                .addColumn(honorarHrubyCol)
 //                .addColumn(menaCol)
+
+                // Add groups
+
+                // Add sub-reports
+
+                // Add totals
         ;
     }
 
@@ -188,8 +179,23 @@ public class ZakListReportBuilder {
                 .build();
     }
 
-    public DynamicReport buildReport()  {
-        return reportBuilder.build();
+    private void buildReportGroups() {
+//        GroupBuilder gb1 = new GroupBuilder();
+//
+//        Style glabelStyle = new StyleBuilder(false).setFont(Font.ARIAL_SMALL)
+//                .setHorizontalAlign(HorizontalAlign.RIGHT)
+//                .setBorderTop(Border.THIN())
+//                .setStretchWithOverflow(false)
+//                .build();
+//        DJGroupLabel glabel1 = new DJGroupLabel("Total amount",glabelStyle, LabelPosition.TOP);
+//        DJGroupLabel glabel2 = new DJGroupLabel("Total quantity",glabelStyle,LabelPosition.TOP);
+//
+//        //		 define a criteria column to group by (columnState)
+//        DJGroup g1 = gb1.setCriteriaColumn((PropertyColumn) rokCol)
+////              	.addFooterVariable(honorarCistyCol, DJCalculation.SUM,headerVariables, null, glabel1) // tell the group place a variable footer of the column "columnAmount" with the SUM of allvalues of the columnAmount in this group.
+////          		.addFooterVariable(columnaQuantity,DJCalculation.SUM,headerVariables, null, glabel2) // idem for the columnaQuantity column
+//                .setGroupLayout(GroupLayout.VALUE_IN_HEADER) // tells the group how to be shown, there are manyposibilities, see the GroupLayout for more.
+//                .build();
     }
 
     public static class DigiStringFormat extends java.text.Format {
