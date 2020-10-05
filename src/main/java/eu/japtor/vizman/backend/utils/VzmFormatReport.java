@@ -83,6 +83,8 @@ public class VzmFormatReport {
 
     public static final String MONEY_NO_FRACT_GRID_STYLE_NAME;
     public static final Style MONEY_NO_FRACT_GRID_STYLE;
+    public static final String MONEY_NO_FRACT_GRID_XLS_STYLE_NAME;
+    public static final Style MONEY_NO_FRACT_GRID_XLS_STYLE;
 //    public static final String MONEY_NO_FRACT_GRID_XLS_STYLE_NAME;
 //    public static final Style MONEY_NO_FRACT_GRID_XLS_STYLE;
     public static final Style MONEY_NO_FRACT_SUM_GRID_STYLE;
@@ -418,6 +420,14 @@ public class VzmFormatReport {
         MONEY_NO_FRACT_GRID_STYLE_NAME =  "money-no-fract-grid-style";
         MONEY_NO_FRACT_GRID_STYLE = new StyleBuilder(true, MONEY_NO_FRACT_GRID_STYLE_NAME)
                 .setParentStyleName(DEFAULT_GRID_STYLE_NAME)
+                .setHorizontalAlign(HorizontalAlign.RIGHT)
+                .setPattern("#,##0;-#,##0")
+                .build()
+        ;
+
+        MONEY_NO_FRACT_GRID_XLS_STYLE_NAME =  "money-no-fract-grid-xls-style";
+        MONEY_NO_FRACT_GRID_XLS_STYLE = new StyleBuilder(true, MONEY_NO_FRACT_GRID_XLS_STYLE_NAME)
+                .setParentStyleName(DEFAULT_GRID_XLS_NUM_STYLE_NAME)
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
                 .setPattern("#,##0;-#,##0")
                 .build()

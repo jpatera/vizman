@@ -104,9 +104,7 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
 
         this.zaknService = zaknService;
         this.paramsBinder = new Binder<>();
-        xlsReportExporter = new ReportExporter(
-                (new ZakNaklXlsReportBuilder(SecurityUtils.isNaklCompleteAccessGranted())).buildReport()
-        );
+        xlsReportExporter = new ReportExporter();
 
         zakNaklRepDialog = new ZakNaklReportDialog(zaknService);
 
@@ -276,10 +274,12 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     }
 
 //    private void updateExpXlsAnchorResource(List<Zakn> items) throws JRException {
-    private void updateExpXlsAnchorResource(SerializableSupplier<List<? extends Zakn>> supplier) throws JRException {
+    private void updateExpXlsAnchorResource(SerializableSupplier<List<? extends Zakn>> itemsSupplier) throws JRException {
         ReportExporter.Format expFormat = ReportExporter.Format.XLS;
         AbstractStreamResource xlsResource =
-                xlsReportExporter.getStreamResource(getReportFileName(expFormat), supplier, expFormat);
+                xlsReportExporter.getStreamResource(
+                        new ZakNaklXlsReportBuilder(SecurityUtils.isNaklCompleteAccessGranted()), getReportFileName(expFormat), itemsSupplier, expFormat, null)
+                ;
         expXlsAnchor.setHref(xlsResource);
 
         // Varianta 1

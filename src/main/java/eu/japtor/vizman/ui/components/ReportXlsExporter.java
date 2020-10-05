@@ -28,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 
@@ -53,78 +54,43 @@ public class ReportXlsExporter<T> {
 //        }
 //    }
 
-//    JRXlsExporter jrXlsExporter;
 
 //    public ReportXlsExporter() {
-//        jrXlsExporter = new JRXlsExporter();
+////        DynamicReportBuilder reportBuilder) {
+////        this.rpbCfgSupplier = rpbCfgSupplier;
+////        this.reportBuilder = reportBuilder;
+////        this.reportBuilder
+////                .setUseFullPageWidth(true)
+////                .setWhenNoData("(no data)", new Style())
+////                .setMargins(0, 0,  0, 0)
+////        ;
+//
+////        this.report = this.reportBuilder.build();
 //    }
 
-//    public static final String DEFAULT_SERVLET_PATH = "/report-image";
-//    protected String imageServletPathPattern = "report-image?image={0}";
-
-    protected DynamicReportBuilder reportBuilder;
-    protected DynamicReport report;
-    protected JasperPrint print;
-
-
-    public ReportXlsExporter(final DynamicReportBuilder reportBuilder) {
-        this.reportBuilder = reportBuilder;
-        this.reportBuilder
-                .setUseFullPageWidth(true)
-                .setWhenNoData("(no data)", new Style())
-                .setMargins(0, 0,  0, 0)
-        ;
-
-        this.report = this.reportBuilder.build();
-    }
-
-    public void setItems(List<? extends T> items) {
-        try {
-            if (report == null) {
-                report = reportBuilder.build();
-            }
-            print = buildJasperPrint(items, report);
-        } catch (JRException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void setDataProvider(DataProvider<T, ?> dataProvider) {
-        setItems(dataProvider.fetch(new Query<>()).collect(Collectors.toList()));
-    }
-
-//    public StreamResource getStreamResource(
-//            String fileName
-//            , SerializableSupplier<List<? extends T>> itemsSupplier
-//    ) {
-//        return getStreamResource(fileName, itemsSupplier);
-//    }
-
-//    private StreamResource getStreamResource(
     public StreamResource getStreamResource(
-            String fileName
+            DynamicReportBuilder drb
+            , String fileName
             , SerializableSupplier<List<? extends T>> itemsSupplier
             , String[] sheetNames
     ) {
-        List<? extends T> items = itemsSupplier.get();
-        setItems(items);
-
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            JRAbstractExporter exporter = new JRXlsExporter();
-//            JRXlsExporter jrXlsExporter = exporterSupplier.get();
-//            if (exporterSupplier instanceof JRXlsExporter) {
-                SimpleXlsReportConfiguration configuration = new SimpleXlsReportConfiguration();
-                configuration.setRemoveEmptySpaceBetweenRows(true);
-                configuration.setRemoveEmptySpaceBetweenColumns(true);
-                configuration.setWhitePageBackground(false);
-                configuration.setDetectCellType(true);
+            SimpleXlsReportConfiguration configuration = new SimpleXlsReportConfiguration();
+            configuration.setRemoveEmptySpaceBetweenRows(true);
+            configuration.setRemoveEmptySpaceBetweenColumns(true);
+            configuration.setWhitePageBackground(false);
+            configuration.setDetectCellType(true);
+            configuration.setOnePagePerSheet(true);
+            if (null != sheetNames) {
                 configuration.setSheetNames(sheetNames);
-                configuration.setOnePagePerSheet(true);
+            }
 //                configuration.setForcePageBreaks(true);
-                exporter.setConfiguration(configuration);
 
+            JRAbstractExporter exporter = new JRXlsExporter();
+            exporter.setConfiguration(configuration);
+            exporter.setExporterInput(new SimpleExporterInput(getNewJasperPrint(drb, itemsSupplier.get())));
             exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
-            exporter.setExporterInput(new SimpleExporterInput(print));
+
             exporter.exportReport();
             outputStream.flush();
 
@@ -136,15 +102,12 @@ public class ReportXlsExporter<T> {
         }
     }
 
-    protected AbstractColumn addColumn(PropertyDefinition<T, ?> propertyDefinition) {
-        AbstractColumn column = ColumnBuilder.getNew()
-                .setColumnProperty(new ColumnProperty(propertyDefinition.getName(), propertyDefinition.getType().getName()))
-                .build();
-
-        column.setTitle(propertyDefinition.getCaption());
-        reportBuilder.addColumn(column);
-
-        return column;
+    private JasperPrint getNewJasperPrint(DynamicReportBuilder drb, List<? extends T> items) {
+        try {
+            return buildJasperPrint(items, drb.build());
+        } catch (JRException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected JasperPrint buildJasperPrint(List<? extends T> items, DynamicReport report) throws JRException {
@@ -152,9 +115,5 @@ public class ReportXlsExporter<T> {
 //        JasperPrint print = DynamicJasperHelper.generateJasperPrint(report, new ListLayoutManager(), items);
         VaadinSession.getCurrent().getSession().setAttribute(ImageServlet.DEFAULT_JASPER_PRINT_SESSION_ATTRIBUTE, print);
         return print;
-    }
-
-    public DynamicReport getReport() {
-        return report;
     }
 }

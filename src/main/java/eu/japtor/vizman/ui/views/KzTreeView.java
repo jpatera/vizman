@@ -43,8 +43,6 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.AbstractStreamResource;
-import com.vaadin.flow.server.StreamRegistration;
-import com.vaadin.flow.server.VaadinSession;
 import elemental.json.JsonObject;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
@@ -65,7 +63,6 @@ import javax.annotation.PostConstruct;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static eu.japtor.vizman.app.security.SecurityUtils.isHonorareAccessGranted;
 import static eu.japtor.vizman.app.security.SecurityUtils.isZakFormsAccessGranted;
@@ -170,7 +167,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     }
 
     public KzTreeView() {
-        xlsReportExporter = new ReportXlsExporter(new KontTreeXlsReportBuilder());
+//        xlsReportExporter = new ReportXlsExporter(new KontTreeXlsReportBuilder());
+        xlsReportExporter = new ReportXlsExporter();
         initView();
     }
 
@@ -226,6 +224,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
 //        // Triggers an event which will loadKzTreeData:
         archFilterRadio.setValue(RADIO_KONT_ACTIVE);
+        updateViewContent();
 
 //        archFilterRadio.getDataProvider().refreshItem();
 //        updateZakGridContent();
@@ -571,7 +570,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         return gridContainer;
     }
 
-    private Anchor initDownloadAnchor() {
+    private Component initDownloadAnchor() {
         downloadAnchor = new Anchor();
         downloadAnchor.getElement().setAttribute("download", true);
         downloadAnchor.setId(KONT_DOWN_ANCHOR_ID);
@@ -910,10 +909,17 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private TreeData<KzTreeAware> loadKzTreeData(
             final String ckontFilterValue, final Integer rokFilterValue, final String archFilterValue
     ) {
+        ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
+        return (new TreeData()).addItems(getFilteredKzList(ckontFilterValue, rokFilterValue, archFilterValue), kzNodesProvider);
+    }
+
+    private List<? super Kont> getFilteredKzList(
+            final String ckontFilterValue, final Integer rokFilterValue, final String archFilterValue
+    ) {
         List<? super Kont> kzList;
         if (null != rokFilterValue) {
             kzList = kontService.fetchByRokFilter(rokFilterValue);
-        } else if (null != rokFilterValue) {
+        } else if (null != archFilterValue) {
             if (RADIO_KONT_ACTIVE.equals(archFilterValue)) {
                 kzList = kontService.fetchHavingSomeZaksActiveFilter();
             } else if (RADIO_KONT_ARCH.equals(archFilterValue)) {
@@ -928,9 +934,57 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         } else {
             kzList = kontService.fetchAll();
         }
+        return kzList;
+    }
 
-        ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
-        return (new TreeData()).addItems(kzList, kzNodesProvider);
+    private List<? extends Kont> getTopFilteredKzListForReport(
+            final String ckontFilterValue, final Integer rokFilterValue, final String archFilterValue
+    ) {
+        List<? extends Kont> kzList;
+        if (null != rokFilterValue) {
+            kzList = kontService.fetchTopByRokFilter(rokFilterValue);
+        } else if (null != archFilterValue) {
+            if (RADIO_KONT_ACTIVE.equals(archFilterValue)) {
+                kzList = kontService.fetchTopHavingSomeZaksActiveFilter();
+            } else if (RADIO_KONT_ARCH.equals(archFilterValue)) {
+                kzList = kontService.fetchTopHavingAllZaksArchivedFilter();
+            } else if (RADIO_KONT_EMPTY.equals(archFilterValue)) {
+                kzList = kontService.fetchTopHavingNoZaksFilter();
+            } else {
+                kzList = kontService.fetchTop();
+            }
+        } else if (StringUtils.isNotBlank(ckontFilterValue)) {
+            kzList = kontService.fetchTopByCkontFilter(ckontFilterValue);
+        } else {
+            kzList = kontService.fetchTop();
+        }
+        return kzList;
+    }
+
+    private List<? extends Kont> getFilteredKzListForReport(
+            final String ckontFilterValue, final Integer rokFilterValue, final String archFilterValue
+    ) {
+//        List<? super Kont> kzList;
+//        if (null != rokFilterValue) {
+//            kzList = kontService.fetchByRokFilter(rokFilterValue);
+//        } else if (null != rokFilterValue) {
+//            if (RADIO_KONT_ACTIVE.equals(archFilterValue)) {
+//                kzList = kontService.fetchHavingSomeZaksActiveFilter();
+//            } else if (RADIO_KONT_ARCH.equals(archFilterValue)) {
+//                kzList = kontService.fetchHavingAllZaksArchivedFilter();
+//            } else if (RADIO_KONT_EMPTY.equals(archFilterValue)) {
+//                kzList = kontService.fetchHavingNoZaksFilter();
+//            } else {
+//                kzList = kontService.fetchAll();
+//            }
+//        } else if (StringUtils.isNotBlank(ckontFilterValue)) {
+//            kzList = kontService.fetchByCkontFilter(ckontFilterValue);
+//        } else {
+//            kzList = kontService.fetchAll();
+//        }
+//        return (List<? extends Kont>)kzList;
+
+        return (List<? extends Kont>)getFilteredKzList(ckontFilterValue, rokFilterValue, archFilterValue);
     }
 
     private void assignDataProviderToGridAndSort(TreeDataProvider<KzTreeAware> kzTreeDataProvider) {
@@ -1105,8 +1159,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
             if (event.isFromClient()) {
                 rokFilterField.clear();
                 archFilterRadio.clear();
+                updateViewContent();
             }
-            updateViewContent();
+//            updateViewContent();
         });
 
         HorizontalLayout ckontFilterComponent = new HorizontalLayout();
@@ -1127,8 +1182,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
             if (event.isFromClient()) {
                 ckontFilterField.clear();
                 archFilterRadio.clear();
+                updateViewContent();
             }
-            updateViewContent();
+//            updateViewContent();
         });
 
         HorizontalLayout rokFilterComponent = new HorizontalLayout();
@@ -1151,8 +1207,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
             if (event.isFromClient()) {
                 ckontFilterField.clear();
                 rokFilterField.clear();
+                updateViewContent();
             }
-            updateViewContent();
+//            updateViewContent();
         });
 
         HorizontalLayout archFilterComponent = new HorizontalLayout();
@@ -1323,16 +1380,20 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         return REP_KONT_SEL_FILE_NAME + "." + format.name().toLowerCase();
     }
 
-    private SerializableSupplier<List<? extends Kont>> kontListSupplier =
-            () -> kontService.fetchForReport();  // ..(buildZakBasicFilterParams());
+    private SerializableSupplier<List<? extends Kont>> kontListReportSupplier =
+            () -> {
+                String ckont = ckontFilterField.getValue();
+                Integer rok = rokFilterField.getValue();
+                String arch = archFilterRadio.getValue();
+                return getTopFilteredKzListForReport(ckont, rok, arch);  // ..(buildZakBasicFilterParams());
+            };
 
     private Component initXlsReportMenu() {
-
         Button menuBtn = new Button(new Image("img/xls_down_24b.png", ""));
         menuBtn.getElement().setAttribute("theme", "icon secondary small");
 
         ContextMenu menu = new ContextMenu();
-        menu.addItem("Top 10", e -> updateXlsRepResourceAndDownload(kontListSupplier));
+        menu.addItem("Prvních 10", e -> updateXlsRepResourceAndDownload(kontListReportSupplier));
         menu.addItem("Aktuální", e -> {});
         menu.setOpenOnClick(true);
 
@@ -1348,8 +1409,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 .toArray(String[]::new)
         ;
         final AbstractStreamResource xlsResource =
-//            xlsReportExporter.getStreamResource(getReportFileName(expFormat), supplier, expFormat);
-            xlsReportExporter.getStreamResource(getReportFileName(expFormat), itemsSupplier, sheetNames);
+            xlsReportExporter.getStreamResource(
+                    new KontTreeXlsReportBuilder(), getReportFileName(expFormat), itemsSupplier, sheetNames
+            );
 
         // Varianta 1
         downloadAnchor.setHref(xlsResource);

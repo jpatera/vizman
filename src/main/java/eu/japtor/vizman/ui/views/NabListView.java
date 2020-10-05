@@ -80,7 +80,8 @@ public class NabListView extends VerticalLayout {
     @PostConstruct
     public void postInit() {
 
-        xlsReportExporter = new ReportExporter((new NabListReportBuilder()).buildReport());
+//        xlsReportExporter = new ReportExporter((new NabListReportBuilder()).buildReport());
+        xlsReportExporter = new ReportExporter();
         initView();
 
 //        // Person provider for grid
@@ -380,10 +381,12 @@ public class NabListView extends VerticalLayout {
         return menuBtn;
     }
 
-    private void updateXlsRepResourceAndDownload(SerializableSupplier<List<? extends NabVw>> supplier) {
+    private void updateXlsRepResourceAndDownload(SerializableSupplier<List<? extends NabVw>> itemSupplier) {
         ReportExporter.Format expFormat = ReportExporter.Format.XLS;
         final AbstractStreamResource xlsResource =
-                xlsReportExporter.getStreamResource(getReportFileName(expFormat), supplier, expFormat);
+                xlsReportExporter.getStreamResource(
+                        new NabListReportBuilder(), getReportFileName(expFormat), itemSupplier, expFormat, null
+                );
         downloadAnchor.setHref(xlsResource);
         Page page = UI.getCurrent().getPage();
         page.executeJs("$0.click();", downloadAnchor.getElement());

@@ -24,20 +24,24 @@ public interface KontService {
     Kont fetchByFolder(String folder);
 
     List<Kont> fetchAll();
+    List<? extends Kont> fetchTop();
 
     List<KontVw> fetchAllFromKontVw();
 
-    List<? extends Kont> fetchForReport();
-
     List<? super Kont> fetchByCkontFilter(String ckont);
+    List<? extends Kont> fetchTopByCkontFilter(String ckont);
 
     List<? super Kont> fetchByRokFilter(Integer rok);
+    List<? extends Kont> fetchTopByRokFilter(Integer rok);
 
     List<? super Kont> fetchHavingSomeZaksActiveFilter();
+    List<? extends Kont> fetchTopHavingSomeZaksActiveFilter();
 
     List<? super Kont> fetchHavingAllZaksArchivedFilter();
+    List<? extends Kont> fetchTopHavingAllZaksArchivedFilter();
 
     List<? super Kont> fetchHavingNoZaksFilter();
+    List<? extends Kont> fetchTopHavingNoZaksFilter();
 
     List<Integer> fetchKontRoks();
 

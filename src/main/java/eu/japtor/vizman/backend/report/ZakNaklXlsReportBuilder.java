@@ -16,13 +16,13 @@ import java.util.Locale;
 
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
 
-public class ZakNaklXlsReportBuilder {
+public class ZakNaklXlsReportBuilder extends FastReportBuilder {
 
 //    static Page Page_xls(){
 //        return new Page(1111,1300,true);
 //    }
 
-    protected DynamicReportBuilder reportBuilder;
+//    protected DynamicReportBuilder reportBuilder;
 
     private AbstractColumn ckzTextRepCol;
     private AbstractColumn prijmeniCol;
@@ -45,25 +45,23 @@ public class ZakNaklXlsReportBuilder {
         buildReportColumns();
         buildReportGroups(withMoneyColumns);
 
-        reportBuilder = (new FastReportBuilder())
+        this
+//                .setTitle("")
+//                .setSubtitle("")
                 .setUseFullPageWidth(false) // Otherwise "some" width is  counted for sheet
-                .setIgnorePagination(true)  // For Excel, we don't want pagination, just a plain list
-                .setWhenNoData("(no data)", new Style())
-//                .setTitle("NÁKLADY NA ZAKÁZKU")
-                .setReportLocale(new Locale("cs", "CZ"))
-//                .setSubtitle("Rok: " + paramRokStr)
-//                .addParameter("PARAM_ROK", String.class.getName())
+                .setIgnorePagination(true)  // For Excel, we don't need here pagination because it is not multi-list XLS
 //                .setMargins(0, 0, 0, 0)
+                .setWhenNoData("(no data)", new Style())
+                .setReportLocale(new Locale("cs", "CZ"))
 //                .setPrintBackgroundOnOddRows(true)
-                .setDefaultStyles(DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_NUM_STYLE)
 //                .setPageSizeAndOrientation(Page_xls())
-
                 .setPrintColumnNames(true)
 
+                .setDefaultStyles(DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_NUM_STYLE)
                 .addStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
                 .addStyle(DEFAULT_GRID_XLS_NUM_STYLE)
 
-                // Add basic  columns
+                // Add basic columns
                 .addColumn(ckzTextRepCol)
                 .addColumn(prijmeniCol)
                 .addColumn(ymPruhCol)
@@ -73,12 +71,14 @@ public class ZakNaklXlsReportBuilder {
                 .addGroup(zakGroup)
                 .addGroup(userGroup)
 
-                // Add basic totals
+                // Add sub-reports
+
+                // Add totals
                 .setGrandTotalLegend("Nagruzka Total")
                 .addGlobalFooterVariable(workPruhCol, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE)
         ;
         if (withMoneyColumns) {
-            reportBuilder
+            this
                     .addColumn(naklMzdaCol)
                     .addColumn(naklMzdaPojistCol)
                     .addColumn(sazbaCol)
@@ -221,7 +221,7 @@ public class ZakNaklXlsReportBuilder {
         ;
     }
 
-    public DynamicReport buildReport()  {
-        return reportBuilder.build();
-    }
+//    public DynamicReport buildReport()  {
+//        return reportBuilder.build();
+//    }
 }
