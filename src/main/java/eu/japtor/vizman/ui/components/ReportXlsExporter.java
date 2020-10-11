@@ -33,26 +33,10 @@ import java.util.stream.Collectors;
 
 
 public class ReportXlsExporter<T> {
-//
-//    public enum Format {
-//        // TODO: HTML(() -> new JRHtml...
-//        PDF(() -> new JRPdfExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
-//        XLS(() -> new JRXlsExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
-//        DOCX(() -> new JRDocxExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
-//        PPTX(() -> new JRPptxExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
-//        RTF(() -> new JRRtfExporter(), os -> new SimpleWriterExporterOutput(os)),
-//        ODT(() -> new JROdtExporter(), os -> new SimpleOutputStreamExporterOutput(os)),
-//        CSV(() -> new JRCsvExporter(), os -> new SimpleWriterExporterOutput(os)),
-//        XML(() -> new JRXmlExporter(), os -> new SimpleXmlExporterOutput(os));
-//
-//        private final SerializableSupplier<JRAbstractExporter> exporterSupplier;
-//        private final SerializableFunction<OutputStream, ExporterOutput> exporterOutputFunction;
-//
-//        Format(SerializableSupplier<JRAbstractExporter> exporterSupplier, SerializableFunction<OutputStream, ExporterOutput> exporterOutputFunction) {
-//            this.exporterSupplier = exporterSupplier;
-//            this.exporterOutputFunction = exporterOutputFunction;
-//        }
-//    }
+
+    public enum Format {
+        XLS;
+    }
 
 
 //    public ReportXlsExporter() {
@@ -68,10 +52,11 @@ public class ReportXlsExporter<T> {
 ////        this.report = this.reportBuilder.build();
 //    }
 
-    public StreamResource getStreamResource(
+    public StreamResource getXlsStreamResource(
             DynamicReportBuilder drb
             , String fileName
             , SerializableSupplier<List<? extends T>> itemsSupplier
+//            , SerializableSupplier<List<T>> itemsSupplier
             , String[] sheetNames
     ) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -106,6 +91,7 @@ public class ReportXlsExporter<T> {
     }
 
     private JasperPrint getNewJasperPrint(DynamicReportBuilder drb, List<? extends T> items) {
+//    private JasperPrint getNewJasperPrint(DynamicReportBuilder drb, List<T> items) {
         try {
             return buildJasperPrint(items, drb.build());
         } catch (JRException e) {
@@ -113,7 +99,8 @@ public class ReportXlsExporter<T> {
         }
     }
 
-    protected JasperPrint buildJasperPrint(List<? extends T> items, DynamicReport report) throws JRException {
+    private JasperPrint buildJasperPrint(List<? extends T> items, DynamicReport report) throws JRException {
+//    private JasperPrint buildJasperPrint(List<T> items, DynamicReport report) throws JRException {
         JasperPrint print = DynamicJasperHelper.generateJasperPrint(report, new ClassicLayoutManager(), items);
 //        JasperPrint print = DynamicJasperHelper.generateJasperPrint(report, new ListLayoutManager(), items);
         VaadinSession.getCurrent().getSession().setAttribute(ImageServlet.DEFAULT_JASPER_PRINT_SESSION_ATTRIBUTE, print);

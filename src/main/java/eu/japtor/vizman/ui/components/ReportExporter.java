@@ -85,12 +85,12 @@ public class ReportExporter<T> {
 //        setItems(dataProvider.fetch(new Query<>()).collect(Collectors.toList()));
 //    }
 
-//    public StreamResource getStreamResource(
+//    public StreamResource getXlsStreamResource(
 //            String fileName
 //            , SerializableSupplier<List<? extends T>> itemsSupplier
 //            , Format format
 //    ) {
-//        return getStreamResource(fileName, itemsSupplier, format.exporterSupplier, format.exporterOutputFunction);
+//        return getXlsStreamResource(fileName, itemsSupplier, format.exporterSupplier, format.exporterOutputFunction);
 //    }
 
     public StreamResource getStreamResource(

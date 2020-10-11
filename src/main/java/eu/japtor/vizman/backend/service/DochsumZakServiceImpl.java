@@ -168,6 +168,9 @@ public class DochsumZakServiceImpl implements DochsumZakService, HasLogger {
                                 dsZakDb.setDszWorkPruh(null);
                                 dsZakDb.setDszKoefP8(null);
                                 dsZakDb.setDszWorkP8(null);
+                                dsZakDb.setSazba(null);
+                                dsZakDb.setDszMzda(null);
+                                dsZakDb.setDszMzdaP8(null);
                             } else {
                                 dsZakDb.setDszWorkPruh(newCellHod);
                                 dsZakDb.setSazba(personWage.getTariff());

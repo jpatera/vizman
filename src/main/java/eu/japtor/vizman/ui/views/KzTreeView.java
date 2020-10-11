@@ -117,8 +117,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private Select<Integer> rokFilterField;
     private List<GridSortOrder<KzTreeAware>> initialSortOrder;
 
-//    private ReportExporter<Kont> xlsReportExporter;
-    private ReportXlsExporter<Kont> xlsReportExporter;
+//    private ReportExporter<Kont> reportXlsExporter;
+    private ReportXlsExporter<Kont> reportXlsExporter;
     private Anchor downloadAnchor;
 
     @Autowired
@@ -167,8 +167,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     }
 
     public KzTreeView() {
-//        xlsReportExporter = new ReportXlsExporter(new KontTreeXlsReportBuilder());
-        xlsReportExporter = new ReportXlsExporter();
+//        reportXlsExporter = new ReportXlsExporter(new KontTreeXlsReportBuilder());
+        reportXlsExporter = new ReportXlsExporter();
         initView();
     }
 
@@ -1396,7 +1396,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 .toArray(String[]::new)
         ;
         final AbstractStreamResource xlsResource =
-            xlsReportExporter.getStreamResource(
+            reportXlsExporter.getXlsStreamResource(
                     new KontTreeXlsReportBuilder(), getReportFileName(expFormat), itemsSupplier, sheetNames
             );
 

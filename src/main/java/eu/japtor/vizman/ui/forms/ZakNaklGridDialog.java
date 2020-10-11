@@ -278,8 +278,12 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
         ReportExporter.Format expFormat = ReportExporter.Format.XLS;
         AbstractStreamResource xlsResource =
                 xlsReportExporter.getStreamResource(
-                        new ZakNaklXlsReportBuilder(SecurityUtils.isNaklCompleteAccessGranted()), getReportFileName(expFormat), itemsSupplier, expFormat, null)
-                ;
+                        new ZakNaklXlsReportBuilder(SecurityUtils.isNaklCompleteAccessGranted())
+                        , getReportFileName(expFormat)
+                        , itemsSupplier
+                        , expFormat
+                        , null
+                );
         expXlsAnchor.setHref(xlsResource);
 
         // Varianta 1

@@ -91,9 +91,11 @@ public class VzmFormatReport {
     public static final Style MONEY_NO_FRACT_TOT_GRID_STYLE;
 
     public static final Style INT_GRID_STYLE;
+    public static final Style INT_GRID_XLS_STYLE;
     public static final Style YM_GRID_STYLE;
 //    public static final Style YM_GRID_XLS_STYLE;
     public static final Style PROC_GRID_STYLE;
+    public static final Style PROC_GRID_XLS_STYLE;
     public static final Style PERCENT_GRID_STYLE;
     public static final Style MONEY_GRID_STYLE;
 //    public static final Style MONEY_GRID_XLS_STYLE;
@@ -306,10 +308,22 @@ public class VzmFormatReport {
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
                 .build();
 
+        INT_GRID_XLS_STYLE = new StyleBuilder(true, "ym-grid-xls-int-style")
+                .setParentStyleName(DEFAULT_GRID_XLS_NUM_STYLE_NAME)
+                .setHorizontalAlign(HorizontalAlign.RIGHT)
+                .build();
+
         PROC_GRID_STYLE = new StyleBuilder(true, "proc-grid-style")
                 .setParentStyleName(DEFAULT_GRID_STYLE_NAME)
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
                 .setPaddingRight(3)
+                .setPattern("##0;-##0")
+                .build();
+
+        PROC_GRID_XLS_STYLE = new StyleBuilder(true, "proc-grid-xls-style")
+                .setParentStyleName(DEFAULT_GRID_XLS_NUM_STYLE_NAME)
+                .setHorizontalAlign(HorizontalAlign.RIGHT)
+//                .setPaddingRight(3)
                 .setPattern("##0;-##0")
                 .build();
 

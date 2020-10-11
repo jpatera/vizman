@@ -16,14 +16,19 @@
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
@@ -32,21 +37,25 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.AbstractStreamResource;
 import eu.japtor.vizman.app.CfgPropName;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.report.ZakRozpracXlsReportBuilder;
 import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
-import eu.japtor.vizman.ui.forms.ZakRozpracReportDialog;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
@@ -63,6 +72,9 @@ public class ZakrListView extends VerticalLayout {
     private static final String RADIO_KONT_ARCH = "Archivované";
     private static final String RADIO_KONT_ALL = "Všechny";
 
+    private static final String REP_ZAKR_FILE_NAME = "vzm-rep-zakr";
+    private static final String ZAKR_DOWN_ANCHOR_ID = "zakr-down-anchor-id";
+
     private List<Zakr> zakrList;
     private ZakRozpracGrid zakrGrid;
     private List<GridSortOrder<ZakBasic>> initialSortOrder;
@@ -78,6 +90,9 @@ public class ZakrListView extends VerticalLayout {
     private Checkbox activeParamField;
     private ZakrParams zakrParams;
     private Binder<ZakrParams> paramsBinder;
+
+    private ReportXlsExporter<Zakr> reportXlsExporter;
+    private Anchor downloadAnchor;
 
 //    ZakNaklGridDialog zakNaklGridDialog;
 
@@ -100,6 +115,7 @@ public class ZakrListView extends VerticalLayout {
     public CfgPropsCache cfgPropsCache;
 
     public ZakrListView() {
+        reportXlsExporter = new ReportXlsExporter();
         initView();
     }
 
@@ -143,20 +159,22 @@ public class ZakrListView extends VerticalLayout {
 
 
     private Component buildGridBarComponent() {
-        HorizontalLayout gridBarComp = new HorizontalLayout();
-        gridBarComp.setSpacing(false);
+        HorizontalLayout gridBar = new HorizontalLayout();
+        gridBar.setSpacing(false);
 //        gridBar.setAlignItems(Alignment.END);
-        gridBarComp.setAlignItems(Alignment.BASELINE);
-        gridBarComp.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        gridBar.setAlignItems(Alignment.BASELINE);
+        gridBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-        gridBarComp.add(
+        gridBar.add(
                 buildTitleComponent()
                 , new Ribbon()
                 , buildGridBarControlsComponent()
+//                , new Ribbon()
+//                , initRozpracRepButton()
                 , new Ribbon()
-                , initRozpracRepButton()
+                , initXlsReportMenu()
         );
-        return gridBarComp;
+        return gridBar;
     }
 
     private Component buildTitleComponent() {
@@ -324,6 +342,90 @@ public class ZakrListView extends VerticalLayout {
         return calcButton;
     }
 
+    private String getReportFileName(ReportXlsExporter.Format format) {
+        return REP_ZAKR_FILE_NAME + "." + format.name().toLowerCase();
+    }
+
+    private List<Zakr> getSelectedZakrForReport(final String zakrId) {
+//        return zakrService.fetchTopById(zakrId);
+        return Collections.emptyList();
+    }
+
+    private SerializableSupplier<List<? extends Zakr>> zakrCurrentReportSupplier =
+            () -> {
+                Set<Zakr> itemSelection = zakrGrid.getSelectedItems();  // Suppose: SingleSelectionModel is set, only one (or none) item is present
+                if (null == itemSelection || itemSelection.isEmpty()) {
+                    return Collections.EMPTY_LIST;
+                }
+                zakrService.fetchAndCalcOne(itemSelection.iterator().next().getId(), getCurrentParms());
+                return Collections.singletonList(itemSelection.iterator().next());
+            };
+
+    private SerializableSupplier<List<? extends Zakr>> zakrVisibleReportSupplier =
+            () -> {
+                return zakrService.fetchAndCalcByFiltersDescOrder(getCurrentParms());
+            };
+
+    private Component initXlsReportMenu() {
+        Button menuBtn = new Button(new Image("img/xls_down_24b.png", ""));
+        menuBtn.getElement().setAttribute("theme", "icon secondary small");
+
+        ContextMenu menu = new ContextMenu();
+//        menu.addItem("Aktuální", e -> updateXlsRepResourceAndDownload(zakrCurrentReportSupplier));
+        menu.addItem("Všechny zobrazené", e -> updateXlsRepResourceAndDownload(zakrVisibleReportSupplier));
+        menu.setOpenOnClick(true);
+
+        menu.setTarget(menuBtn);
+        return menuBtn;
+    }
+
+    private void updateXlsRepResourceAndDownload(SerializableSupplier<List<? extends Zakr>> itemsSupplier) {
+
+        final AbstractStreamResource xlsResource =
+                reportXlsExporter.getXlsStreamResource(
+                        new ZakRozpracXlsReportBuilder(getSubtitleText())
+                        , getReportFileName(ReportXlsExporter.Format.XLS)
+                        , zakrVisibleReportSupplier
+                        , null
+                );
+
+        // Varianta 1
+        downloadAnchor.setHref(xlsResource);
+        Page page = UI.getCurrent().getPage();
+        page.executeJs("$0.click();", downloadAnchor.getElement());
+//      or:  page.executeJs("document.getElementById('" + KONT_REP_ID + "').click();");
+
+        // Varianta 2 - browsers can have pop-up opening disabled
+//        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
+//        Page page = UI.getCurrent().getPage();
+//        page.executeJs("window.open($0, $1)", registration.getResourceUri().toString(), "_blank");
+
+        // Varianta 3 - It is not clear how to activate source page again after download is finished
+//        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
+//        Page page = UI.getCurrent().getPage();
+//        page.setLocation(registration.getResourceUri());
+    }
+
+    private String getSubtitleText() {
+        ZakrParams filterParams = getCurrentParms();
+        String subtitleText =
+//                "Parametry: Ativní=" + (null == activeFilterField.getValue() ? "false" : activeFilterField.getValue().toString()) +
+//                        "  Arch=" + (null == archFilterField.getValue() ? "Vše" : archFilterField.getValue().toString()) +
+//                        "  ČK-ČZ=" + (null == ckzFilterField.getValue() ? "Vše" : "*" + ckzFilterField.getValue() + "*") +
+//                        "  Rok zak.=" + (null == rokZakFilterField.getValue() ? "Vše" : rokZakFilterField.getValue().toString()) +
+//                        "  Skupina=" + (null == skupinaFilterField.getValue() ? "Vše" : skupinaFilterField.getValue().toString()) +
+                "Parametry: Ativní=" + (null == filterParams.isActive() ? "false" : filterParams.isActive().toString()) +
+                        "  Arch=" + (null == filterParams.getArch() ? "Vše" : filterParams.getArch().toString()) +
+                        "  ČK-ČZ=" + (null == filterParams.getCkz() ? "Vše" : "*" + filterParams.getCkz() + "*") +
+                        "  Rok zak.=" + (null == filterParams.getRokZak() ? "Vše" : filterParams.getRokZak().toString()) +
+                        "  Skupina=" + (null == filterParams.getSkupina() ? "Vše" : filterParams.getSkupina().toString()) +
+                        "  rx=" + (null == rxParamField.getValue() ? "" : rxParamField.getValue().toString()) +
+                        "  ry=" + (null == ryParamField.getValue() ? "" : ryParamField.getValue().toString()) +
+                        "  Režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue()) +
+                        "  Pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue()) +
+                        "  Kurz CZK/EUR=" + (null == kurzParamField.getValue() ? "" : kurzParamField.getValue());
+        return subtitleText;
+    }
 
     private Component initRozpracRepButton() {
         rozpracRepButton = new Button("Report"
@@ -336,17 +438,49 @@ public class ZakrListView extends VerticalLayout {
     }
 
     private void openRozpracRepDialog() {
-//        List<Zakr> zakrRep1 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataCommunicator().getDataProvider()).getItems();
-//        List<Zakr> zakrRep2 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataProvider()).getItems();
+////        List<Zakr> zakrRep1 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataCommunicator().getDataProvider()).getItems();
+////        List<Zakr> zakrRep2 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataProvider()).getItems();
+//        zakrGrid.saveFilterValues();
+//        zakrParams.setActive(activeParamField.getValue());
+//        zakrParams.setArch(zakrGrid.getArchFilterValue());
+//        zakrParams.setCkz(zakrGrid.getCkzFilterValue());
+//        zakrParams.setRokZak(zakrGrid.getRokFilterValue());
+//        zakrParams.setSkupina(zakrGrid.getSkupinaFilterValue());
+//        ZakRozpracReportDialog zakRozpracReportDlg  = new ZakRozpracReportDialog(zakrService, zakrParams);
+//        zakRozpracReportDlg.openDialog(zakrParams);
+//        zakRozpracReportDlg.generateAndShowReport();
+    }
+
+    private ZakrParams getCurrentParms() {
         zakrGrid.saveFilterValues();
         zakrParams.setActive(activeParamField.getValue());
         zakrParams.setArch(zakrGrid.getArchFilterValue());
         zakrParams.setCkz(zakrGrid.getCkzFilterValue());
         zakrParams.setRokZak(zakrGrid.getRokFilterValue());
         zakrParams.setSkupina(zakrGrid.getSkupinaFilterValue());
-        ZakRozpracReportDialog zakRozpracReportDlg  = new ZakRozpracReportDialog(zakrService, zakrParams);
-        zakRozpracReportDlg.openDialog(zakrParams);
-        zakRozpracReportDlg.generateAndShowReport();
+        return zakrParams;
+    }
+
+
+    // Kopie z ZaRozpracReportDialog
+    public void generateAndShowReport() {
+//        deactivateListeners();
+//        report.setSubtitleText(
+//                "Parametry: Ativní=" + (null == activeFilterField.getValue() ? "false" : activeFilterField.getValue().toString()) +
+//                        "  Arch=" + (null == archFilterField.getValue() ? "Vše" : archFilterField.getValue().toString()) +
+//                        "  ČK-ČZ=" + (null == ckzFilterField.getValue() ? "Vše" : "*" + ckzFilterField.getValue() + "*") +
+//                        "  Rok zak.=" + (null == rokZakFilterField.getValue() ? "Vše" : rokZakFilterField.getValue().toString()) +
+//                        "  Skupina=" + (null == skupinaFilterField.getValue() ? "Vše" : skupinaFilterField.getValue().toString()) +
+//                        "  rx=" + (null == rxParamField.getValue() ? "" : rxParamField.getValue().toString()) +
+//                        "  ry=" + (null == ryParamField.getValue() ? "" : ryParamField.getValue().toString()) +
+//                        "  Režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue()) +
+//                        "  Pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue()) +
+//                        "  Kurz CZK/EUR=" + (null == kurzParamField.getValue() ? "" : kurzParamField.getValue())
+//        );
+//
+//        // Tohle nefunguje:
+//        // report.getReportBuilder().setProperty("ireport.zoom", "2.0");
+//        // report.getReportBuilder().setProperty("net.sf.jasperreports.viewer.zoom", "2");
     }
 
     private Component initArchFilterRadio() {
@@ -396,7 +530,8 @@ public class ZakrListView extends VerticalLayout {
         gridContainer.setAlignItems(Alignment.STRETCH);
 
         gridContainer.add(
-                buildGridBarComponent()
+                initDownloadAnchor()
+                , buildGridBarComponent()
                 , initZakrGrid(zakrParams)
         );
         return gridContainer;
@@ -421,6 +556,15 @@ public class ZakrListView extends VerticalLayout {
 
         Notification.show(
                 "Rozpracovanost uložena", 2000, Notification.Position.TOP_CENTER);
+    }
+
+    private Component initDownloadAnchor() {
+        downloadAnchor = new Anchor();
+        downloadAnchor.getElement().setAttribute("download", true);
+        downloadAnchor.setId(ZAKR_DOWN_ANCHOR_ID);
+        downloadAnchor.setText("Invisible ZAKR download link");    // setVisible  also disables a server part - cannot be useed
+        downloadAnchor.getStyle().set("display", "none");
+        return downloadAnchor;
     }
 
     private Component initZakrGrid(ZakrParams zakrParams) {
