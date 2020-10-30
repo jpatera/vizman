@@ -9,6 +9,7 @@ import ar.com.fdvs.dj.domain.entities.conditionalStyle.ConditionStyleExpression;
 import ar.com.fdvs.dj.domain.entities.conditionalStyle.ConditionalStyle;
 
 import java.awt.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -18,6 +19,9 @@ public class VzmFormatReport {
     static final Color TOTAL_BG_COLOR = new Color(0xFFF4EE);
     static final Color GROUP_SUM_BG_COLOR = new Color(0xEEF4FF);
     static final Color HEADER_BG_COLOR = new Color(0xF4F4F4);
+
+    //  Report file name date formatter
+    public static final DateTimeFormatter RFNDF = DateTimeFormatter.ofPattern("__yyyy_MM_dd__HH_mm_ss");
 
     public static final ar.com.fdvs.dj.domain.constants.Font ARIAL_XL = new ar.com.fdvs.dj.domain.constants.Font(11, ar.com.fdvs.dj.domain.constants.Font._FONT_ARIAL, false, false, false);
     public static final ar.com.fdvs.dj.domain.constants.Font ARIAL_XL_BOLD = new ar.com.fdvs.dj.domain.constants.Font(11, ar.com.fdvs.dj.domain.constants.Font._FONT_ARIAL, true, false, false);
@@ -76,6 +80,8 @@ public class VzmFormatReport {
 
     public static final String WORK_HOUR_GRID_STYLE_NAME;
     public static final Style WORK_HOUR_GRID_STYLE;
+    public static final String WORK_HOUR_GRID_XLS_STYLE_NAME;
+    public static final Style WORK_HOUR_GRID_XLS_STYLE;
 //    public static final String WORK_HOUR_GRID_XLS_STYLE_NAME;
 //    public static final Style WORK_HOUR_GRID_XLS_STYLE;
     public static final Style WORK_HOUR_SUM_GRID_STYLE;
@@ -97,6 +103,7 @@ public class VzmFormatReport {
     public static final Style PROC_GRID_STYLE;
     public static final Style PROC_GRID_XLS_STYLE;
     public static final Style PERCENT_GRID_STYLE;
+
     public static final Style MONEY_GRID_STYLE;
 //    public static final Style MONEY_GRID_XLS_STYLE;
     public static final Style SHORT_DATE_GRID_STYLE;
@@ -408,12 +415,12 @@ public class VzmFormatReport {
                 .setPattern("#,##0.0;-#,##0.0")
                 .build();
 
-//        WORK_HOUR_GRID_XLS_STYLE_NAME = "work-hour-grid-xls-style";
-//        WORK_HOUR_GRID_XLS_STYLE = new StyleBuilder(true, "work-hour-grid-xls-style")
-//                .setParentStyleName(DEFAULT_GRID_XLS_STYLE_NAME)
-//                .setHorizontalAlign(HorizontalAlign.RIGHT)
-////                .setPattern("#,##0.0;-#,##0.0")
-//                .build();
+        WORK_HOUR_GRID_XLS_STYLE_NAME = "work-hour-grid-xls-style";
+        WORK_HOUR_GRID_XLS_STYLE = new StyleBuilder(true, "work-hour-grid-xls-style")
+                .setParentStyleName(DEFAULT_GRID_XLS_NUM_STYLE_NAME)
+                .setHorizontalAlign(HorizontalAlign.RIGHT)
+                .setPattern("##0.0;-##0.0")
+                .build();
 
         WORK_HOUR_SUM_GRID_STYLE = new StyleBuilder(true, "work-hour-sum-grid-style")
                 .setParentStyleName(WORK_HOUR_GRID_STYLE_NAME)

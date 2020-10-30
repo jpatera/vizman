@@ -36,10 +36,12 @@ import eu.japtor.vizman.ui.views.ZakrListView;
 import net.sf.jasperreports.engine.JRException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
 import static eu.japtor.vizman.app.security.SecurityUtils.isNaklCompleteAccessGranted;
+import static eu.japtor.vizman.backend.utils.VzmFormatReport.RFNDF;
 
 public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLogger {
 
@@ -85,7 +87,7 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     ;
     private ComponentEventListener anchorExportListener = event -> {
         try {
-            updateExpXlsAnchorResource(itemsSupplier);
+            updateNaklXlsRepAnchorResource(itemsSupplier);
         } catch (JRException e) {
             e.printStackTrace();
         }
@@ -270,11 +272,10 @@ public class ZakNaklGridDialog extends AbstractGridDialog<Zakn> implements HasLo
     }
 
     private String getReportFileName(ReportExporter.Format format) {
-        return REPORT_FILE_NAME + "." + format.name().toLowerCase();
+        return REPORT_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
     }
 
-//    private void updateExpXlsAnchorResource(List<Zakn> items) throws JRException {
-    private void updateExpXlsAnchorResource(SerializableSupplier<List<? extends Zakn>> itemsSupplier) throws JRException {
+    private void updateNaklXlsRepAnchorResource(SerializableSupplier<List<? extends Zakn>> itemsSupplier) throws JRException {
         ReportExporter.Format expFormat = ReportExporter.Format.XLS;
         AbstractStreamResource xlsResource =
                 xlsReportExporter.getStreamResource(

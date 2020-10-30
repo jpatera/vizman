@@ -13,10 +13,10 @@ import java.util.Locale;
 
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
 
-public class ZakRozpracXlsReportBuilder extends FastReportBuilder {
+public class ZakRozpracAgregXlsReportBuilder extends FastReportBuilder {
 
     static Page Page_xls(){
-        return new Page(1111,1300,true);
+        return new Page(666,1300,true);
     }
 
     private AbstractColumn ckontCol;
@@ -44,7 +44,7 @@ public class ZakRozpracXlsReportBuilder extends FastReportBuilder {
     private AbstractColumn vysledekP8ByKurzCol;
 
 
-    public ZakRozpracXlsReportBuilder(final String subtitleText) {
+    public ZakRozpracAgregXlsReportBuilder(final String subtitleText) {
         super();
 
         buildReportColumns();
@@ -54,13 +54,11 @@ public class ZakRozpracXlsReportBuilder extends FastReportBuilder {
                 .setTitle("ROZPRACOVANOST ZAKÁZEK")
                 .setSubtitle(subtitleText)
                 .setUseFullPageWidth(true)
- //               .setIgnorePagination(true) // For Excel, we don't want pagination, just a plain list
                 .setIgnorePagination(true) // For Excel, we don't want pagination, just a plain list
                 .setMargins(0, 0, 0, 0)
                 .setWhenNoData("(no data)", new Style())
                 .setReportLocale(new Locale("cs", "CZ"))
 //                .setPrintBackgroundOnOddRows(true)
-                // TODO: to be used or not?
                 .setPageSizeAndOrientation(Page_xls())
 
 //                .setDefaultStyles(TITLE_STYLE, DEFAULT_STYLE, HEADER_STYLE, DEFAULT_STYLE)
@@ -76,10 +74,9 @@ public class ZakRozpracXlsReportBuilder extends FastReportBuilder {
                 .addStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
 //                .addStyle(DEFAULT_GRID_STYLE)
 
-
                 .setGrandTotalLegend("National Total")
-
                 .setPrintColumnNames(true)
+
                 // Add basic columns
                 .addColumn(ckontCol)
                 .addColumn(czakCol)

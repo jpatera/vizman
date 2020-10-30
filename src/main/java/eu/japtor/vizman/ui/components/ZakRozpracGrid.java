@@ -400,7 +400,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setResizable(true)
         ;
 
-        this.addColumn(new ComponentRenderer<>(this::buildZaknViewBtn))
+        this.addColumn(new ComponentRenderer<>(this::buildZaknOpenBtn))
                 .setHeader("Nak")
                 .setFlexGrow(0)
                 .setWidth("3em")
@@ -476,7 +476,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 ;
 
         Grid.Column<Zakr> colNaklMzdyPojistRezie = this.addColumn(naklMzdyPojistRezieValueProvider)
-                .setHeader("Mzdy+P+R")
+                .setHeader("Mzdy * P*R")
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setTextAlign(ColumnTextAlign.END)
@@ -564,6 +564,11 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         vysledekP8HeaderLabel.getElement()
                 .setProperty("title", "[Výsledek P8] = [Hotovo RP] - [Mzdy P8] * (1 + koef_pojist) * (1 + koef_rezie)");
         descHeaderRow.getCell(colVysledekP8).setComponent(vysledekP8HeaderLabel);
+
+        Label mzdyPojRezHeaderLabel = new Label("Def.");
+        mzdyPojRezHeaderLabel.getElement()
+                .setProperty("title", "[Mzdy * P*R] = [Mzdy] * (1 + koef_pojist) * (1 + koef_rezie)");
+        descHeaderRow.getCell(colNaklMzdyPojistRezie).setComponent(mzdyPojRezHeaderLabel);
 
         // =============
         // Filters
@@ -766,7 +771,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         );
     }
 
-    Component buildZaknViewBtn(Zakr zakr) {
+    Component buildZaknOpenBtn(Zakr zakr) {
         return new GridItemBtn(event -> zakNaklGridDialog.openDialogFromZakr(zakr, zakrParams)
                 , new Icon(VaadinIcon.COIN_PILES), VzmFormatUtils.getItemTypeColorName(zakr.getTyp())
         );
