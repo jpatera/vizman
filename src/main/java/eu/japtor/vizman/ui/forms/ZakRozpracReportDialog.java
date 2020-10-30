@@ -22,6 +22,7 @@ import java.util.List;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+// TODO:remove it
 public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "1200px";
@@ -53,13 +54,6 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     private SerializableSupplier<List<? extends Zakr>> itemsSupplier =
             () -> zakrService.fetchAndCalcByFiltersDescOrder(zakrParams);
 
-
-    public ZakRozpracReportDialog(ZakrService zakrService, ZakrListView.ZakrParams zakrParams) {
-        super(DIALOG_WIDTH, DIALOG_HEIGHT);
-        setDialogTitle("Report: ROZPRACOVANOST ZAKÁZEK");
-        this.zakrService = zakrService;
-        initReportControls();
-    }
 
     public void openDialog(ZakrListView.ZakrParams zakrParams) {
         this.zakrParams = zakrParams;

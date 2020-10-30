@@ -77,8 +77,8 @@ public abstract class AbstractGridDialog<T extends Serializable>  extends Dialog
 
         dialogContent.add(
                 initHeaderDevider()
-                , initGridToolBar()
                 , initGridInfoBar()
+                , initGridToolBar()
                 , initGridContainer()
 //                , new Paragraph("")
                 , buttonBar

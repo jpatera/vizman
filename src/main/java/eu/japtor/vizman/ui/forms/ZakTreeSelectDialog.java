@@ -23,6 +23,7 @@ import eu.japtor.vizman.backend.entity.ZakBasic;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.ZaknService;
+import eu.japtor.vizman.backend.service.ZakrService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.Gap;
 import eu.japtor.vizman.ui.components.Ribbon;
@@ -50,6 +51,7 @@ public class ZakTreeSelectDialog extends Dialog {
     private List<ZakBasic> zakList;
     private ComponentRenderer<HtmlComponent, ZakBasic> kzTextRenderer;
     private ZaknService zaknService;
+    private ZakrService zakrService;
 
     VerticalLayout mainPanel;
     HorizontalLayout buttonBar;
@@ -207,6 +209,7 @@ public class ZakTreeSelectDialog extends Dialog {
                 ,  Boolean.FALSE
                 , null
                 , zaknService
+                , zakrService
                 , cfgPropsCache
         );
         zakGrid.setMultiSort(true);

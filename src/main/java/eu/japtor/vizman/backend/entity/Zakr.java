@@ -660,6 +660,19 @@ public class Zakr implements Serializable, HasItemType, HasArchState {
         return builder.toString();
     }
 
+    public String getRepKzCisloAndText() {
+        StringBuilder builder = new StringBuilder();
+        builder .append(getCkont())
+                .append("-")
+                .append(getCzak())
+                .append(" : ")
+                .append(getTextKontNotNull())
+                .append(" / ")
+                .append(getTextZakNotNull())
+        ;
+        return builder.toString();
+    }
+//
     @Override
     public int hashCode() {
         return 31;

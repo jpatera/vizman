@@ -9,6 +9,7 @@ import ar.com.fdvs.dj.domain.entities.conditionalStyle.ConditionStyleExpression;
 import ar.com.fdvs.dj.domain.entities.conditionalStyle.ConditionalStyle;
 
 import java.awt.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -19,6 +20,9 @@ public class VzmFormatReport {
     static final Color GROUP_SUM_BG_COLOR = new Color(0xEEF4FF);
     static final Color HEADER_BG_COLOR = new Color(0xF4F4F4);
 
+    //  Report file name date formatter
+    public static final DateTimeFormatter RFNDF = DateTimeFormatter.ofPattern("__yyyy_MM_dd__HH_mm_ss");
+
     public static final ar.com.fdvs.dj.domain.constants.Font ARIAL_XL = new ar.com.fdvs.dj.domain.constants.Font(11, ar.com.fdvs.dj.domain.constants.Font._FONT_ARIAL, false, false, false);
     public static final ar.com.fdvs.dj.domain.constants.Font ARIAL_XL_BOLD = new ar.com.fdvs.dj.domain.constants.Font(11, ar.com.fdvs.dj.domain.constants.Font._FONT_ARIAL, true, false, false);
     public static final ar.com.fdvs.dj.domain.constants.Font ARIAL_XXL_BOLD = new ar.com.fdvs.dj.domain.constants.Font(13, ar.com.fdvs.dj.domain.constants.Font._FONT_ARIAL, true, false, false);
@@ -26,6 +30,7 @@ public class VzmFormatReport {
     //    public static final ar.com.fdvs.dj.domain.constants.Font DEFAULT_FONT_PDF = ar.com.fdvs.dj.domain.constants.Font.ARIAL_MEDIUM;
     public static final ar.com.fdvs.dj.domain.constants.Font DEFAULT_FONT_PDF = Font.ARIAL_SMALL;
     public static final ar.com.fdvs.dj.domain.constants.Font DEFAULT_FONT_XLS = Font.ARIAL_SMALL;
+    public static final ar.com.fdvs.dj.domain.constants.Font BOLD_FONT_XLS = Font.ARIAL_SMALL_BOLD;
 
     //    public static final ar.com.fdvs.dj.domain.constants.Font HEADER_FONT_PDF = ARIAL_XL_BOLD;
     // public static final ar.com.fdvs.dj.domain.constants.Font HEADER_FONT_PDF = ARIAL_XL;
@@ -54,6 +59,7 @@ public class VzmFormatReport {
 //    public static final String DEFAULT_GRID_XLS_STYLE_NAME;
     public static final Style DEFAULT_GRID_XLS_TEXT_STYLE;
     public static final String DEFAULT_GRID_XLS_TEXT_STYLE_NAME;
+    public static final Style DEFAULT_GRID_XLS_TEXT_BOLD_STYLE;
     public static final Style DEFAULT_GRID_XLS_NUM_STYLE;
     public static final String DEFAULT_GRID_XLS_NUM_STYLE_NAME;
 //    public static final Style CENTER_GRID_XLS_STYLE;
@@ -76,8 +82,9 @@ public class VzmFormatReport {
 
     public static final String WORK_HOUR_GRID_STYLE_NAME;
     public static final Style WORK_HOUR_GRID_STYLE;
-//    public static final String WORK_HOUR_GRID_XLS_STYLE_NAME;
-//    public static final Style WORK_HOUR_GRID_XLS_STYLE;
+    public static final String WORK_HOUR_GRID_XLS_STYLE_NAME;
+    public static final Style WORK_HOUR_GRID_XLS_STYLE;
+    public static final Style WORK_HOUR_BOLD_GRID_XLS_STYLE;
     public static final Style WORK_HOUR_SUM_GRID_STYLE;
     public static final Style WORK_HOUR_TOT_GRID_STYLE;
 
@@ -85,8 +92,7 @@ public class VzmFormatReport {
     public static final Style MONEY_NO_FRACT_GRID_STYLE;
     public static final String MONEY_NO_FRACT_GRID_XLS_STYLE_NAME;
     public static final Style MONEY_NO_FRACT_GRID_XLS_STYLE;
-//    public static final String MONEY_NO_FRACT_GRID_XLS_STYLE_NAME;
-//    public static final Style MONEY_NO_FRACT_GRID_XLS_STYLE;
+    public static final Style MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE;
     public static final Style MONEY_NO_FRACT_SUM_GRID_STYLE;
     public static final Style MONEY_NO_FRACT_TOT_GRID_STYLE;
 
@@ -97,6 +103,7 @@ public class VzmFormatReport {
     public static final Style PROC_GRID_STYLE;
     public static final Style PROC_GRID_XLS_STYLE;
     public static final Style PERCENT_GRID_STYLE;
+
     public static final Style MONEY_GRID_STYLE;
 //    public static final Style MONEY_GRID_XLS_STYLE;
     public static final Style SHORT_DATE_GRID_STYLE;
@@ -112,7 +119,12 @@ public class VzmFormatReport {
     public static final Style BLACK_STYLE;
     public static final Style RED_STYLE;
 
-//    public static ArrayList condWeekendDateStyles = new ArrayList();
+    // Conditional report formatting
+    // -----------------------------
+    public static final String SLUZ_MINS_REP_FIELD_NAME = "sluzMins";
+    public static final String FROM_MANUAL_REP_FIELD_NAME = "fromManual";
+    public static final String TO_MANUAL_REP_FIELD_NAME = "toManual";
+
     public static ArrayList condWeekendSluzDateStyles = new ArrayList();
     public static ArrayList condWeekendFromStyles = new ArrayList();
     public static ArrayList condWeekendToStyles = new ArrayList();
@@ -183,6 +195,9 @@ public class VzmFormatReport {
 //                .setPaddingLeft(3)
 //                .setPaddingRight(5)
 //                .setBorder(Border.THIN())
+                .build();
+        DEFAULT_GRID_XLS_TEXT_BOLD_STYLE = new StyleBuilder(false, "default-grid-xls-text-bold-style")
+                .setFont(BOLD_FONT_XLS)
                 .build();
 
         DEFAULT_GRID_XLS_NUM_STYLE_NAME = "default-grid-xls-num-style";
@@ -408,12 +423,16 @@ public class VzmFormatReport {
                 .setPattern("#,##0.0;-#,##0.0")
                 .build();
 
-//        WORK_HOUR_GRID_XLS_STYLE_NAME = "work-hour-grid-xls-style";
-//        WORK_HOUR_GRID_XLS_STYLE = new StyleBuilder(true, "work-hour-grid-xls-style")
-//                .setParentStyleName(DEFAULT_GRID_XLS_STYLE_NAME)
-//                .setHorizontalAlign(HorizontalAlign.RIGHT)
-////                .setPattern("#,##0.0;-#,##0.0")
-//                .build();
+        WORK_HOUR_GRID_XLS_STYLE_NAME = "work-hour-grid-xls-style";
+        WORK_HOUR_GRID_XLS_STYLE = new StyleBuilder(true, "work-hour-grid-xls-style")
+                .setParentStyleName(DEFAULT_GRID_XLS_NUM_STYLE_NAME)
+                .setHorizontalAlign(HorizontalAlign.RIGHT)
+                .setPattern("##0.0;-##0.0")
+                .build();
+        WORK_HOUR_BOLD_GRID_XLS_STYLE = new StyleBuilder(true)
+                .setParentStyleName(WORK_HOUR_GRID_XLS_STYLE_NAME)
+                .setFont(BOLD_FONT_XLS)
+                .build();
 
         WORK_HOUR_SUM_GRID_STYLE = new StyleBuilder(true, "work-hour-sum-grid-style")
                 .setParentStyleName(WORK_HOUR_GRID_STYLE_NAME)
@@ -446,14 +465,11 @@ public class VzmFormatReport {
                 .setPattern("#,##0;-#,##0")
                 .build()
         ;
-
-//        MONEY_NO_FRACT_GRID_XLS_STYLE_NAME =  "money-no-fract-grid-xls-style";
-//        MONEY_NO_FRACT_GRID_XLS_STYLE = new StyleBuilder(true, MONEY_NO_FRACT_GRID_XLS_STYLE_NAME)
-//                .setParentStyleName(DEFAULT_GRID_XLS_STYLE_NAME)
-//                .setHorizontalAlign(HorizontalAlign.RIGHT)
-//                .setPattern("#,##0;-#,##0")
-//                .build()
-//        ;
+        MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE = new StyleBuilder(true)
+                .setParentStyleName(MONEY_NO_FRACT_GRID_XLS_STYLE_NAME)
+                .setFont(BOLD_FONT_XLS)
+                .build()
+        ;
 
         MONEY_NO_FRACT_SUM_GRID_STYLE = new StyleBuilder(true, "money-no-fract-sum-grid-style")
                 .setParentStyleName(MONEY_NO_FRACT_GRID_STYLE_NAME)
@@ -474,12 +490,6 @@ public class VzmFormatReport {
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
                 .setPattern("#,##0.00;-#,##0.00")
                 .build();
-
-//        MONEY_GRID_XLS_STYLE = new StyleBuilder(true, "money-grid-xls-style")
-//                .setParentStyleName(DEFAULT_GRID_XLS_STYLE_NAME)
-//                .setHorizontalAlign(HorizontalAlign.RIGHT)
-//                .setPattern("#,##0.00;-#,##0.00")
-//                .build();
 
         PERCENT_GRID_STYLE = new StyleBuilder(true, "percent-grid-style")
                 .setParentStyleName(DEFAULT_GRID_STYLE_NAME)
@@ -504,7 +514,7 @@ public class VzmFormatReport {
             String dateValue;
             Boolean isSluz;
             Object dateObjValue = fields.get("compositeDate");
-            Object sluzMinsObjValue = fields.get("sluzMins");
+            Object sluzMinsObjValue = fields.get(SLUZ_MINS_REP_FIELD_NAME);
             if (null == dateObjValue) {
                 dateValue = "n_o_t__w_e_e_k_e_n_d";
             } else {
@@ -542,7 +552,7 @@ public class VzmFormatReport {
             String dateValue;
             Boolean fromManualValue;
             Object dateObjValue = fields.get("compositeDate");
-            Object fromObjValue = fields.get("fromManual");
+            Object fromObjValue = fields.get(FROM_MANUAL_REP_FIELD_NAME);
             if (null == dateObjValue) {
                 dateValue = "n_o_t__w_e_e_k_e_n_d";
             } else {
@@ -580,7 +590,7 @@ public class VzmFormatReport {
             String dateValue;
             Boolean toManualValue;
             Object dateObjValue = fields.get("compositeDate");
-            Object toObjValue = fields.get("toManual");
+            Object toObjValue = fields.get(TO_MANUAL_REP_FIELD_NAME);
             if (null == dateObjValue) {
                 dateValue = "n_o_t__w_e_e_k_e_n_d";
             } else {
@@ -649,7 +659,7 @@ public class VzmFormatReport {
         @Override
         public Object evaluate(Map fields, Map variables, Map parameters) {
             Boolean fromManualValue;
-            Object objValue = fields.get("fromManual");
+            Object objValue = fields.get(FROM_MANUAL_REP_FIELD_NAME);
             if (null == objValue) {
                 return !manualExpected;
             } else {

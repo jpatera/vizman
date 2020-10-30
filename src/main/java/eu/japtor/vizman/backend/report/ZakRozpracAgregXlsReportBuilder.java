@@ -1,18 +1,23 @@
 package eu.japtor.vizman.backend.report;
 
-import ar.com.fdvs.dj.domain.*;
+import ar.com.fdvs.dj.domain.DJCalculation;
+import ar.com.fdvs.dj.domain.Style;
 import ar.com.fdvs.dj.domain.builders.ColumnBuilder;
-import ar.com.fdvs.dj.domain.constants.*;
+import ar.com.fdvs.dj.domain.builders.FastReportBuilder;
+import ar.com.fdvs.dj.domain.constants.Page;
 import ar.com.fdvs.dj.domain.entities.columns.AbstractColumn;
 import eu.japtor.vizman.backend.entity.Mena;
-import org.vaadin.reports.PrintPreviewReport;
 
 import java.math.BigDecimal;
 import java.util.Locale;
 
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
 
-public class ZakRozpracReport extends PrintPreviewReport {
+public class ZakRozpracAgregXlsReportBuilder extends FastReportBuilder {
+
+    static Page Page_xls(){
+        return new Page(666,1300,true);
+    }
 
     private AbstractColumn ckontCol;
     private AbstractColumn czakCol;
@@ -36,44 +41,43 @@ public class ZakRozpracReport extends PrintPreviewReport {
     private AbstractColumn rpHotovoByKurzCol;
     private AbstractColumn rpZbyvaByKurzCol;
     private AbstractColumn vysledekByKurzCol;
+    private AbstractColumn vysledekP8ByKurzCol;
 
 
-    // TODO: obsolete - remove
-    public ZakRozpracReport() {
+    public ZakRozpracAgregXlsReportBuilder(final String subtitleText) {
         super();
 
         buildReportColumns();
         buildReportGroups();
 
-        this.getReportBuilder()
-                .setTitle("SUMÁRNÍ ROZPRACOVANOST ZAKÁZEK")
-                .setReportLocale(new Locale("cs", "CZ"))
-//                .setSubtitle("Rok: " + paramRokStr)
-//                .addParameter("PARAM_ROK", String.class.getName())
-                .setMargins(10, 10, 10, 10)
-//                .setPrintBackgroundOnOddRows(true)
-                .setDefaultStyles(TITLE_STYLE, SUBTITLE_STYLE, HEADER_STYLE, DEFAULT_STYLE)
-                .setPageSizeAndOrientation(Page.Page_A4_Landscape())
+        this
+                .setTitle("ROZPRACOVANOST ZAKÁZEK")
+                .setSubtitle(subtitleText)
                 .setUseFullPageWidth(true)
+                .setIgnorePagination(true) // For Excel, we don't want pagination, just a plain list
+                .setMargins(0, 0, 0, 0)
+                .setWhenNoData("(no data)", new Style())
+                .setReportLocale(new Locale("cs", "CZ"))
+//                .setPrintBackgroundOnOddRows(true)
+                .setPageSizeAndOrientation(Page_xls())
 
-//                .addAutoText("Rok: " + "\" + $P{PARAM_ROK} + \""
-//                        , AutoText.POSITION_HEADER, AutoText.ALIGMENT_LEFT, 80, DEFAULT_STYLE)
-//                .addAutoText("For internal use only"
-//                        , AutoText.POSITION_HEADER, AutoText.ALIGMENT_LEFT, 200, DEFAULT_STYLE)
-//                .addAutoText(LocalDateTime.now().toString())
-//                .addAutoText(AutoText.AUTOTEXT_CREATED_ON
-//                        , AutoText.POSITION_HEADER, AutoText.ALIGNMENT_LEFT)
-                .addAutoText(AutoText.AUTOTEXT_PAGE_X_OF_Y
-                        , AutoText.POSITION_HEADER, AutoText.ALIGMENT_CENTER)
+//                .setDefaultStyles(TITLE_STYLE, DEFAULT_STYLE, HEADER_STYLE, DEFAULT_STYLE)
+//                .addStyle(DEFAULT_STYLE)
+//                .addStyle(DEFAULT_GRID_STYLE)
+//                .addStyle(HEADER_STYLE)
+//                .addStyle(MONEY_NO_FRACT_GRID_STYLE)
+//                .addStyle(WORK_HOUR_GRID_STYLE)
 
-                // Add styles (needed only styles used as parents)
-                .addStyle(DEFAULT_STYLE)
-                .addStyle(DEFAULT_GRID_STYLE)
-                .addStyle(HEADER_STYLE)
-                .addStyle(MONEY_NO_FRACT_GRID_STYLE)
-                .addStyle(WORK_HOUR_GRID_STYLE)
+                .setDefaultStyles(DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_NUM_STYLE)
+                .addStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
+                .addStyle(DEFAULT_GRID_XLS_NUM_STYLE)
+                .addStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
+//                .addStyle(DEFAULT_GRID_STYLE)
 
-                // Add columns
+                .setGrandTotalLegend("National Total")
+                .setPrintColumnNames(true)
+
+                // Add basic columns
                 .addColumn(ckontCol)
                 .addColumn(czakCol)
                 .addColumn(rokCol)
@@ -94,70 +98,72 @@ public class ZakRozpracReport extends PrintPreviewReport {
                 .addColumn(rpHotovoByKurzCol)
                 .addColumn(rpZbyvaByKurzCol)
                 .addColumn(vysledekByKurzCol)
+                .addColumn(vysledekP8ByKurzCol)
                 .addColumn(kzTextShortCol)
 
                 // Add groups
 
+                // Add sub-reports
+
                 // Add totals
                 .setGrandTotalLegend("National Total")
                 .setGrandTotalLegendStyle(GROUP_HEADER_USER_STYLE)
-                .addGlobalFooterVariable(honorCistyByKurzCol, DJCalculation.SUM, MONEY_NO_FRACT_TOT_GRID_STYLE)
-                .addGlobalFooterVariable(rpHotovoByKurzCol, DJCalculation.SUM, MONEY_NO_FRACT_TOT_GRID_STYLE)
-                .addGlobalFooterVariable(rpZbyvaByKurzCol, DJCalculation.SUM, MONEY_NO_FRACT_TOT_GRID_STYLE)
-                .addGlobalFooterVariable(rxRyVykonByKurzCol, DJCalculation.SUM, MONEY_NO_FRACT_TOT_GRID_STYLE)
-                .addGlobalFooterVariable(vysledekByKurzCol, DJCalculation.SUM, MONEY_NO_FRACT_TOT_GRID_STYLE)
+                .addGlobalFooterVariable(honorCistyByKurzCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE)
+                .addGlobalFooterVariable(rpHotovoByKurzCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE)
+                .addGlobalFooterVariable(rpZbyvaByKurzCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE)
+                .addGlobalFooterVariable(rxRyVykonByKurzCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE)
+                .addGlobalFooterVariable(vysledekByKurzCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE)
         ;
     }
 
     private void buildReportColumns() {
-
         ckontCol = ColumnBuilder.getNew()
                 .setColumnProperty("ckont", String.class)
                 .setTitle("Č.kont.")
-                .setStyle(DEFAULT_GRID_STYLE)
-                .setWidth(8)
+                .setStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
+                .setWidth(5)
                 .build();
 
         czakCol = ColumnBuilder.getNew()
                 .setColumnProperty("czak", Integer.class)
                 .setTitle("ČZ")
-                .setStyle(INT_GRID_STYLE)
+                .setStyle(INT_GRID_XLS_STYLE)
                 .setWidth(3)
                 .build();
 
         rokCol = ColumnBuilder.getNew()
                 .setColumnProperty("rok", Integer.class)
                 .setTitle("Rok")
-                .setStyle(INT_GRID_STYLE)
-                .setWidth(5)
+                .setStyle(INT_GRID_XLS_STYLE)
+                .setWidth(4)
                 .build();
 
         skupCol = ColumnBuilder.getNew()
                 .setColumnProperty("skupina", String.class)
                 .setTitle("Sk")
-                .setStyle(DEFAULT_GRID_STYLE)
+                .setStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
                 .setWidth(3)
                 .build();
 
         menaCol = ColumnBuilder.getNew()
                 .setColumnProperty("mena", Mena.class)
                 .setTitle("Měna")
-                .setStyle(DEFAULT_GRID_STYLE)
-                .setWidth(5)
+                .setStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
+                .setWidth(4)
                 .build();
 
         honorCistyByKurzCol = ColumnBuilder.getNew()
                 .setColumnProperty("honorCistyByKurz", BigDecimal.class)
                 .setTitle("Honorář č.")
 //                .setHeaderStyle(HEADER_STYLE)
-                .setStyle(MONEY_NO_FRACT_GRID_STYLE)
-                .setWidth(9)
+                .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
+                .setWidth(7)
                 .build();
 
         kzTextShortCol = ColumnBuilder.getNew()
                 .setColumnProperty("kzTextShort", String.class)
                 .setTitle("Text")
-                .setStyle(DEFAULT_GRID_STYLE)
+                .setStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
                 .setWidth(25)
 //                .setFixedWidth(false)
                 .build();
@@ -165,121 +171,123 @@ public class ZakRozpracReport extends PrintPreviewReport {
         rm4Col = ColumnBuilder.getNew()
                 .setColumnProperty("rm4", BigDecimal.class)
                 .setTitle("R-4")
-                .setStyle(PROC_GRID_STYLE)
-                .setWidth(4)
+                .setStyle(PROC_GRID_XLS_STYLE)
+                .setWidth(3)
                 .build();
 
         rm3Col = ColumnBuilder.getNew()
                 .setColumnProperty("rm3", BigDecimal.class)
                 .setTitle("R-3")
-                .setStyle(PROC_GRID_STYLE)
-                .setWidth(4)
+                .setStyle(PROC_GRID_XLS_STYLE)
+                .setWidth(3)
                 .build();
 
         rm2Col = ColumnBuilder.getNew()
                 .setColumnProperty("rm2", BigDecimal.class)
                 .setTitle("R-2")
-                .setStyle(PROC_GRID_STYLE)
-                .setWidth(4)
+                .setStyle(PROC_GRID_XLS_STYLE)
+                .setWidth(3)
                 .build();
 
         rm1Col = ColumnBuilder.getNew()
                 .setColumnProperty("rm1", BigDecimal.class)
                 .setTitle("R-1")
-                .setStyle(PROC_GRID_STYLE)
-                .setWidth(4)
+                .setStyle(PROC_GRID_XLS_STYLE)
+                .setWidth(3)
                 .build();
 
         r0Col = ColumnBuilder.getNew()
                 .setColumnProperty("r0", BigDecimal.class)
                 .setTitle("R0")
 //                .setHeaderStyle(HEADER_STYLE)
-                .setStyle(PROC_GRID_STYLE)
-                .setWidth(4)
+                .setStyle(PROC_GRID_XLS_STYLE)
+                .setWidth(3)
                 .build();
 
         r1Col = ColumnBuilder.getNew()
                 .setColumnProperty("r1", BigDecimal.class)
                 .setTitle("R1")
 //                .setHeaderStyle(HEADER_STYLE)
-                .setStyle(PROC_GRID_STYLE)
-                .setWidth(4)
+                .setStyle(PROC_GRID_XLS_STYLE)
+                .setWidth(3)
                 .build();
 
         r2Col = ColumnBuilder.getNew()
                 .setColumnProperty("r2", BigDecimal.class)
                 .setTitle("R2")
 //                .setHeaderStyle(HEADER_STYLE)
-                .setStyle(PROC_GRID_STYLE)
-                .setWidth(4)
+                .setStyle(PROC_GRID_XLS_STYLE)
+                .setWidth(3)
                 .build();
 
         r3Col = ColumnBuilder.getNew()
                 .setColumnProperty("r3", BigDecimal.class)
                 .setTitle("R3")
 //                .setHeaderStyle(HEADER_STYLE)
-                .setStyle(PROC_GRID_STYLE)
-                .setWidth(4)
+                .setStyle(PROC_GRID_XLS_STYLE)
+                .setWidth(3)
                 .build();
 
         r4Col = ColumnBuilder.getNew()
                 .setColumnProperty("r4", BigDecimal.class)
                 .setTitle("R4")
 //                .setHeaderStyle(HEADER_STYLE)
-                .setStyle(PROC_GRID_STYLE)
-                .setWidth(4)
+                .setStyle(PROC_GRID_XLS_STYLE)
+                .setWidth(3)
                 .build();
 
         rxRyVykonByKurzCol = ColumnBuilder.getNew()
                 .setColumnProperty("rxRyVykonByKurz", BigDecimal.class)
                 .setTitle("Výk. rx-ry")
-                .setStyle(MONEY_NO_FRACT_GRID_STYLE)
-                .setWidth(9)
+                .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
+                .setWidth(7)
                 .build();
 
         rpCol = ColumnBuilder.getNew()
                 .setColumnProperty("rp", BigDecimal.class)
                 .setTitle("RP")
 //                .setHeaderStyle(HEADER_STYLE)
-                .setStyle(PROC_GRID_STYLE)
-                .setWidth(5)
+                .setStyle(PROC_GRID_XLS_STYLE)
+                .setWidth(3)
                 .build();
 
         rpHotovoCol = ColumnBuilder.getNew()
                 .setColumnProperty("rpHotovo", BigDecimal.class)
                 .setTitle("Hotovo RP")
-                .setStyle(PROC_GRID_STYLE)
-                .setWidth(5)
+                .setStyle(PROC_GRID_XLS_STYLE)
+                .setWidth(7)
                 .build();
 
         rpHotovoByKurzCol = ColumnBuilder.getNew()
                 .setColumnProperty("rpHotovoByKurz", BigDecimal.class)
                 .setTitle("Hotovo RP")
-                .setStyle(MONEY_NO_FRACT_GRID_STYLE)
-                .setWidth(10)
+                .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
+                .setWidth(7)
                 .build();
 
         rpZbyvaByKurzCol = ColumnBuilder.getNew()
                 .setColumnProperty("rpZbyvaByKurz", BigDecimal.class)
                 .setTitle("Zbývá RP")
-                .setStyle(MONEY_NO_FRACT_GRID_STYLE)
-                .setWidth(9)
+                .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
+                .setWidth(7)
                 .build();
 
         vysledekByKurzCol = ColumnBuilder.getNew()
                 .setColumnProperty("vysledekByKurz", BigDecimal.class)
                 .setTitle("Výsledek")
-                .setStyle(MONEY_NO_FRACT_GRID_STYLE)
-                .setWidth(9)
+                .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
+                .setWidth(7)
+                .build();
+
+        vysledekP8ByKurzCol = ColumnBuilder.getNew()
+                .setColumnProperty("vysledekP8ByKurz", BigDecimal.class)
+                .setTitle("Výsledek P8")
+                .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
+                .setWidth(7)
                 .build();
     }
 
-
     private void buildReportGroups() {
 
-    }
-
-    public void setSubtitleText(String subtitleText) {
-        this.getReportBuilder().setSubtitle(subtitleText);
     }
 }

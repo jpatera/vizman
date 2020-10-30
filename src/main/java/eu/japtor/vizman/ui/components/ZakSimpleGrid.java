@@ -17,8 +17,9 @@ import com.vaadin.flow.dom.Element;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.ZaknService;
+import eu.japtor.vizman.backend.service.ZakrService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
-import eu.japtor.vizman.ui.forms.ZakNaklGridDialog;
+import eu.japtor.vizman.ui.forms.ZakNaklSingleDialog;
 import eu.japtor.vizman.ui.views.ZakrListView;
 import org.apache.commons.lang3.StringUtils;
 
@@ -63,7 +64,8 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     private Function<ZakBasic, Boolean> checkBoxEnabler;
 
     private ZaknService zaknService;
-    private ZakNaklGridDialog zakNaklGridDialog;
+    private ZakrService zakrService;
+    private ZakNaklSingleDialog zakNaklSingleDialog;
     private CfgPropsCache cfgPropsCache;
 
     private int selCount;
@@ -80,9 +82,11 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
             , Boolean initFilterArchValue
             , Boolean initFilterDigiValue
             , ZaknService zaknService
+            , ZakrService zakrService
             , CfgPropsCache cfgPropsCache
     ) {
         this.zaknService = zaknService;
+        this.zakrService = zakrService;
         this.cfgPropsCache = cfgPropsCache;
 
         this.initFilterArchValue = initFilterArchValue;
@@ -100,7 +104,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         this.setSelectionMode(Grid.SelectionMode.SINGLE);
         this.setId("zak-simple-grid");  // .. same ID as is used in shared-styles grid's dom module
 
-        zakNaklGridDialog = new ZakNaklGridDialog(
+        zakNaklSingleDialog = new ZakNaklSingleDialog(
                 this.zaknService
         );
 
@@ -259,9 +263,10 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     private Component buildZaknViewBtn(ZakBasic zakBasic) {
         return new GridItemBtn(event -> {
                     this.select(zakBasic);
-                    zakNaklGridDialog.openDialogFromZakBasicView(
-                            zakBasic
+                    zakNaklSingleDialog.openDialog(
+                            zakrService.fetchOne(zakBasic.getId())
                             , ZakrListView.ZakrParams.getDefaultInstance(cfgPropsCache)
+                            , ""
                     );
                 }
                 , new Icon(VaadinIcon.COIN_PILES), VzmFormatUtils.getItemTypeColorName(zakBasic.getTyp())
