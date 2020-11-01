@@ -42,7 +42,7 @@ public class DochYearReportDialog extends AbstractPrintDialog<DochYear> implemen
     private TextField dochYmParamField;
 
     private SerializableSupplier<List<? extends DochYear>> itemsSupplier = () -> {
-//          zaknService.fetchByZakId(zakr.getId(), zakrParams)
+//          zakNaklVwService.fetchByZakId(zakr.getId(), zakrParams)
             return dochYearMonthService.fetchRepDochYearForPersonAndYear(dochParams.getPersonId(), dochParams.getDochYear());
         }
     ;

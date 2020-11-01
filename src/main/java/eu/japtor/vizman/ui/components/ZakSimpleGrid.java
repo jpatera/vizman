@@ -16,7 +16,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Element;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
-import eu.japtor.vizman.backend.service.ZaknService;
+import eu.japtor.vizman.backend.service.ZakNaklVwService;
 import eu.japtor.vizman.backend.service.ZakrService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.forms.ZakNaklSingleDialog;
@@ -63,7 +63,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     private Consumer<Integer> selectionChanger;
     private Function<ZakBasic, Boolean> checkBoxEnabler;
 
-    private ZaknService zaknService;
+    private ZakNaklVwService zakNaklVwService;
     private ZakrService zakrService;
     private ZakNaklSingleDialog zakNaklSingleDialog;
     private CfgPropsCache cfgPropsCache;
@@ -81,11 +81,11 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
             , boolean zaknViewBtnVisible
             , Boolean initFilterArchValue
             , Boolean initFilterDigiValue
-            , ZaknService zaknService
+            , ZakNaklVwService zakNaklVwService
             , ZakrService zakrService
             , CfgPropsCache cfgPropsCache
     ) {
-        this.zaknService = zaknService;
+        this.zakNaklVwService = zakNaklVwService;
         this.zakrService = zakrService;
         this.cfgPropsCache = cfgPropsCache;
 
@@ -105,7 +105,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         this.setId("zak-simple-grid");  // .. same ID as is used in shared-styles grid's dom module
 
         zakNaklSingleDialog = new ZakNaklSingleDialog(
-                this.zaknService
+                this.zakNaklVwService
         );
 
         this.addColumn(archRenderer)

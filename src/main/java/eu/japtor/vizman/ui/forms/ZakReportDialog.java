@@ -36,14 +36,14 @@ public class ZakReportDialog extends AbstractPrintDialog<Zak> implements HasLogg
 
 
     private SerializableSupplier<List<? extends Fakt>> itemsSupplier = () -> {
-//          zaknService.fetchByZakId(zakr.getId(), zakrParams)
+//          zakNaklVwService.fetchByZakId(zakr.getId(), zakrParams)
 //        return zakService.fetchRepDochYearForPersonAndYear(dochParams.getPersonId(), dochParams.getDochYear());
 //        return Arrays.asList(zak);
         return zak.getFakts();
     };
 
 //    private SerializableSupplier<List<? extends Zak>> itemsSupplier = () -> {
-////          zaknService.fetchByZakId(zakr.getId(), zakrParams)
+////          zakNaklVwService.fetchByZakId(zakr.getId(), zakrParams)
 //            return zakService.fetchRepDochYearForPersonAndYear(dochParams.getPersonId(), dochParams.getDochYear());
 //        }
 //    ;

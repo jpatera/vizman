@@ -20,6 +20,8 @@ public interface ZakrService {
 
     List<Zakr> fetchAndCalcByFiltersDescOrder(ZakrListView.ZakrParams zakrParams);
 
+    List<Long> fetchIdsByFiltersDescOrderWithLimit(ZakrListView.ZakrParams zakrParams);
+
     List<Zakr> fetchByRokDescOrder(Integer rok);
 
     long countAll();

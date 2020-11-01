@@ -50,7 +50,6 @@ import org.springframework.data.domain.Sort;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.time.*;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -181,7 +180,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
     public CalService calService;
 
     @Autowired
-    public ZaknService zaknService;
+    public ZakNaklVwService zakNaklVwService;
 
     @Autowired
     public ZakrService zakrService;
@@ -232,7 +231,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
         zakSelectDialog = new ZakSelectDialog (
                 this::addSelectedZaksToGrid
                 , zakBasicRepo
-                , zaknService
+                , zakNaklVwService
                 , zakrService
                 , cfgPropsCache
         );

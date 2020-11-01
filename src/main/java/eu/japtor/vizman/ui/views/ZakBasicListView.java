@@ -39,7 +39,7 @@ import eu.japtor.vizman.backend.report.ZakListReportBuilder;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.ZakBasicService;
-import eu.japtor.vizman.backend.service.ZaknService;
+import eu.japtor.vizman.backend.service.ZakNaklVwService;
 import eu.japtor.vizman.backend.service.ZakrService;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
@@ -79,7 +79,7 @@ public class ZakBasicListView extends VerticalLayout {
     public ZakBasicService zakBasicService;
 
     @Autowired
-    public ZaknService zaknService;
+    public ZakNaklVwService zakNaklVwService;
 
     @Autowired
     public ZakrService zakrService;
@@ -148,7 +148,7 @@ public class ZakBasicListView extends VerticalLayout {
                 , isNaklBasicAccessGranted() || isNaklCompleteAccessGranted()
                 , null
                 , null
-                , zaknService
+                , zakNaklVwService
                 , zakrService
                 , cfgPropsCache
         );

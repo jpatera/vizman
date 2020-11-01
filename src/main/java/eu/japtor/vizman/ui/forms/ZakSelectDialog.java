@@ -11,7 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
-import eu.japtor.vizman.backend.service.ZaknService;
+import eu.japtor.vizman.backend.service.ZakNaklVwService;
 import eu.japtor.vizman.backend.service.ZakrService;
 import eu.japtor.vizman.ui.components.*;
 import org.claspina.confirmdialog.ConfirmDialog;
@@ -36,7 +36,7 @@ public class ZakSelectDialog extends Dialog {
 
     private ZakBasicRepo zakBasicRepo;
     private Consumer<List<ZakBasic>> itemsAder;
-    private ZaknService zaknService;
+    private ZakNaklVwService zakNaklVwService;
     private ZakrService zakrService;
     private CfgPropsCache cfgPropsCache;
 
@@ -44,13 +44,13 @@ public class ZakSelectDialog extends Dialog {
     public ZakSelectDialog(
             Consumer<List<ZakBasic>> itemAdder
             , ZakBasicRepo zakBasicRepo
-            , ZaknService zaknService
+            , ZakNaklVwService zakNaklVwService
             , ZakrService zakrService
             , CfgPropsCache cfgPropsCache
     ) {
         this.itemsAder = itemAdder;
         this.zakBasicRepo = zakBasicRepo;
-        this.zaknService = zaknService;
+        this.zakNaklVwService = zakNaklVwService;
         this.zakrService = zakrService;
         this.cfgPropsCache = cfgPropsCache;
 
@@ -136,7 +136,7 @@ public class ZakSelectDialog extends Dialog {
                 , false
                 , Boolean.FALSE
                 , null
-                , zaknService
+                , zakNaklVwService
                 , zakrService
                 , cfgPropsCache
         );

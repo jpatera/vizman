@@ -15,13 +15,9 @@ import java.util.Map;
 
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
 
-public class ZakNaklAgregXlsReportBuilder extends FastReportBuilder {
-
-    static Page Page_xls(){
-        return new Page(666,1000,true);
-    }
-
-//    protected DynamicReportBuilder reportBuilder;
+// Souhrnny 1D report po zakazakch, aktualne se nepouziva.
+// Nemazat, muze se hodit!!
+public class ZakNaklSumXlsReportBuilder extends FastReportBuilder {
 
     private AbstractColumn kzCisloCol;
     private AbstractColumn kzTextFullCol;
@@ -43,7 +39,7 @@ public class ZakNaklAgregXlsReportBuilder extends FastReportBuilder {
     private BigDecimal koefRez;
     private BigDecimal koefPojRez;
 
-    public ZakNaklAgregXlsReportBuilder(
+    public ZakNaklSumXlsReportBuilder(
             String subtitleText
             , boolean withMoneyColumns
             , BigDecimal koefPojist
@@ -69,7 +65,7 @@ public class ZakNaklAgregXlsReportBuilder extends FastReportBuilder {
                 .setWhenNoData("(no data)", new Style())
                 .setReportLocale(new Locale("cs", "CZ"))
 //                .setPrintBackgroundOnOddRows(true)
-                .setPageSizeAndOrientation(Page_xls())
+                .setPageSizeAndOrientation(new Page(666,1000))
 
                 .setDefaultStyles(DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_NUM_STYLE)
                 .addStyle(DEFAULT_GRID_XLS_TEXT_STYLE)

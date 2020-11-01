@@ -44,6 +44,8 @@ public class KontTreeXlsReportBuilder extends FastReportBuilder {
         this
 //                .setTitle("")
 //                .setSubtitle("")
+
+//                .setPageSizeAndOrientation(    new Page(666,900))
                 .setUseFullPageWidth(true)
                 .setIgnorePagination(false) // We need pagination to split report to mmore XLS lists
                 .setMargins(0, 0, 0, 0)
@@ -56,8 +58,9 @@ public class KontTreeXlsReportBuilder extends FastReportBuilder {
                 .addStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
                 .addStyle(DEFAULT_GRID_XLS_NUM_STYLE)
 
-                // Add basic  columns
                 .setPrintColumnNames(false)
+
+                // Add columns
                 .addColumn(ckontCol)
                 .addColumn(kontTextCol)
 
@@ -219,6 +222,7 @@ public class KontTreeXlsReportBuilder extends FastReportBuilder {
 //                .addHeaderVariable(workPruhCol, DJCalculation.SUM, DEFAULT_GRID_XLS_NUM_STYLE, null, userGroupWorkHourLabel)
                 .setGroupLayout(GroupLayout.VALUE_FOR_EACH_WITH_HEADERS)
                 .setStartInNewPage(true)
+//                .setStartInNewColumn(true)
                 .build()
         ;
 

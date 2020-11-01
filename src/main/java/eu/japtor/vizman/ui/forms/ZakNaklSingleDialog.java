@@ -22,11 +22,12 @@ import com.vaadin.flow.server.AbstractStreamResource;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.backend.entity.ItemType;
-import eu.japtor.vizman.backend.entity.Zakn;
+import eu.japtor.vizman.backend.entity.ZaknNaklVw;
 import eu.japtor.vizman.backend.entity.Zakr;
-import eu.japtor.vizman.backend.report.ZakNaklXlsReportBuilder;
-import eu.japtor.vizman.backend.service.ZaknService;
+import eu.japtor.vizman.backend.report.ZakNaklDetailXlsReportBuilder;
+import eu.japtor.vizman.backend.service.ZakNaklVwService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import eu.japtor.vizman.backend.utils.VzmUtils;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.views.ZakrListView;
 import net.sf.jasperreports.engine.JRException;
@@ -39,7 +40,7 @@ import java.util.Objects;
 import static eu.japtor.vizman.app.security.SecurityUtils.isNaklCompleteAccessGranted;
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.RFNDF;
 
-public class ZakNaklSingleDialog extends AbstractGridDialog<Zakn> implements HasLogger {
+public class ZakNaklSingleDialog extends AbstractGridDialog<ZaknNaklVw> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "900px";
     public static final String DIALOG_HEIGHT = null;
@@ -61,25 +62,25 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<Zakn> implements Has
     private ZakrListView.ZakrParams zakrParams;
     private Binder<ZakrListView.ZakrParams> paramsBinder;
 
-    private List<Zakn> currentItemList;
+    private List<ZaknNaklVw> currentItemList;
     private Zakr zakr;
 
-    Grid<Zakn> grid;
+    Grid<ZaknNaklVw> grid;
     private FooterRow sumFooterRow;
 
 //    private ZakNaklReportDialog zakNaklRepDialog;
-    private ZaknService zaknService;
+    private ZakNaklVwService zakNaklVwService;
 
-    private final static String REPORT_FILE_NAME = "vzm-exp-zakn-sum";
+    private final static String SOUHRN_REPORT_FILE_NAME = "vzm-exp-zakn-souhrn";
     private String repSubtitleText;
     private Anchor expXlsAnchor;
-    private ReportXlsExporter<Zakn> xlsReportExporter;
-    private SerializableSupplier<List<? extends Zakn>> itemSupplier = () -> {
-        return zaknService.fetchByZakIdSumByYm(zakr.getId(), zakrParams);
+    private ReportXlsExporter<ZaknNaklVw> xlsReportExporter;
+    private SerializableSupplier<List<? extends ZaknNaklVw>> singleZakNaklSupplier = () -> {
+        return zakNaklVwService.fetchByZakIdSumByYm(zakr.getId(), zakrParams);
     };
     private ComponentEventListener anchorExportListener = event -> {
         try {
-            updateNaklXlsRepAnchorResource(itemSupplier);
+            updateNaklSouhrnXlsRepAnchorResource(singleZakNaklSupplier);
         } catch (JRException e) {
             e.printStackTrace();
         }
@@ -89,14 +90,14 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<Zakn> implements Has
     /**
      * Constructor
      *
-     * @param zaknService
+     * @param zakNaklVwService
      */
-    public ZakNaklSingleDialog(ZaknService zaknService) {
+    public ZakNaklSingleDialog(ZakNaklVwService zakNaklVwService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setItemNames(ItemType.UNKNOWN);
         getMainTitle().setText("NÁKLADY NA ZAKÁZKU");
 
-        this.zaknService = zaknService;
+        this.zakNaklVwService = zakNaklVwService;
         this.paramsBinder = new Binder<>();
 
         getGridInfoBar().add(
@@ -242,17 +243,26 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<Zakn> implements Has
 //        return zakNaklExpButton;
     }
 
-    private String getReportFileName(ReportXlsExporter.Format format) {
-        return REPORT_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
+    private String getSouhrnReportFileName(ReportXlsExporter.Format format) {
+        return SOUHRN_REPORT_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
     }
 
-    private void updateNaklXlsRepAnchorResource(SerializableSupplier<List<? extends Zakn>> itemsSupplier) throws JRException {
+    private void updateNaklSouhrnXlsRepAnchorResource(SerializableSupplier<List<? extends ZaknNaklVw>> itemsSupplier) throws JRException {
+        String[] sheetNames = itemsSupplier.get().stream()
+                .filter(VzmUtils.distinctByKey(p -> p.getKzCisloRep()))
+                .map(item -> item.getKzCisloRep())
+                .toArray(String[]::new)
+                ;
         AbstractStreamResource xlsResource =
                 xlsReportExporter.getXlsStreamResource(
-                        new ZakNaklXlsReportBuilder(repSubtitleText, SecurityUtils.isNaklCompleteAccessGranted())
-                        , getReportFileName(ReportXlsExporter.Format.XLS)
+                        new ZakNaklDetailXlsReportBuilder(
+                                "DETAILNÍ NÁKLADY NA ZAKÁZKU"
+                                , repSubtitleText
+                                , SecurityUtils.isNaklCompleteAccessGranted()
+                        )
+                        , getSouhrnReportFileName(ReportXlsExporter.Format.XLS)
                         , itemsSupplier
-                        , null
+                        , sheetNames
                 );
         expXlsAnchor.setHref(xlsResource);
 
@@ -270,7 +280,7 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<Zakn> implements Has
         zakInfo.setText(zakr.getRepKzCisloAndText());
         this.xlsReportExporter = new ReportXlsExporter();
 
-        this.currentItemList = zaknService.fetchByZakId(zakr.getId(), zakrParams);
+        this.currentItemList = zakNaklVwService.fetchByZakId(zakr.getId(), zakrParams);
         grid.setItems(currentItemList);
         updateFooterFields();
 
@@ -346,15 +356,15 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<Zakn> implements Has
                 .setWidth("10em")
                 .setFlexGrow(0)
         ;
-        grid.addColumn(Zakn::getDatePruh)
+        grid.addColumn(ZaknNaklVw::getDatePruh)
                 .setHeader("Datum")
                 .setFlexGrow(0)
         ;
-//        grid.addColumn(Zakn::getYmPruh)
+//        grid.addColumn(ZaknNaklVw::getYmPruh)
 //                .setHeader("Rok-měs")
 //                .setFlexGrow(0)
 //        ;
-        grid.addColumn(Zakn::getWorkPruh)
+        grid.addColumn(ZaknNaklVw::getWorkPruh)
                 .setHeader("Hodin")
                 .setWidth("6em")
                 .setTextAlign(ColumnTextAlign.END)
@@ -385,7 +395,7 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<Zakn> implements Has
                     .setKey(MZDA_POJ_COL_KEY)
                     .setResizable(true)
             ;
-            grid.addColumn(Zakn::getSazba)
+            grid.addColumn(ZaknNaklVw::getSazba)
                     .setHeader("Sazba")
                     .setWidth("8em")
                     .setTextAlign(ColumnTextAlign.END)
@@ -507,7 +517,7 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<Zakn> implements Has
 //  --------------------------------------------
 
     @Override
-    public List<Zakn> getCurrentItemList() {
+    public List<ZaknNaklVw> getCurrentItemList() {
         return currentItemList;
     }
 }

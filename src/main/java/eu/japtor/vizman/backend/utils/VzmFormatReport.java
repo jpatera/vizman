@@ -30,7 +30,7 @@ public class VzmFormatReport {
     //    public static final ar.com.fdvs.dj.domain.constants.Font DEFAULT_FONT_PDF = ar.com.fdvs.dj.domain.constants.Font.ARIAL_MEDIUM;
     public static final ar.com.fdvs.dj.domain.constants.Font DEFAULT_FONT_PDF = Font.ARIAL_SMALL;
     public static final ar.com.fdvs.dj.domain.constants.Font DEFAULT_FONT_XLS = Font.ARIAL_SMALL;
-    public static final ar.com.fdvs.dj.domain.constants.Font BOLD_FONT_XLS = Font.ARIAL_SMALL_BOLD;
+    public static final ar.com.fdvs.dj.domain.constants.Font BOLD_FONT_XLS = Font.ARIAL_MEDIUM_BOLD;
 
     //    public static final ar.com.fdvs.dj.domain.constants.Font HEADER_FONT_PDF = ARIAL_XL_BOLD;
     // public static final ar.com.fdvs.dj.domain.constants.Font HEADER_FONT_PDF = ARIAL_XL;

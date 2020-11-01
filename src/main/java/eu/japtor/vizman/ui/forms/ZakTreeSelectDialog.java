@@ -22,7 +22,7 @@ import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.entity.ZakBasic;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
-import eu.japtor.vizman.backend.service.ZaknService;
+import eu.japtor.vizman.backend.service.ZakNaklVwService;
 import eu.japtor.vizman.backend.service.ZakrService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.components.Gap;
@@ -50,7 +50,7 @@ public class ZakTreeSelectDialog extends Dialog {
     private Grid<ZakBasic> zakGrid;
     private List<ZakBasic> zakList;
     private ComponentRenderer<HtmlComponent, ZakBasic> kzTextRenderer;
-    private ZaknService zaknService;
+    private ZakNaklVwService zakNaklVwService;
     private ZakrService zakrService;
 
     VerticalLayout mainPanel;
@@ -71,11 +71,11 @@ public class ZakTreeSelectDialog extends Dialog {
     public CfgPropsCache cfgPropsCache;
 
 
-    public ZakTreeSelectDialog(ZaknService zaknService) {
+    public ZakTreeSelectDialog(ZakNaklVwService zakNaklVwService) {
         this.setWidth("1200px");
         this.setHeight("700px");
 
-        this.zaknService = zaknService;
+        this.zakNaklVwService = zakNaklVwService;
         initKzTextRenderer();
 
         zakList = new ArrayList<>();
@@ -208,7 +208,7 @@ public class ZakTreeSelectDialog extends Dialog {
                 , false
                 ,  Boolean.FALSE
                 , null
-                , zaknService
+                , zakNaklVwService
                 , zakrService
                 , cfgPropsCache
         );

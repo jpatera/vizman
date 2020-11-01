@@ -109,7 +109,7 @@ public class ZakNaklReport extends PrintPreviewReport {
     private void buildReportColumns() {
 
         ckzTextRepCol = ColumnBuilder.getNew()
-                .setColumnProperty("ckzTextRep", String.class)
+                .setColumnProperty("kzCisloTextRep", String.class)
 //                .setCustomExpression(getCalcZakId())
 //                .setCustomExpressionForCalculation(getCalcZakId2())
                 .setTitle("Zakázka")

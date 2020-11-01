@@ -82,11 +82,28 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
 
     @Override
     public List<Zakr> fetchAndCalcByFiltersDescOrder(ZakrListView.ZakrParams zakrParams) {
-        List<Zakr> zakrs = zakrRepo.findZakrByArchAndCkontAndRokAndSkupina(
-                zakrParams.getArch(), zakrParams.getCkz(), zakrParams.getRokZak(), zakrParams.getSkupina(), zakrParams.isActive());
+        List<Zakr> zakrs = zakrRepo.findZakrByFilterParams(
+                zakrParams.getArch()
+                , zakrParams.getCkz()
+                , zakrParams.getRokZak()
+                , zakrParams.getSkupina()
+                , zakrParams.isActive()
+        );
         zakrs.stream()
                 .forEach(zr -> adjustZakrVykonAndVysledky.accept(zr, zakrParams));
         return zakrs;
+    }
+
+    @Override
+    public List<Long> fetchIdsByFiltersDescOrderWithLimit(ZakrListView.ZakrParams zakrParams) {
+        List<Long> zakrIds = zakrRepo.findIdsByFilterParamsWithLimit(
+                zakrParams.getArch()
+                , zakrParams.getCkz()
+                , zakrParams.getRokZak()
+                , zakrParams.getSkupina()
+                , zakrParams.isActive()
+        );
+        return zakrIds;
     }
 
 

@@ -13,7 +13,7 @@ import java.util.Locale;
 
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
 
-public class ZakRozpracAgregXlsReportBuilder extends FastReportBuilder {
+public class ZakRozpracSumXlsReportBuilder extends FastReportBuilder {
 
     static Page Page_xls(){
         return new Page(666,1300,true);
@@ -44,7 +44,7 @@ public class ZakRozpracAgregXlsReportBuilder extends FastReportBuilder {
     private AbstractColumn vysledekP8ByKurzCol;
 
 
-    public ZakRozpracAgregXlsReportBuilder(final String subtitleText) {
+    public ZakRozpracSumXlsReportBuilder(final String subtitleText) {
         super();
 
         buildReportColumns();

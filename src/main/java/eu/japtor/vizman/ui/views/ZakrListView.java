@@ -46,10 +46,11 @@ import eu.japtor.vizman.app.CfgPropName;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.backend.entity.*;
-import eu.japtor.vizman.backend.report.ZakNaklAgregXlsReportBuilder;
-import eu.japtor.vizman.backend.report.ZakRozpracAgregXlsReportBuilder;
+import eu.japtor.vizman.backend.report.ZakNaklSouhrnXlsReportBuilder;
+import eu.japtor.vizman.backend.report.ZakRozpracSumXlsReportBuilder;
 import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import eu.japtor.vizman.backend.utils.VzmUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +60,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.RFNDF;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
@@ -75,8 +80,9 @@ public class ZakrListView extends VerticalLayout {
     private static final String RADIO_KONT_ARCH = "Archivované";
     private static final String RADIO_KONT_ALL = "Všechny";
 
-    private static final String REP_ZAKR_AGREG_FILE_NAME = "vzm-rep-zakr-agreg";
-    private static final String REP_ZAKN_AGREG_FILE_NAME = "vzm-rep-zakn-agreg";
+    private static final String REP_ZAKR_SUM_FILE_NAME = "vzm-rep-zakr-sum";
+    private static final String REP_ZAKN_SUM_FILE_NAME = "vzm-rep-zakn-sum";
+    private static final String REP_ZAKN_SOUHRN_FILE_NAME = "vzm-rep-zakn-souhrn";
     private static final String ZAKR_DOWN_ANCHOR_ID = "zakr-down-anchor-id";
 
     private List<Zakr> zakrList;
@@ -95,8 +101,10 @@ public class ZakrListView extends VerticalLayout {
     private ZakrParams zakrParams;
     private Binder<ZakrParams> paramsBinder;
 
-    private ReportXlsExporter<Zakr> rozpracAgregXlsRepExporter;
-    private ReportXlsExporter<Zakr> naklAgregXlsRepExporter;
+    private ReportXlsExporter<Zakr> rozpracSumXlsRepExporter;
+//    private ReportXlsExporter<Zakr> naklSumXlsRepExporter;
+//    private ReportXlsExporter<ZaknNaklVw> naklSouhrnXlsRepExporter;
+    private ReportXlsExporter<ZakYmNaklVw> naklSouhrnXlsRepExporter;
     private Anchor downloadAnchor;
 
 //    ZakNaklSingleDialog zakNaklGridDialog;
@@ -111,14 +119,15 @@ public class ZakrListView extends VerticalLayout {
     public FaktService faktService;
 
     @Autowired
-    public ZaknService zaknService;
+    public ZakNaklVwService zakNaklVwService;
 
     @Autowired
     public CfgPropsCache cfgPropsCache;
 
     public ZakrListView() {
-        rozpracAgregXlsRepExporter = new ReportXlsExporter<>();
-        naklAgregXlsRepExporter = new ReportXlsExporter<>();
+        rozpracSumXlsRepExporter = new ReportXlsExporter<>();
+//        naklSumXlsRepExporter = new ReportXlsExporter<>();
+        naklSouhrnXlsRepExporter = new ReportXlsExporter<>();
         initView();
     }
 
@@ -332,7 +341,8 @@ public class ZakrListView extends VerticalLayout {
             } else {
                 paramsBinder.writeBeanIfValid(zakrParams);
 //                zakrGrid.setZakrParams(zakrParams);
-                zakrList = zakrService.fetchAndCalcByActiveFilterDescOrder(zakrParams);
+//                zakrList = zakrService.fetchAndCalcByActiveFilterDescOrder(zakrParams);
+                zakrList = zakrService.fetchAndCalcByFiltersDescOrder(getCurrentParms());
                 zakrGrid.populateGridDataAndRestoreFilters(zakrList);
                 zakrGrid.recalcGrid();
                 zakrGrid.getDataProvider().refreshAll();
@@ -343,12 +353,16 @@ public class ZakrListView extends VerticalLayout {
         return calcButton;
     }
 
-    private String getZakrAgregReportFileName(ReportXlsExporter.Format format) {
-        return REP_ZAKR_AGREG_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
+    private String getZakrSumReportFileName(ReportXlsExporter.Format format) {
+        return REP_ZAKR_SUM_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
     }
 
-    private String getNaklAgregReportFileName(ReportXlsExporter.Format format) {
-        return REP_ZAKN_AGREG_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
+    private String getNaklSumReportFileName(ReportXlsExporter.Format format) {
+        return REP_ZAKN_SUM_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
+    }
+
+    private String getNaklSouhrnReportFileName(ReportXlsExporter.Format format) {
+        return REP_ZAKN_SOUHRN_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
     }
 
     private List<Zakr> getSelectedZakrForReport(final String zakrId) {
@@ -356,19 +370,52 @@ public class ZakrListView extends VerticalLayout {
         return Collections.emptyList();
     }
 
-    private SerializableSupplier<List<? extends Zakr>> zakrCurrentReportSupplier =
+    private SerializableSupplier<List<? extends Zakr>> zakRozpracCurrentSumRepSupplier =
             () -> {
                 Set<Zakr> itemSelection = zakrGrid.getSelectedItems();  // Suppose: SingleSelectionModel is set, only one (or none) item is present
                 if (null == itemSelection || itemSelection.isEmpty()) {
                     return Collections.EMPTY_LIST;
                 }
-                zakrService.fetchAndCalcOne(itemSelection.iterator().next().getId(), getCurrentParms());
-                return Collections.singletonList(itemSelection.iterator().next());
+                Zakr zakrSel = itemSelection.iterator().next();
+                return Collections.singletonList(
+                        zakrService.fetchAndCalcOne(zakrSel.getId(), getCurrentParms())
+                );
             };
 
-    private SerializableSupplier<List<? extends Zakr>> zakrVisibleReportSupplier =
+    private SerializableSupplier<List<? extends Zakr>> zakRozpracVisibleReportSupplier =
             () -> {
                 return zakrService.fetchAndCalcByFiltersDescOrder(getCurrentParms());
+            };
+
+//    private SerializableSupplier<List<? extends ZaknNaklVw>> zaknVisibleSouhrnRepSupplier =
+//            () -> {
+//                // TODO: replace by supplier returning zakns for all visible zakrs
+////                return Collections.emptyList();
+////                return Collections.singletonList(
+////                        zakNaklVwService.fetchByZakIdSumByYm(itemSelection.iterator().next().getId(), zakrParams);
+//
+//                List<Long> zakrIds = zakrService.fetchIdsByFiltersDescOrderWithLimit(getCurrentParms());
+//                return zakNaklVwService.fetchByZakIdsSumByYm(zakrIds, zakrParams);
+//            };
+
+    private SerializableSupplier<List<? extends ZakYmNaklVw>> zakYmNaklVisibleSouhrnRepSupplier =
+            () -> {
+                // TODO: replace by supplier returning zakns for all visible zakrs
+//                return Collections.emptyList();
+//                return Collections.singletonList(
+//                        zakNaklVwService.fetchByZakIdSumByYm(itemSelection.iterator().next().getId(), zakrParams);
+
+                List<Long> zakrIds = zakrService.fetchIdsByFiltersDescOrderWithLimit(getCurrentParms());
+                return zakNaklVwService.fetchByZakIdsSumByYm(zakrIds, zakrParams);
+            };
+
+    private SerializableSupplier<List<? extends ZaknNaklVw>> zaknCurrentSouhrnRepSupplier =
+            () -> {
+                Set<Zakr> itemSelection = zakrGrid.getSelectedItems();  // Suppose: SingleSelectionModel is set, only one (or none) item is present
+                if (null == itemSelection || itemSelection.isEmpty()) {
+                    return Collections.EMPTY_LIST;
+                }
+                return zakNaklVwService.fetchByZakIdSumByYm(itemSelection.iterator().next().getId(), zakrParams);
             };
 
     private Component buildReportBtnBox() {
@@ -392,11 +439,13 @@ public class ZakrListView extends VerticalLayout {
         ico.setColor("purple");
         Button btn = new Button(ico);
         btn.getElement().setAttribute("theme", "icon secondary small");
-        btn.getElement().setProperty("title", "Náklady na zakázku - report");
+        btn.getElement().setProperty("title", "Souhrnné náklady na zakázky - report");
 
         ContextMenu menu = new ContextMenu();
-        menu.addItem("Všechny zobrazené", e -> updateNaklAgregXlsRepResourceAndDownload(zakrVisibleReportSupplier));
-        menu.addItem("Aktuální", e -> updateNaklAgregXlsRepResourceAndDownload(zakrCurrentReportSupplier));
+//        menu.addItem("Všechny zobrazené", e -> updateNaklSumXlsRepResourceAndDownload(zakRozpracVisibleReportSupplier));
+//        menu.addItem("Aktuální", e -> updateNaklSumXlsRepResourceAndDownload(zakRozpracCurrentSumRepSupplier));
+        menu.addItem("Všechny zobrazené (max 20)", e -> updateNaklSouhrnXlsRepResourceAndDownload(zakYmNaklVisibleSouhrnRepSupplier, false));
+//        menu.addItem("Aktuální", e -> updateNaklSouhrnXlsRepResourceAndDownload(zaknCurrentSouhrnRepSupplier, true));
 
         menu.setOpenOnClick(true);
         menu.setTarget(btn);
@@ -411,20 +460,20 @@ public class ZakrListView extends VerticalLayout {
         btn.getElement().setProperty("title", "Rozpracovanost zakázek - report");
 
         ContextMenu menu = new ContextMenu();
-        menu.addItem("Všechny zobrazené", e -> updateRozpracAgregXlsRepResourceAndDownload(zakrVisibleReportSupplier));
-        menu.addItem("Aktuální", e -> updateRozpracAgregXlsRepResourceAndDownload(zakrCurrentReportSupplier));
+        menu.addItem("Všechny zobrazené", e -> updateRozpracSumXlsRepResourceAndDownload(zakRozpracVisibleReportSupplier));
+//        menu.addItem("Aktuální", e -> updateRozpracSumXlsRepResourceAndDownload(zakRozpracCurrentSumRepSupplier));
 
         menu.setOpenOnClick(true);
         menu.setTarget(btn);
         return btn;
     }
 
-    private void updateRozpracAgregXlsRepResourceAndDownload(SerializableSupplier<List<? extends Zakr>> itemsSupplier) {
+    private void updateRozpracSumXlsRepResourceAndDownload(SerializableSupplier<List<? extends Zakr>> itemsSupplier) {
 
         final AbstractStreamResource xlsResource =
-                rozpracAgregXlsRepExporter.getXlsStreamResource(
-                        new ZakRozpracAgregXlsReportBuilder(getSumaryRepParamSubtitleText())
-                        , getZakrAgregReportFileName(ReportXlsExporter.Format.XLS)
+                rozpracSumXlsRepExporter.getXlsStreamResource(
+                        new ZakRozpracSumXlsReportBuilder(getSumRepParamSubtitleText())
+                        , getZakrSumReportFileName(ReportXlsExporter.Format.XLS)
                         , itemsSupplier
                         , null
                 );
@@ -446,30 +495,70 @@ public class ZakrListView extends VerticalLayout {
 //        page.setLocation(registration.getResourceUri());
     }
 
-    private void updateNaklAgregXlsRepResourceAndDownload(SerializableSupplier<List<? extends Zakr>> itemsSupplier) {
+    private void updateNaklSumXlsRepResourceAndDownload(SerializableSupplier<List<? extends Zakr>> itemsSupplier) {
 
+        //  Sumarni 1D report se momentalne nepouziva, ale ne odstranovat
+
+//        final AbstractStreamResource xlsResource =
+//                naklSumXlsRepExporter.getXlsStreamResource(
+//                        new ZakNaklSumXlsReportBuilder(
+//                                getSumRepParamSubtitleText()
+//                                , SecurityUtils.isNaklCompleteAccessGranted()
+//                                , zakrParams.getKoefPojist()
+//                                , zakrParams.getKoefRezie()
+//                        )
+//                        , getNaklSumReportFileName(ReportXlsExporter.Format.XLS)
+//                        , itemsSupplier
+//                        , null
+//                );
+//        downloadAnchor.setHref(xlsResource);
+//        Page page = UI.getCurrent().getPage();
+//        page.executeJs("$0.click();", downloadAnchor.getElement());
+    }
+
+    private void updateNaklSouhrnXlsRepResourceAndDownload(
+//            SerializableSupplier<List<? extends ZaknNaklVw>> itemsSupplier
+            SerializableSupplier<List<? extends ZakYmNaklVw>> itemsSupplier
+            , boolean singleZak
+    ) {
+        String[] sheetNames = itemsSupplier.get().stream()
+                .filter(VzmUtils.distinctByKey(p -> p.getKzCisloRep()))
+                .map(item -> item.getKzCisloRep())
+                .toArray(String[]::new)
+                ;
         final AbstractStreamResource xlsResource =
-                naklAgregXlsRepExporter.getXlsStreamResource(
-                        new ZakNaklAgregXlsReportBuilder(
-                                getSumaryRepParamSubtitleText()
+                naklSouhrnXlsRepExporter.getXlsStreamResource(
+                        new ZakNaklSouhrnXlsReportBuilder(
+                                singleZak ? "SOUHRNNÉ NÁKLADY NA ZAKÁZKU" : "SOUHRNNÉ NÁKLADY NA ZAKÁZKY"
+                                , getSouhrnRepParamSubtitleText()
                                 , SecurityUtils.isNaklCompleteAccessGranted()
-                                , zakrParams.getKoefPojist()
-                                , zakrParams.getKoefRezie()
                         )
-                        , getNaklAgregReportFileName(ReportXlsExporter.Format.XLS)
+                        , getNaklSouhrnReportFileName(ReportXlsExporter.Format.XLS)
                         , itemsSupplier
-                        , null
+                        , sheetNames
                 );
-
-        // Varianta 1
         downloadAnchor.setHref(xlsResource);
         Page page = UI.getCurrent().getPage();
         page.executeJs("$0.click();", downloadAnchor.getElement());
-//      or:  page.executeJs("document.getElementById('" + KONT_REP_ID + "').click();");
-
     }
 
-    private String getSumaryRepParamSubtitleText() {
+    private String getSumRepParamSubtitleText() {
+        ZakrParams zakrParams = getCurrentParms();
+        String subtitleText =
+                "Parametry: Ativní=" + (null == zakrParams.isActive() ? "false" : zakrParams.isActive().toString()) +
+                        "  Arch=" + (null == zakrParams.getArch() ? "Vše" : zakrParams.getArch().toString()) +
+                        "  ČK-ČZ=" + (null == zakrParams.getCkz() ? "Vše" : "*" + zakrParams.getCkz() + "*") +
+                        "  Rok zak.=" + (null == zakrParams.getRokZak() ? "Vše" : zakrParams.getRokZak().toString()) +
+                        "  Skupina=" + (null == zakrParams.getSkupina() ? "Vše" : zakrParams.getSkupina().toString()) +
+                        "  rx=" + (null == rxParamField.getValue() ? "" : rxParamField.getValue().toString()) +
+                        "  ry=" + (null == ryParamField.getValue() ? "" : ryParamField.getValue().toString()) +
+                        "  Koef.pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue()) +
+                        "  Koef.režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue()) +
+                        "  Kurz CZK/EUR=" + (null == kurzParamField.getValue() ? "" : kurzParamField.getValue());
+        return subtitleText;
+    }
+
+    private String getSouhrnRepParamSubtitleText() {
         ZakrParams zakrParams = getCurrentParms();
         String subtitleText =
                 "Parametry: Ativní=" + (null == zakrParams.isActive() ? "false" : zakrParams.isActive().toString()) +
@@ -595,7 +684,7 @@ public class ZakrListView extends VerticalLayout {
                 , zakrService
                 , zakService
                 , faktService
-                , zaknService
+                , zakNaklVwService
                 , cfgPropsCache
         );
         zakrGrid.setMultiSort(true);

@@ -8,10 +8,10 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.function.SerializableSupplier;
 import eu.japtor.vizman.app.HasLogger;
-import eu.japtor.vizman.backend.entity.Zakn;
+import eu.japtor.vizman.backend.entity.ZaknNaklVw;
 import eu.japtor.vizman.backend.entity.Zakr;
 import eu.japtor.vizman.backend.report.ZakNaklReport;
-import eu.japtor.vizman.backend.service.ZaknService;
+import eu.japtor.vizman.backend.service.ZakNaklVwService;
 import eu.japtor.vizman.ui.components.AbstractPrintDialog;
 import eu.japtor.vizman.ui.components.ReportExpAnchor;
 import eu.japtor.vizman.ui.views.ZakrListView;
@@ -22,19 +22,21 @@ import java.util.List;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+
+@Deprecated // Currently not used
 public class ZakNaklReportDialog extends AbstractPrintDialog<Zakr> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "1200px";
     public static final String DIALOG_HEIGHT = "750px";
     private static final String CLOSE_STR = "Zavřít";
 
-    private final static String REPORT_FILE_NAME = "vzm-rep-zak-nakl";
+    private final static String REPORT_FILE_NAME = "vzm-rep-zak-nakl-old";
 
     private HorizontalLayout leftBarPart;
     private HorizontalLayout rightBarPart;
     private Button closeButton;
 
-    private ZaknService zaknService;
+    private ZakNaklVwService zakNaklVwService;
     private Zakr zakr;
     private ZakrListView.ZakrParams zakrParams;
     private ZakNaklReport report;
@@ -51,17 +53,16 @@ public class ZakNaklReportDialog extends AbstractPrintDialog<Zakr> implements Ha
     private TextField pojistParamField;
 //    private TextField kurzParamField;
 
-    private SerializableSupplier<List<? extends Zakn>> itemsSupplier = () ->
-//        zaknService.fetchByZakId(zakr.getId(), zakrParams)
-        zaknService.fetchByZakIdSumByYm(zakr.getId(), zakrParams)
+    private SerializableSupplier<List<? extends ZaknNaklVw>> itemsSupplier = () ->
+        zakNaklVwService.fetchByZakIdSumByYm(zakr.getId(), zakrParams)
     ;
 
 
-    public ZakNaklReportDialog(ZaknService zaknService) {
+    public ZakNaklReportDialog(ZakNaklVwService zakNaklVwService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setDialogTitle("Report: NÁKLADY NA ZAKÁZKU");
 //        getHeaderRightBox().setText("END text");
-        this.zaknService = zaknService;
+        this.zakNaklVwService = zakNaklVwService;
         initReportControls();
     }
 
