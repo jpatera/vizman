@@ -12,6 +12,7 @@ import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.ZaknService;
+import eu.japtor.vizman.backend.service.ZakrService;
 import eu.japtor.vizman.ui.components.*;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.util.CollectionUtils;
@@ -36,6 +37,7 @@ public class ZakSelectDialog extends Dialog {
     private ZakBasicRepo zakBasicRepo;
     private Consumer<List<ZakBasic>> itemsAder;
     private ZaknService zaknService;
+    private ZakrService zakrService;
     private CfgPropsCache cfgPropsCache;
 
 
@@ -43,11 +45,13 @@ public class ZakSelectDialog extends Dialog {
             Consumer<List<ZakBasic>> itemAdder
             , ZakBasicRepo zakBasicRepo
             , ZaknService zaknService
+            , ZakrService zakrService
             , CfgPropsCache cfgPropsCache
     ) {
         this.itemsAder = itemAdder;
         this.zakBasicRepo = zakBasicRepo;
         this.zaknService = zaknService;
+        this.zakrService = zakrService;
         this.cfgPropsCache = cfgPropsCache;
 
         this.setWidth("1400px");
@@ -133,6 +137,7 @@ public class ZakSelectDialog extends Dialog {
                 , Boolean.FALSE
                 , null
                 , zaknService
+                , zakrService
                 , cfgPropsCache
         );
         zakGrid.setMultiSort(true);

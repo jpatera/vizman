@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.report;
 
+import ar.com.fdvs.dj.domain.CustomExpression;
 import ar.com.fdvs.dj.domain.DJCalculation;
 import ar.com.fdvs.dj.domain.DJGroupLabel;
 import ar.com.fdvs.dj.domain.Style;
@@ -12,14 +13,11 @@ import ar.com.fdvs.dj.domain.entities.columns.PropertyColumn;
 import java.math.BigDecimal;
 import java.time.YearMonth;
 import java.util.Locale;
+import java.util.Map;
 
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
 
 public class ZakNaklXlsReportBuilder extends FastReportBuilder {
-
-    static Page Page_xls(){
-        return new Page(666,900,true);
-    }
 
 //    protected DynamicReportBuilder reportBuilder;
 
@@ -34,11 +32,12 @@ public class ZakNaklXlsReportBuilder extends FastReportBuilder {
     private AbstractColumn naklMzdaP8PojCol;
     private AbstractColumn sazbaCol;
     private AbstractColumn koefP8Col;
+    private AbstractColumn blankCol;
 
     private DJGroup userGroup;
     private DJGroup zakGroup;
 
-    public ZakNaklXlsReportBuilder(boolean withMoneyColumns) {
+    public ZakNaklXlsReportBuilder(String subtitleText, boolean withMoneyColumns) {
         super();
 
         buildReportColumns();
@@ -46,18 +45,19 @@ public class ZakNaklXlsReportBuilder extends FastReportBuilder {
 
         this
                 .setTitle("NÁKLADY NA ZAKÁZKU")
-//                .setSubtitle("")
-//                .setUseFullPageWidth(false) // Otherwise "some" width is  counted for sheet
-                .setUseFullPageWidth(false) // Otherwise "some" width is  counted for sheet
-                .setIgnorePagination(true)  // For Excel, we don't need here pagination because it is not multi-list XLS
+                .setSubtitle(subtitleText)
+
+                .setPageSizeAndOrientation(    new Page(666,900))
+                .setUseFullPageWidth(false)
+                .setIgnorePagination(true) // FALSE is needed if splitting reports to more XLS lists (by groups)
                 .setMargins(0, 0, 0, 0)
                 .setWhenNoData("(no data)", new Style())
                 .setReportLocale(new Locale("cs", "CZ"))
 //                .setPrintBackgroundOnOddRows(true)
-                .setPageSizeAndOrientation(Page_xls())
 
                 .setDefaultStyles(DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_NUM_STYLE)
                 .addStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
+                .addStyle(DEFAULT_GRID_XLS_TEXT_BOLD_STYLE)
                 .addStyle(DEFAULT_GRID_XLS_NUM_STYLE)
                 .addStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
                 .addStyle(WORK_HOUR_GRID_XLS_STYLE)
@@ -65,9 +65,10 @@ public class ZakNaklXlsReportBuilder extends FastReportBuilder {
                 .setGrandTotalLegend("National Total")
                 .setPrintColumnNames(true)
 
-                // Add basic columns
+                // Add columns
                 .addColumn(ckzTextRepCol)
                 .addColumn(prijmeniCol)
+                .addColumn(blankCol)
                 .addColumn(ymPruhCol)
                 .addColumn(workPruhCol)
 
@@ -79,7 +80,8 @@ public class ZakNaklXlsReportBuilder extends FastReportBuilder {
 
                 // Add totals
                 .setGrandTotalLegend("Nagruzka Total")
-                .addGlobalFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_GRID_XLS_STYLE)
+                .setGlobalFooterVariableHeight(25)
+                .addGlobalFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_BOLD_GRID_XLS_STYLE)
         ;
         if (withMoneyColumns) {
             this
@@ -91,11 +93,11 @@ public class ZakNaklXlsReportBuilder extends FastReportBuilder {
                     .addColumn(naklMzdaP8Col)
                     .addColumn(naklMzdaP8PojCol)
 
-                    .addGlobalFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE)
-                    .addGlobalFooterVariable(naklMzdaPojCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE)
-                    .addGlobalFooterVariable(workPruhP8Col, DJCalculation.SUM, WORK_HOUR_GRID_XLS_STYLE)
-                    .addGlobalFooterVariable(naklMzdaP8Col, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE)
-                    .addGlobalFooterVariable(naklMzdaP8PojCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE)
+                    .addGlobalFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE)
+                    .addGlobalFooterVariable(naklMzdaPojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE)
+                    .addGlobalFooterVariable(workPruhP8Col, DJCalculation.SUM, WORK_HOUR_BOLD_GRID_XLS_STYLE)
+                    .addGlobalFooterVariable(naklMzdaP8Col, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE)
+                    .addGlobalFooterVariable(naklMzdaP8PojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE)
             ;
         }
     }
@@ -123,9 +125,7 @@ public class ZakNaklXlsReportBuilder extends FastReportBuilder {
                 .setColumnProperty("ymPruh", YearMonth.class)
                 .setTitle("Rok-Měs")
                 .setStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
-//                .setTextFormatter(DateTimeFormatter.ISO_DATE.toFormat())
                 .setWidth(120)
-//                .setFixedWidth(true)
                 .build();
 
         workPruhCol = ColumnBuilder.getNew()
@@ -133,7 +133,6 @@ public class ZakNaklXlsReportBuilder extends FastReportBuilder {
                 .setTitle("Hodin")
                 .setStyle(WORK_HOUR_GRID_XLS_STYLE)
                 .setWidth(60)
-//                .setFixedWidth(true)
                 .build();
 
         workPruhP8Col = ColumnBuilder.getNew()
@@ -191,38 +190,64 @@ public class ZakNaklXlsReportBuilder extends FastReportBuilder {
                 .setWidth(60)
 //                .setFixedWidth(true)
                 .build();
+
+        blankCol = ColumnBuilder.getNew()
+                .setCustomExpression(new BlankExpression())
+                .setTitle("")
+                .setWidth(40)
+                .build();
+    }
+
+    public class BlankExpression implements CustomExpression {
+        public BlankExpression() {}
+
+        @Override
+        public Object evaluate(Map fields, Map variables, Map parameters) {
+            return "";
+        }
+        @Override
+        public String getClassName() {
+            return String.class.getName();
+        }
     }
 
     private void buildReportGroups(boolean withMoneyColumns) {
 
-        // User group
-        GroupBuilder userGroupBuilder = new GroupBuilder();
-        DJGroupLabel userGroupWorkHourLabel = new DJGroupLabel("", GROUP_LABEL_STYLE, LabelPosition.LEFT);
-        DJGroupLabel userGroupMzdaLabel = new DJGroupLabel("", GROUP_LABEL_STYLE, LabelPosition.LEFT);
-        DJGroupLabel userGroupWorkMzdaPojistLabel = new DJGroupLabel("", GROUP_LABEL_STYLE, LabelPosition.LEFT);
-        userGroupBuilder
-                .setCriteriaColumn((PropertyColumn) prijmeniCol)
-                .addHeaderVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_GRID_XLS_STYLE, null, userGroupWorkHourLabel)
-                .setGroupLayout(GroupLayout.VALUE_IN_HEADER)
-        ;
-        if (withMoneyColumns) {
-            userGroupBuilder
-                    .addHeaderVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE, null, userGroupMzdaLabel)
-                    .addHeaderVariable(naklMzdaPojCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE, null, userGroupWorkMzdaPojistLabel)
-                    .addHeaderVariable(workPruhP8Col, DJCalculation.SUM, WORK_HOUR_GRID_XLS_STYLE, null, null)
-                    .addHeaderVariable(naklMzdaP8Col, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE, null, null)
-                    .addHeaderVariable(naklMzdaP8PojCol, DJCalculation.SUM, MONEY_NO_FRACT_GRID_XLS_STYLE, null, null)
-            ;
-        }
-        userGroup = userGroupBuilder.build();
-
         // ZAK group
+        // ---------
         GroupBuilder zakGroupBuilder = new GroupBuilder();
         zakGroup = zakGroupBuilder
                 .setCriteriaColumn((PropertyColumn) ckzTextRepCol)
-                .setGroupLayout(GroupLayout.DEFAULT)
+//                .setGroupLayout(GroupLayout.DEFAULT)
+//                .setGroupLayout(GroupLayout.VALUE_IN_HEADER)
+                .setGroupLayout(GroupLayout.VALUE_IN_HEADER)
+//                .setGroupLayout(GroupLayout.VALUE_FOR_EACH)
+                .setStartInNewColumn(true)
                 .build()
         ;
+
+        // User group
+        // ----------
+        DJGroupLabel userGroupWorkHourLabel = new DJGroupLabel("", GROUP_LABEL_STYLE, LabelPosition.LEFT);
+        DJGroupLabel userGroupMzdaLabel = new DJGroupLabel("", GROUP_LABEL_STYLE, LabelPosition.LEFT);
+        DJGroupLabel userGroupWorkMzdaPojistLabel = new DJGroupLabel("", GROUP_LABEL_STYLE, LabelPosition.LEFT);
+        GroupBuilder userGroupBuilder = new GroupBuilder();
+        userGroupBuilder
+                .setCriteriaColumn((PropertyColumn) prijmeniCol)
+                .addHeaderVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_BOLD_GRID_XLS_STYLE, null, userGroupWorkHourLabel)
+                .setGroupLayout(GroupLayout.VALUE_IN_HEADER)
+                .setStartInNewColumn(true)
+        ;
+        if (withMoneyColumns) {
+            userGroupBuilder
+                    .addHeaderVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, userGroupMzdaLabel)
+                    .addHeaderVariable(naklMzdaPojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, userGroupWorkMzdaPojistLabel)
+                    .addHeaderVariable(workPruhP8Col, DJCalculation.SUM, WORK_HOUR_BOLD_GRID_XLS_STYLE, null, null)
+                    .addHeaderVariable(naklMzdaP8Col, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
+                    .addHeaderVariable(naklMzdaP8PojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
+            ;
+        }
+        userGroup = userGroupBuilder.build();
     }
 
 //    public DynamicReport buildReport()  {

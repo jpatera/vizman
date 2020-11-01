@@ -184,6 +184,9 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
     public ZaknService zaknService;
 
     @Autowired
+    public ZakrService zakrService;
+
+    @Autowired
     public CfgPropsCache cfgPropsCache;
 
 
@@ -230,6 +233,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
                 this::addSelectedZaksToGrid
                 , zakBasicRepo
                 , zaknService
+                , zakrService
                 , cfgPropsCache
         );
     }

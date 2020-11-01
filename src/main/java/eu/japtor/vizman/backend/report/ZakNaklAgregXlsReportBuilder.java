@@ -44,7 +44,8 @@ public class ZakNaklAgregXlsReportBuilder extends FastReportBuilder {
     private BigDecimal koefPojRez;
 
     public ZakNaklAgregXlsReportBuilder(
-            boolean withMoneyColumns
+            String subtitleText
+            , boolean withMoneyColumns
             , BigDecimal koefPojist
             , BigDecimal koefRezie
     ) {
@@ -60,15 +61,14 @@ public class ZakNaklAgregXlsReportBuilder extends FastReportBuilder {
         buildReportGroups(withMoneyColumns);
 
         this
-                .setTitle("SUMÁRNÍ NÁKLADY NA ZAKÁZKY")
-                .setSubtitle("koef. pojištění: " + koefPojist + "   koef. režie: " + koefRezie )
-                .setUseFullPageWidth(false) // Otherwise "some" width is  counted for sheet
-                .setIgnorePagination(true)  // For Excel, we don't need here pagination because it is not multi-list XLS
+                .setTitle("NÁKLADY NA ZAKÁZKY")
+                .setSubtitle(subtitleText)
+                .setUseFullPageWidth(false)
+                .setIgnorePagination(true)  // FALSE  is needed if for splitting reports to more XLS lists (by groups)
                 .setMargins(0, 0, 0, 0)
                 .setWhenNoData("(no data)", new Style())
                 .setReportLocale(new Locale("cs", "CZ"))
 //                .setPrintBackgroundOnOddRows(true)
-                // TODO: to be used or not?
                 .setPageSizeAndOrientation(Page_xls())
 
                 .setDefaultStyles(DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_TEXT_STYLE, DEFAULT_GRID_XLS_NUM_STYLE)
@@ -76,7 +76,8 @@ public class ZakNaklAgregXlsReportBuilder extends FastReportBuilder {
                 .addStyle(DEFAULT_GRID_XLS_NUM_STYLE)
 
                 .setPrintColumnNames(true)
-                // Add basic columns
+
+                // Add columns
                 .addColumn(kzCisloCol)
 //                .addColumn(prijmeniCol)
 //                .addColumn(ymPruhCol)

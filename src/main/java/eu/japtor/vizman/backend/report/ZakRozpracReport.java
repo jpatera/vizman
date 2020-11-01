@@ -38,6 +38,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
     private AbstractColumn vysledekByKurzCol;
 
 
+    // TODO: obsolete - remove
     public ZakRozpracReport() {
         super();
 
@@ -45,7 +46,7 @@ public class ZakRozpracReport extends PrintPreviewReport {
         buildReportGroups();
 
         this.getReportBuilder()
-                .setTitle("ROZPRACOVANOST ZAKÁZEK")
+                .setTitle("SUMÁRNÍ ROZPRACOVANOST ZAKÁZEK")
                 .setReportLocale(new Locale("cs", "CZ"))
 //                .setSubtitle("Rok: " + paramRokStr)
 //                .addParameter("PARAM_ROK", String.class.getName())

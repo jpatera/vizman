@@ -101,13 +101,8 @@ public class DochYearReport extends PrintPreviewReport {
                 .addColumn(dovCol)
                 .addColumn(volnoCol)
 
-//                .addField("fromManual", Boolean.class.getName())
-//                .addField("toManual", Boolean.class.getName())
-//                .addField("sluzMins", Long.class.getName())
-
                 // Add groups
                 .addGroup(userGroup)
-//                .addGroup(yearGroup)
 
                 // Add totals
                 .setGrandTotalLegend("Celkem")

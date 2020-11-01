@@ -1,50 +1,46 @@
 package eu.japtor.vizman.ui.forms;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.server.AbstractStreamResource;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.report.ZakRozpracXlsReportBuilder;
 import eu.japtor.vizman.backend.service.ZakrService;
-import eu.japtor.vizman.backend.service.ZaqaService;
 import eu.japtor.vizman.ui.components.*;
+import net.sf.jasperreports.engine.JRException;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+import static eu.japtor.vizman.backend.utils.VzmFormatReport.RFNDF;
 import static eu.japtor.vizman.ui.components.OperationResult.NO_CHANGE;
 
-public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogger {
+public class ZakRozpracSingleDialog extends AbstractGridDialog<Zaqa> implements HasLogger {
 
-    public static final String DIALOG_WIDTH = "800px";
+    public static final String DIALOG_WIDTH = "900px";
     public static final String DIALOG_HEIGHT = null;
-
-    public static final String RX_EDIT_COL_KEY = "rx-edit-col-key";
-
-//    private final static String DELETE_STR = "Zrušit";
-//    private final static String REVERT_STR = "Vrátit změny";
-//    private final static String REVERT_AND_CLOSE_STR = "Zpět";
-//    private final static String SAVE_AND_CLOSE_STR = "Uložit a zavřít";
     private final static String CLOSE_STR = "Zavřít";
 
-//    private Button revertButton;
-//    private Button saveAndCloseButton;
-//    private Button revertAndCloseButton;
-//    private Button deleteAndCloseButton;
+    public static final String RX_COL_KEY = "rx-col-key";
+
     private Button closeButton;
     private HorizontalLayout leftBarPart;
     private HorizontalLayout rightBarPart;
-
-
-//    WageFormDialog wageFormDialog;
+    private Label zakInfo;
 
     private List<Zaqa> currentItemList;
-    private List<Zaqa> origItemList;
-
     private Zakr zakr;
 
     Grid<Zaqa> grid;
@@ -52,33 +48,46 @@ public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogge
     private FlexLayout titleComponent;
     private boolean zaqasChanged = false;
 
-    private ZaqaService zaqaService;
     private ZakrService zakrService;
 
+    private final static String REPORT_FILE_NAME = "vzm-exp-zakn";
+    private String repSubtitleText;
+    private Anchor expXlsAnchor;
+    private ReportXlsExporter<Zakr> xlsReportExporter;
+    private SerializableSupplier<List<? extends Zakr>> singleBaseItemSupplier = () -> {
+//        List<Zakr> singleBaseItemList = new ArrayList<>();
+//        singleBaseItemList.add(getCurrentBaseItem());
+//        return singleBaseItemList;
+        return Collections.singletonList(zakr);
+    };
+    private ComponentEventListener anchorExportListener = event -> {
+        try {
+            updateRozpracXlsRepAnchorResource(singleBaseItemSupplier);
+        } catch (JRException e) {
+            e.printStackTrace();
+        }
+    };
 
-    public ZaqaGridDialog(
-            ZaqaService zaqaService
-            , ZakrService zakrService
+
+    public ZakRozpracSingleDialog(
+            ZakrService zakrService
     ) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
         setItemNames(ItemType.UNKNOWN);
-        getMainTitle().setText("Tabulka ROZPRACOVANOSTI");
+        getMainTitle().setText("ROZPRACOVANOST ZAKÁZKY");
 
         this.zakrService = zakrService;
-        this.zaqaService = zaqaService;
 
-//        zaqaFormDialog = new ZaqaFormDialog(this.zaqaService);
-//        zaqaFormDialog.addOpenedChangeListener(event -> {
-//            if (!event.isOpened()) {
-//                finishWageEdit((ZaqaFormDialog) event.getSource());
-//            }
-//        });
+        getGridInfoBar().add(
+                initZakInfo()
+        );
+        getGridToolBar().add(
+                buildGridBar()
+        );
         getGridContainer().add(
-                initGridBar()
-                , initGrid()
+                initGrid()
         );
     }
-
 
 //    void finishItemEdit(ZaqaFormDialog zaqaFormDialog) {
 //        Zaqa zaqaAfter = zaqaFormDialog.getCurrentItem(); // Modified, just added or just deleted
@@ -142,24 +151,10 @@ public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogge
     // -------------------------------------------------------
 
 
-//    public void openDialog(LinkedList<PersonWage> personWages) {
-    public void openDialog(Zakr zakr) {
-
-//        this.origItemList = Collections.unmodifiableList(new LinkedList<>(currentItemList));
-
-//        this.itemsChanged = false;
+    public void openDialog(Zakr zakr, String repSubtitleText) {
         this.zakr = zakr;
+        this.repSubtitleText = repSubtitleText;
         initDataAndControls();
-        this.origItemList = Collections.unmodifiableList(this.currentItemList);
-
-        // Set locale here, because when it is set in constructor, it is effective only in first open,
-        // and next openings show date in US format
-//        dateVystavField.setLocale(new Locale("cs", "CZ"));
-//        dateDuzpField.setLocale(new Locale("cs", "CZ"));
-//
-//        castkaField.setSuffixComponent(new Span(fakt.getMena().name()));
-
-//        initFaktDataAndControls(currentItem, currentOperation);
         this.open();
     }
 
@@ -169,36 +164,17 @@ public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogge
 
     private void initDataAndControls() {
         deactivateListeners();
-//        this.currentItemList = wageService.fetchByPersonId(person.getId());
+
+        zakInfo.setText(zakr.getRepKzCisloAndText());
+        this.xlsReportExporter = new ReportXlsExporter();
+
         this.currentItemList = zakr.getZaqas();
         grid.setItems(currentItemList);
-
-//        setDefaultItemNames();  // Set general default names
-//
-////        evidZakOrig = new EvidZak(
-////                currentItem.getKontId()
-////                , currentItem.getCkz()
-////                , currentItem.getText()
-////                , currentItem.getFolder()
-////                , currentItem.getKontFolder()
-////        );
-//
-//        binder.removeBean();
-//        binder.readBean(faktItem);
-//
-////        refreshHeaderMiddleBox(faktItem);
-//        getHeaderRightBox().setText(getHeaderEndComponentValue(null));
-//
-//        initControlsForItemAndOperation(faktItem, faktOperation);
 
         initControlsOperability();
         activateListeners();
     }
 
-
-    private void refreshHeaderMiddleBox(Zak zakItem) {
-    // Do nothing
-    }
 
     private void deactivateListeners() {
 //        if (null != binderChangeListener) {
@@ -231,34 +207,70 @@ public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogge
 
     private void initControlsOperability() {
         closeButton.setEnabled(true);
-//        saveButton.setEnabled(false);
-//        revertButton.setEnabled(false);
-//        deleteAndCloseButton.setEnabled(currentOperation.isDeleteAllowed() && canDeleteFakt(currentItem));
     }
 
-//    private void adjustControlsOperability(final boolean hasChanges, final boolean isValid) {
     private void adjustControlsOperability(final boolean hasChanges) {
-//        saveAndCloseButton.setEnabled(hasChanges && isValid);
         closeButton.setEnabled(true);
-//        revertButton.setEnabled(hasChanges);
     }
 
 
-    private Component initGridBar() {
+    private Component buildGridBar() {
         HorizontalLayout gridBar = new HorizontalLayout();
         gridBar.setSpacing(false);
         gridBar.setPadding(false);
-        gridBar.getStyle().set("margin-left", "-3em");
-//        zakGridBar.setWidth("100%");
+        gridBar.setMargin(false);
+        gridBar.setWidthFull();
         gridBar.setAlignItems(FlexComponent.Alignment.BASELINE);
         gridBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         gridBar.add(
                 new Ribbon()
-//                new FlexLayout(
-//                        initNewItemButton()
-//                )
+                , buildToolBarBox()
         );
         return gridBar;
+    }
+
+    private Component initZakInfo() {
+        zakInfo = new Label("Update during open...");
+//        zakInfo.getElement().setAttribute("theme", "small");
+        return zakInfo;
+    }
+
+
+    private Component buildToolBarBox() {
+        HorizontalLayout toolBar = new HorizontalLayout();
+        toolBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        toolBar.setSpacing(false);
+        toolBar.add(
+                initZakNaklXlsExpAnchor()
+        );
+        return toolBar;
+    }
+
+    private Component initZakNaklXlsExpAnchor() {
+        expXlsAnchor = new ReportExpButtonAnchor(ReportExporter.Format.XLS, anchorExportListener);
+        return expXlsAnchor;
+    }
+
+    private String getReportFileName(ReportXlsExporter.Format format) {
+        return REPORT_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
+    }
+
+    private void updateRozpracXlsRepAnchorResource(SerializableSupplier<List<? extends Zakr>> itemsSupplier) throws JRException {
+        AbstractStreamResource xlsResource =
+                xlsReportExporter.getXlsStreamResource(
+                        new ZakRozpracXlsReportBuilder(repSubtitleText)
+                        , getReportFileName(ReportXlsExporter.Format.XLS)
+                        , itemsSupplier
+                        , null
+                );
+        expXlsAnchor.setHref(xlsResource);
+
+        // Varianta 1
+        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
+
+//        // Varianta 2 - Has an issue: after returning to the parent dialog [Close] button does nothing
+//        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
+//        UI.getCurrent().getPage().setLocation(registration.getResourceUri());
     }
 
     private Component initNewItemButton() {
@@ -303,20 +315,10 @@ public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogge
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
         grid.setColumnReorderingAllowed(true);
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        grid.setId("person-wage-grid");
+        grid.setId("single-zak-rozprac-grid");
         grid.setClassName("vizman-simple-grid");
         grid.getStyle().set("marginTop", "0.5em");
 
-//        personWageGrid.addColumn(new ComponentRenderer<>(VzmFormatUtils::getItemTypeColoredTextComponent))
-//                .setHeader("Typ")
-//                .setWidth("5em")
-//                .setFlexGrow(0)
-//                .setResizable(true)
-//        ;
-//        grid.addColumn(new ComponentRenderer<>(this::buildZaqaOpenBtn))
-//                .setFlexGrow(0)
-//                .setKey(RX_EDIT_COL_KEY)
-//        ;
         grid.addColumn(Zaqa::getRok)
                 .setHeader("Rok")
                 .setResizable(true)
@@ -333,14 +335,10 @@ public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogge
                 .setHeader("RX")
                 .setWidth("10em")
                 .setFlexGrow(0)
+                .setKey(RX_COL_KEY)
                 .setResizable(true)
         ;
 //        colRx.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zaqa::getRx, Zaqa::setRx));
-
-//        personWageGrid.addColumn(new ComponentRenderer<>(this::buildZakOpenBtn))
-//                .setFlexGrow(0)
-//                .setKey(PERSON_WAGE_EDIT_COL_KEY)
-//        ;
 
 
 //        // =============
@@ -578,9 +576,9 @@ public class ZaqaGridDialog extends AbstractGridDialog<Zaqa> implements HasLogge
 //        return lastOperationResult;
 //    }
 
-    public List<Zaqa> getOrigItemList()  {
-        return origItemList;
-    }
+//    public List<Zaqa> getOrigItemList()  {
+//        return origItemList;
+//    }
 
     @Override
     public List<Zaqa> getCurrentItemList() {

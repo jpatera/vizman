@@ -26,8 +26,8 @@ import eu.japtor.vizman.backend.entity.Zakr;
 import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.ui.forms.ZakFormDialog;
-import eu.japtor.vizman.ui.forms.ZakNaklGridDialog;
-import eu.japtor.vizman.ui.forms.ZaqaGridDialog;
+import eu.japtor.vizman.ui.forms.ZakNaklSingleDialog;
+import eu.japtor.vizman.ui.forms.ZakRozpracSingleDialog;
 import eu.japtor.vizman.ui.views.ZakrListView;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -77,8 +77,8 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
 //    Grid<Zak> zakGrid;
     private ZakFormDialog zakFormDialog;
-    private ZaqaGridDialog zaqaGridDialog;
-    private ZakNaklGridDialog zakNaklGridDialog;
+    private ZakRozpracSingleDialog zakRozpracSingleDialog;
+    private ZakNaklSingleDialog zakNaklSingleDialog;
     private TextField ckzFilterField;
     private Select<Boolean> archFilterField;
     private Select<Integer> rokFilterField;
@@ -110,7 +110,6 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     private ZakrService zakrService;
     private ZakService zakService;
     private FaktService faktService;
-    private ZaqaService zaqaService;
     private ZaknService zaknService;
     private CfgPropsCache cfgPropsCache;
     private ZakrListView.ZakrParams zakrParams;
@@ -120,12 +119,10 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             , boolean archFieldVisible
             , Boolean initFilterArchValue
             , BiConsumer<Zakr, Operation> itemSaver
-//            , BigDecimal kurzEur
             , ZakrListView.ZakrParams zakrParams
             , ZakrService zakrService
             , ZakService zakService
             , FaktService faktService
-            , ZaqaService zaqaService
             , ZaknService zaknService
             , CfgPropsCache cfgPropsCache
     ) {
@@ -139,17 +136,16 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         this.zakrService = zakrService;
         this.zakService = zakService;
         this.faktService = faktService;
-        this.zaqaService = zaqaService;
         this.zaknService = zaknService;
         this.cfgPropsCache = cfgPropsCache;
 
-        zaqaGridDialog = new ZaqaGridDialog(
-                this.zaqaService, this.zakrService
+        zakRozpracSingleDialog = new ZakRozpracSingleDialog(
+                this.zakrService
         );
         zakFormDialog = new ZakFormDialog(
                 this.zakService, this.faktService, this.cfgPropsCache
         );
-        zakNaklGridDialog = new ZakNaklGridDialog(
+        zakNaklSingleDialog = new ZakNaklSingleDialog(
                 this.zaknService
         );
 
@@ -772,20 +768,26 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     }
 
     Component buildZaknOpenBtn(Zakr zakr) {
-        return new GridItemBtn(event -> zakNaklGridDialog.openDialogFromZakr(zakr, zakrParams)
+        return new GridItemBtn(event -> zakNaklSingleDialog.openDialog(zakr, zakrParams, getSingleRepParamSubtitleText())
                 , new Icon(VaadinIcon.COIN_PILES), VzmFormatUtils.getItemTypeColorName(zakr.getTyp())
         );
     }
 
     Component buildZaqaOpenBtn(Zakr zakr) {
-        return new GridItemBtn(event -> zaqaGridDialog.openDialog(
-                zakrService.fetchOne(zakr.getId()))
+        return new GridItemBtn(event ->
+                zakRozpracSingleDialog.openDialog(
+                        zakrService.fetchOne(zakr.getId())
+                        , ""
+                )
                 , new Icon(VaadinIcon.LINES_LIST), null
         );
     }
 
-    public ZakrListView.ZakrParams getZakrParams() {
-        return zakrParams;
+    public String getSingleRepParamSubtitleText() {
+        return  "Parametry:"
+                + "  Koef.pojištení=" + (null == zakrParams.getKoefPojist() ? "" : zakrParams.getKoefPojist())
+                + "  Koef.režie=" + (null == zakrParams.getKoefRezie() ? "" : zakrParams.getKoefRezie())
+        ;
     }
 
     private void attemptSaveFromEditor() {

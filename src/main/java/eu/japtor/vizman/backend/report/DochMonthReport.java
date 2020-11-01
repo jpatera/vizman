@@ -102,9 +102,7 @@ public class DochMonthReport extends PrintPreviewReport {
 //                .addColumn(dochYmCol)
                 .addColumn(dochWeekCol)
                 .addColumn(dochDateCol)
-//                .addColumn(fromManualCol)
                 .addColumn(fromPraceStartCol)
-//                .addColumn(toManualCol)
                 .addColumn(toPraceEndCol)
                 .addColumn(obedCol)
                 .addColumn(pracDobaCol)
@@ -115,9 +113,9 @@ public class DochMonthReport extends PrintPreviewReport {
                 .addColumn(dovCol)
                 .addColumn(volnoCol)
 
-                .addField("fromManual", Boolean.class.getName())
-                .addField("toManual", Boolean.class.getName())
-                .addField("sluzMins", Long.class.getName())
+                .addField(FROM_MANUAL_REP_FIELD_NAME, Boolean.class.getName())
+                .addField(TO_MANUAL_REP_FIELD_NAME, Boolean.class.getName())
+                .addField(SLUZ_MINS_REP_FIELD_NAME, Long.class.getName())
 
                 // Add groups
                 .addGroup(userGroup)
@@ -405,14 +403,6 @@ public class DochMonthReport extends PrintPreviewReport {
                 .setWidth(50)
                 .build();
 
-//        fromManualCol = ColumnBuilder.getNew()
-//                .setColumnProperty("fromManual", Boolean.class)
-//                .setTitle("Man FROM")
-////                .setStyle(WORK_HOUR_GRID_STYLE)
-////                .addConditionalStyles(condWeekendToStyles)
-//                .setWidth(40)
-//                .build();
-
         toPraceEndCol = ColumnBuilder.getNew()
                 .setColumnProperty("toPraceEnd", LocalTime.class)
                 .setTitle("Do")
@@ -421,14 +411,6 @@ public class DochMonthReport extends PrintPreviewReport {
                 .addConditionalStyles(condWeekendToStyles)
                 .setWidth(45)
                 .build();
-
-//        toManualCol = ColumnBuilder.getNew()
-//                .setColumnProperty("toManual", Boolean.class)
-//                .setTitle("Man TO")
-////                .setStyle(WORK_HOUR_GRID_STYLE)
-////                .addConditionalStyles(condWeekendToStyles)
-//                .setWidth(40)
-//                .build();
 
         obedCol = ColumnBuilder.getNew()
                 .setColumnProperty("obedMins", Long.class)

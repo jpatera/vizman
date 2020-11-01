@@ -23,7 +23,6 @@ import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -100,7 +99,7 @@ public class ZakrListView extends VerticalLayout {
     private ReportXlsExporter<Zakr> naklAgregXlsRepExporter;
     private Anchor downloadAnchor;
 
-//    ZakNaklGridDialog zakNaklGridDialog;
+//    ZakNaklSingleDialog zakNaklGridDialog;
 
     @Autowired
     public ZakrService zakrService;
@@ -112,17 +111,14 @@ public class ZakrListView extends VerticalLayout {
     public FaktService faktService;
 
     @Autowired
-    public ZaqaService zaqaService;
-
-    @Autowired
     public ZaknService zaknService;
 
     @Autowired
     public CfgPropsCache cfgPropsCache;
 
     public ZakrListView() {
-        rozpracAgregXlsRepExporter = new ReportXlsExporter();
-        naklAgregXlsRepExporter = new ReportXlsExporter();
+        rozpracAgregXlsRepExporter = new ReportXlsExporter<>();
+        naklAgregXlsRepExporter = new ReportXlsExporter<>();
         initView();
     }
 
@@ -391,28 +387,14 @@ public class ZakrListView extends VerticalLayout {
         return reportBtnBox;
     }
 
-//    private Component initXlsReportMenu() {
-//        Button btn = new Button(new Image("img/xls_down_24b.png", ""));
-//        btn.getElement().setAttribute("theme", "icon secondary small");
-//
-//        ContextMenu menu = new ContextMenu();
-////        menu.addItem("Aktuální", e -> updateRozpracAgregXlsRepResourceAndDownload(zakrCurrentReportSupplier));
-//        menu.addItem("Všechny zobrazené", e -> updateRozpracAgregXlsRepResourceAndDownload(zakrVisibleReportSupplier));
-//        menu.setOpenOnClick(true);
-//
-//        menu.setTarget(btn);
-//        return btn;
-//    }
-
     private Component initNaklReportButtonMenu() {
         Icon ico = new Icon(VaadinIcon.COIN_PILES);
         ico.setColor("purple");
         Button btn = new Button(ico);
         btn.getElement().setAttribute("theme", "icon secondary small");
-        btn.getElement().setProperty("title", "Report nákladů");
+        btn.getElement().setProperty("title", "Náklady na zakázku - report");
 
         ContextMenu menu = new ContextMenu();
-//        menu.addItem("Aktuální", e -> updateRozpracAgregXlsRepResourceAndDownload(zakrCurrentReportSupplier));
         menu.addItem("Všechny zobrazené", e -> updateNaklAgregXlsRepResourceAndDownload(zakrVisibleReportSupplier));
         menu.addItem("Aktuální", e -> updateNaklAgregXlsRepResourceAndDownload(zakrCurrentReportSupplier));
 
@@ -426,10 +408,9 @@ public class ZakrListView extends VerticalLayout {
         ico.setColor("blue");
         Button btn = new Button(ico);
         btn.getElement().setAttribute("theme", "icon secondary small");
-        btn.getElement().setProperty("title", "Report rozpracovanosti");
+        btn.getElement().setProperty("title", "Rozpracovanost zakázek - report");
 
         ContextMenu menu = new ContextMenu();
-//        menu.addItem("Aktuální", e -> updateRozpracAgregXlsRepResourceAndDownload(zakrCurrentReportSupplier));
         menu.addItem("Všechny zobrazené", e -> updateRozpracAgregXlsRepResourceAndDownload(zakrVisibleReportSupplier));
         menu.addItem("Aktuální", e -> updateRozpracAgregXlsRepResourceAndDownload(zakrCurrentReportSupplier));
 
@@ -442,7 +423,7 @@ public class ZakrListView extends VerticalLayout {
 
         final AbstractStreamResource xlsResource =
                 rozpracAgregXlsRepExporter.getXlsStreamResource(
-                        new ZakRozpracAgregXlsReportBuilder(getSubtitleText())
+                        new ZakRozpracAgregXlsReportBuilder(getSumaryRepParamSubtitleText())
                         , getZakrAgregReportFileName(ReportXlsExporter.Format.XLS)
                         , itemsSupplier
                         , null
@@ -470,7 +451,8 @@ public class ZakrListView extends VerticalLayout {
         final AbstractStreamResource xlsResource =
                 naklAgregXlsRepExporter.getXlsStreamResource(
                         new ZakNaklAgregXlsReportBuilder(
-                                SecurityUtils.isNaklCompleteAccessGranted()
+                                getSumaryRepParamSubtitleText()
+                                , SecurityUtils.isNaklCompleteAccessGranted()
                                 , zakrParams.getKoefPojist()
                                 , zakrParams.getKoefRezie()
                         )
@@ -487,35 +469,20 @@ public class ZakrListView extends VerticalLayout {
 
     }
 
-    private String getSubtitleText() {
-        ZakrParams filterParams = getCurrentParms();
+    private String getSumaryRepParamSubtitleText() {
+        ZakrParams zakrParams = getCurrentParms();
         String subtitleText =
-//                "Parametry: Ativní=" + (null == activeFilterField.getValue() ? "false" : activeFilterField.getValue().toString()) +
-//                        "  Arch=" + (null == archFilterField.getValue() ? "Vše" : archFilterField.getValue().toString()) +
-//                        "  ČK-ČZ=" + (null == ckzFilterField.getValue() ? "Vše" : "*" + ckzFilterField.getValue() + "*") +
-//                        "  Rok zak.=" + (null == rokZakFilterField.getValue() ? "Vše" : rokZakFilterField.getValue().toString()) +
-//                        "  Skupina=" + (null == skupinaFilterField.getValue() ? "Vše" : skupinaFilterField.getValue().toString()) +
-                "Parametry: Ativní=" + (null == filterParams.isActive() ? "false" : filterParams.isActive().toString()) +
-                        "  Arch=" + (null == filterParams.getArch() ? "Vše" : filterParams.getArch().toString()) +
-                        "  ČK-ČZ=" + (null == filterParams.getCkz() ? "Vše" : "*" + filterParams.getCkz() + "*") +
-                        "  Rok zak.=" + (null == filterParams.getRokZak() ? "Vše" : filterParams.getRokZak().toString()) +
-                        "  Skupina=" + (null == filterParams.getSkupina() ? "Vše" : filterParams.getSkupina().toString()) +
+                "Parametry: Ativní=" + (null == zakrParams.isActive() ? "false" : zakrParams.isActive().toString()) +
+                        "  Arch=" + (null == zakrParams.getArch() ? "Vše" : zakrParams.getArch().toString()) +
+                        "  ČK-ČZ=" + (null == zakrParams.getCkz() ? "Vše" : "*" + zakrParams.getCkz() + "*") +
+                        "  Rok zak.=" + (null == zakrParams.getRokZak() ? "Vše" : zakrParams.getRokZak().toString()) +
+                        "  Skupina=" + (null == zakrParams.getSkupina() ? "Vše" : zakrParams.getSkupina().toString()) +
                         "  rx=" + (null == rxParamField.getValue() ? "" : rxParamField.getValue().toString()) +
                         "  ry=" + (null == ryParamField.getValue() ? "" : ryParamField.getValue().toString()) +
-                        "  Režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue()) +
-                        "  Pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue()) +
+                        "  Koef.pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue()) +
+                        "  Koef.režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue()) +
                         "  Kurz CZK/EUR=" + (null == kurzParamField.getValue() ? "" : kurzParamField.getValue());
         return subtitleText;
-    }
-
-    private Component initRozpracRepButton() {
-        rozpracRepButton = new Button("Report"
-            , event -> {
-                openRozpracRepDialog();
-        });
-//        this.addClassName("view-toolbar__button");
-        rozpracRepButton.getElement().setAttribute("theme", "small secondary");
-        return rozpracRepButton;
     }
 
     private void openRozpracRepDialog() {
@@ -575,35 +542,6 @@ public class ZakrListView extends VerticalLayout {
     }
 
 
-//    private Component initSaveEditButton() {
-//        saveEditButton = new Button("Uložit");
-//        saveEditButton.getElement().setAttribute("theme", "primary");
-//        saveEditButton.addClickListener(event -> {
-//            ConfirmDialog.createQuestion()
-//                    .withCaption("EDITACE PROUŽKU")
-//                    .withMessage("Uložit proužek?")
-//                    .withCancelButton(ButtonOption.caption("ZPĚT"))
-//                    .withYesButton(() -> {
-////                        dochsumZakService.updateDochsumZaksForPersonAndMonth(
-////                                pruhPerson.getId(), pruhYm, transposePruhZaksToDochsumZaks(pruhZakList));
-//                        if (zakrGrid.getEditor().isOpen()) {
-//                            zakrGrid.getEditor().closeEditor();
-//                        }
-//                        boolean ok = zakrService.update...(
-//                                pruhPerson.getId()
-//                                , pruhYm
-//                                , pruhDayMax
-//                                , pruhZakList
-//                        );
-//                        update PruhGrids(pruhPerson, pruhYm);
-//                    } , ButtonOption.focus(), ButtonOption.caption("ULOŽIT"))
-//                    .open()
-//            ;
-//        });
-//        return saveEditButton;
-//    }
-
-
     private Component initGridContainer(ZakrParams zakrParams) {
         VerticalLayout gridContainer = new VerticalLayout();
         gridContainer.setClassName("view-container");
@@ -636,7 +574,8 @@ public class ZakrListView extends VerticalLayout {
         zakrGrid.getDataProvider().refreshAll();
 
         Notification.show(
-                "Rozpracovanost uložena", 2000, Notification.Position.TOP_CENTER);
+                "Rozpracovanost uložena", 2000, Notification.Position.TOP_CENTER
+        );
     }
 
     private Component initDownloadAnchor() {
@@ -656,7 +595,6 @@ public class ZakrListView extends VerticalLayout {
                 , zakrService
                 , zakService
                 , faktService
-                , zaqaService
                 , zaknService
                 , cfgPropsCache
         );
