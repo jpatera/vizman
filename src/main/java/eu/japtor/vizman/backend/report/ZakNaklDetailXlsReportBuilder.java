@@ -11,6 +11,7 @@ import ar.com.fdvs.dj.domain.constants.GroupLayout;
 import ar.com.fdvs.dj.domain.constants.LabelPosition;
 import ar.com.fdvs.dj.domain.constants.Page;
 import ar.com.fdvs.dj.domain.entities.DJGroup;
+import ar.com.fdvs.dj.domain.entities.DJGroupVariable;
 import ar.com.fdvs.dj.domain.entities.columns.AbstractColumn;
 import ar.com.fdvs.dj.domain.entities.columns.PropertyColumn;
 
@@ -22,12 +23,14 @@ import java.util.Map;
 
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.*;
 
+/**
+ Vypis nakladu po uzivatelich a mesicich (fialove tlacitko v tabulce)
+ */
 public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
-
-//    protected DynamicReportBuilder reportBuilder;
 
     private AbstractColumn kzCisloTextRepCol;
     private AbstractColumn prijmeniCol;
+    private AbstractColumn ymPruhCol;
     private AbstractColumn datePruhCol;
     private AbstractColumn workPruhCol;
     private AbstractColumn workPruhP8Col;
@@ -40,9 +43,9 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
     private AbstractColumn blankCol;
 
     private DJGroup userGroup;
+    private DJGroup ymGroup;
     private DJGroup zakGroup;
 
-    // Vypis nakladu po uzivatelich a mesicich (fialove tlacitko nahore)
     public ZakNaklDetailXlsReportBuilder(
             String titleText
             , String subtitleText
@@ -56,7 +59,7 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 .setTitle(titleText)
                 .setSubtitle(subtitleText)
 
-                .setPageSizeAndOrientation(    new Page(666,900))
+                .setPageSizeAndOrientation(    new Page(6666,900))
                 .setUseFullPageWidth(false)
                 .setIgnorePagination(true) // FALSE is needed if splitting reports to more XLS lists (by groups)
                 .setMargins(0, 0, 0, 0)
@@ -76,6 +79,7 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 // Columns
                 .addColumn(kzCisloTextRepCol)
                 .addColumn(prijmeniCol)
+                .addColumn(ymPruhCol)
                 .addColumn(blankCol)
                 .addColumn(datePruhCol)
                 .addColumn(workPruhCol)
@@ -83,14 +87,15 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 // Groups
                 .addGroup(zakGroup)
                 .addGroup(userGroup)
+                .addGroup(ymGroup)
 
                 // Sub-reports
 
                 // Totals
-                .setGrandTotalLegend("Zakázka celkem:")
-                .setGrandTotalLegendStyle(DEFAULT_GRID_XLS_TEXT_BOLD_STYLE)
-                .setGlobalFooterVariableHeight(25)
-                .addGlobalFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_BOLD_GRID_XLS_STYLE)
+//                .setGrandTotalLegend("Zakázka celkem:")
+//                .setGrandTotalLegendStyle(DEFAULT_GRID_XLS_TEXT_BOLD_STYLE)
+//                .setGlobalFooterVariableHeight(30)
+//                .addGlobalFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_BOLD_GRID_XLS_STYLE)
         ;
         if (withMoneyColumns) {
             this
@@ -102,11 +107,11 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                     .addColumn(naklMzdaP8Col)
                     .addColumn(naklMzdaP8PojCol)
 
-                    .addGlobalFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE)
-                    .addGlobalFooterVariable(naklMzdaPojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE)
-                    .addGlobalFooterVariable(workPruhP8Col, DJCalculation.SUM, WORK_HOUR_BOLD_GRID_XLS_STYLE)
-                    .addGlobalFooterVariable(naklMzdaP8Col, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE)
-                    .addGlobalFooterVariable(naklMzdaP8PojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE)
+//                    .addGlobalFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE)
+//                    .addGlobalFooterVariable(naklMzdaPojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE)
+//                    .addGlobalFooterVariable(workPruhP8Col, DJCalculation.SUM, WORK_HOUR_BOLD_GRID_XLS_STYLE)
+//                    .addGlobalFooterVariable(naklMzdaP8Col, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE)
+//                    .addGlobalFooterVariable(naklMzdaP8PojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE)
             ;
         }
     }
@@ -130,18 +135,18 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
 //                .setFixedWidth(true)
                 .build();
 
-//        ymPruhCol = ColumnBuilder.getNew()
-//                .setColumnProperty("ymPruh", YearMonth.class)
-//                .setTitle("Rok-Měs")
-//                .setStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
-//                .setWidth(120)
-//                .build();
-
-        datePruhCol = ColumnBuilder.getNew()
-                .setColumnProperty("datePruh", LocalDate.class)
+        ymPruhCol = ColumnBuilder.getNew()
+                .setColumnProperty("ymPruh", YearMonth.class)
                 .setTitle("Rok-Měs")
                 .setStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
                 .setWidth(120)
+                .build();
+
+        datePruhCol = ColumnBuilder.getNew()
+                .setColumnProperty("datePruh", LocalDate.class)
+                .setTitle("Datum")
+                .setStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
+                .setWidth(80)
                 .build();
 
         workPruhCol = ColumnBuilder.getNew()
@@ -156,7 +161,6 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 .setTitle("Hodin P8")
                 .setStyle(WORK_HOUR_GRID_XLS_STYLE)
                 .setWidth(60)
-//                .setFixedWidth(true)
                 .build();
 
         naklMzdaCol = ColumnBuilder.getNew()
@@ -164,7 +168,6 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 .setTitle("Mzdy [CZK]")
                 .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
                 .setWidth(80)
-//                .setFixedWidth(true)
                 .build();
 
         naklMzdaPojCol = ColumnBuilder.getNew()
@@ -172,7 +175,6 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 .setTitle("Mzdy * P")
                 .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
                 .setWidth(80)
-//                .setFixedWidth(true)
                 .build();
 
         naklMzdaP8Col = ColumnBuilder.getNew()
@@ -180,7 +182,6 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 .setTitle("Mzdy P8")
                 .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
                 .setWidth(80)
-//                .setFixedWidth(true)
                 .build();
 
         naklMzdaP8PojCol = ColumnBuilder.getNew()
@@ -188,7 +189,6 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 .setTitle("Mzdy P8 * P")
                 .setStyle(MONEY_NO_FRACT_GRID_XLS_STYLE)
                 .setWidth(80)
-//                .setFixedWidth(true)
                 .build();
 
         sazbaCol = ColumnBuilder.getNew()
@@ -196,7 +196,6 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 .setTitle("Sazba")
                 .setStyle(DEFAULT_GRID_XLS_NUM_STYLE)
                 .setWidth(60)
-//                .setFixedWidth(true)
                 .build();
 
         koefP8Col = ColumnBuilder.getNew()
@@ -204,7 +203,6 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 .setTitle("Koef P8")
                 .setStyle(DEFAULT_GRID_XLS_NUM_STYLE)
                 .setWidth(60)
-//                .setFixedWidth(true)
                 .build();
 
         blankCol = ColumnBuilder.getNew()
@@ -227,18 +225,43 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
         }
     }
 
+    public class ZakGroupFooterLabelExpression implements CustomExpression {
+        public ZakGroupFooterLabelExpression() {}
+
+        @Override
+        public Object evaluate(Map fields, Map variables, Map parameters) {
+            return "Zakázka celkem:";
+        }
+        @Override
+        public String getClassName() {
+            return String.class.getName();
+        }
+    }
+
     private void buildReportGroups(boolean withMoneyColumns) {
 
         // ZAK group
         // ---------
+        DJGroupVariable zakGroupFooterLabelVar = new DJGroupVariable(
+                prijmeniCol
+                , new ZakGroupFooterLabelExpression()
+                , DEFAULT_GRID_XLS_TEXT_BOLD_STYLE
+        );
         GroupBuilder zakGroupBuilder = new GroupBuilder();
         zakGroup = zakGroupBuilder
                 .setCriteriaColumn((PropertyColumn) kzCisloTextRepCol)
 //                .setGroupLayout(GroupLayout.DEFAULT)
-//                .setGroupLayout(GroupLayout.VALUE_IN_HEADER)
+//                .setGroupLayout(GroupLayout.DEFAULT_WITH_HEADER)
                 .setGroupLayout(GroupLayout.VALUE_IN_HEADER)
 //                .setGroupLayout(GroupLayout.VALUE_FOR_EACH)
-                .setStartInNewColumn(true)
+//                .setStartInNewColumn(true)
+                .addFooterVariable(zakGroupFooterLabelVar)
+                .addFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_BOLD_GRID_XLS_STYLE)
+                .addFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
+                .addFooterVariable(naklMzdaPojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
+                .addFooterVariable(workPruhP8Col, DJCalculation.SUM, WORK_HOUR_BOLD_GRID_XLS_STYLE, null, null)
+                .addFooterVariable(naklMzdaP8Col, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
+                .addFooterVariable(naklMzdaP8PojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
                 .build()
         ;
 
@@ -264,9 +287,14 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
             ;
         }
         userGroup = userGroupBuilder.build();
-    }
 
-//    public DynamicReport buildReport()  {
-//        return reportBuilder.build();
-//    }
+        // YM group
+        // ---------
+        GroupBuilder ymGroupBuilder = new GroupBuilder();
+        ymGroup = ymGroupBuilder
+                .setCriteriaColumn((PropertyColumn) ymPruhCol)
+                .setGroupLayout(GroupLayout.VALUE_IN_HEADER)
+                .build()
+        ;
+    }
 }
