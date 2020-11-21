@@ -89,9 +89,9 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 .addGroup(userGroup)
                 .addGroup(ymGroup)
 
-                // Sub-reports
+        // Sub-reports
 
-                // Totals
+        // Totals
 //                .setGrandTotalLegend("Zakázka celkem:")
 //                .setGrandTotalLegendStyle(DEFAULT_GRID_XLS_TEXT_BOLD_STYLE)
 //                .setGlobalFooterVariableHeight(30)
@@ -248,7 +248,7 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 , DEFAULT_GRID_XLS_TEXT_BOLD_STYLE
         );
         GroupBuilder zakGroupBuilder = new GroupBuilder();
-        zakGroup = zakGroupBuilder
+        zakGroupBuilder
                 .setCriteriaColumn((PropertyColumn) kzCisloTextRepCol)
 //                .setGroupLayout(GroupLayout.DEFAULT)
 //                .setGroupLayout(GroupLayout.DEFAULT_WITH_HEADER)
@@ -257,13 +257,18 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
 //                .setStartInNewColumn(true)
                 .addFooterVariable(zakGroupFooterLabelVar)
                 .addFooterVariable(workPruhCol, DJCalculation.SUM, WORK_HOUR_BOLD_GRID_XLS_STYLE)
-                .addFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
-                .addFooterVariable(naklMzdaPojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
-                .addFooterVariable(workPruhP8Col, DJCalculation.SUM, WORK_HOUR_BOLD_GRID_XLS_STYLE, null, null)
-                .addFooterVariable(naklMzdaP8Col, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
-                .addFooterVariable(naklMzdaP8PojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
-                .build()
         ;
+
+        if (withMoneyColumns) {
+            zakGroupBuilder
+                    .addFooterVariable(naklMzdaCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
+                    .addFooterVariable(naklMzdaPojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
+                    .addFooterVariable(workPruhP8Col, DJCalculation.SUM, WORK_HOUR_BOLD_GRID_XLS_STYLE, null, null)
+                    .addFooterVariable(naklMzdaP8Col, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
+                    .addFooterVariable(naklMzdaP8PojCol, DJCalculation.SUM, MONEY_NO_FRACT_BOLD_GRID_XLS_STYLE, null, null)
+            ;
+        }
+        zakGroup = zakGroupBuilder.build();
 
         // User group
         // ----------
