@@ -81,13 +81,15 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
     }
 
     @Override
-    public List<Zakr> fetchAndCalcByFiltersDescOrder(ZakrListView.ZakrParams zakrParams) {
+    public List<Zakr> fetchAndCalcByFiltersDescOrder(ZakrListView.ZakrFilter zakrFilter, ZakrListView.ZakrParams zakrParams) {
         List<Zakr> zakrs = zakrRepo.findZakrByFilterParams(
-                zakrParams.getArch()
-                , zakrParams.getCkz()
-                , zakrParams.getRokZak()
-                , zakrParams.getSkupina()
-                , zakrParams.isActive()
+                zakrParams.isActive()
+                , zakrFilter.getArch()
+                , zakrFilter.getCkz()
+                , zakrFilter.getRokZak()
+                , zakrFilter.getSkupina()
+                , zakrFilter.getKzText()
+                , zakrFilter.getObjednatel()
         );
         zakrs.stream()
                 .forEach(zr -> adjustZakrVykonAndVysledky.accept(zr, zakrParams));
@@ -95,13 +97,23 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
     }
 
     @Override
-    public List<Long> fetchIdsByFiltersDescOrderWithLimit(ZakrListView.ZakrParams zakrParams) {
+    public List<Zakr> fetchAndCalcAllDescOrder(ZakrListView.ZakrParams zakrParams) {
+        List<Zakr> zakrs = zakrRepo.findAllByOrderByCkontDescCzakDesc();
+        zakrs.stream()
+                .forEach(zr -> adjustZakrVykonAndVysledky.accept(zr, zakrParams));
+        return zakrs;
+    }
+
+    @Override
+    public List<Long> fetchIdsByFiltersDescOrderWithLimit(ZakrListView.ZakrFilter zakrFilter, ZakrListView.ZakrParams zakrParams) {
         List<Long> zakrIds = zakrRepo.findIdsByFilterParamsWithLimit(
-                zakrParams.getArch()
-                , zakrParams.getCkz()
-                , zakrParams.getRokZak()
-                , zakrParams.getSkupina()
-                , zakrParams.isActive()
+                zakrParams.isActive()
+                , zakrFilter.getArch()
+                , zakrFilter.getCkz()
+                , zakrFilter.getRokZak()
+                , zakrFilter.getSkupina()
+                , zakrFilter.getKzText()
+                , zakrFilter.getObjednatel()
         );
         return zakrIds;
     }

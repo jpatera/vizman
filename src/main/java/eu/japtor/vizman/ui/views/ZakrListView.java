@@ -1,18 +1,3 @@
-/*
- * Copyright 2000-2017 Vaadin Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.Component;
@@ -60,11 +45,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.RFNDF;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
@@ -90,7 +71,6 @@ public class ZakrListView extends VerticalLayout {
     private List<GridSortOrder<ZakBasic>> initialSortOrder;
 
     private RadioButtonGroup<String> archFilterRadio;
-    private Button rozpracRepButton;
     private CalcButton calcButton;
     private TextField kurzParamField;
     private TextField rezieParamField;
@@ -102,12 +82,8 @@ public class ZakrListView extends VerticalLayout {
     private Binder<ZakrParams> paramsBinder;
 
     private ReportXlsExporter<Zakr> rozpracSumXlsRepExporter;
-//    private ReportXlsExporter<Zakr> naklSumXlsRepExporter;
-//    private ReportXlsExporter<ZaknNaklVw> naklSouhrnXlsRepExporter;
     private ReportXlsExporter<ZakYmNaklVw> naklSouhrnXlsRepExporter;
-    private Anchor downloadAnchor;
-
-//    ZakNaklSingleDialog zakNaklGridDialog;
+    private Anchor expXlsAnchor;
 
     @Autowired
     public ZakrService zakrService;
@@ -126,7 +102,6 @@ public class ZakrListView extends VerticalLayout {
 
     public ZakrListView() {
         rozpracSumXlsRepExporter = new ReportXlsExporter<>();
-//        naklSumXlsRepExporter = new ReportXlsExporter<>();
         naklSouhrnXlsRepExporter = new ReportXlsExporter<>();
         initView();
     }
@@ -158,17 +133,6 @@ public class ZakrListView extends VerticalLayout {
         //        zakrGrid.sort(initialSortOrder);
         //        UI.getCurrent().getPage().executeJavaScript("document.querySelectorAll(\"vaadin-grid-sorter\")[1].click()");
     }
-
-
-//    private Component buildInitGridToolBar() {
-//        initialSortOrder = Arrays.asList(
-//                new GridSortOrder(
-//                        zakrGrid.getColumnByKey(ZakSimpleGrid.ROK_COL_KEY), SortDirection.DESCENDING)
-//                , new GridSortOrder(
-//                        zakrGrid.getColumnByKey(ZakSimpleGrid.CKZ_COL_KEY), SortDirection.DESCENDING)
-//        );
-//    }
-
 
     private Component buildGridBarComponent() {
         HorizontalLayout gridBar = new HorizontalLayout();
@@ -234,20 +198,6 @@ public class ZakrListView extends VerticalLayout {
         return controlsComponent;
     }
 
-//    private Component initRxParamField() {
-//        rxParamField = new TextField("RX (od)");
-//        rxParamField.setValue("1");
-//        rxParamField.setReadOnly(true);
-//        return rxParamField;
-//    }
-
-//    private Component initRyParamField() {
-//        ryParamField = new TextField("RY (do)");
-//        ryParamField.setValue("2");
-//        ryParamField.setReadOnly(true);
-//        return ryParamField;
-//    }
-
     private Component initKurzField() {
         kurzParamField = new TextField("Kurz CZK/EUR");
         kurzParamField.setWidth("7em");
@@ -310,14 +260,6 @@ public class ZakrListView extends VerticalLayout {
         return rxParamField;
     }
 
-    private Checkbox initActiveParamField() {
-        activeParamField = new Checkbox("Aktivní"); // = new TextField("Username");
-        activeParamField.getElement().setAttribute("theme", "small");
-        paramsBinder.forField(activeParamField)
-                .bind(ZakrParams::isActive, ZakrParams::setActive);
-        return activeParamField;
-    }
-
     private Select<String> initRyParamField() {
         ryParamField = new Select<>();
         ryParamField.setLabel("RY (do)");
@@ -333,16 +275,23 @@ public class ZakrListView extends VerticalLayout {
         return ryParamField;
     }
 
+    private Checkbox initActiveParamField() {
+        activeParamField = new Checkbox("Aktivní"); // = new TextField("Username");
+        activeParamField.getElement().setAttribute("theme", "small");
+        paramsBinder.forField(activeParamField)
+                .bind(ZakrParams::isActive, ZakrParams::setActive);
+        return activeParamField;
+    }
+
     private Component initCalcButton() {
         calcButton = new CalcButton(event -> {
             BinderValidationStatus status = paramsBinder.validate();
             if (status.hasErrors()) {
                 calcButton.setIconDirty();
             } else {
+//                feedZakrParms();    // TODO: May be not necessary
                 paramsBinder.writeBeanIfValid(zakrParams);
-//                zakrGrid.setZakrParams(zakrParams);
-//                zakrList = zakrService.fetchAndCalcByActiveFilterDescOrder(zakrParams);
-                zakrList = zakrService.fetchAndCalcByFiltersDescOrder(getCurrentParms());
+                zakrList = zakrService.fetchAndCalcByFiltersDescOrder(buildZakrFilter(), zakrParams);
                 zakrGrid.populateGridDataAndRestoreFilters(zakrList);
                 zakrGrid.recalcGrid();
                 zakrGrid.getDataProvider().refreshAll();
@@ -361,7 +310,7 @@ public class ZakrListView extends VerticalLayout {
         return REP_ZAKN_SUM_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
     }
 
-    private String getNaklSouhrnReportFileName(ReportXlsExporter.Format format) {
+    private String getNaklSouhrnRepFileName(ReportXlsExporter.Format format) {
         return REP_ZAKN_SOUHRN_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
     }
 
@@ -372,50 +321,38 @@ public class ZakrListView extends VerticalLayout {
 
     private SerializableSupplier<List<? extends Zakr>> zakRozpracCurrentSumRepSupplier =
             () -> {
+//                feedZakrParms();    // TODO: May be not necessary
+                paramsBinder.writeBeanIfValid(zakrParams);
                 Set<Zakr> itemSelection = zakrGrid.getSelectedItems();  // Suppose: SingleSelectionModel is set, only one (or none) item is present
                 if (null == itemSelection || itemSelection.isEmpty()) {
                     return Collections.EMPTY_LIST;
                 }
                 Zakr zakrSel = itemSelection.iterator().next();
                 return Collections.singletonList(
-                        zakrService.fetchAndCalcOne(zakrSel.getId(), getCurrentParms())
+                        zakrService.fetchAndCalcOne(zakrSel.getId(), zakrParams)
                 );
             };
 
-    private SerializableSupplier<List<? extends Zakr>> zakRozpracVisibleReportSupplier =
+    private SerializableSupplier<List<? extends Zakr>> zakRozpracRepFilteredSupplier =
             () -> {
-                return zakrService.fetchAndCalcByFiltersDescOrder(getCurrentParms());
+//                feedZakrParms();    // TODO: May be not necessary
+                paramsBinder.writeBeanIfValid(zakrParams);
+                return zakrService.fetchAndCalcByFiltersDescOrder(buildZakrFilter(), zakrParams);
             };
 
-//    private SerializableSupplier<List<? extends ZaknNaklVw>> zaknVisibleSouhrnRepSupplier =
-//            () -> {
-//                // TODO: replace by supplier returning zakns for all visible zakrs
-////                return Collections.emptyList();
-////                return Collections.singletonList(
-////                        zakNaklVwService.fetchByZakIdSumByYm(itemSelection.iterator().next().getId(), zakrParams);
-//
-//                List<Long> zakrIds = zakrService.fetchIdsByFiltersDescOrderWithLimit(getCurrentParms());
-//                return zakNaklVwService.fetchByZakIdsSumByYm(zakrIds, zakrParams);
-//            };
-
-    private SerializableSupplier<List<? extends ZakYmNaklVw>> zakYmNaklVisibleSouhrnRepSupplier =
+    private SerializableSupplier<List<? extends Zakr>> zakRozpracRepAllSupplier =
             () -> {
-                // TODO: replace by supplier returning zakns for all visible zakrs
-//                return Collections.emptyList();
-//                return Collections.singletonList(
-//                        zakNaklVwService.fetchByZakIdSumByYm(itemSelection.iterator().next().getId(), zakrParams);
+//                feedZakrParms();    // TODO: May be not necessary
+                paramsBinder.writeBeanIfValid(zakrParams);
+                return zakrService.fetchAndCalcAllDescOrder(zakrParams);
+            };
 
-                List<Long> zakrIds = zakrService.fetchIdsByFiltersDescOrderWithLimit(getCurrentParms());
+    private SerializableSupplier<List<? extends ZakYmNaklVw>> zakYmNaklSouhrnRepVisibleSupplier =
+            () -> {
+//                feedZakrParms();    // TODO: May be not necessary
+                paramsBinder.writeBeanIfValid(zakrParams);
+                List<Long> zakrIds = zakrService.fetchIdsByFiltersDescOrderWithLimit(buildZakrFilter(), zakrParams);
                 return zakNaklVwService.fetchByZakIdsSumByYm(zakrIds, zakrParams);
-            };
-
-    private SerializableSupplier<List<? extends ZaknNaklVw>> zaknCurrentSouhrnRepSupplier =
-            () -> {
-                Set<Zakr> itemSelection = zakrGrid.getSelectedItems();  // Suppose: SingleSelectionModel is set, only one (or none) item is present
-                if (null == itemSelection || itemSelection.isEmpty()) {
-                    return Collections.EMPTY_LIST;
-                }
-                return zakNaklVwService.fetchByZakIdSumByYm(itemSelection.iterator().next().getId(), zakrParams);
             };
 
     private Component buildReportBtnBox() {
@@ -439,13 +376,13 @@ public class ZakrListView extends VerticalLayout {
         ico.setColor("purple");
         Button btn = new Button(ico);
         btn.getElement().setAttribute("theme", "icon secondary small");
-        btn.getElement().setProperty("title", "Souhrnné náklady na zakázky - report");
+        btn.getElement().setProperty("title", "Souhrnné náklady zakázek - report");
 
         ContextMenu menu = new ContextMenu();
-//        menu.addItem("Všechny zobrazené", e -> updateNaklSumXlsRepResourceAndDownload(zakRozpracVisibleReportSupplier));
-//        menu.addItem("Aktuální", e -> updateNaklSumXlsRepResourceAndDownload(zakRozpracCurrentSumRepSupplier));
-        menu.addItem("Všechny zobrazené (max 20)", e -> updateNaklSouhrnXlsRepResourceAndDownload(zakYmNaklVisibleSouhrnRepSupplier, false));
-//        menu.addItem("Aktuální", e -> updateNaklSouhrnXlsRepResourceAndDownload(zaknCurrentSouhrnRepSupplier, true));
+        menu.addItem("Zobrazené zakázky (max 20)", e -> updateNaklSouhrnXlsRepResourceAndDownload(
+                zakYmNaklSouhrnRepVisibleSupplier
+                , getZakrRepFilteredSubtitleText()
+        ));
 
         menu.setOpenOnClick(true);
         menu.setTarget(btn);
@@ -460,7 +397,14 @@ public class ZakrListView extends VerticalLayout {
         btn.getElement().setProperty("title", "Rozpracovanost zakázek - report");
 
         ContextMenu menu = new ContextMenu();
-        menu.addItem("Všechny zobrazené", e -> updateRozpracSumXlsRepResourceAndDownload(zakRozpracVisibleReportSupplier));
+        menu.addItem("Zobrazené zakázky", e -> updateRozpracSumXlsRepResourceAndDownload(
+                zakRozpracRepFilteredSupplier
+                , getZakrRepFilteredSubtitleText()
+        ));
+        menu.addItem("Všechny zakázky", e -> updateRozpracSumXlsRepResourceAndDownload(
+                zakRozpracRepAllSupplier
+                , getZakrRepAllSubtitleText()
+        ));
 //        menu.addItem("Aktuální", e -> updateRozpracSumXlsRepResourceAndDownload(zakRozpracCurrentSumRepSupplier));
 
         menu.setOpenOnClick(true);
@@ -468,20 +412,21 @@ public class ZakrListView extends VerticalLayout {
         return btn;
     }
 
-    private void updateRozpracSumXlsRepResourceAndDownload(SerializableSupplier<List<? extends Zakr>> itemsSupplier) {
-
+    private void updateRozpracSumXlsRepResourceAndDownload(
+            SerializableSupplier<List<? extends Zakr>> itemsSupplier
+            , final String subtitleText
+    ) {
         final AbstractStreamResource xlsResource =
                 rozpracSumXlsRepExporter.getXlsStreamResource(
-                        new ZakRozpracSumXlsReportBuilder(getSumRepParamSubtitleText())
+                        new ZakRozpracSumXlsReportBuilder(subtitleText)
                         , getZakrSumReportFileName(ReportXlsExporter.Format.XLS)
                         , itemsSupplier
                         , null
                 );
 
         // Varianta 1
-        downloadAnchor.setHref(xlsResource);
-        Page page = UI.getCurrent().getPage();
-        page.executeJs("$0.click();", downloadAnchor.getElement());
+        expXlsAnchor.setHref(xlsResource);
+        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
 //      or:  page.executeJs("document.getElementById('" + KONT_REP_ID + "').click();");
 
         // Varianta 2 - browsers can have pop-up opening disabled
@@ -495,31 +440,9 @@ public class ZakrListView extends VerticalLayout {
 //        page.setLocation(registration.getResourceUri());
     }
 
-    private void updateNaklSumXlsRepResourceAndDownload(SerializableSupplier<List<? extends Zakr>> itemsSupplier) {
-
-        //  Sumarni 1D report se momentalne nepouziva, ale ne odstranovat
-
-//        final AbstractStreamResource xlsResource =
-//                naklSumXlsRepExporter.getXlsStreamResource(
-//                        new ZakNaklSumXlsReportBuilder(
-//                                getSumRepParamSubtitleText()
-//                                , SecurityUtils.isNaklCompleteAccessGranted()
-//                                , zakrParams.getKoefPojist()
-//                                , zakrParams.getKoefRezie()
-//                        )
-//                        , getNaklSumReportFileName(ReportXlsExporter.Format.XLS)
-//                        , itemsSupplier
-//                        , null
-//                );
-//        downloadAnchor.setHref(xlsResource);
-//        Page page = UI.getCurrent().getPage();
-//        page.executeJs("$0.click();", downloadAnchor.getElement());
-    }
-
     private void updateNaklSouhrnXlsRepResourceAndDownload(
-//            SerializableSupplier<List<? extends ZaknNaklVw>> itemsSupplier
             SerializableSupplier<List<? extends ZakYmNaklVw>> itemsSupplier
-            , boolean singleZak
+            , final String subtitleText
     ) {
         String[] sheetNames = itemsSupplier.get().stream()
                 .filter(VzmUtils.distinctByKey(p -> p.getKzCisloRep()))
@@ -529,55 +452,62 @@ public class ZakrListView extends VerticalLayout {
         final AbstractStreamResource xlsResource =
                 naklSouhrnXlsRepExporter.getXlsStreamResource(
                         new ZakNaklSouhrnXlsReportBuilder(
-                                singleZak ? "SOUHRNNÉ NÁKLADY NA ZAKÁZKU" : "SOUHRNNÉ NÁKLADY NA ZAKÁZKY"
-                                , getSouhrnRepParamSubtitleText()
+                                "SOUHRNNÉ NÁKLADY NA ZAKÁZKY"
+                                , subtitleText
                                 , SecurityUtils.isNaklCompleteAccessGranted()
                         )
-                        , getNaklSouhrnReportFileName(ReportXlsExporter.Format.XLS)
+                        , getNaklSouhrnRepFileName(ReportXlsExporter.Format.XLS)
                         , itemsSupplier
                         , sheetNames
                 );
-        downloadAnchor.setHref(xlsResource);
+        expXlsAnchor.setHref(xlsResource);
         Page page = UI.getCurrent().getPage();
-        page.executeJs("$0.click();", downloadAnchor.getElement());
+        page.executeJs("$0.click();", expXlsAnchor.getElement());
     }
 
-    private String getSumRepParamSubtitleText() {
-        ZakrParams zakrParams = getCurrentParms();
-        String subtitleText =
-                "Parametry: Ativní=" + (null == zakrParams.isActive() ? "false" : zakrParams.isActive().toString()) +
-                        "  Arch=" + (null == zakrParams.getArch() ? "Vše" : zakrParams.getArch().toString()) +
-                        "  ČK-ČZ=" + (null == zakrParams.getCkz() ? "Vše" : "*" + zakrParams.getCkz() + "*") +
-                        "  Rok zak.=" + (null == zakrParams.getRokZak() ? "Vše" : zakrParams.getRokZak().toString()) +
-                        "  Skupina=" + (null == zakrParams.getSkupina() ? "Vše" : zakrParams.getSkupina().toString()) +
-                        "  rx=" + (null == rxParamField.getValue() ? "" : rxParamField.getValue().toString()) +
-                        "  ry=" + (null == ryParamField.getValue() ? "" : ryParamField.getValue().toString()) +
-                        "  Koef.pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue()) +
-                        "  Koef.režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue()) +
-                        "  Kurz CZK/EUR=" + (null == kurzParamField.getValue() ? "" : kurzParamField.getValue());
-        return subtitleText;
+    private String getZakrRepFilteredSubtitleText() {
+//        feedZakrParms();
+        ZakrFilter zakrFilter = buildZakrFilter();
+        return
+            "Parametry: " +
+            "  Aktivní=" + (null == zakrParams.isActive() ? "" : zakrParams.isActive().toString()) +
+            "  Arch=" + (null == zakrFilter.getArch() ? "Vše" : zakrFilter.getArch().toString()) +
+            "  ČK-ČZ=" + (null == zakrFilter.getCkz() ? "Vše" : zakrFilter.getCkz()) +
+            "  Rok zak.=" + (null == zakrFilter.getRokZak() ? "Vše" : zakrFilter.getRokZak().toString()) +
+            "  Skupina=" + (null == zakrFilter.getSkupina() ? "Vše" : zakrFilter.getSkupina().toString()) +
+            "  Objednatel=" + (null == zakrFilter.getObjednatel() ? "Vše" : zakrFilter.getObjednatel().toString()) +
+            "  Text=" + (null == zakrFilter.getKzText() ? "Vše" : zakrFilter.getKzText().toString()) +
+            "  rx=" + (null == zakrParams.getRx() ? "" : zakrParams.getRx()) +
+            "  ry=" + (null == zakrParams.getRy() ? "" : zakrParams.getRy()) +
+            "  Koef.pojištění=" + (null == zakrParams.getKoefPojist() ? "" : zakrParams.getKoefPojist()) +
+            "  Koef.režie=" + (null == zakrParams.getKoefRezie() ? "" : zakrParams.getKoefRezie()) +
+            "  Kurz CZK/EUR=" + (null == zakrParams.getKurzEur() ? "" : zakrParams.getKurzEur());
     }
 
-    private String getSouhrnRepParamSubtitleText() {
-        ZakrParams zakrParams = getCurrentParms();
-        String subtitleText =
-                "Parametry: Ativní=" + (null == zakrParams.isActive() ? "false" : zakrParams.isActive().toString()) +
-                        "  Arch=" + (null == zakrParams.getArch() ? "Vše" : zakrParams.getArch().toString()) +
-                        "  ČK-ČZ=" + (null == zakrParams.getCkz() ? "Vše" : "*" + zakrParams.getCkz() + "*") +
-                        "  Rok zak.=" + (null == zakrParams.getRokZak() ? "Vše" : zakrParams.getRokZak().toString()) +
-                        "  Skupina=" + (null == zakrParams.getSkupina() ? "Vše" : zakrParams.getSkupina().toString()) +
-                        "  rx=" + (null == rxParamField.getValue() ? "" : rxParamField.getValue().toString()) +
-                        "  ry=" + (null == ryParamField.getValue() ? "" : ryParamField.getValue().toString()) +
-                        "  Koef.pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue()) +
-                        "  Koef.režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue()) +
-                        "  Kurz CZK/EUR=" + (null == kurzParamField.getValue() ? "" : kurzParamField.getValue());
-        return subtitleText;
+    private String getZakrRepAllSubtitleText() {
+//        feedZakrParms();
+        return
+            "Parametry: Filtr=vše " +
+            "  rx=" + (null == zakrParams.getRx() ? "" : zakrParams.getRx()) +
+            "  ry=" + (null == zakrParams.getRy() ? "" : zakrParams.getRy()) +
+            "  Koef.pojištění=" + (null == zakrParams.getKoefPojist() ? "" : zakrParams.getKoefPojist()) +
+            "  Koef.režie=" + (null == zakrParams.getKoefRezie() ? "" : zakrParams.getKoefRezie()) +
+            "  Kurz CZK/EUR=" + (null == zakrParams.getKurzEur() ? "" : zakrParams.getKurzEur());
     }
 
-    private void openRozpracRepDialog() {
+//    private void feedZakrParms() {
+//        zakrParams.setKoefPojist(StringUtils.isEmpty(pojistParamField.getValue()) ?  null : new BigDecimal(pojistParamField.getValue()));
+//        zakrParams.setKoefRezie(StringUtils.isEmpty(rezieParamField.getValue()) ?  null : new BigDecimal(rezieParamField.getValue()));
+//        zakrParams.setKurzEur(StringUtils.isEmpty(kurzParamField.getValue()) ?  null : new BigDecimal(kurzParamField.getValue()));
+//        zakrParams.setRx(rxParamField.getValue());
+//        zakrParams.setRy(ryParamField.getValue());
+//        zakrParams.setActive(activeParamField.getValue());
+//    }
+
+//    private void openRozpracRepDialog() {
 ////        List<Zakr> zakrRep1 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataCommunicator().getDataProvider()).getItems();
 ////        List<Zakr> zakrRep2 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataProvider()).getItems();
-//        zakrGrid.saveFilterValues();
+//        zakrGrid.saveFilterFieldValues();
 //        zakrParams.setActive(activeParamField.getValue());
 //        zakrParams.setArch(zakrGrid.getArchFilterValue());
 //        zakrParams.setCkz(zakrGrid.getCkzFilterValue());
@@ -586,38 +516,18 @@ public class ZakrListView extends VerticalLayout {
 //        ZakRozpracReportDialog zakRozpracReportDlg  = new ZakRozpracReportDialog(zakrService, zakrParams);
 //        zakRozpracReportDlg.openDialog(zakrParams);
 //        zakRozpracReportDlg.generateAndShowReport();
-    }
+//    }
 
-    private ZakrParams getCurrentParms() {
-        zakrGrid.saveFilterValues();
-        zakrParams.setActive(activeParamField.getValue());
-        zakrParams.setArch(zakrGrid.getArchFilterValue());
-        zakrParams.setCkz(zakrGrid.getCkzFilterValue());
-        zakrParams.setRokZak(zakrGrid.getRokFilterValue());
-        zakrParams.setSkupina(zakrGrid.getSkupinaFilterValue());
-        return zakrParams;
-    }
-
-
-    // Kopie z ZaRozpracReportDialog
-    public void generateAndShowReport() {
-//        deactivateListeners();
-//        report.setSubtitleText(
-//                "Parametry: Ativní=" + (null == activeFilterField.getValue() ? "false" : activeFilterField.getValue().toString()) +
-//                        "  Arch=" + (null == archFilterField.getValue() ? "Vše" : archFilterField.getValue().toString()) +
-//                        "  ČK-ČZ=" + (null == ckzFilterField.getValue() ? "Vše" : "*" + ckzFilterField.getValue() + "*") +
-//                        "  Rok zak.=" + (null == rokZakFilterField.getValue() ? "Vše" : rokZakFilterField.getValue().toString()) +
-//                        "  Skupina=" + (null == skupinaFilterField.getValue() ? "Vše" : skupinaFilterField.getValue().toString()) +
-//                        "  rx=" + (null == rxParamField.getValue() ? "" : rxParamField.getValue().toString()) +
-//                        "  ry=" + (null == ryParamField.getValue() ? "" : ryParamField.getValue().toString()) +
-//                        "  Režie=" + (null == rezieParamField.getValue() ? "" : rezieParamField.getValue()) +
-//                        "  Pojištění=" + (null == pojistParamField.getValue() ? "" : pojistParamField.getValue()) +
-//                        "  Kurz CZK/EUR=" + (null == kurzParamField.getValue() ? "" : kurzParamField.getValue())
-//        );
-//
-//        // Tohle nefunguje:
-//        // report.getReportBuilder().setProperty("ireport.zoom", "2.0");
-//        // report.getReportBuilder().setProperty("net.sf.jasperreports.viewer.zoom", "2");
+    private ZakrFilter buildZakrFilter() {
+        zakrGrid.saveFilterFieldValues();
+        ZakrFilter filter = ZakrFilter.getEmpty();
+        filter.setArch(zakrGrid.getArchFilterValue());
+        filter.setCkz(zakrGrid.getCkzFilterValue());
+        filter.setRokZak(zakrGrid.getRokFilterValue());
+        filter.setSkupina(zakrGrid.getSkupinaFilterValue());
+        filter.setKzText(zakrGrid.getKzTextFilterValue());
+        filter.setObjednatel(zakrGrid.getObjednatelFilterValue());
+        return filter;
     }
 
     private Component initArchFilterRadio() {
@@ -638,7 +548,7 @@ public class ZakrListView extends VerticalLayout {
         gridContainer.setAlignItems(Alignment.STRETCH);
 
         gridContainer.add(
-                initDownloadAnchor()
+                initExpXlsAnchor()
                 , buildGridBarComponent()
                 , initZakrGrid(zakrParams)
         );
@@ -667,13 +577,9 @@ public class ZakrListView extends VerticalLayout {
         );
     }
 
-    private Component initDownloadAnchor() {
-        downloadAnchor = new Anchor();
-        downloadAnchor.getElement().setAttribute("download", true);
-        downloadAnchor.setId(ZAKR_DOWN_ANCHOR_ID);
-        downloadAnchor.setText("Invisible ZAKR download link");    // setVisible  also disables a server part - cannot be useed
-        downloadAnchor.getStyle().set("display", "none");
-        return downloadAnchor;
+    private Component initExpXlsAnchor() {
+        expXlsAnchor = new ExpXlsAnchor();
+        return expXlsAnchor;
     }
 
     private Component initZakrGrid(ZakrParams zakrParams) {
@@ -689,28 +595,6 @@ public class ZakrListView extends VerticalLayout {
         );
         zakrGrid.setMultiSort(true);
         zakrGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
-
-//        zakrGrid.addSelectionListener(event -> {
-//            if (zakrGrid.getEditor().isOpen()) {
-//                zakrGrid.getEditor().save();
-//                zakrGrid.getEditor().closeEditor();
-//            }
-//            String ckzEdit = "N/A";
-//            try {
-//                if (null != selectedItem) {
-//                    ckzEdit = String.format("%s / %s", selectedItem.getCkont(), selectedItem.getCkz());
-//                    zakrService.saveZakr(selectedItem, Operation.EDIT);
-//                }
-//                selectedItem = event.getFirstSelectedItem().orElse(null);   // Note: grid selection mode is supposed to be SINGLE
-//            } catch(Exception ex) {
-//                ConfirmDialog
-//                        .createError()
-//                        .withCaption("Editace rozpracovanosti.")
-//                        .withMessage(String.format("Zakázku %s se nepodařilo uložit.", ckzEdit))
-//                        .open()
-//                ;
-//            }
-//        });
         return zakrGrid;
     }
 
@@ -725,7 +609,6 @@ public class ZakrListView extends VerticalLayout {
     }
 
     private void loadInitialViewContent() {
-//        kurzParamField.setValue(cfgPropsCache.getStringValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
         if (zakrGrid.getEditor().isOpen()) {
             zakrGrid.getEditor().closeEditor();
         }
@@ -736,28 +619,20 @@ public class ZakrListView extends VerticalLayout {
     }
 
     public static class ZakrParams {
-
-        String ckz;
-        Integer rokZak;
-        String skupina;
+        Boolean active;
         BigDecimal kurzEur;
-        BigDecimal koefRezie;
-        BigDecimal koefPojist;
         String rx;
         String ry;
-        Boolean arch;
-        Boolean active;
+        BigDecimal koefRezie;
+        BigDecimal koefPojist;
 
         public static ZakrParams getEmptyInstance() {
             ZakrParams zakrParams =  new ZakrParams();
-//            zakrParams.setKurzEur(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
-            zakrParams.setActive(false);
+            zakrParams.setActive(null);
             zakrParams.setKurzEur(null);
             zakrParams.setRx(null);
             zakrParams.setRy(null);
-//            zakrParams.setKoefRezie(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KOEF_REZIE.getName()));
             zakrParams.setKoefRezie(null);
-//            zakrParams.setKoefPojist(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KOEF_POJIST.getName()));
             zakrParams.setKoefPojist(null);
             return zakrParams;
         }
@@ -771,6 +646,69 @@ public class ZakrListView extends VerticalLayout {
             zakrParams.setKoefRezie(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KOEF_REZIE.getName()));
             zakrParams.setKoefPojist(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KOEF_POJIST.getName()));
             return zakrParams;
+        }
+
+        public Boolean isActive() {
+            return active;
+        }
+        public void setActive(Boolean active) {
+            this.active = active;
+        }
+
+        public BigDecimal getKurzEur() {
+            return kurzEur;
+        }
+        public void setKurzEur(BigDecimal kurzEur) {
+            this.kurzEur = kurzEur;
+        }
+
+        public String getRx() {
+            return rx;
+        }
+        public void setRx(String rx) {
+            this.rx = rx;
+        }
+
+        public String getRy() {
+            return ry;
+        }
+        public void setRy(String ry) {
+            this.ry = ry;
+        }
+
+        public BigDecimal getKoefRezie() {
+            return koefRezie;
+        }
+        public void setKoefRezie(BigDecimal koefRezie) {
+            this.koefRezie = koefRezie;
+        }
+
+        public BigDecimal getKoefPojist() {
+            return koefPojist;
+        }
+        public void setKoefPojist(BigDecimal koefPojist) {
+            this.koefPojist = koefPojist;
+        }
+    }
+
+    public static class ZakrFilter {
+
+        String ckz;
+        Integer rokZak;
+        String skupina;
+        Boolean arch;
+        String kzText;
+        String objednatel;
+
+        public static final ZakrFilter getEmpty() {
+            ZakrListView.ZakrFilter filter = new ZakrFilter();
+            filter.setArch(null);
+            filter.setCkz(null);
+            filter.setRokZak(null);
+            filter.setSkupina(null);
+            filter.setObjednatel(null);
+            filter.setKzText(null);
+            return filter;
         }
 
         public Boolean getArch() {
@@ -801,46 +739,18 @@ public class ZakrListView extends VerticalLayout {
             this.skupina = skupina;
         }
 
-        public BigDecimal getKurzEur() {
-            return kurzEur;
+        public String getObjednatel() {
+            return objednatel;
         }
-        public void setKurzEur(BigDecimal kurzEur) {
-            this.kurzEur = kurzEur;
-        }
-
-        public BigDecimal getKoefRezie() {
-            return koefRezie;
-        }
-        public void setKoefRezie(BigDecimal koefRezie) {
-            this.koefRezie = koefRezie;
+        public void setObjednatel(String objednatel) {
+            this.objednatel = objednatel;
         }
 
-        public BigDecimal getKoefPojist() {
-            return koefPojist;
+        public String getKzText() {
+            return kzText;
         }
-        public void setKoefPojist(BigDecimal koefPojist) {
-            this.koefPojist = koefPojist;
-        }
-
-        public String getRx() {
-            return rx;
-        }
-        public void setRx(String rx) {
-            this.rx = rx;
-        }
-
-        public String getRy() {
-            return ry;
-        }
-        public void setRy(String ry) {
-            this.ry = ry;
-        }
-        
-        public Boolean isActive() {
-            return active;
-        }
-        public void setActive(Boolean active) {
-            this.active = active;
+        public void setKzText(String kzText) {
+            this.kzText = kzText;
         }
     }
 }

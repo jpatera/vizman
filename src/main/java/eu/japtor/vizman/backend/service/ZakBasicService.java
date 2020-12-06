@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface ZakBasicService {
 
-    List<ZakBasic> fetchAndCalcByFiltersDescOrder(ZakBasicListView.ZakBasicFilter zakBasicFilter);
+    List<ZakBasic> fetchByFiltersDescOrder(ZakBasicListView.ZakBasicFilter zakBasicFilter);
+
+    List<ZakBasic> fetchAllDescOrder();
 
 }

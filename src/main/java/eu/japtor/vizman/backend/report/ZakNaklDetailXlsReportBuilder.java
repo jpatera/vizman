@@ -59,7 +59,7 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 .setTitle(titleText)
                 .setSubtitle(subtitleText)
 
-                .setPageSizeAndOrientation(    new Page(6666,900))
+                .setPageSizeAndOrientation(new Page(6666,900))
                 .setUseFullPageWidth(false)
                 .setIgnorePagination(true) // FALSE is needed if splitting reports to more XLS lists (by groups)
                 .setMargins(0, 0, 0, 0)

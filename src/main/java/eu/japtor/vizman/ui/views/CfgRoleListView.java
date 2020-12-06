@@ -340,6 +340,7 @@ public class CfgRoleListView extends VerticalLayout implements BeforeEnterObserv
             }
             , new Icon(VaadinIcon.USERS)
             , null
+            , "Editace uživatele"
         );
     }
 

@@ -247,7 +247,7 @@ public class ZakRozpracSingleDialog extends AbstractGridDialog<Zaqa> implements 
     }
 
     private Component initZakNaklXlsExpAnchor() {
-        expXlsAnchor = new ReportExpButtonAnchor(ReportExporter.Format.XLS, anchorExportListener);
+        expXlsAnchor = new ExpXlsButtonAnchor(anchorExportListener);
         return expXlsAnchor;
     }
 

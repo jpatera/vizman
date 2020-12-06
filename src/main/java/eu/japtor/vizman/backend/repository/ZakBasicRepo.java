@@ -27,6 +27,9 @@ public interface ZakBasicRepo extends JpaRepository<ZakBasic, Long> {
             + " and (:ckont is null or zb.ckont like %:ckont%) "
             + " and (:rok is null or zb.rok = :rok) "
             + " and (:skup is null or zb.skupina = :skup) "
+            + " and (:textk is null or zb.textKont like %:textk%) "
+            + " and (:textz is null or zb.textZak like %:textz%) "
+            + " and (:objednatel is null or zb.objednatel like %:objednatel%) "
             + " order by ckont desc, czak desc ")
     List<ZakBasic> findZakBasicByArchAndDigiAndCkontAndRokAndSkupina(
             @Param("arch") Boolean arch
@@ -34,5 +37,8 @@ public interface ZakBasicRepo extends JpaRepository<ZakBasic, Long> {
             , @Param("ckont") String ckont
             , @Param("rok") Integer rokZak
             , @Param("skup") String skup
+            , @Param("textk") String textk
+            , @Param("textz") String textz
+            , @Param("objednatel") String objednatel
     );
 }

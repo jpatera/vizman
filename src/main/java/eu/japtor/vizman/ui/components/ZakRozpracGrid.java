@@ -761,25 +761,29 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
 
     Component buildZakViewBtn(Zakr zakr) {
-        return new GridItemBtn(event -> zakFormDialog.openDialog(
-                true, zakService.fetchOne(zakr.getId()), Operation.EDIT)
-                , new Icon(VaadinIcon.EYE), VzmFormatUtils.getItemTypeColorName(zakr.getTyp())
+        return new GridItemBtn(
+                event -> zakFormDialog.openDialog(true, zakService.fetchOne(zakr.getId()), Operation.EDIT)
+                , new Icon(VaadinIcon.EYE)
+                , VzmFormatUtils.getItemTypeColorName(zakr.getTyp())
+                , "Náhled na zakázku"
         );
     }
 
     Component buildZaknOpenBtn(Zakr zakr) {
-        return new GridItemBtn(event -> zakNaklSingleDialog.openDialog(zakr, zakrParams, getSingleRepParamSubtitleText())
-                , new Icon(VaadinIcon.COIN_PILES), VzmFormatUtils.getItemTypeColorName(zakr.getTyp())
+        return new GridItemBtn(
+                event -> zakNaklSingleDialog.openDialog(zakr, zakrParams, getSingleRepParamSubtitleText())
+                , new Icon(VaadinIcon.COIN_PILES)
+                , VzmFormatUtils.getItemTypeColorName(zakr.getTyp())
+                , "Detailní náklady"
         );
     }
 
     Component buildZaqaOpenBtn(Zakr zakr) {
-        return new GridItemBtn(event ->
-                zakRozpracSingleDialog.openDialog(
-                        zakrService.fetchOne(zakr.getId())
-                        , ""
-                )
-                , new Icon(VaadinIcon.LINES_LIST), null
+        return new GridItemBtn(
+                event -> zakRozpracSingleDialog.openDialog(zakrService.fetchOne(zakr.getId()), "")
+                , new Icon(VaadinIcon.LINES_LIST)
+                , null
+                , "Historie rozpracovanosti"
         );
     }
 
@@ -1081,9 +1085,9 @@ public class ZakRozpracGrid extends Grid<Zakr> {
     }
 
     public void populateGridDataAndRestoreFilters(List<Zakr> zakrList) {
-        saveFilterValues();
+        saveFilterFieldValues();
         setItems(zakrList);
-        restoreFilterValues();
+        restoreFilterFieldValues();
         doFilter();
         updateFooterFields();
     }
@@ -1102,22 +1106,18 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         objednatelFilterField.clear();
     }
 
-    public void saveFilterValues() {
+    public void saveFilterFieldValues() {
         archFilterValue = archFilterField.getValue();
         ckzFilterValue = ckzFilterField.getValue();
         rokFilterValue = rokFilterField.getValue();
         skupinaFilterValue = skupinaFilterField.getValue();
-        kzTextFilterValue = kzTextFilterField.getValue();
         objednatelFilterValue = objednatelFilterField.getValue();
+        kzTextFilterValue = kzTextFilterField.getValue();
     }
 
-    public void restoreFilterValues() {
+    public void restoreFilterFieldValues() {
         ((ListDataProvider<Zakr>) this.getDataProvider()).clearFilters();
-//        if (null == this.initFilterArchValue) {
-//            archFilterField.clear();
-//        } else {
-//            archFilterField.setValue(this.initFilterArchValue);
-//        }
+
         if (null == archFilterValue) {
             archFilterField.clear();
         } else {
@@ -1234,6 +1234,14 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
     public String getSkupinaFilterValue() {
         return skupinaFilterValue;
+    }
+
+    public String getObjednatelFilterValue() {
+        return objednatelFilterValue;
+    }
+
+    public String getKzTextFilterValue() {
+        return kzTextFilterValue;
     }
 }
 

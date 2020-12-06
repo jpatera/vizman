@@ -385,7 +385,11 @@ public class NabListView extends VerticalLayout {
         ReportExporter.Format expFormat = ReportExporter.Format.XLS;
         final AbstractStreamResource xlsResource =
                 xlsReportExporter.getStreamResource(
-                        new NabListReportBuilder(), getReportFileName(expFormat), itemSupplier, expFormat, null
+                        new NabListReportBuilder()
+                        , getReportFileName(expFormat)
+                        , itemSupplier
+//                        , expFormat
+                        , null
                 );
         downloadAnchor.setHref(xlsResource);
         Page page = UI.getCurrent().getPage();

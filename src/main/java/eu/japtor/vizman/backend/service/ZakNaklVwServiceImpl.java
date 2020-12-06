@@ -23,6 +23,10 @@ public class ZakNaklVwServiceImpl implements ZakNaklVwService, HasLogger {
         this.zakNaklVwRepo = zakNaklVwRepo;
     }
 
+    @Autowired
+    ZakYmNaklVwRepo zakYmNaklVwRepo;
+
+
     @Override
     public List<ZaknNaklVw> fetchByZakId(final Long zakId, ZakrListView.ZakrParams zakrParams) {
         List<ZaknNaklVw> zakns = zakNaklVwRepo.findByZakIdOrderByPersonIdAscDatePruhDesc(zakId);
@@ -35,23 +39,6 @@ public class ZakNaklVwServiceImpl implements ZakNaklVwService, HasLogger {
         ;
         return zakns;
     }
-
-    @Override
-    public List<ZaknNaklVw> fetchByZakIdSumByYm(final Long zakId, ZakrListView.ZakrParams zakrParams) {
-        List<ZaknNaklVw> zakns = zakNaklVwRepo.findByZakIdOrderByPersonIdAscDatePruhDesc(zakId);
-        zakns.stream()
-                .filter(zn -> null != zn.getWorkPruh() && zn.getWorkPruh().compareTo(BigDecimal.ZERO) != 0)
-                .forEach(zn -> {
-                    zn.setNaklPojist(zn.calcNaklPojist(zakrParams.getKoefPojist()));
-                    zn.setNaklRezie(zn.calcNaklPojist(zakrParams.getKoefRezie()));
-                })
-        ;
-        return zakns;
-    }
-
-
-    @Autowired
-    ZakYmNaklVwRepo zakYmNaklVwRepo;
 
     @Override
     public List<ZakYmNaklVw> fetchByZakIdsSumByYm(final List<Long> zakIds, ZakrListView.ZakrParams zakrParams) {

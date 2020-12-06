@@ -31,15 +31,19 @@ public interface ZakrRepo extends JpaRepository<Zakr, Long> {
             + " and (:ckont is null or zr.ckont like %:ckont%) "
             + " and (:rok is null or zr.rok = :rok) "
             + " and (:skup is null or zr.skupina = :skup) "
+            + " and (:kzText is null or (zr.textKont like %:kzText%) or (zr.textZak like %:kzText%)) "
+            + " and (:objednatel is null or zr.objednatel like %:objednatel%) "
             + " and (:active = false  or (zr.rp = null or zr.rp <> 100 or ((zr.r0 <> null or zr.r1 <> null or zr.r2 <> null or zr.r3 <> null or zr.r4 <> null) and (zr.r0 <> 100 or zr.r1 <> 100 or zr.r2 <> 100 or zr.r3 <> 100 or zr.r4 <> 100)))) "
             + " order by zr.ckont desc, zr.czak desc "
     )
     List<Zakr> findZakrByFilterParams(
-            @Param("arch") Boolean arch
+            @Param("active") Boolean active
+            , @Param("arch") Boolean arch
             , @Param("ckont") String ckont
             , @Param("rok") Integer rokZak
             , @Param("skup") String skup
-            , @Param("active") Boolean active
+            , @Param("kzText") String kzText
+            , @Param("objednatel") String objednatel
     );
 
 
@@ -56,17 +60,21 @@ public interface ZakrRepo extends JpaRepository<Zakr, Long> {
             + " and (:ckont is null or zr.ckont like %:ckont%) "
             + " and (:rok is null or zr.rok = :rok) "
             + " and (:skup is null or zr.skupina = :skup) "
+            + " and (:kzText is null or (zr.text_kont like %:kzText%) or (zr.text_zak like %:kzText%)) "
+            + " and (:objednatel is null or zr.objednatel like %:objednatel%) "
             + " and (:active = false  or (zr.rp is null or zr.rp <> 100 or ((zr.r0 is not null or zr.r1 is not null or zr.r2 is not null or zr.r3 is not null or zr.r4 is not null) and (zr.r0 <> 100 or zr.r1 <> 100 or zr.r2 <> 100 or zr.r3 <> 100 or zr.r4 <> 100)))) "
             + " order by zr.ckont desc, zr.czak desc "
             + " limit 20 "
             , nativeQuery = true
     )
     List<Long> findIdsByFilterParamsWithLimit(
-            @Param("arch") Boolean arch
+            @Param("active") Boolean active
+            , @Param("arch") Boolean arch
             , @Param("ckont") String ckont
             , @Param("rok") Integer rokZak
             , @Param("skup") String skup
-            , @Param("active") Boolean active
+            , @Param("kzText") String kzText
+            , @Param("objednatel") String objednatel
     );
 
     @Query(value = "SELECT distinct rok FROM vizman.zak_rozprac_view ORDER BY ROK DESC",

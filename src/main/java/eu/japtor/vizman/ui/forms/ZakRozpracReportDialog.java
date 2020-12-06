@@ -52,17 +52,17 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     private TextField kurzParamField;
 
     private SerializableSupplier<List<? extends Zakr>> itemsSupplier =
-            () -> zakrService.fetchAndCalcByFiltersDescOrder(zakrParams);
+            () -> zakrService.fetchAndCalcByFiltersDescOrder(null, zakrParams);
 
 
-    public void openDialog(ZakrListView.ZakrParams zakrParams) {
+    public void openDialog(ZakrListView.ZakrFilter zakrFilter, ZakrListView.ZakrParams zakrParams) {
         this.zakrParams = zakrParams;
 
         activeFilterField.setValue(zakrParams.isActive());
-        archFilterField.setValue(zakrParams.getArch());
-        ckzFilterField.setValue(zakrParams.getCkz());
-        rokZakFilterField.setValue(zakrParams.getRokZak());
-        skupinaFilterField.setValue(zakrParams.getSkupina());
+        archFilterField.setValue(zakrFilter.getArch());
+        ckzFilterField.setValue(zakrFilter.getCkz());
+        rokZakFilterField.setValue(zakrFilter.getRokZak());
+        skupinaFilterField.setValue(zakrFilter.getSkupina());
         rxParamField.setValue(zakrParams.getRx());
         ryParamField.setValue(zakrParams.getRy());
         kurzParamField.setValue(zakrParams.getKurzEur().toString());

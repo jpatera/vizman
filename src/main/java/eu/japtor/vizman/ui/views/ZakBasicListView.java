@@ -1,18 +1,3 @@
-/*
- * Copyright 2000-2017 Vaadin Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.Component;
@@ -25,7 +10,6 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -35,7 +19,7 @@ import eu.japtor.vizman.backend.entity.ItemNames;
 import eu.japtor.vizman.backend.entity.ItemType;
 import eu.japtor.vizman.backend.entity.Perm;
 import eu.japtor.vizman.backend.entity.ZakBasic;
-import eu.japtor.vizman.backend.report.ZakListReportBuilder;
+import eu.japtor.vizman.backend.report.ZakBasicReportBuilder;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.ZakBasicService;
@@ -46,10 +30,12 @@ import eu.japtor.vizman.ui.components.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static eu.japtor.vizman.app.security.SecurityUtils.isNaklBasicAccessGranted;
 import static eu.japtor.vizman.app.security.SecurityUtils.isNaklCompleteAccessGranted;
+import static eu.japtor.vizman.backend.utils.VzmFormatReport.RFNDF;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
 
@@ -66,11 +52,10 @@ public class ZakBasicListView extends VerticalLayout {
     private List<GridSortOrder<ZakBasic>> initialSortOrder;
     private ReloadButton reloadButton;
     private ResetFiltersButton resetFiltersButton;
-    private Anchor downloadAnchor;
-    private ReportExporter<ZakBasic> xlsReportExporter;
+    private Anchor expXlsAnchor;
+    private ReportExporter<ZakBasic> reportExporter;
 
     private final static String REPORT_FILE_NAME = "vzm-rep-zakb";
-    private final static String ZAKB_DOWN_ANCHOR_ID = "zakb-down-anchor-id";
 
     @Autowired
     public ZakBasicRepo zakBasicRepo;
@@ -89,7 +74,7 @@ public class ZakBasicListView extends VerticalLayout {
 
 
     public ZakBasicListView() {
-        xlsReportExporter = new ReportExporter();
+        reportExporter = new ReportExporter();
 //        initView();
     }
 
@@ -102,22 +87,23 @@ public class ZakBasicListView extends VerticalLayout {
         //        UI.getCurrent().getPage().executeJavaScript("document.querySelectorAll(\"vaadin-grid-sorter\")[1].click()");
     }
 
-    private ZakBasicFilter buildZakBasicFilterParams() {
-        ZakBasicFilter zakBasicFilter = ZakBasicFilter.getEmpty();
-        zakBasicFilter.setArch(zakGrid.getArchFilterValue());
-        zakBasicFilter.setDigi(zakGrid.getDigiFilterValue());
-        zakBasicFilter.setTyp(zakGrid.getTypFilterValue());
-        zakBasicFilter.setCkz(zakGrid.getCkzFilterField());
-        zakBasicFilter.setRokZak(zakGrid.getRokFilterValue());
-        zakBasicFilter.setSkupina(zakGrid.getSkupinaFilterValue());
-        return zakBasicFilter;
+    private ZakBasicFilter buildZakBasicFilter() {
+        zakGrid.saveFilterFieldValues();
+        ZakBasicFilter filter = ZakBasicFilter.getEmpty();
+        filter.setArch(zakGrid.getArchFilterValue());
+        filter.setDigi(zakGrid.getDigiFilterValue());
+        filter.setTyp(zakGrid.getTypFilterValue());
+        filter.setCkz(zakGrid.getCkzFilterField());
+        filter.setRokZak(zakGrid.getRokFilterValue());
+        filter.setSkupina(zakGrid.getSkupinaFilterValue());
+        filter.setObjednatel(zakGrid.getObjednatelFilterValue());
+        filter.setTextKont(zakGrid.getTextKontFilterValue());
+        filter.setTextZak(zakGrid.getTextZakFilterValue());
+        return filter;
     }
 
     private void initView() {
         this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
-//        this.setAlignItems(Alignment.STRETCH);
-//        setHeight("90%");
-//        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
         this.setPadding(false);
         this.setMargin(false);
         this.add(
@@ -163,11 +149,9 @@ public class ZakBasicListView extends VerticalLayout {
         gridBar.setAlignItems(Alignment.END);
         gridBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
         gridBar.add(
-                initDownloadAnchor()
+                initExpXlsAnchor()
                 , buildTitleComponent()
                 , new Ribbon()
-//                , buildGridBarControlsComponent()
-//                , new Ribbon()
                 , buildToolBarComponent()
         );
         return gridBar;
@@ -201,68 +185,92 @@ public class ZakBasicListView extends VerticalLayout {
         return toolBar;
     }
 
-    private String getReportFileName(ReportExporter.Format format) {
-        return REPORT_FILE_NAME + "." + format.name().toLowerCase();
+    private String getZakListRepFileName(ReportXlsExporter.Format format) {
+        return REPORT_FILE_NAME  + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
     }
 
-    private SerializableSupplier<List<? extends ZakBasic>> zakBasiciListReportSupplier =
-            () -> zakBasicService.fetchAndCalcByFiltersDescOrder(buildZakBasicFilterParams());
+    private SerializableSupplier<List<? extends ZakBasic>> zakBasicRepAllSupplier =
+            () -> {
+                return zakBasicService.fetchAllDescOrder();
+            };
 
-    private Component initDownloadAnchor() {
-//        downloadAnchor = new ReportExpButtonAnchor(ReportExporter.Format.XLS, anchorExportListener);
-        downloadAnchor = new Anchor();
-        downloadAnchor.getElement().setAttribute("download", true);
-        downloadAnchor.setId(ZAKB_DOWN_ANCHOR_ID);
-        downloadAnchor.setText("Invisible ZAK-BASIC download link");    // setVisible  also disables a server part - cannot be useed
-        downloadAnchor.getStyle().set("display", "none");
-        return downloadAnchor;
+    private SerializableSupplier<List<? extends ZakBasic>> zakBasicRepFilteredSupplier =
+            () -> {
+                return zakBasicService.fetchByFiltersDescOrder(buildZakBasicFilter());
+            };
+
+    private Component initExpXlsAnchor() {
+        expXlsAnchor = new ExpXlsAnchor();
+        return expXlsAnchor;
     }
 
-//    private ComponentEventListener anchorExportListener = event -> {
-////        try {
-//            updateXlsRepResourceAndDownload(zakBasiciListReportSupplier);
-////        } catch (JRException e) {
-////            e.printStackTrace();
-////        }
-//    };
 
     private Component initXlsReportMenu() {
-        Button menuBtn = new Button(new Image("img/xls_down_24b.png", ""));
-        menuBtn.getElement().setAttribute("theme", "icon secondary small");
+        Button btn = new Button(new Image("img/xls_down_24b.png", ""));
+        btn.getElement().setAttribute("theme", "icon secondary small");
+        btn.getElement().setProperty("title", "Seznam zakázek - report");
 
         ContextMenu menu = new ContextMenu();
-        menu.addItem("Seznam zakázek", e -> updateXlsRepResourceAndDownload(zakBasiciListReportSupplier));
-        menu.setOpenOnClick(true);
+        menu.addItem("Zobrazené zakázky", e -> updateExpXlsAnchorResourceAndDownload(
+                zakBasicRepFilteredSupplier
+                , getZakBasicRepFilteredSubtitleText()
+        ));
+        menu.addItem("Všechny zakázky", e -> updateExpXlsAnchorResourceAndDownload(
+                zakBasicRepAllSupplier
+                , getZakBasicRepAllSubtitleText()
+        ));
 
-        menu.setTarget(menuBtn);
-        return menuBtn;
+        menu.setOpenOnClick(true);
+        menu.setTarget(btn);
+        return btn;
     }
 
-//    private void updateXlsRepResourceAndDownload(SerializableSupplier<List<? extends ZakBasic>> supplier) throws JRException {
-    private void updateXlsRepResourceAndDownload(SerializableSupplier<List<? extends ZakBasic>> itemsSupplier) {
-        ReportExporter.Format expFormat = ReportExporter.Format.XLS;
+    private void updateExpXlsAnchorResourceAndDownload(
+            SerializableSupplier<List<? extends ZakBasic>> itemsSupplier
+            , final String subtitleText
+    ) {
         final AbstractStreamResource xlsResource =
-                xlsReportExporter.getStreamResource(
-                        new ZakListReportBuilder(), getReportFileName(expFormat), itemsSupplier, expFormat, null
-                );
+                reportExporter.getStreamResource(
+                        new ZakBasicReportBuilder(
+                                "SEZNAM ZAKÁZEK"
+                                , subtitleText
+                )
+                , getZakListRepFileName(ReportXlsExporter.Format.XLS)
+                , itemsSupplier
+                , null
+        );
+        expXlsAnchor.setHref(xlsResource);
 
         // Varianta 1
-        downloadAnchor.setHref(xlsResource);
-        Page page = UI.getCurrent().getPage();
-        page.executeJs("$0.click();", downloadAnchor.getElement());
+        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
 //      or:  page.executeJs("document.getElementById('" + ZAK_BASIC_REP_ID + "').click();");
 
         // Varianta 2 - browsers can have pop-up opening disabled
 //        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
-//        Page page = UI.getCurrent().getPage();
-//        page.executeJs("window.open($0, $1)", registration.getResourceUri().toString(), "_blank");
+//        UI.getCurrent().getPage().executeJs("window.open($0, $1)", registration.getResourceUri().toString(), "_blank");
 
         // Varianta 3 - It is not clear how to activate source page again after download is finished
 //        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
-//        Page page = UI.getCurrent().getPage();
-//        page.setLocation(registration.getResourceUri());
+//        UI.getCurrent().getPage().setLocation(registration.getResourceUri());
     }
 
+    public String getZakBasicRepFilteredSubtitleText() {
+        ZakBasicFilter filter = buildZakBasicFilter();
+        return
+            "Parametry:" +
+            "  Arch=" + (null == filter.getArch() ? "Vše" : filter.getArch().toString()) +
+            "  ČK-ČZ=" + (null == filter.getCkz() ? "Vše" : filter.getCkz().toString()) +
+            "  Rok zak.=" + (null == filter.getRokZak() ? "Vše" : filter.getRokZak().toString()) +
+            "  Skupina=" + (null == filter.getSkupina() ? "Vše" : filter.getSkupina().toString()) +
+            "  Text kont.=" + (null == filter.getTextKont() ? "Vše" : filter.getTextKont().toString()) +
+            "  Text zak.=" + (null == filter.getTextZak() ? "Vše" : filter.getTextZak().toString()) +
+            "  Objednatel=" + (null == filter.getObjednatel() ? "Vše" : filter.getObjednatel().toString())
+        ;
+    }
+
+    public String getZakBasicRepAllSubtitleText() {
+        return "Parametry: Filtr=vše";
+    }
 
     private Component initReloadButton() {
         reloadButton = new ReloadButton(event -> zakGrid.reloadGridData());
@@ -270,19 +278,16 @@ public class ZakBasicListView extends VerticalLayout {
     }
 
     private Component initResetFiltersButton() {
-        resetFiltersButton = new ResetFiltersButton(event -> zakGrid.resetFilterValues());
+        resetFiltersButton = new ResetFiltersButton(event -> zakGrid.initFilterFieldValues());
         return resetFiltersButton;
     }
 
     private void loadInitialViewContent() {
         zakList = zakBasicRepo.findAllByOrderByCkontDescCzakDesc();
         zakGrid.setItems(zakList);
-        zakGrid.rebuildFilterFields(zakList);
-        zakGrid.resetFilterValues();
+        zakGrid.rebuildSelectableFilterFields(zakList);
+        zakGrid.initFilterFieldValues();
         zakGrid.reloadGridData();
-
-//        zakGrid.doFilter();
-////        nabGrid.getDataProvider().refreshAll();
     }
 
     public static class ZakBasicFilter {
@@ -293,25 +298,22 @@ public class ZakBasicListView extends VerticalLayout {
         Boolean arch;
         Boolean digi;
         ItemType typ;
-
-        public ZakBasicFilter(
-                String ckz
-                , Integer rokZak
-                , String skupina
-                , Boolean arch
-                , Boolean digi
-                , ItemType typ
-        ) {
-            this.ckz = ckz;
-            this.rokZak = rokZak;
-            this.skupina = skupina;
-            this.arch = arch;
-            this.digi = digi;
-            this.typ = typ;
-        }
+        String objednatel;
+        String textKont;
+        String textZak;
 
         public static final ZakBasicFilter getEmpty() {
-            return new ZakBasicFilter(null, null, null, null, null, null);
+            ZakBasicFilter filter = new ZakBasicFilter();
+            filter.setArch(null);
+            filter.setDigi(null);
+            filter.setTyp(null);
+            filter.setCkz(null);
+            filter.setRokZak(null);
+            filter.setSkupina(null);
+            filter.setObjednatel(null);
+            filter.setTextKont(null);
+            filter.setTextZak(null);
+            return filter;
         }
 
         public Boolean getArch() {
@@ -354,6 +356,27 @@ public class ZakBasicListView extends VerticalLayout {
         }
         public void setSkupina(String skupina) {
             this.skupina = skupina;
+        }
+
+        public String getObjednatel() {
+            return objednatel;
+        }
+        public void setObjednatel(String objednatel) {
+            this.objednatel = objednatel;
+        }
+
+        public String getTextKont() {
+            return textKont;
+        }
+        public void setTextKont(String textKont) {
+            this.textKont = textKont;
+        }
+
+        public String getTextZak() {
+            return textZak;
+        }
+        public void setTextZak(String textZak) {
+            this.textZak = textZak;
         }
     }
 }

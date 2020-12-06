@@ -22,14 +22,23 @@ public class ZakBasicServiceImpl implements ZakBasicService, HasLogger {
     }
 
     @Override
-    public List<ZakBasic> fetchAndCalcByFiltersDescOrder(ZakBasicListView.ZakBasicFilter zakBasicFilter) {
+    public List<ZakBasic> fetchByFiltersDescOrder(ZakBasicListView.ZakBasicFilter zakBasicFilter) {
         List<ZakBasic> zakBasics = zakBasicRepo.findZakBasicByArchAndDigiAndCkontAndRokAndSkupina(
                 zakBasicFilter.getArch()
                 , zakBasicFilter.getDigi()
                 , zakBasicFilter.getCkz()
                 , zakBasicFilter.getRokZak()
                 , zakBasicFilter.getSkupina()
+                , zakBasicFilter.getTextKont()
+                , zakBasicFilter.getTextZak()
+                , zakBasicFilter.getObjednatel()
         );
         return zakBasics;
     }
+
+    @Override
+    public List<ZakBasic> fetchAllDescOrder() {
+        return zakBasicRepo.findAll();
+    }
+
 }

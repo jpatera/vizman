@@ -54,12 +54,24 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     private TextField textKontFilterField;
     private TextField textZakFilterField;
 
+    private Boolean archFilterValue;
+    private Boolean digiFilterValue;
+    private ItemType typeFilterValue;
+    private String ckzFilterValue;
+    private Integer rokFilterValue;
+    private String skupinaFilterValue;
+    private String textKontFilterValue;
+    private String textZakFilterValue;
+    private String objednatelFilterValue;
+
     private Boolean initFilterArchValue;
     private Boolean initFilterDigiValue;
+
     private boolean archFieldVisible;
     private boolean digiFieldVisible;
     private boolean selectFieldVisible;
     private boolean zaknViewBtnVisible;
+
     private Consumer<Integer> selectionChanger;
     private Function<ZakBasic, Boolean> checkBoxEnabler;
 
@@ -270,6 +282,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                     );
                 }
                 , new Icon(VaadinIcon.COIN_PILES), VzmFormatUtils.getItemTypeColorName(zakBasic.getTyp())
+                , "Detailní náklady"
         );
     }
 
@@ -313,17 +326,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         }
     }
 
-    public void rebuildFilterFields(List<ZakBasic> zakBasicList) {
-        setRokFilterItems(zakBasicList.stream()
-                .filter(z -> null != z.getRok())
-                .map(ZakBasic::getRok)
-                .distinct().collect(Collectors.toCollection(LinkedList::new))
-        );
-        setSkupinaFilterItems(zakBasicList.stream()
-                .map(ZakBasic::getSkupina)
-                .filter(Objects::nonNull)
-                .distinct().collect(Collectors.toCollection(LinkedList::new))
-        );
+    public void rebuildSelectableFilterFields(List<ZakBasic> zakBasicList) {
         setArchFilterItems(zakBasicList.stream()
                 .map(ZakBasic::getArch)
                 .filter(Objects::nonNull)
@@ -339,13 +342,20 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 .filter(Objects::nonNull)
                 .distinct().collect(Collectors.toCollection(LinkedList::new))
         );
+
+        setRokFilterItems(zakBasicList.stream()
+                .filter(z -> null != z.getRok())
+                .map(ZakBasic::getRok)
+                .distinct().collect(Collectors.toCollection(LinkedList::new))
+        );
+        setSkupinaFilterItems(zakBasicList.stream()
+                .map(ZakBasic::getSkupina)
+                .filter(Objects::nonNull)
+                .distinct().collect(Collectors.toCollection(LinkedList::new))
+        );
     }
 
-    public void setInitialFilterValues() {
-        resetFilterValues();
-    }
-
-    public void resetFilterValues() {
+    public void initFilterFieldValues() {
         ((ListDataProvider<ZakBasic>) this.getDataProvider()).clearFilters();
         if (null == this.initFilterArchValue) {
             archFilterField.clear();
@@ -358,14 +368,44 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
             digiFilterField.setValue(this.initFilterDigiValue);
         }
         typFilterField.clear();
+        ckzFilterField.clear();
         rokFilterField.clear();
         skupinaFilterField.clear();
-        ckzFilterField.clear();
         textKontFilterField.clear();
         textZakFilterField.clear();
         objednatelFilterField.clear();
     }
 
+    public void saveFilterFieldValues() {
+        archFilterValue = archFilterField.getValue();
+        digiFilterValue = digiFilterField.getValue();
+        ckzFilterValue = ckzFilterField.getValue();
+        rokFilterValue = rokFilterField.getValue();
+        skupinaFilterValue = skupinaFilterField.getValue();
+        textKontFilterValue = textKontFilterField.getValue();
+        textZakFilterValue = textZakFilterField.getValue();
+        objednatelFilterValue = objednatelFilterField.getValue();
+    }
+
+    public void restoreFilterFieldValues() {
+        ((ListDataProvider<ZakBasic>) this.getDataProvider()).clearFilters();
+        if (null == archFilterValue) {
+            archFilterField.clear();
+        } else {
+            archFilterField.setValue(archFilterValue);
+        }
+        if (null == digiFilterValue) {
+            digiFilterField.clear();
+        } else {
+            digiFilterField.setValue(digiFilterValue);
+        }
+        ckzFilterField.setValue(ckzFilterValue);
+        rokFilterField.setValue(rokFilterValue);
+        skupinaFilterField.setValue(skupinaFilterValue);
+        textKontFilterField.setValue(textKontFilterValue);
+        textZakFilterField.setValue(textZakFilterValue);
+        objednatelFilterField.setValue(objednatelFilterValue);
+    }
 
     public void doFilter() {
         ListDataProvider<ZakBasic> listDataProvider = ((ListDataProvider<ZakBasic>) this.getDataProvider());
@@ -528,6 +568,18 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
 
     public String getSkupinaFilterValue() {
         return skupinaFilterField.getValue();
+    }
+
+    public String getObjednatelFilterValue() {
+        return objednatelFilterField.getValue();
+    }
+
+    public String getTextKontFilterValue() {
+        return textKontFilterField.getValue();
+    }
+
+    public String getTextZakFilterValue() {
+        return textZakFilterField.getValue();
     }
 }
 

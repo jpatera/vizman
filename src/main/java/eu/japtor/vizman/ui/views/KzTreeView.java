@@ -1297,7 +1297,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 //            kzTreeGrid.getSelectionModel().select(itemForSelection);
 //        }
 
-//        kzTreeGrid.resetFilterValues();
+//        kzTreeGrid.initFilterFieldValues();
 //        kzTreeGrid.doFilter();
 //        kzTreeGrid.getDataProvider().refreshAll();
 //    }
@@ -1376,16 +1376,17 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
             };
 
     private Component initXlsReportMenu() {
-        Button menuBtn = new Button(new Image("img/xls_down_24b.png", ""));
-        menuBtn.getElement().setAttribute("theme", "icon secondary small");
+        Button btn = new Button(new Image("img/xls_down_24b.png", ""));
+        btn.getElement().setAttribute("theme", "icon secondary small");
+        btn.getElement().setProperty("title", "Kontrakty - report");
 
         ContextMenu menu = new ContextMenu();
-        menu.addItem("Aktuální", e -> updateXlsRepResourceAndDownload(kontSelectionReportSupplier));
-        menu.addItem("Prvních 10", e -> updateXlsRepResourceAndDownload(kontListReportSupplier));
+        menu.addItem("Aktuální kontrakt", e -> updateXlsRepResourceAndDownload(kontSelectionReportSupplier));
+        menu.addItem("Zobrazené kontrakty (max 10)", e -> updateXlsRepResourceAndDownload(kontListReportSupplier));
         menu.setOpenOnClick(true);
 
-        menu.setTarget(menuBtn);
-        return menuBtn;
+        menu.setTarget(btn);
+        return btn;
     }
 
     private void updateXlsRepResourceAndDownload(SerializableSupplier<List<? extends Kont>> itemsSupplier) {

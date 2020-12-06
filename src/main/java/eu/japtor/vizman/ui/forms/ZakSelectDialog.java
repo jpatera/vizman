@@ -178,8 +178,8 @@ public class ZakSelectDialog extends Dialog {
         zakBasicList = zakBasicRepo.findAllByOrderByCkontDescCzakDesc();
         zakGrid.setItems(zakBasicList);
 
-        zakGrid.rebuildFilterFields(zakBasicList);
-        zakGrid.setInitialFilterValues();
+        zakGrid.rebuildSelectableFilterFields(zakBasicList);
+        zakGrid.initFilterFieldValues();
         zakGrid.doFilter();
         zakGrid.setSelCount(0);
         addZaksButton.setEnabled(zakGrid.getSelCount() > 0);

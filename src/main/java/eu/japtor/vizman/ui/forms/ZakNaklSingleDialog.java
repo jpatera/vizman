@@ -30,7 +30,6 @@ import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.backend.utils.VzmUtils;
 import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.views.ZakrListView;
-import net.sf.jasperreports.engine.JRException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -68,23 +67,12 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<ZaknNaklVw> implemen
     Grid<ZaknNaklVw> grid;
     private FooterRow sumFooterRow;
 
-//    private ZakNaklReportDialog zakNaklRepDialog;
     private ZakNaklVwService zakNaklVwService;
 
-    private final static String SOUHRN_REPORT_FILE_NAME = "vzm-exp-zakn-souhrn";
+    private final static String NAKL_DETAIL_REPORT_FILE_NAME = "vzm-exp-zakn-souhrn";
     private String repSubtitleText;
     private Anchor expXlsAnchor;
     private ReportXlsExporter<ZaknNaklVw> xlsReportExporter;
-    private SerializableSupplier<List<? extends ZaknNaklVw>> singleZakNaklSupplier = () -> {
-        return zakNaklVwService.fetchByZakIdSumByYm(zakr.getId(), zakrParams);
-    };
-    private ComponentEventListener anchorExportListener = event -> {
-        try {
-            updateNaklSouhrnXlsRepAnchorResource(singleZakNaklSupplier);
-        } catch (JRException e) {
-            e.printStackTrace();
-        }
-    };
 
 
     /**
@@ -121,7 +109,7 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<ZaknNaklVw> implemen
         this.zakr = zakr;
         this.zakrParams = zakrParams;
         this.repSubtitleText = repSubtitleText;
-        paramsBinder.setBean(this.zakrParams);
+        this.paramsBinder.setBean(this.zakrParams);
         initDataAndControls();
         this.open();
     }
@@ -179,7 +167,7 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<ZaknNaklVw> implemen
         rezieParamField.getElement().setAttribute("theme", "small");
         rezieParamField.setValueChangeMode(ValueChangeMode.EAGER);
         paramsBinder.forField(rezieParamField)
-                .asRequired("Koeficient režie musí být zadán")
+                .asRequired("Koeficient režie nesmí být prázdný")
                 .withConverter(VzmFormatUtils.bigDecimalPercent2Converter)
                 .bind(ZakrListView.ZakrParams::getKoefRezie, ZakrListView.ZakrParams::setKoefRezie)
         ;
@@ -203,7 +191,7 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<ZaknNaklVw> implemen
         pojistParamField.getElement().setAttribute("theme", "small");
         pojistParamField.setValueChangeMode(ValueChangeMode.EAGER);
         paramsBinder.forField(pojistParamField)
-                .asRequired("Koeficient pojištění musí být zadán")
+                .asRequired("Koeficient pojištění nesmí být prázdný")
                 .withConverter(VzmFormatUtils.bigDecimalPercent2Converter)
                 .bind(ZakrListView.ZakrParams::getKoefPojist, ZakrListView.ZakrParams::setKoefPojist)
         ;
@@ -227,40 +215,41 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<ZaknNaklVw> implemen
                 .set("margin-right", "1em");
         return zakTitle;
     }
-    // -------------------------------------------------------
 
 
+    private SerializableSupplier<List<? extends ZaknNaklVw>> singleZakNaklSupplier = () -> {
+        return zakNaklVwService.fetchByZakId(zakr.getId(), zakrParams);
+    };
 
-    private Component initZakNaklXlsExpAnchor() {
-        expXlsAnchor = new ReportExpButtonAnchor(ReportExporter.Format.XLS, anchorExportListener);
+    private ComponentEventListener expXlsAnchorListener = event -> {
+        updateNaklDetailXlsRepResourceAndDownload(singleZakNaklSupplier);
+    };
+
+    private Component initExpXlsAnchor() {
+        expXlsAnchor = new ExpXlsButtonAnchor(expXlsAnchorListener);
         return expXlsAnchor;
-//        zakNaklExpButton = new Button("Export"
-//                , event -> {
-//            openZakNaklRepDialog();
-//        });
-////        this.addClassName("view-toolbar__button");
-//        zakNaklExpButton.getElement().setAttribute("theme", "small secondary");
-//        return zakNaklExpButton;
     }
 
-    private String getSouhrnReportFileName(ReportXlsExporter.Format format) {
-        return SOUHRN_REPORT_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
+    private String getNaklDetailRepFileName(ReportXlsExporter.Format format) {
+        return NAKL_DETAIL_REPORT_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
     }
 
-    private void updateNaklSouhrnXlsRepAnchorResource(SerializableSupplier<List<? extends ZaknNaklVw>> itemsSupplier) throws JRException {
+    private void updateNaklDetailXlsRepResourceAndDownload(
+            SerializableSupplier<List<? extends ZaknNaklVw>> itemsSupplier
+    ) {
         String[] sheetNames = itemsSupplier.get().stream()
                 .filter(VzmUtils.distinctByKey(p -> p.getKzCisloRep()))
                 .map(item -> item.getKzCisloRep())
                 .toArray(String[]::new)
                 ;
-        AbstractStreamResource xlsResource =
+        final AbstractStreamResource xlsResource =
                 xlsReportExporter.getXlsStreamResource(
                         new ZakNaklDetailXlsReportBuilder(
                                 "DETAILNÍ NÁKLADY NA ZAKÁZKU"
                                 , repSubtitleText
                                 , SecurityUtils.isNaklCompleteAccessGranted()
                         )
-                        , getSouhrnReportFileName(ReportXlsExporter.Format.XLS)
+                        , getNaklDetailRepFileName(ReportXlsExporter.Format.XLS)
                         , itemsSupplier
                         , sheetNames
                 );
@@ -268,10 +257,16 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<ZaknNaklVw> implemen
 
         // Varianta 1
         UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
+//      or:  page.executeJs("document.getElementById('" + ZAK_BASIC_REP_ID + "').click();");
 
-//        // Varianta 2 - Has an issue: after returning to the parent dialog [Close] button does nothing
+        // Varianta 2 - browsers can have pop-up opening disabled
+//        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
+//        UI.getCurrent().getPage().executeJs("window.open($0, $1)", registration.getResourceUri().toString(), "_blank");
+
+        // Varianta 3 - It is not clear how to activate source page again after download is finished
 //        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
 //        UI.getCurrent().getPage().setLocation(registration.getResourceUri());
+
     }
 
     private void initDataAndControls() {
@@ -333,9 +328,7 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<ZaknNaklVw> implemen
         toolBar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         toolBar.setSpacing(false);
         toolBar.add(
-                initZakNaklXlsExpAnchor()
-//                , new Ribbon()
-///                , initZakNaklRepButton()
+                initExpXlsAnchor()
         );
         return toolBar;
     }

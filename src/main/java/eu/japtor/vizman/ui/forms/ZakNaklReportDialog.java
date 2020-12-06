@@ -17,6 +17,7 @@ import eu.japtor.vizman.ui.components.ReportExpAnchor;
 import eu.japtor.vizman.ui.views.ZakrListView;
 import org.vaadin.reports.PrintPreviewReport;
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -54,7 +55,8 @@ public class ZakNaklReportDialog extends AbstractPrintDialog<Zakr> implements Ha
 //    private TextField kurzParamField;
 
     private SerializableSupplier<List<? extends ZaknNaklVw>> itemsSupplier = () ->
-        zakNaklVwService.fetchByZakIdSumByYm(zakr.getId(), zakrParams)
+//        zakNaklVwService.fetchByZakIdSumByYm(zakr.getId(), zakrParams)
+            Collections.EMPTY_LIST
     ;
 
 
