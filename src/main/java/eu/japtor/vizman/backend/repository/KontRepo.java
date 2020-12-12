@@ -39,6 +39,17 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
     List<Kont> findTop10ByOrderByCkontDesc();
 
+    @Query(value = "SELECT * FROM vizman.kont knt, vizman.klient kli WHERE kli.name LIKE :objName% "
+            + " AND kli.id = knt.id_objednatel ORDER BY ckont DESC limit 10",
+            nativeQuery = true)
+    List<Kont> findTop10LikeObjNameOrderByCkontDesc(@Param("objName") String objName);
+
+    @Query(value = "SELECT * FROM vizman.kont knt, vizman.klient kli WHERE kli.name LIKE :objName% "
+            + " AND kli.id = knt.id_objednatel ORDER BY ckont DESC",
+            nativeQuery = true)
+    List<Kont> findAllLikeObjNameOrderByCkontDesc(@Param("objName") String objName);
+
+
 //    List<Kont> findTop10By(Example example);  For report, but does not not work with example
 
     int countAllByObjednatel(Klient objednatel);

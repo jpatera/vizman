@@ -138,6 +138,7 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
         Kont k = new Kont();
         k.setCkont(null);
         k.setRok(null);
+        k.setObjednatel(null);
         return k;
     }
 

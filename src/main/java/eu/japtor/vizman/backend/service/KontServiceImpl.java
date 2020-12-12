@@ -88,7 +88,6 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
             return kontRepo.findAll();
         } else {
             Kont probe = Kont.getEmptyInstance();
-//            probe.setHidden(personFilter.getHidden());
             probe.setCkont(ckont);
             ExampleMatcher matcher = ExampleMatcher.matching()
                     .withMatcher("ckont", new ExampleMatcher.GenericPropertyMatcher().startsWith())
@@ -105,7 +104,6 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
             return kontRepo.findTop10ByOrderByCkontDesc();
         } else {
             Kont probe = Kont.getEmptyInstance();
-//            probe.setHidden(personFilter.getHidden());
             probe.setCkont(ckont);
             ExampleMatcher matcher = ExampleMatcher.matching()
                     .withMatcher("ckont", new ExampleMatcher.GenericPropertyMatcher().startsWith())
@@ -113,8 +111,27 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 //                    .withMatcher("arch", new ExampleMatcher.GenericPropertyMatcher().exact())
                     ;
             // return kontRepo.findTop10By(Example.of(probe, matcher)); -- Takhle to nefunguje
-//            return kontRepo.findAllByOrderByCkontDescRokDesc(Example.of(probe, matcher));
             return kontRepo.findTop10LikeCkontOrderByCkontDesc(ckont);
+        }
+    }
+
+    @Override
+    public List<? super Kont> fetchByObjednatelFilter(final String objednatel) {
+        if (StringUtils.isBlank(objednatel)) {
+            return kontRepo.findAll();
+        } else {
+            return kontRepo.findAllLikeObjNameOrderByCkontDesc(objednatel);
+        }
+    }
+
+    @Override
+    public List<? extends Kont> fetchTopByObjednatelFilter(final String objednatel) {
+        if (StringUtils.isBlank(objednatel)) {
+            return kontRepo.findTop10ByOrderByCkontDesc();
+        } else {
+            Kont probe = Kont.getEmptyInstance();
+            probe.setCkont(objednatel);
+            return kontRepo.findTop10LikeObjNameOrderByCkontDesc(objednatel);
         }
     }
 

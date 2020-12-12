@@ -35,6 +35,9 @@ public interface KontService {
     List<? super Kont> fetchByRokFilter(Integer rok);
     List<? extends Kont> fetchTopByRokFilter(Integer rok);
 
+    List<? super Kont> fetchByObjednatelFilter(String objednatel);
+    List<? extends Kont> fetchTopByObjednatelFilter(String objednatel);
+
     List<? super Kont> fetchHavingSomeZaksActiveFilter();
     List<? extends Kont> fetchTopHavingSomeZaksActiveFilter();
 

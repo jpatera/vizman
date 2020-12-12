@@ -37,6 +37,7 @@ public class Klient extends AbstractGenIdEntity implements HasItemType {
         this.typ = ItemType.KLI;
     }
 
+// ----------------------------------------------------------
 
     public ItemType getTyp() {
         return typ;
