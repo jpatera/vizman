@@ -266,9 +266,18 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //                .setResizable(true)
                 .setKey(MENA_COL_KEY)
         ;
+
+        // TODO: Sorting controls disappeare when using components as column headers
+        //       Fixed in Vaadin major version 18, https://github.com/vaadin/vaadin-grid/issues/1841
+        Label honorCistyHeaderComponent = new Label("Hon.č. [CZK]");
+        honorCistyHeaderComponent.getElement()
+                .setProperty("title", "[Honorář čistý] = (SUM(fakt) - SUM(sub)) * kurz")    // Tooltip
+//                .setProperty("text-align", "center")
+        ;
         Grid.Column<Zakr> colHonorCisty = this.addColumn(honorCistyValueProvider)
                 .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getHonorCistyByKurz(zakr1), getHonorCistyByKurz(zakr2)))
                 .setHeader("Hon.č. [CZK]")
+//                .setHeader(honorCistyHeaderComponent) // TODO: replace "Def." artificial headers when the fix disappeared sort conntrols is available
                 .setFlexGrow(0)
                 .setWidth("7em")
                 .setTextAlign(ColumnTextAlign.END)
@@ -566,11 +575,11 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setProperty("title", "[Mzdy * P*R] = [Mzdy] * (1 + koef_pojist) * (1 + koef_rezie)");
         descHeaderRow.getCell(colNaklMzdyPojistRezie).setComponent(mzdyPojRezHeaderLabel);
 
+
+
         // =============
         // Filters
         // =============
-
-
 
         archFilterField = buildSelectorFilterField();
 //        archFilterField.setItemLabelGenerator(this::archFilterLabelGenerator);

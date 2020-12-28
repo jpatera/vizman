@@ -68,22 +68,9 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
     }
 
     @Override
-    public List<Zakr> fetchAndCalcByActiveFilterDescOrder(ZakrListView.ZakrParams zakrParams) {
-        List<Zakr> zakrs;
-        if (zakrParams.isActive()) {
-            zakrs =  zakrRepo.findZakrByActiveFilterOrderByCkontDescCzakDesc(zakrParams.isActive());
-        } else  {
-            zakrs =  zakrRepo.findAllByOrderByCkontDescCzakDesc();
-        }
-        zakrs.stream()
-                .forEach(zr -> adjustZakrVykonAndVysledky.accept(zr, zakrParams));
-        return zakrs;
-    }
-
-    @Override
     public List<Zakr> fetchAndCalcByFiltersDescOrder(ZakrListView.ZakrFilter zakrFilter, ZakrListView.ZakrParams zakrParams) {
         List<Zakr> zakrs = zakrRepo.findZakrByFilterParams(
-                zakrParams.isActive()
+                zakrParams.getHundredFilter().name()
                 , zakrFilter.getArch()
                 , zakrFilter.getCkz()
                 , zakrFilter.getRokZak()
@@ -107,7 +94,7 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
     @Override
     public List<Long> fetchIdsByFiltersDescOrderWithLimit(ZakrListView.ZakrFilter zakrFilter, ZakrListView.ZakrParams zakrParams) {
         List<Long> zakrIds = zakrRepo.findIdsByFilterParamsWithLimit(
-                zakrParams.isActive()
+                zakrParams.getHundredFilter().name()
                 , zakrFilter.getArch()
                 , zakrFilter.getCkz()
                 , zakrFilter.getRokZak()
@@ -145,7 +132,7 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
 
     @Override
     @Transactional
-    // Return  type void is intentional, did not succeed how to retrieve a complete Zakr inside transaction.
+    // Return type void is intentional, did not succeed how to retrieve a complete Zakr inside transaction.
     // RP does not change, Zakr must be retrieved outside this transaction
     public void saveZakr(Zakr itemForSave) {
         String kzCis = String.format("%s / %d", itemForSave.getCkont(), itemForSave.getCzak());

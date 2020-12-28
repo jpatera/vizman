@@ -13,15 +13,21 @@ public class Ribbon extends Span {
     }
 
     public Ribbon(final String width) {
-        this(Orientation.HORIZONTAL, width);
+        this(Orientation.HORIZONTAL, width, "1em");
     }
 
-    public Ribbon(final Orientation orientation, final String size) {
+    public Ribbon(final String width, final String widthMin) {
+        this(Orientation.HORIZONTAL, width, widthMin);
+    }
+
+    private Ribbon(final Orientation orientation, final String size, final String sizeMin) {
         super();
         if (Orientation.HORIZONTAL == orientation) {
             this.setWidth(size);
+            this.setMinWidth(sizeMin);
         } else {
             this.setHeight(size);
+            this.setMinHeight(sizeMin);
         }
     }
 }

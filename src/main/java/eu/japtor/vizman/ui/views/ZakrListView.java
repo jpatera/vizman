@@ -1,9 +1,9 @@
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
@@ -22,6 +22,7 @@ import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.router.PageTitle;
@@ -38,14 +39,13 @@ import eu.japtor.vizman.backend.utils.VzmFormatUtils;
 import eu.japtor.vizman.backend.utils.VzmUtils;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
+import org.castor.core.util.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.RFNDF;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
@@ -57,9 +57,11 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
 })
 public class ZakrListView extends VerticalLayout {
 
-    private static final String RADIO_KONT_ACTIVE = "Aktivní";
-    private static final String RADIO_KONT_ARCH = "Archivované";
-    private static final String RADIO_KONT_ALL = "Všechny";
+    private static final String ZAK_R0_FILTER_LABEL = "R0<100%";
+    private static final String ZAK_R0_FILTER_LABEL_FORMATED = "R<sub>0</sub><100%";
+    private static final String ZAK_RACTUAL_FILTER_LABEL = "Rakt<100%";
+    private static final String ZAK_RACTUAL_FILTER_LABEL_FORMATED = "R<sub>akt</sub><100%";
+    private static final String ZAK_ALL_FILTER_LABEL = "Vše";
 
     private static final String REP_ZAKR_SUM_FILE_NAME = "vzm-rep-zakr-sum";
     private static final String REP_ZAKN_SUM_FILE_NAME = "vzm-rep-zakn-sum";
@@ -70,20 +72,24 @@ public class ZakrListView extends VerticalLayout {
     private ZakRozpracGrid zakrGrid;
     private List<GridSortOrder<ZakBasic>> initialSortOrder;
 
-    private RadioButtonGroup<String> archFilterRadio;
     private CalcButton calcButton;
+    private RadioButtonGroup<HundredFilter> hundredFilterRadio;
     private TextField kurzParamField;
     private TextField rezieParamField;
     private TextField pojistParamField;
     private Select<String> rxParamField;
     private Select<String> ryParamField;
-    private Checkbox activeParamField;
     private ZakrParams zakrParams;
     private Binder<ZakrParams> paramsBinder;
 
     private ReportXlsExporter<Zakr> rozpracSumXlsRepExporter;
     private ReportXlsExporter<ZakYmNaklVw> naklSouhrnXlsRepExporter;
     private Anchor expXlsAnchor;
+
+    private ComponentRenderer<Component, HundredFilter> hundredFilterLabelHtmlRenderer =
+            new ComponentRenderer<>(hf -> {
+                return new Html("<p>" + hf.getFormatedText());
+            });
 
     @Autowired
     public ZakrService zakrService;
@@ -143,9 +149,9 @@ public class ZakrListView extends VerticalLayout {
 
         gridBar.add(
                 buildTitleComponent()
-                , new Ribbon()
+                , new Ribbon("3em", "3em")
                 , buildGridBarControlsComponent()
-                , new Ribbon()
+                , new Ribbon("3em", "3em")
                 , buildReportBtnBox()
         );
         return gridBar;
@@ -156,7 +162,6 @@ public class ZakrListView extends VerticalLayout {
         titleComponent.setMargin(false);
         titleComponent.setPadding(false);
         titleComponent.setSpacing(false);
-//        titleComponent.setAlignItems(FlexComponent.Alignment.CENTER);
         titleComponent.setAlignItems(FlexComponent.Alignment.BASELINE);
         titleComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
         titleComponent.add(
@@ -180,23 +185,35 @@ public class ZakrListView extends VerticalLayout {
         controlsComponent.setJustifyContentMode(JustifyContentMode.START);
         controlsComponent.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
         controlsComponent.add(
-                initActiveParamField()
-                , new Ribbon("3em")
+                initHundredFilterRadio()
+                , new Ribbon("2em")
                 , initRxParamField()
                 , new Ribbon()
                 , initRyParamField()
-                , new Ribbon("3em")
+                , new Ribbon("2em")
                 , initCalcButton()
-                , new Ribbon("3em")
+                , new Ribbon("2em")
                 , initKurzField()
-                , new Ribbon("3em")
+                , new Ribbon("2em")
                 , initRezieField()
-                , new Ribbon("3em")
+                , new Ribbon()
                 , initPojistField()
         );
 
         return controlsComponent;
     }
+
+// INFO: left here as a template for boolean parameter
+//    private Checkbox hundredBooleanParamField;
+
+//    private Checkbox initHundredBoolenParamField() {
+//        hundredBooleanParamField = new Checkbox("Aktivní"); // = new TextField("Username");
+//        hundredBooleanParamField.getElement().setAttribute("theme", "small");
+//        paramsBinder.forField(hundredBooleanParamField)
+//                .bind(ZakrParams::isHundredBooleanFilter, ZakrParams::setHundredBooleanFilter);
+//        return hundredBooleanParamField;
+//    }
+
 
     private Component initKurzField() {
         kurzParamField = new TextField("Kurz CZK/EUR");
@@ -275,21 +292,12 @@ public class ZakrListView extends VerticalLayout {
         return ryParamField;
     }
 
-    private Checkbox initActiveParamField() {
-        activeParamField = new Checkbox("Aktivní"); // = new TextField("Username");
-        activeParamField.getElement().setAttribute("theme", "small");
-        paramsBinder.forField(activeParamField)
-                .bind(ZakrParams::isActive, ZakrParams::setActive);
-        return activeParamField;
-    }
-
     private Component initCalcButton() {
         calcButton = new CalcButton(event -> {
             BinderValidationStatus status = paramsBinder.validate();
             if (status.hasErrors()) {
                 calcButton.setIconDirty();
             } else {
-//                feedZakrParms();    // TODO: May be not necessary
                 paramsBinder.writeBeanIfValid(zakrParams);
                 zakrList = zakrService.fetchAndCalcByFiltersDescOrder(buildZakrFilter(), zakrParams);
                 zakrGrid.populateGridDataAndRestoreFilters(zakrList);
@@ -314,42 +322,20 @@ public class ZakrListView extends VerticalLayout {
         return REP_ZAKN_SOUHRN_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
     }
 
-    private List<Zakr> getSelectedZakrForReport(final String zakrId) {
-//        return zakrService.fetchTopById(zakrId);
-        return Collections.emptyList();
-    }
-
-    private SerializableSupplier<List<? extends Zakr>> zakRozpracCurrentSumRepSupplier =
-            () -> {
-//                feedZakrParms();    // TODO: May be not necessary
-                paramsBinder.writeBeanIfValid(zakrParams);
-                Set<Zakr> itemSelection = zakrGrid.getSelectedItems();  // Suppose: SingleSelectionModel is set, only one (or none) item is present
-                if (null == itemSelection || itemSelection.isEmpty()) {
-                    return Collections.EMPTY_LIST;
-                }
-                Zakr zakrSel = itemSelection.iterator().next();
-                return Collections.singletonList(
-                        zakrService.fetchAndCalcOne(zakrSel.getId(), zakrParams)
-                );
-            };
-
     private SerializableSupplier<List<? extends Zakr>> zakRozpracRepFilteredSupplier =
             () -> {
-//                feedZakrParms();    // TODO: May be not necessary
                 paramsBinder.writeBeanIfValid(zakrParams);
                 return zakrService.fetchAndCalcByFiltersDescOrder(buildZakrFilter(), zakrParams);
             };
 
     private SerializableSupplier<List<? extends Zakr>> zakRozpracRepAllSupplier =
             () -> {
-//                feedZakrParms();    // TODO: May be not necessary
                 paramsBinder.writeBeanIfValid(zakrParams);
                 return zakrService.fetchAndCalcAllDescOrder(zakrParams);
             };
 
     private SerializableSupplier<List<? extends ZakYmNaklVw>> zakYmNaklSouhrnRepVisibleSupplier =
             () -> {
-//                feedZakrParms();    // TODO: May be not necessary
                 paramsBinder.writeBeanIfValid(zakrParams);
                 List<Long> zakrIds = zakrService.fetchIdsByFiltersDescOrderWithLimit(buildZakrFilter(), zakrParams);
                 return zakNaklVwService.fetchByZakIdsSumByYm(zakrIds, zakrParams);
@@ -466,11 +452,10 @@ public class ZakrListView extends VerticalLayout {
     }
 
     private String getZakrRepFilteredSubtitleText() {
-//        feedZakrParms();
         ZakrFilter zakrFilter = buildZakrFilter();
         return
             "Parametry: " +
-            "  Aktivní=" + (null == zakrParams.isActive() ? "" : zakrParams.isActive().toString()) +
+            zakrParams.getHundredFilter().getPlainText() +
             "  Arch=" + (null == zakrFilter.getArch() ? "Vše" : zakrFilter.getArch().toString()) +
             "  ČK-ČZ=" + (null == zakrFilter.getCkz() ? "Vše" : zakrFilter.getCkz()) +
             "  Rok zak.=" + (null == zakrFilter.getRokZak() ? "Vše" : zakrFilter.getRokZak().toString()) +
@@ -485,7 +470,6 @@ public class ZakrListView extends VerticalLayout {
     }
 
     private String getZakrRepAllSubtitleText() {
-//        feedZakrParms();
         return
             "Parametry: Filtr=vše " +
             "  rx=" + (null == zakrParams.getRx() ? "" : zakrParams.getRx()) +
@@ -494,29 +478,6 @@ public class ZakrListView extends VerticalLayout {
             "  Koef.režie=" + (null == zakrParams.getKoefRezie() ? "" : zakrParams.getKoefRezie()) +
             "  Kurz CZK/EUR=" + (null == zakrParams.getKurzEur() ? "" : zakrParams.getKurzEur());
     }
-
-//    private void feedZakrParms() {
-//        zakrParams.setKoefPojist(StringUtils.isEmpty(pojistParamField.getValue()) ?  null : new BigDecimal(pojistParamField.getValue()));
-//        zakrParams.setKoefRezie(StringUtils.isEmpty(rezieParamField.getValue()) ?  null : new BigDecimal(rezieParamField.getValue()));
-//        zakrParams.setKurzEur(StringUtils.isEmpty(kurzParamField.getValue()) ?  null : new BigDecimal(kurzParamField.getValue()));
-//        zakrParams.setRx(rxParamField.getValue());
-//        zakrParams.setRy(ryParamField.getValue());
-//        zakrParams.setActive(activeParamField.getValue());
-//    }
-
-//    private void openRozpracRepDialog() {
-////        List<Zakr> zakrRep1 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataCommunicator().getDataProvider()).getItems();
-////        List<Zakr> zakrRep2 = (List<Zakr>)((ListDataProvider)zakrGrid.getDataProvider()).getItems();
-//        zakrGrid.saveFilterFieldValues();
-//        zakrParams.setActive(activeParamField.getValue());
-//        zakrParams.setArch(zakrGrid.getArchFilterValue());
-//        zakrParams.setCkz(zakrGrid.getCkzFilterValue());
-//        zakrParams.setRokZak(zakrGrid.getRokFilterValue());
-//        zakrParams.setSkupina(zakrGrid.getSkupinaFilterValue());
-//        ZakRozpracReportDialog zakRozpracReportDlg  = new ZakRozpracReportDialog(zakrService, zakrParams);
-//        zakRozpracReportDlg.openDialog(zakrParams);
-//        zakRozpracReportDlg.generateAndShowReport();
-//    }
 
     private ZakrFilter buildZakrFilter() {
         zakrGrid.saveFilterFieldValues();
@@ -530,14 +491,16 @@ public class ZakrListView extends VerticalLayout {
         return filter;
     }
 
-    private Component initArchFilterRadio() {
-        archFilterRadio = new RadioButtonGroup<>();
-        archFilterRadio.setItems(RADIO_KONT_ACTIVE, RADIO_KONT_ARCH, RADIO_KONT_ALL);
-//        buttonShowArchive.addValueChangeListener(event -> setArchiveFilter(event));
-        archFilterRadio.getStyle().set("alignItems", "center");
-        archFilterRadio.getStyle().set("theme", "small");
-        archFilterRadio.addValueChangeListener(event -> loadInitialViewContent());
-        return archFilterRadio;
+    private Component initHundredFilterRadio() {
+        hundredFilterRadio = new RadioButtonGroup<>();
+        hundredFilterRadio.setItems(HundredFilter.R0, HundredFilter.RACTUAL, HundredFilter.ALL);
+        hundredFilterRadio.getStyle().set("alignItems", "center");
+        hundredFilterRadio.getStyle().set("line-height", "0");
+//        hundredFilterRadio.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        hundredFilterRadio.setRenderer(hundredFilterLabelHtmlRenderer);
+        paramsBinder.forField(hundredFilterRadio)
+                .bind(ZakrParams::getHundredFilter, ZakrParams::setHundredFilter);
+        return hundredFilterRadio;
     }
 
 
@@ -602,7 +565,7 @@ public class ZakrListView extends VerticalLayout {
         if (zakrGrid.getEditor().isOpen()) {
             zakrGrid.getEditor().closeEditor();
         }
-        zakrList = zakrService.fetchAndCalcByActiveFilterDescOrder(zakrParams);
+        zakrList = zakrService.fetchAndCalcByFiltersDescOrder(buildZakrFilter(), zakrParams);
         zakrGrid.populateGridDataAndRestoreFilters(zakrList);
         calcButton.setIconClean();
         zakrGrid.getDataProvider().refreshAll();
@@ -612,14 +575,14 @@ public class ZakrListView extends VerticalLayout {
         if (zakrGrid.getEditor().isOpen()) {
             zakrGrid.getEditor().closeEditor();
         }
-        zakrList = zakrService.fetchAndCalcByActiveFilterDescOrder(zakrParams);
+        zakrList = zakrService.fetchAndCalcByFiltersDescOrder(buildZakrFilter(), zakrParams);
         zakrGrid.populateGridDataAndRebuildFilterFields(zakrList);
         calcButton.setIconClean();
         zakrGrid.getDataProvider().refreshAll();
     }
 
     public static class ZakrParams {
-        Boolean active;
+        HundredFilter hundredFilter;
         BigDecimal kurzEur;
         String rx;
         String ry;
@@ -627,8 +590,8 @@ public class ZakrListView extends VerticalLayout {
         BigDecimal koefPojist;
 
         public static ZakrParams getEmptyInstance() {
-            ZakrParams zakrParams =  new ZakrParams();
-            zakrParams.setActive(null);
+            ZakrParams zakrParams = new ZakrParams();
+            zakrParams.setHundredFilter(null);
             zakrParams.setKurzEur(null);
             zakrParams.setRx(null);
             zakrParams.setRy(null);
@@ -639,7 +602,7 @@ public class ZakrListView extends VerticalLayout {
 
         public static ZakrParams getDefaultInstance(final CfgPropsCache cfgPropsCache) {
             ZakrParams zakrParams = new ZakrParams();
-            zakrParams.setActive(true);
+            zakrParams.setHundredFilter(HundredFilter.RACTUAL);
             zakrParams.setKurzEur(cfgPropsCache.getBigDecimalValue(CfgPropName.APP_KURZ_CZK_EUR.getName()));
             zakrParams.setRx(null);
             zakrParams.setRy(null);
@@ -648,11 +611,11 @@ public class ZakrListView extends VerticalLayout {
             return zakrParams;
         }
 
-        public Boolean isActive() {
-            return active;
+        public HundredFilter getHundredFilter() {
+            return hundredFilter;
         }
-        public void setActive(Boolean active) {
-            this.active = active;
+        public void setHundredFilter(HundredFilter hundredFilter) {
+            this.hundredFilter = hundredFilter;
         }
 
         public BigDecimal getKurzEur() {
@@ -751,6 +714,29 @@ public class ZakrListView extends VerticalLayout {
         }
         public void setKzText(String kzText) {
             this.kzText = kzText;
+        }
+    }
+
+    public enum HundredFilter {
+        R0(ZAK_R0_FILTER_LABEL, ZAK_R0_FILTER_LABEL_FORMATED),
+        RACTUAL (ZAK_RACTUAL_FILTER_LABEL, ZAK_RACTUAL_FILTER_LABEL_FORMATED),
+        ALL(ZAK_ALL_FILTER_LABEL, null);
+
+        private final String plainText;
+        private final String formatedText;
+
+        HundredFilter(String plainText, String formatedText) {
+            Assert.notNull(plainText,"A plain text for radio button label must not be null");
+            this.plainText = plainText;
+            this.formatedText = null == formatedText ? plainText : formatedText;
+        }
+
+        public String getPlainText() {
+            return this.plainText;
+        }
+
+        public String getFormatedText() {
+            return this.formatedText;
         }
     }
 }

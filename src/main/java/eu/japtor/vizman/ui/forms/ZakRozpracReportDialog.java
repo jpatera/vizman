@@ -58,7 +58,6 @@ public class ZakRozpracReportDialog extends AbstractPrintDialog<Zakr> implements
     public void openDialog(ZakrListView.ZakrFilter zakrFilter, ZakrListView.ZakrParams zakrParams) {
         this.zakrParams = zakrParams;
 
-        activeFilterField.setValue(zakrParams.isActive());
         archFilterField.setValue(zakrFilter.getArch());
         ckzFilterField.setValue(zakrFilter.getCkz());
         rokZakFilterField.setValue(zakrFilter.getRokZak());
