@@ -10,6 +10,7 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
@@ -25,7 +26,6 @@ import javax.annotation.PostConstruct;
 import java.util.Locale;
 
 
-//@Theme(Lumo.class)    // Lumo is default
 
 //@Route(value = ROUTE_ROOT)
 //@PageTitle(PAGE_TITLE_ROOT)
@@ -33,12 +33,14 @@ import java.util.Locale;
 //@Theme(Material.class)
 //@Route(value = "")
 //@PageTitle(PAGE_TITLE_HOME)
-@Theme(Lumo.class)
+@Theme(value = Lumo.class)  // Lumo is default
+//@Theme(value = "Lumo")
 @CssImport("./styles/shared-styles.css")
 //@CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")    // ###***
 //@Push(PushMode.MANUAL)
 @Push   // TODO: Try to move push to DochView?  https://vaadin.com/docs/v13/flow/advanced/tutorial-push-access.html
+        //       No, will have to be moved to AppShell
 public class MainView extends VerticalLayout implements RouterLayout, BeforeEnterObserver, HasLogger {
 
     //    @Id("navigationBar")

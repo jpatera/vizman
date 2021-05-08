@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>eu.japtor</groupId>
     <artifactId>vizman</artifactId>
@@ -12,7 +14,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <vaadin.version>14.2.1</vaadin.version>
+        <!--<vaadin.version>14.2.1</vaadin.version>-->
+        <vaadin.version>14.5.3</vaadin.version>
+        <!--<vaadin.version>19.0.6</vaadin.version>-->
 
         <drivers.dir>${project.basedir}/drivers</drivers.dir>
         <drivers.downloader.phase>pre-integration-test</drivers.downloader.phase>
@@ -21,30 +25,51 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.7.RELEASE</version>
+        <version>2.4.5</version>
+<!--        <version>2.1.7.RELEASE</version>-->
     </parent>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>central</id>
-            <url>https://repo1.maven.org/maven2/</url>
-            <snapshots><enabled>false</enabled></snapshots>
-        </pluginRepository>
-    </pluginRepositories>
 
     <repositories>
         <repository>
             <id>Maven Central</id>
-            <url>https://repo1.maven.org/maven2/</url>
-            <snapshots><enabled>false</enabled></snapshots>
+<!--            <url>https://repo1.maven.org/maven2/</url>-->
+            <url>https://repo.maven.apache.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>vaadin-prereleases</id>
+            <url>
+                https://maven.vaadin.com/vaadin-prereleases/
+            </url>
         </repository>
         <!-- Repository used by many Vaadin add-ons -->
         <repository>
             <id>Vaadin Directory</id>
             <url>https://maven.vaadin.com/vaadin-addons</url>
-            <snapshots><enabled>false</enabled></snapshots>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+<!--            <url>https://repo1.maven.org/maven2/</url>-->
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>vaadin-prereleases</id>
+            <url>
+                https://maven.vaadin.com/vaadin-prereleases/
+            </url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <dependencyManagement>
         <dependencies>
@@ -97,13 +122,31 @@
             <exclusions>
                 <!-- Excluding so that webjars are not included. -->
                 <exclusion><groupId>com.vaadin</groupId>
-                    <artifactId>vaadin-core</artifactId></exclusion>
+                    <artifactId>vaadin-core</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.vaadin.artur</groupId>
+            <artifactId>a-vaadin-helper</artifactId>
+            <version>1.6.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
+            <!-- <scope>runtime</scope> is it correct and necessary? -->
+            <scope>runtime</scope>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -112,6 +155,9 @@
         </dependency>
 
         <dependency>
+            <!-- VizMan must be first packaged in production mode and after that run in devmode -->
+            <!-- (a problem with an access to a /Users/alejandro/.. folder -->
+            <!-- https://vaadin.com/directory/component/report-ui/3.0.2 -->
             <groupId>org.vaadin.reportui</groupId>
             <artifactId>report-ui</artifactId>
             <version>3.0.2</version>
@@ -122,27 +168,35 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
-            <groupId>org.vaadin.alejandro</groupId>
-            <artifactId>pdf_browser</artifactId>
-            <version>1.0.0-alpha</version>
-            <exclusions>
-                <exclusion>  <!-- declare the exclusion here -->
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-simple</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>io.github.bonigarcia</groupId>
+            <artifactId>webdrivermanager</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
         </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>org.vaadin.alejandro</groupId>-->
+<!--            <artifactId>pdf-browser</artifactId>-->
+<!--            <version>3.0.1</version>-->
+<!--&lt;!&ndash;            <version>1.0.0-alpha</version>&ndash;&gt;-->
+<!--            <exclusions>-->
+<!--                <exclusion>  &lt;!&ndash; declare the exclusion here &ndash;&gt;-->
+<!--                    <groupId>org.slf4j</groupId>-->
+<!--                    <artifactId>slf4j-simple</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>com.flowingcode.vaadin.addons</groupId>
             <artifactId>twincolgrid</artifactId>
-            <version>2.0.3</version>
+<!--            <version>2.0.3</version>-->
+            <version>2.1.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
-        <!-- ATTANTION: other versions of POI had various problems during report generation for export -->
+        <!-- ATTENTION: other versions of POI had various problems during report generation for export -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
@@ -177,11 +231,11 @@
         </dependency>
 
         <!--Iron form-->
-        <dependency>
-            <groupId>org.webjars.bowergithub.polymerelements</groupId>
-            <artifactId>iron-form</artifactId>
-            <version>2.1.3</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.webjars.bowergithub.polymerelements</groupId>-->
+<!--            <artifactId>iron-form</artifactId>-->
+<!--            <version>2.1.3</version>-->
+<!--        </dependency>-->
 
 
         <dependency>
@@ -194,7 +248,7 @@
             <artifactId>spring-websocket</artifactId>
         </dependency>
 
-        <!-- This is needed in order to get to in mem H2 DB while app is running. -->
+        <!-- This is needed in order to get to in-mem H2 DB while app is running. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -205,12 +259,12 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <scope>runtime</scope>
-            <optional>true</optional>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.springframework.boot</groupId>-->
+            <!--<artifactId>spring-boot-devtools</artifactId>-->
+            <!--<scope>runtime</scope>-->
+            <!--<optional>true</optional>-->
+        <!--</dependency>-->
 
 
         <!-- TESTS -->
@@ -245,6 +299,18 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- Include JUnit 4 support for TestBench and others -->
+        <!--<dependency>-->
+            <!--<groupId>org.junit.vintage</groupId>-->
+            <!--<artifactId>junit-vintage-engine</artifactId>-->
+            <!--<scope>test</scope>-->
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.hamcrest</groupId>-->
+                    <!--<artifactId>hamcrest-core</artifactId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
+        <!--</dependency>-->
 
     </dependencies>
 
@@ -254,6 +320,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.4.5</version>
                 <!-- Clean build and startup time for Vaadin apps sometimes may exceed
                      the default Spring Boot's 30sec timeout.  -->
                 <configuration>
@@ -286,32 +353,33 @@
         <profile>
             <!-- Production mode is activated using -Pproduction -->
             <id>production</id>
-            <properties>
-                <vaadin.productionMode>true</vaadin.productionMode>
-            </properties>
+<!--            <properties>-->
+<!--                <vaadin.productionMode>true</vaadin.productionMode>-->
+<!--            </properties>-->
 
-            <dependencies>
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-server-production-mode</artifactId>
-                </dependency>
-            </dependencies>
+<!--            <dependencies>-->
+<!--                <dependency>-->
+<!--                    <groupId>com.vaadin</groupId>-->
+<!--                    <artifactId>flow-server-production-mode</artifactId>-->
+<!--                </dependency>-->
+<!--            </dependencies>-->
 
             <build>
                 <plugins>
                     <!-- The Spring Boot Maven plugin for easy
                          execution from CLI and packaging -->
-                    <plugin>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-maven-plugin</artifactId>
-                        <configuration>
-                            <jvmArguments>-Dvaadin.productionMode</jvmArguments>
-                        </configuration>
-                    </plugin>
+<!--                    <plugin>-->
+<!--                        <groupId>org.springframework.boot</groupId>-->
+<!--                        <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--                        <configuration>-->
+<!--                            <jvmArguments>-Dvaadin.productionMode</jvmArguments>-->
+<!--                        </configuration>-->
+<!--                    </plugin>-->
 
                     <plugin>
                         <groupId>com.vaadin</groupId>
                         <artifactId>vaadin-maven-plugin</artifactId>
+                        <version>${vaadin.version}</version>
                         <executions>
                             <execution>
                                 <goals>

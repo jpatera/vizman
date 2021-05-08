@@ -1,6 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
-import jdk.nashorn.internal.objects.annotations.Function;
+//import jdk.nashorn.internal.objects.annotations.Function;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -163,53 +163,55 @@ public class ItemNames {
 //        itemGenderMap.put(ItemType.FAKT, GrammarGender.FEMININE);
     }
 
-    @Function
+//    @Function
+    // TODO: @Function is not recognized by Zulu 11
+    //       But don't know whether it is necessary/useful
     public static Map<GrammarShapes, String> getItemNameMap(ItemType type) {
         return itemNameMaps.get(type);
     }
 
-    @Function
+//    @Function
     public static GrammarGender getItemGender(ItemType type) {
         GrammarGender gender = null == type ? itemGenderMap.get(ItemType.UNKNOWN) : itemGenderMap.get(type);
         return null != gender ? gender : itemGenderMap.get(ItemType.UNKNOWN);
     }
 
-    @Function
+//    @Function
     public static String getNomS(ItemType type) {
         Map<GrammarShapes, String> grammarShapes = itemNameMaps.get(type);
         String name = null == grammarShapes ? null : grammarShapes.get(GrammarShapes.NOM_S);
         return null != name ? name : itemNameMaps.get(ItemType.UNKNOWN).get(GrammarShapes.NOM_S);
     }
 
-    @Function
+//    @Function
     public static String getNomP(ItemType type) {
         Map<GrammarShapes, String> grammarShapes = itemNameMaps.get(type);
         String name = null == grammarShapes ? null : grammarShapes.get(GrammarShapes.NOM_P);
         return null != name ? name : itemNameMaps.get(ItemType.UNKNOWN).get(GrammarShapes.NOM_P);
     }
 
-    @Function
+//    @Function
     public static String getGenS(ItemType type) {
         Map<GrammarShapes, String> grammarShapes = itemNameMaps.get(type);
         String name = null == grammarShapes ? null : grammarShapes.get(GrammarShapes.GEN_S);
         return null != name ? name : itemNameMaps.get(ItemType.UNKNOWN).get(GrammarShapes.GEN_S);
     }
 
-    @Function
+//    @Function
     public static String getGenP(ItemType type) {
         Map<GrammarShapes, String> grammarShapes = itemNameMaps.get(type);
         String name = null == grammarShapes ? null : grammarShapes.get(GrammarShapes.GEN_P);
         return null != name ? name : itemNameMaps.get(ItemType.UNKNOWN).get(GrammarShapes.GEN_P);
     }
 
-    @Function
+//    @Function
     public static String getAccuS(ItemType type) {
         Map<GrammarShapes, String> grammarShapes = itemNameMaps.get(type);
         String name = null == grammarShapes ? null : grammarShapes.get(GrammarShapes.ACCU_S);
         return null != name ? name : itemNameMaps.get(ItemType.UNKNOWN).get(GrammarShapes.ACCU_S);
     }
 
-    @Function
+//    @Function
     public static String getAccuP(ItemType type) {
         Map<GrammarShapes, String> grammarShapes = itemNameMaps.get(type);
         String name = null == grammarShapes ? null : grammarShapes.get(GrammarShapes.ACCU_P);

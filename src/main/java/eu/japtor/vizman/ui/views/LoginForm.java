@@ -1,17 +1,16 @@
 package eu.japtor.vizman.ui.views;
 
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.Route;
 
 
-@Route("login-form-2")
+//@Route("login-form-2")
 //@Theme(value = Lumo.class, variant = Lumo.DARK)
-@HtmlImport("frontend://bower_components/iron-form/iron-form.html")
+//@HtmlImport("frontend://bower_components/iron-form/iron-form.html")
+//@JsModule("./bower_components/iron-form/iron-form.html")
 // TODO: probably delete
 public class LoginForm  extends VerticalLayout {
 
