@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "KONT")
-public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArchState, HasModifDates {
+public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArchState, HasModifDates, HasUpdatedBy {
 
     @Column(columnDefinition = "BINARY(16)")
     private UUID uuid;
@@ -66,6 +66,10 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     @Column(name = "DATETIME_UPDATE")
     private LocalDateTime datetimeUpdate;
 
+    @Basic
+    @Column(name = "UPDATED_BY")
+    private String updatedBy;
+
     //    @OneToMany(fetch = FetchType.LAZY)
 //    @OneToMany(mappedBy = "kont", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE} )
 //    @OneToMany(mappedBy = "kont", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = false)
@@ -88,6 +92,7 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     @JoinColumn(name = "ID_OBJEDNATEL")
     private Klient objednatel;
 
+    @Override
     public Klient getObjednatel() {
         return objednatel;
     }
@@ -99,6 +104,7 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     @JoinColumn(name = "ID_INVESTOR")
     private Klient investor;
 
+    @Override
     public Klient getInvestor() {
         return investor;
     }
@@ -110,11 +116,13 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     private boolean checked;
 
     @Transient
+    @Override
     public String getObjednatelName() {
         return null == objednatel ? "" : (null == objednatel.getName() ? "" : objednatel.getName());
     }
 
     @Transient
+    @Override
     public String getInvestorName() {
         return null == investor ? "" : (null == investor.getName() ? "" : investor.getName());
     }
@@ -199,6 +207,7 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
         this.dateCreate = dateCreate;
     }
 
+    @Override
     public LocalDateTime getDatetimeUpdate() {
         return datetimeUpdate;
     }
@@ -206,6 +215,13 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
         this.datetimeUpdate = datetimeUpdate;
     }
 
+    @Override
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
 
     public List<KontDoc> getKontDocs() {
         return kontDocs;
@@ -302,6 +318,7 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     }
 
     @Transient
+    @Override
     public BigDecimal getHonorarCisty() {
         return getNodes().stream()
                 .map(node -> node.getHonorarCisty())

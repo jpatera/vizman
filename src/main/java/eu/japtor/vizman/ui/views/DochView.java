@@ -482,7 +482,7 @@ public class DochView extends HorizontalLayout implements HasLogger {
 
     private Optional<Person> getDochPersonFromList(String username) {
         return dochPersonList.stream()
-                .filter(person -> person.getUsername().toLowerCase().equals(username.toLowerCase()))
+                .filter(person -> person.getUsername().equalsIgnoreCase(username.toLowerCase()))
                 .findFirst();
     }
 

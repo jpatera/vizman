@@ -25,6 +25,7 @@ import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.app.HasLogger;
+import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.backend.bean.EvidKont;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.*;
@@ -40,6 +41,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -111,11 +113,13 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 
     private Binder<Kont> binder = new Binder<>();
     private Kont currentItem;
-    private Kont kontItemOrig;
+    private Kont origItem;
     private Operation currentOperation;
     private OperationResult lastOperationResult = NO_CHANGE;
     private boolean kontZaksChanged = false;
     private boolean kontZaksFaktsChanged = false;
+
+    private String authUsername;
 
     private Registration binderChangeListener = null;
     private Registration textFieldListener = null;
@@ -182,13 +186,12 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         fileViewerDialog = new FileViewerDialog();
     }
 
-
     public void openDialog(Kont kont, Operation operation) {
-
-        this.currentOperation = operation;
         this.currentItem = kont;
+        this.origItem = kont;   // TODO: to je asi blbe, musi se udelat new Kont
+        this.currentOperation = operation;
         this.kontZaksChanged = false;
-        this.kontItemOrig = kont;
+        this.authUsername = SecurityUtils.getUsername();
 
         klientList = klientService.fetchAll();
 
@@ -234,7 +237,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         this.kontFolderField.setItemType(kontItem.getTyp());
 
         refreshHeaderMiddleBox(kontItem);
-        getHeaderEndBox().setText(getHeaderEndComponentValue(null));
+        getHeaderEndBox().removeAll();
+        getHeaderEndBox().add(getHeaderEndComponent(null));
 
         initControlsForItemAndOperation(kontItem, kontOperation);
         initControlsOperability();
@@ -245,7 +249,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private void refreshControls(Kont kontItem, final Operation kontOperation) {
         deactivateListeners();
         refreshHeaderMiddleBox(kontItem);
-        getHeaderEndBox().setText(getHeaderEndComponentValue(null));
+        getHeaderEndBox().removeAll();
+        getHeaderEndBox().add(getHeaderEndComponent(null));
 //        adjustControlsOperability(hasChanges, isValid);
         activateListeners();
     }
@@ -644,6 +649,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                 textField.setValue(textValue);
                 kontToSave.setFolder(kontFolderField.getValue());
             }
+            kontToSave.setUpdatedBy(authUsername);
+            kontToSave.setDatetimeUpdate(LocalDateTime.now());
 
             currentItem = kontService.saveKont(kontToSave, currentOperation);
 //            kontToSave = kontService.saveKont(kontToSave, oper);
@@ -711,8 +718,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         return kontZaksFaktsChanged;
     }
 
-    public Kont getKontItemOrig()  {
-        return kontItemOrig;
+    public Kont getOrigItem()  {
+        return origItem;
     }
 
     private Component initCkontField() {

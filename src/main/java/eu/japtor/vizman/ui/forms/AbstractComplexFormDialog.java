@@ -463,8 +463,8 @@ public abstract class AbstractComplexFormDialog<T extends Serializable & HasItem
                 LocalDate dateCreate = ((HasModifDates) currentItem).getDateCreate();
                 String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
                 LocalDateTime dateTimeUpdate = ((HasModifDates) currentItem).getDatetimeUpdate();
-                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleModifDateFormatter);
-                value = "[ Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr + " ]";
+                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleUpdateDateFormatter);
+                value = "Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr;
             }
         }
         return value;

@@ -329,7 +329,7 @@ public abstract class AbstractPrintDialog<T extends Serializable> extends Dialog
 //                String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
 //                LocalDateTime dateTimeUpdate = ((HasModifDates) getCurrentItem()).getDatetimeUpdate();
 //                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleModifDateFormatter);
-//                value = "[ Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr + " ]";
+//                value = "Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr;
 //            }
 //        }
 //        return value;

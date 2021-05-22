@@ -18,7 +18,7 @@ import java.util.function.Predicate;
 
 @Entity
 @Table(name = "ZAK")
-public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArchState, HasModifDates {
+public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArchState, HasModifDates, HasUpdatedBy {
 
     @Column(columnDefinition = "BINARY(16)")
     private UUID uuid;
@@ -76,6 +76,10 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     @Basic
     @Column(name = "DATETIME_UPDATE")
     private LocalDateTime datetimeUpdate;
+
+    @Basic
+    @Column(name = "UPDATED_BY")
+    private String updatedBy;
 
     @Basic
     @Column(name = "POZNAMKA")
@@ -157,18 +161,28 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
         this.digi = digi;
     }
 
-    public LocalDate getDateCreate() {
+    @Override public LocalDate getDateCreate() {
         return dateCreate;
     }
     public void setDateCreate(LocalDate dateCreate) {
         this.dateCreate = dateCreate;
     }
 
+    @Override
     public LocalDateTime getDatetimeUpdate() {
         return datetimeUpdate;
     }
     public void setDatetimeUpdate(LocalDateTime datetimeUpdate) {
         this.datetimeUpdate = datetimeUpdate;
+    }
+
+    @Override
+    @Transient
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 
     public String getPoznamka() {

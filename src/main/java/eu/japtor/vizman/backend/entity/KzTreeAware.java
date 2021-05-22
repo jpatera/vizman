@@ -4,6 +4,7 @@ import eu.japtor.vizman.ui.components.ArchIconBox;
 import eu.japtor.vizman.ui.components.DigiIconBox;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface KzTreeAware<T extends KzTreeAware> {
@@ -19,6 +20,8 @@ public interface KzTreeAware<T extends KzTreeAware> {
     String getInvestorName();
     String getInvestorOrigName();
     String getText();
+    LocalDateTime getDatetimeUpdate();
+    String getUpdatedBy();
     BigDecimal getHonorarCisty();
     Mena getMena();
     Integer getRok();

@@ -12,26 +12,28 @@ import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
 import com.vaadin.flow.function.ValueProvider;
 import eu.japtor.vizman.app.HasLogger;
-import eu.japtor.vizman.backend.entity.Fakt;
-import eu.japtor.vizman.backend.entity.ItemType;
-import eu.japtor.vizman.backend.entity.PersonWage;
-import eu.japtor.vizman.backend.entity.Zak;
+import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.service.CalService;
 import eu.japtor.vizman.backend.service.VzmServiceException;
 import eu.japtor.vizman.ui.components.Ribbon;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.awt.Color;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.time.LocalDateTime;
-import java.time.YearMonth;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
+@Component
 public class VzmFormatUtils {
 
     public static final NumberFormat YEAR_FORMAT = getDecFormat(Locale.getDefault(), 4,0);
@@ -46,7 +48,7 @@ public class VzmFormatUtils {
     public final static DateTimeFormatter basicDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public final static DateTimeFormatter basicDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 //    public final static DateTimeFormatter titleModifDateFormatter = DateTimeFormatter.ofPattern("EEEE yyyy-MM-dd HH:mm");
-    public final static DateTimeFormatter titleModifDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    public final static DateTimeFormatter titleUpdateDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     public final static DateTimeFormatter monthLocalizedFormatter = DateTimeFormatter.ofPattern("LLLL");
 //    public final static DateTimeFormatter monthLocalizedFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle."yyyy-MM-dd HH:mm");
     public final static DateTimeFormatter dayOfWeekLocalizedFormatter = DateTimeFormatter.ofPattern("EEEE");
@@ -77,6 +79,22 @@ public class VzmFormatUtils {
 //        this.getStyle().set("background-color", "#fefefd");
     }
 
+    static private List<LocalDate> lastTwoYearsHolis;
+
+    @Autowired
+    CalService calService;
+
+    @PostConstruct
+    void init() {
+        lastTwoYearsHolis = new ArrayList<>();
+        feedLastTwoYearsHolis();
+    }
+
+    private void feedLastTwoYearsHolis() {
+        int currYear = LocalDate.now().getYear();
+        lastTwoYearsHolis.addAll(calService.fetchCalyHolDateListByYear(currYear-1));
+        lastTwoYearsHolis.addAll(calService.fetchCalyHolDateListByYear(currYear));
+    }
 
     public static final ValueProvider<VzmFileUtils.VzmFile, String> vzmFileIconStyleProvider = file -> {
         String iconStyle;
@@ -552,6 +570,65 @@ public class VzmFormatUtils {
         comp.getStyle().set("color", fakt.isFaktAfter() ? "crimson" : "green");
         comp.setText(null == fakt.getDateDuzp() ? "" : fakt.getDateDuzp().format(VzmFormatUtils.basicDateFormatter));
         return comp;
+    }
+
+    public static HtmlComponent getDatetimeUpdateComponent(final LocalDateTime datetimeUpdate, final String username) {
+        Div comp = new Div();
+        String textColor =  getColorByUpdatedRule(datetimeUpdate, username);
+        if (null != textColor) {
+            comp.getStyle().set("color", textColor);
+        }
+        comp.setText(null == datetimeUpdate ? "" : datetimeUpdate.format(VzmFormatUtils.basicDateFormatter));
+        return comp;
+    }
+
+    public static HtmlComponent getEmptyComponent() {
+        return new Div();
+    }
+
+
+    public static String getColorByUpdatedRule(final LocalDateTime datetimeUpdate, final String username) {
+        if (null == datetimeUpdate || null == username || !"vancik".equalsIgnoreCase(username)) {
+            return null;
+        }
+//        if (4 > ChronoUnit.DAYS.between(datetimeUpdate, LocalDateTime.now())) {
+        long workDaysBetween = countBusinessDaysBetweenApprox(LocalDate.now(), datetimeUpdate.toLocalDate(), 20);
+        if (workDaysBetween > 4) {
+            return "red";
+        } else if (workDaysBetween >= 0) {
+            return "magenta";
+        } else {
+            return null;
+        }
+    }
+
+    public static long countBusinessDaysBetweenApprox(final LocalDate startDate, final LocalDate endDate, int exactLimitDaysBetween) {
+        int daysBetween = Period.between(endDate, startDate).getDays();
+        if (daysBetween >= exactLimitDaysBetween) {
+            return  daysBetween;
+        } else {
+            return countBusinessDaysBetweenExact(startDate, endDate, Optional.of(lastTwoYearsHolis));
+        }
+    }
+
+    public static long countBusinessDaysBetweenExact(LocalDate startDate, LocalDate endDate,
+                                                     Optional<List<LocalDate>> holidays)
+    {
+        if (startDate == null || endDate == null || holidays == null) {
+            throw new IllegalArgumentException("Invalid method argument(s) to countBusinessDaysBetween(" + startDate
+                    + "," + endDate + "," + holidays + ")");
+        }
+
+        Predicate<LocalDate> isHoliday = date -> holidays.isPresent() ? holidays.get().contains(date) : false;
+
+        Predicate<LocalDate> isWeekend = date -> date.getDayOfWeek() == DayOfWeek.SATURDAY
+                || date.getDayOfWeek() == DayOfWeek.SUNDAY;
+
+        long daysBetween = ChronoUnit.DAYS.between(endDate, startDate);
+
+        long businessDays = Stream.iterate(startDate, date -> date.plusDays(1)).limit(daysBetween)
+                .filter(isHoliday.or(isWeekend).negate()).count();
+        return businessDays;
     }
 
     public static HtmlComponent getColoredTextComponent(Fakt fakt) {

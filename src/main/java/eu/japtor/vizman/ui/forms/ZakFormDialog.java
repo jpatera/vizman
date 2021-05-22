@@ -28,6 +28,7 @@ import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.app.HasLogger;
+import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.backend.bean.EvidZak;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.*;
@@ -42,6 +43,7 @@ import org.springframework.util.CollectionUtils;
 import java.io.File;
 import java.math.BigDecimal;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static eu.japtor.vizman.backend.utils.VzmFileUtils.*;
@@ -111,6 +113,8 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private Operation currentOperation;
     private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
     private boolean zakFaktsChanged = false;
+
+    private String authUsername;
 
     private Registration binderChangeListener = null;
     private Registration textFieldListener = null;
@@ -183,9 +187,10 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     public void openDialog(boolean readonly, Zak zak, Operation operation) {
         this.readonly = readonly;
         this.currentItem = zak;
-        this.origItem = zak;    // TODO: to je blbe, musi se udelat new Zak
+        this.origItem = zak;    // TODO: to je asi blbe, musi se udelat new Zak
         this.currentOperation = operation;
         this.zakFaktsChanged = false;
+        this.authUsername = SecurityUtils.getUsername();
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -227,7 +232,9 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         getLowerPane().setVisible(ItemType.SUB != zakItem.getTyp());
 
         refreshHeaderMiddleBox(zakItem);
-        getHeaderEndBox().setText(getHeaderEndComponentValue(null));
+//        getHeaderEndBox().setText(getHeaderEndComponentValue(null));
+        getHeaderEndBox().removeAll();
+        getHeaderEndBox().add(getHeaderEndComponent(null));
 
         initControlsForItemAndOperation(zakItem, zakOperation, readonly);
         initControlsOperability();
@@ -448,7 +455,9 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private void refreshControls(Zak zakItem, final Operation zakOperation) {
         deactivateListeners();
         refreshHeaderMiddleBox(zakItem);
-        getHeaderEndBox().setText(getHeaderEndComponentValue(null));
+//        getHeaderEndBox().setText(getHeaderEndComponentValue(null));
+        getHeaderEndBox().removeAll();
+        getHeaderEndBox().add(getHeaderEndComponent(null));
         activateListeners();
     }
 
@@ -708,6 +717,9 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                     fireEvent(new GeneratedVaadinTextField.ChangeEvent(textField, false));
                 }
             }
+            zakToSave.setUpdatedBy(authUsername);
+            zakToSave.setDatetimeUpdate(LocalDateTime.now());
+
             currentItem = zakService.saveZak(zakToSave, currentOperation);
             if (zakDirsToBeCreated(currentItem, currentOperation)) {
                 createZakDirs(currentItem);

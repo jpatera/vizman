@@ -284,17 +284,6 @@ public abstract class AbstractGridDialog<T extends Serializable>  extends Dialog
 
     public String getHeaderEndComponentValue(final String titleEndText) {
         String value = "";
-//        if ((null == titleEndText) && (getCurrentItem() instanceof HasModifDates)) {
-//            if (getCurrentOperation() == Operation.ADD) {
-//                value = "";
-//            } else {
-//                LocalDate dateCreate = ((HasModifDates) getCurrentItem()).getDateCreate();
-//                String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
-//                LocalDateTime dateTimeUpdate = ((HasModifDates) getCurrentItem()).getDatetimeUpdate();
-//                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleModifDateFormatter);
-//                value = "[ Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr + " ]";
-//            }
-//        }
         return value;
     }
 }

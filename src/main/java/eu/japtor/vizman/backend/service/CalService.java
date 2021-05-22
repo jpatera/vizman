@@ -45,4 +45,5 @@ public interface CalService {
 
     void generateAndSaveCalYearWorkFonds(Integer yr);
     Map<YearMonth, Integer> calcWorkDayCountsForYr(Integer yr);
+    List<LocalDate> fetchCalyHolDateListByYear(Integer yr);
 }

@@ -14,28 +14,28 @@ import com.vaadin.flow.component.textfield.TextField;
 // TODO: probably delete
 public class LoginForm  extends VerticalLayout {
 
-    public LoginForm(){
-        init();
-    }
-
-    public void init(){
-        FormLayout nameLayout = new FormLayout();
-
-        TextField username = new TextField();
-        username.setLabel("UserName");
-        username.setPlaceholder("username");
-
-        PasswordField password = new PasswordField();
-        password.setLabel("password");
-        password.setPlaceholder("*****");
-
-        Button loginButton = new Button("login");
-
-        loginButton.addClickListener(event -> {
-        });
-
-        nameLayout.add(username, password, loginButton);
-
-        add(nameLayout);
-    }
+//    public LoginForm(){
+//        init();
+//    }
+//
+//    public void init(){
+//        FormLayout nameLayout = new FormLayout();
+//
+//        TextField username = new TextField();
+//        username.setLabel("UserName");
+//        username.setPlaceholder("username");
+//
+//        PasswordField password = new PasswordField();
+//        password.setLabel("password");
+//        password.setPlaceholder("*****");
+//
+//        Button loginButton = new Button("login");
+//
+//        loginButton.addClickListener(event -> {
+//        });
+//
+//        nameLayout.add(username, password, loginButton);
+//
+//        add(nameLayout);
+//    }
 }

@@ -96,6 +96,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private static final String OBJEDNATEL_COL_KEY = "objednatel-col";
     private static final String INVESTOR_COL_KEY = "investor-col";
     private static final String INVESTOR_ORIG_COL_KEY = "investor-orig-col";
+    private static final String DATETIME_UPDATE_COL_KEY = "datetime-update-col";
+    private static final String UPDATED_BY_COL_KEY = "updated-by-col";
     private static final String SKUPINA_COL_KEY = "skupina-col";
     private static final String ROK_COL_KEY = "rok-col";
 
@@ -260,7 +262,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         OperationResult kontOperRes = kontFormDialog.getLastOperationResult();
         boolean kontZaksChanged = kontFormDialog.isKontZaksChanged();
         boolean kontZaksFaktsChanged = kontFormDialog.isKontZaksFaktsChanged();
-        Kont kontOrig = kontFormDialog.getKontItemOrig();
+        Kont kontOrig = kontFormDialog.getOrigItem();
 
         syncTreeGridAfterKontEdit(kontOrig, kontOper, kontOperRes, kontZaksChanged, kontZaksFaktsChanged);
 
@@ -521,6 +523,17 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private ValueProvider<KzTreeAware, String> investorOrigValProv =
         kz -> kz.getTyp() == ItemType.KONT ? kz.getInvestorOrigName() : null;
 
+    private ComponentRenderer<HtmlComponent, KzTreeAware> datetimeUpdateCellRenderer = new ComponentRenderer<>(kz -> {
+        if (ItemType.KONT == kz.getTyp()) {
+            return VzmFormatUtils.getDatetimeUpdateComponent(kz.getDatetimeUpdate(), kz.getUpdatedBy());
+        } else {
+            return VzmFormatUtils.getEmptyComponent();
+        }
+    });
+
+    private ValueProvider<KzTreeAware, String> updatedByValProv =
+            kz -> kz.getTyp() == ItemType.KONT ||  kz.getTyp() == ItemType.ZAK ? kz.getUpdatedBy() : null;
+
     private ComponentRenderer<HtmlComponent, KzTreeAware> rokCellRenderer = new ComponentRenderer<>(kz -> {
         HtmlComponent comp =  VzmFormatUtils.getRokComponent(kz.getRok());
         if (ItemType.KONT == kz.getTyp()) {
@@ -671,6 +684,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 .setResizable(true)
 //                .setFrozen(true)
                 .setKey(ROK_COL_KEY)
+                .setComparator((kz1, kz2) ->
+                        kz1.getRok()
+                                .compareTo(kz2.getRok()))
         ;
         kzTreeGrid.addColumn(KzTreeAware::getSkupina).setHeader("Sk.")
                 .setFlexGrow(0)
@@ -723,6 +739,23 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 .setKey(INVESTOR_COL_KEY)
                 .setResizable(true)
         ;
+        kzTreeGrid.addColumn(datetimeUpdateCellRenderer)
+                .setHeader("Změněno")
+                .setFlexGrow(0)
+                .setWidth("8em")
+                .setKey(DATETIME_UPDATE_COL_KEY)
+                .setResizable(true)
+                .setComparator((kz1, kz2) ->
+                        kz1.getDatetimeUpdate()
+                                .compareTo(kz2.getDatetimeUpdate()))
+        ;
+        kzTreeGrid.addColumn(updatedByValProv)
+                .setHeader("Změnil")
+                .setFlexGrow(0)
+                .setWidth("12em")
+                .setKey(UPDATED_BY_COL_KEY)
+                .setResizable(true)
+        ;
         kzTreeGrid.addColumn(investorOrigValProv)
                 .setHeader("Investor (původní)")
                 .setFlexGrow(0)
@@ -730,7 +763,6 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 .setKey(INVESTOR_ORIG_COL_KEY)
                 .setResizable(true)
         ;
-
 
 // Timto se da nejak manipulovat s checboxem:
 //        treeGrid.addColumn(new ComponentRenderer<>(bean -> {
@@ -826,6 +858,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         kzTreeGrid.getColumnByKey(INVESTOR_COL_KEY).setSortable(true);
         kzTreeGrid.getColumnByKey(INVESTOR_ORIG_COL_KEY).setSortable(true);
         kzTreeGrid.getColumnByKey(ROK_COL_KEY).setSortable(true);
+        kzTreeGrid.getColumnByKey(DATETIME_UPDATE_COL_KEY).setSortable(true);
+        kzTreeGrid.getColumnByKey(UPDATED_BY_COL_KEY).setSortable(true);
         // TODO: nefunguje:
 //        kzTreeGrid.getColumnByKey(TEXT_COL_KEY).setSortable(true);
 
@@ -988,13 +1022,13 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     }
 
     private void assignDataProviderToGridAndSort(TreeDataProvider<KzTreeAware> kzTreeDataProvider) {
-        List<GridSortOrder<KzTreeAware>> sortOrderOrig = kzTreeGrid.getSortOrder();
+        List<GridSortOrder<KzTreeAware>> sortOrderRequired = kzTreeGrid.getSortOrder();
         kzTreeGrid.setDataProvider(kzTreeDataProvider);
 //        inMemoryKzTreeProvider.setFilter(kz -> kz.getArch());
-        if (CollectionUtils.isEmpty(sortOrderOrig)) {
+        if (CollectionUtils.isEmpty(sortOrderRequired)) {
             kzTreeGrid.sort(initialSortOrder);
         } else  {
-            kzTreeGrid.sort(sortOrderOrig);
+            kzTreeGrid.sort(sortOrderRequired);
         }
     }
 

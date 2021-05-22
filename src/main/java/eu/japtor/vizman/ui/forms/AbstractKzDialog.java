@@ -13,11 +13,9 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import eu.japtor.vizman.backend.entity.GrammarGender;
-import eu.japtor.vizman.backend.entity.HasModifDates;
-import eu.japtor.vizman.backend.entity.ItemNames;
-import eu.japtor.vizman.backend.entity.ItemType;
+import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import eu.japtor.vizman.ui.components.Block;
 import eu.japtor.vizman.ui.components.Operation;
 import eu.japtor.vizman.ui.components.ResizeBtn;
 import eu.japtor.vizman.ui.components.Ribbon;
@@ -235,20 +233,25 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         return lowerPane;
     }
 
-    public String getHeaderEndComponentValue(final String titleEndText) {
-        String value = "";
+    public HtmlContainer getHeaderEndComponent(final String titleEndText) {
+        HtmlContainer comp = new Div();
         if ((null == titleEndText) && (getCurrentItem() instanceof HasModifDates)) {
-            if (getCurrentOperation() == Operation.ADD) {
-                value = "";
-            } else {
+            if (getCurrentOperation() != Operation.ADD) {
                 LocalDate dateCreate = ((HasModifDates) getCurrentItem()).getDateCreate();
-                String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
+                Span createComponent = null == dateCreate ? new Span("")
+                        : new Span("Vytvořeno: " + dateCreate.format(VzmFormatUtils.basicDateFormatter));
+
                 LocalDateTime dateTimeUpdate = ((HasModifDates) getCurrentItem()).getDatetimeUpdate();
-                String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleModifDateFormatter);
-                value = "[ Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr + " ]";
+                Span updateComponent = null == dateCreate ? new Span("")
+                        : new Span("Změna: " + dateTimeUpdate.format(VzmFormatUtils.titleUpdateDateFormatter));
+                if (ItemType.KONT == ((KzTreeAware<KzTreeAware>)getCurrentItem()).getTyp()) {
+                    updateComponent.getElement().getStyle()
+                            .set("color", VzmFormatUtils.getColorByUpdatedRule(dateTimeUpdate, ((KzTreeAware<?>) getCurrentItem()).getUpdatedBy()));
+                }
+                comp.add(createComponent, new Block(), updateComponent);
             }
         }
-        return value;
+        return comp;
     }
 
     public abstract T getCurrentItem();

@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -159,9 +160,13 @@ public class CalServiceImpl implements CalService {
         return workDayCounts;
     }
 
-    private List<LocalDate> fetchCalyHolDateListByYear(Integer yr) {
+    @Override
+    public List<LocalDate> fetchCalyHolDateListByYear(Integer yr) {
         List<CalyHol> calyHols = calyHolRepo.findByYr(yr);
-        return new ArrayList<>();
+        return calyHols.stream()
+                .map(ch -> ch.getHolDate())
+                .collect(Collectors.toList())
+        ;
     }
 
     private int calcWorkDayCountForYm(YearMonth ym, List<LocalDate> holidays)
