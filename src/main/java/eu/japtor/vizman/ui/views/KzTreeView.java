@@ -644,12 +644,13 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 .setHeader("Řádek")
 //                .setFooter("Zobrazeno položek: ")
                 .setFlexGrow(0)
+                .setWidth("4.5em")
 //                .setFrozen(true)
         ;
         kzTreeGrid.addColumn(kzArchRenderer)
                 .setHeader(("Arch"))
                 .setFlexGrow(0)
-                .setWidth("5em")
+                .setWidth("4em")
                 .setResizable(true)
                 .setKey(ARCH_COL_KEY)
 //                .setFrozen(true)
@@ -658,7 +659,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         kzTreeGrid.addColumn(kzDigiRenderer)
                 .setHeader(("DIGI"))
                 .setFlexGrow(0)
-                .setWidth("5em")
+                .setWidth("4em")
                 .setResizable(true)
                 .setKey(DIGI_COL_KEY)
         ;
@@ -672,25 +673,23 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         kzTreeGrid.addHierarchyColumn(ckzValProv)
                 .setHeader("ČK|ČZ")
                 .setFlexGrow(0)
-                .setWidth("9em")
+                .setWidth("8em")
                 .setResizable(true)
-//                .setFrozen(true)
                 .setKey(CKZ_COL_KEY)
         ;
         kzTreeGrid.addColumn(rokCellRenderer)
                 .setHeader("Rok K|Z")
                 .setFlexGrow(0)
-                .setWidth("8em")
+                .setWidth("6em")
                 .setResizable(true)
-//                .setFrozen(true)
                 .setKey(ROK_COL_KEY)
                 .setComparator((kz1, kz2) ->
-                        kz1.getRok()
-                                .compareTo(kz2.getRok()))
+                        kz1.getRok().compareTo(kz2.getRok())
+                )
         ;
         kzTreeGrid.addColumn(KzTreeAware::getSkupina).setHeader("Sk.")
                 .setFlexGrow(0)
-                .setWidth("4em")
+                .setWidth("2em")
                 .setResizable(true)
 //                .setFrozen(true)
                 .setKey(SKUPINA_COL_KEY)
@@ -721,9 +720,13 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         ;
         kzTreeGrid.addColumn(kzTextRenderer)
                 .setHeader("Text")
-                .setFlexGrow(1)
+                .setFlexGrow(0)
+                .setWidth("22em")
                 .setKey(TEXT_COL_KEY)
                 .setResizable(true)
+                .setComparator((kz1, kz2) ->
+                        kz1.getText().compareTo(kz2.getText())
+                )
         ;
         kzTreeGrid.addColumn(objednatelValProv)
                 .setHeader("Objednatel")
@@ -735,7 +738,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         kzTreeGrid.addColumn(investorValProv)
                 .setHeader("Investor")
                 .setFlexGrow(0)
-                .setWidth("18em")
+                .setWidth("9em")
                 .setKey(INVESTOR_COL_KEY)
                 .setResizable(true)
         ;
@@ -756,13 +759,13 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 .setKey(UPDATED_BY_COL_KEY)
                 .setResizable(true)
         ;
-        kzTreeGrid.addColumn(investorOrigValProv)
-                .setHeader("Investor (původní)")
-                .setFlexGrow(0)
-                .setWidth("18em")
-                .setKey(INVESTOR_ORIG_COL_KEY)
-                .setResizable(true)
-        ;
+//        kzTreeGrid.addColumn(investorOrigValProv)
+//                .setHeader("Investor (původní)")
+//                .setFlexGrow(0)
+//                .setWidth("18em")
+//                .setKey(INVESTOR_ORIG_COL_KEY)
+//                .setResizable(true)
+//        ;
 
 // Timto se da nejak manipulovat s checboxem:
 //        treeGrid.addColumn(new ComponentRenderer<>(bean -> {
@@ -856,12 +859,10 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         kzTreeGrid.getColumnByKey(CKZ_COL_KEY).setSortable(true);
         kzTreeGrid.getColumnByKey(OBJEDNATEL_COL_KEY).setSortable(true);
         kzTreeGrid.getColumnByKey(INVESTOR_COL_KEY).setSortable(true);
-        kzTreeGrid.getColumnByKey(INVESTOR_ORIG_COL_KEY).setSortable(true);
         kzTreeGrid.getColumnByKey(ROK_COL_KEY).setSortable(true);
         kzTreeGrid.getColumnByKey(DATETIME_UPDATE_COL_KEY).setSortable(true);
         kzTreeGrid.getColumnByKey(UPDATED_BY_COL_KEY).setSortable(true);
-        // TODO: nefunguje:
-//        kzTreeGrid.getColumnByKey(TEXT_COL_KEY).setSortable(true);
+        kzTreeGrid.getColumnByKey(TEXT_COL_KEY).setSortable(true);
 
 
         initialSortOrder = Arrays.asList(

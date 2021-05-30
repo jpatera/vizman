@@ -7,7 +7,6 @@ import com.vaadin.flow.component.grid.FooterRow;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.editor.Editor;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -267,19 +266,15 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 .setKey(MENA_COL_KEY)
         ;
 
-        // TODO: Sorting controls disappeare when using components as column headers
-        //       Fixed in Vaadin major version 18, https://github.com/vaadin/vaadin-grid/issues/1841
-        Label honorCistyHeaderComponent = new Label("Hon.č. [CZK]");
-        honorCistyHeaderComponent.getElement()
-                .setProperty("title", "[Honorář čistý] = (SUM(fakt) - SUM(sub)) * kurz")    // Tooltip
-//                .setProperty("text-align", "center")
-        ;
+        // Tooltips for labels fixed in Vaadin major version 18, https://github.com/vaadin/vaadin-grid/issues/1841
         Grid.Column<Zakr> colHonorCisty = this.addColumn(honorCistyValueProvider)
                 .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getHonorCistyByKurz(zakr1), getHonorCistyByKurz(zakr2)))
-                .setHeader("Hon.č. [CZK]")
-//                .setHeader(honorCistyHeaderComponent) // TODO: replace "Def." artificial headers when the fix disappeared sort conntrols is available
+                .setHeader(new ColumnHeader(
+                        true, "Hon.č. [CZK]"
+                        , "[Honorář čistý] = (SUM(fakt) - SUM(sub)) * kurz"
+                ))
                 .setFlexGrow(0)
-                .setWidth("7em")
+                .setWidth("8em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
                 .setKey(HONOR_CISTY_COL_KEY)
@@ -396,9 +391,12 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
         Grid.Column<Zakr> colRxRyVykon = this.addColumn(rxRyVykonGridValueProvider)
                 .setComparator((zakr1, zakr2) -> ObjectUtils.compare(getRxRyVykonByKurz(zakr1), getRxRyVykonByKurz(zakr2)))
-                .setHeader("Výk. rx..ry")
+                .setHeader(new ColumnHeader(
+                        true, "Výk. rx..ry"
+                        , "[Výkon rx..ry] = [Honorář čistý] * ([RY] - [RX])"
+                ))
                 .setFlexGrow(0)
-                .setWidth("7em")
+                .setWidth("7.3em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
                 .setKey(PERFORMANCE_COL_KEY)
@@ -424,12 +422,15 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //        colRP.setEditorComponent(buildRxEditorComponent(zakrEditorBinder, Zakr::getR0, Zakr::setR0));
 
         Grid.Column<Zakr> colRpHotovo = this.addColumn(rpHotovoGridValueProvider)
-                .setHeader("Hotovo RP")
+                .setHeader(new ColumnHeader(
+                        true, "Hotovo RP"
+                        , "[Hotovo RP] = [Honorář čistý] * [RP]"
+                ))
                 .setComparator((zakr1, zakr2) -> ObjectUtils.compare(
                         zakr1.getRpHotovoByKurz(), zakr2.getRpHotovoByKurz()
                 ))
                 .setFlexGrow(0)
-                .setWidth("7em")
+                .setWidth("7.5em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
                 .setKey(FINISHED_COL_KEY)
@@ -438,22 +439,28 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 //        this.getDefaultHeaderRow().getCell(colRpHotovo).setComponent(hotovoHeaderLabel);
 
         Grid.Column<Zakr> colRpZbyva = this.addColumn(rpZbyvaByKurzGridValueProvider)
-                .setHeader("Zbývá RP")
+                .setHeader(new ColumnHeader(
+                         true, "Zbývá RP"
+                        , "[Zbývá RP] = [Honorář čistý] * (100% - [RP])"
+                ))
                 .setComparator((zakr1, zakr2) -> ObjectUtils.compare(
                         zakr1.getRpZbyvaByKurz(), zakr2.getRpZbyvaByKurz()
                 ))
                 .setSortable(true)
                 .setFlexGrow(0)
-                .setWidth("7em")
+                .setWidth("7.3em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setKey(REMAINS_COL_KEY)
                 .setResizable(true)
         ;
 
         Grid.Column<Zakr> colVysledek = this.addColumn(vysledekGridValueProvider)
-                .setHeader("Výsledek")
+                .setHeader(new ColumnHeader(
+                        true, "Výsledek"
+                        , "[Výsledek] = [Hotovo RP] - [Mzdy] * (1 + koef_pojist) * (1 + koef_rezie)"
+                ))
                 .setFlexGrow(0)
-                .setWidth("7em")
+                .setWidth("7.3em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
                 .setKey(RESULT_COL_KEY)
@@ -461,9 +468,12 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 ;
 
         Grid.Column<Zakr> colVysledekP8 = this.addColumn(vysledekP8GridValueProvider)
-                .setHeader("Výsledek P8")
+                .setHeader(new ColumnHeader(
+                        true, "Výsledek P8"
+                        , "[Výsledek P8] = [Hotovo RP] - [Mzdy P8] * (1 + koef_pojist) * (1 + koef_rezie)"
+                ))
                 .setFlexGrow(0)
-                .setWidth("7em")
+                .setWidth("8em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
                 .setKey(RESULTP8_COL_KEY)
@@ -481,9 +491,12 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 ;
 
         Grid.Column<Zakr> colNaklMzdyPojistRezie = this.addColumn(naklMzdyPojistRezieValueProvider)
-                .setHeader("Mzdy * P*R")
+                .setHeader(new ColumnHeader(
+                        true, "Mzdy * P*R"
+                        , "[Mzdy * P*R] = [Mzdy] * (1 + koef_pojist) * (1 + koef_rezie)"
+                ))
                 .setFlexGrow(0)
-                .setWidth("7em")
+                .setWidth("7.7em")
                 .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
                 .setKey(MZDY_POJ_REZ_COL_KEY)
@@ -506,75 +519,14 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         ;
 
 
-
         // =================
         // Headers, Footers
         // =================
 
-        descHeaderRow = this.appendHeaderRow();
+//        descHeaderRow = this.appendHeaderRow();
         filterHeaderRow = this.appendHeaderRow();
 
         sumFooterRow = this.appendFooterRow();
-
-
-        // =============
-        // Description
-        // =============
-
-//        String htmlWithTooltip = String.format(
-//                "<span title=\"%s\">%s</span>", cell.getText(),
-//                cell.getText());
-//                column.getPropertyId());
-
-        Label honorarCistyLabel = new Label("Def.");
-        honorarCistyLabel.getElement()
-                .setProperty("title", "[Honorář čistý] = (SUM(fakt) - SUM(sub)) * kurz")
-//                .setProperty("text-align", "center")
-        ;
-        descHeaderRow.getCell(colHonorCisty).setComponent(honorarCistyLabel);
-
-        Label rxRyVykonyDescLabel = new Label("Def.");
-        rxRyVykonyDescLabel.getElement()
-                .setProperty("title", "[Výkon rx..ry] = [Honorář čistý] * ([RY] - [RX])")
-//                .setProperty("text-align", "center")
-        ;
-        descHeaderRow.getCell(colRxRyVykon).setComponent(rxRyVykonyDescLabel);
-
-        Label rpZbyvaDescLabel = new Label("Def.");
-        rpZbyvaDescLabel.getElement()
-                .setProperty("title", "[Zbývá RP] = [Honorář čistý] * (100% - [RP])")
-//                .setProperty("text-align", "center")
-        ;
-        descHeaderRow.getCell(colRpZbyva).setComponent(rpZbyvaDescLabel);
-//        rpZbyvaDescLabel.getStyle()
-//                .set("text-align", "center");
-//        this.getDefaultHeaderRow().getCell(colRpZbyva).setComponent(zbyvaHeaderLabel);
-//        String htmlWithTooltip = String.format(
-//                "<span title=\"%s\">%s</span>", cell.getText(),
-//                cell.getText());
-//                column.getPropertyId());
-
-        Label hotovoHeaderLabel = new Label("Def.");
-        hotovoHeaderLabel.getElement()
-                .setProperty("title", "[Hotovo RP] = [Honorář čistý] * [RP]");
-        descHeaderRow.getCell(colRpHotovo).setComponent(hotovoHeaderLabel);
-
-
-        Label vysledekHeaderLabel = new Label("Def.");
-        vysledekHeaderLabel.getElement()
-                .setProperty("title", "[Výsledek] = [Hotovo RP] - [Mzdy] * (1 + koef_pojist) * (1 + koef_rezie)");
-        descHeaderRow.getCell(colVysledek).setComponent(vysledekHeaderLabel);
-
-        Label vysledekP8HeaderLabel = new Label("Def.");
-        vysledekP8HeaderLabel.getElement()
-                .setProperty("title", "[Výsledek P8] = [Hotovo RP] - [Mzdy P8] * (1 + koef_pojist) * (1 + koef_rezie)");
-        descHeaderRow.getCell(colVysledekP8).setComponent(vysledekP8HeaderLabel);
-
-        Label mzdyPojRezHeaderLabel = new Label("Def.");
-        mzdyPojRezHeaderLabel.getElement()
-                .setProperty("title", "[Mzdy * P*R] = [Mzdy] * (1 + koef_pojist) * (1 + koef_rezie)");
-        descHeaderRow.getCell(colNaklMzdyPojistRezie).setComponent(mzdyPojRezHeaderLabel);
-
 
 
         // =============

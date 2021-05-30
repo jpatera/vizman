@@ -8,7 +8,7 @@ public class Block extends Span {
         this("1em");
     }
 
-    private Block(final String width) {
+    public Block(final String width) {
         super();
         getStyle()
                 .set("display", "inline-block")
