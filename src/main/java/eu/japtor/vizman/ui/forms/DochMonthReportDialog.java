@@ -7,18 +7,17 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.function.SerializableSupplier;
 import eu.japtor.vizman.app.HasLogger;
-import eu.japtor.vizman.backend.entity.DochMonth;
+import eu.japtor.vizman.backend.entity.DochMonthVw;
 import eu.japtor.vizman.backend.report.DochMonthReport;
 import eu.japtor.vizman.backend.service.DochYearMonthService;
 import eu.japtor.vizman.ui.components.AbstractPrintDialog;
 import eu.japtor.vizman.ui.components.ReportExpAnchor;
-import eu.japtor.vizman.ui.views.DochView;
 import org.vaadin.reports.PrintPreviewReport;
 
 import java.util.List;
 
 
-public class DochMonthReportDialog extends AbstractPrintDialog<DochMonth> implements HasLogger {
+public class DochMonthReportDialog extends AbstractPrintDialog<DochMonthVw> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "1200px";
     public static final String DIALOG_HEIGHT = "750px";
@@ -31,16 +30,18 @@ public class DochMonthReportDialog extends AbstractPrintDialog<DochMonth> implem
     private Button closeButton;
 
     private DochYearMonthService dochYearMonthService;
-    private DochView.DochParams dochParams;
+    private DochYearMonthService.DochFilter dochMonthFilter;
     private DochMonthReport report;
     private HorizontalLayout expAnchorsBox;
     private HorizontalLayout reportParamBox;
     private TextField dochUserParamField;
     private TextField dochYmParamField;
 
-    private SerializableSupplier<List<? extends DochMonth>> itemsSupplier = () -> {
+    private SerializableSupplier<List<? extends DochMonthVw>> itemsSupplier = () -> {
 //          zakNaklVwService.fetchByZakId(zakr.getId(), zakrParams)
-            return dochYearMonthService.fetchRepDochMonthForPersonAndYm(dochParams.getPersonId(), dochParams.getDochYm());
+            return dochYearMonthService.fetchRepDochMonthForPersonAndYm(
+                    dochMonthFilter.getPersonIds().get(0)
+                    , dochMonthFilter.getDochYm());
         }
     ;
 
@@ -53,8 +54,8 @@ public class DochMonthReportDialog extends AbstractPrintDialog<DochMonth> implem
         initReportControls();
     }
 
-    public void openDialog(DochView.DochParams dochParams) {
-        this.dochParams = dochParams;
+    public void openDialog(DochYearMonthService.DochFilter dochFilter) {
+        this.dochMonthFilter = dochFilter;
         this.open();
     }
 

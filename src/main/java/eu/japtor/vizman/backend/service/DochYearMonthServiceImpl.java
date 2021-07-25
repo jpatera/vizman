@@ -3,8 +3,8 @@ package eu.japtor.vizman.backend.service;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Caly;
 import eu.japtor.vizman.backend.entity.Calym;
-import eu.japtor.vizman.backend.entity.DochMonth;
-import eu.japtor.vizman.backend.entity.DochYear;
+import eu.japtor.vizman.backend.entity.DochMonthVw;
+import eu.japtor.vizman.backend.entity.DochYearVw;
 import eu.japtor.vizman.backend.repository.CalyRepo;
 import eu.japtor.vizman.backend.repository.CalymRepo;
 import eu.japtor.vizman.backend.repository.DochMonthRepo;
@@ -18,6 +18,7 @@ import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -51,21 +52,61 @@ public class DochYearMonthServiceImpl implements DochYearMonthService, HasLogger
 
 
     @Override
-    public List<DochMonth> fetchRepDochMonthForPersonAndYm(Long personId, YearMonth dochYm) {
+    public List<DochMonthVw> fetchRepDochMonthForPersonAndYm(Long personId, YearMonth dochYm) {
         LocalDate dateStart = dochYm.atDay(1);
         LocalDate dateEnd = dochYm.atEndOfMonth();
         BigDecimal monthHourFond = getMonthFondHours(dochYm);
         String monthHourFondStr = null == monthHourFond ? "" : VzmFormatUtils.DEC_HOD_FORMAT.format(monthHourFond);
-        List<DochMonth> dochMonthRecs = dochMonthRepo.findByPersonIdAndDochYm(personId, dateStart, dateEnd);
-        for(DochMonth dm : dochMonthRecs) {
+        List<DochMonthVw> dochMonthVwRecs = dochMonthRepo.findByPersonIdAndDochYm(personId, dateStart, dateEnd);
+        for(DochMonthVw dm : dochMonthVwRecs) {
             dm.setMonthFondHours(monthHourFondStr);
         }
-        return dochMonthRecs;
+        return dochMonthVwRecs;
+    }
+
+    @Override
+    public LinkedList<DochMonthVw> fetchRepDochMonthByFilter(DochFilter dochFilter) {
+        LocalDate dateStart = dochFilter.getDochYm().atDay(1);
+        LocalDate dateEnd = dochFilter.getDochYm().atEndOfMonth();
+        BigDecimal monthHourFond = getMonthFondHours(dochFilter.getDochYm());
+        String monthHourFondStr = null == monthHourFond ? "" : VzmFormatUtils.DEC_HOD_FORMAT.format(monthHourFond);
+
+        LinkedList<DochMonthVw> dochMonthVwRecs = dochMonthRepo.findDochMonthByFilter(
+                dochFilter.getPersonIds()
+                , dateStart
+                , dateEnd
+        );
+        for(DochMonthVw dm : dochMonthVwRecs) {
+            dm.setMonthFondHours(monthHourFondStr);
+        }
+        return dochMonthVwRecs;
+    }
+
+    @Override
+    public LinkedList<DochYearVw> fetchRepDochYearByFilter(DochFilter dochFilter) {
+        YearMonth ymStart = YearMonth.of(dochFilter.getDochYear(), 1);
+        YearMonth ymEnd = YearMonth.of(dochFilter.getDochYear(), 12);
+
+        BigDecimal yearFondHours = getYearFondHours(dochFilter.getDochYear());
+        String yearFondHoursStr = null == yearFondHours ? "" : VzmFormatUtils.DEC_HOD_FORMAT.format(yearFondHours);
+        BigDecimal yearFondDays = getYearFondDays(dochFilter.getDochYear());
+        String yearFondDaysStr = null == yearFondDays ? "" : VzmFormatUtils.DEC_HOD_FORMAT.format(yearFondDays);
+
+        LinkedList<DochYearVw> dochYearVwRecs = dochYearRepo.findDochYearByFilter(
+                dochFilter.getPersonIds()
+                , ymStart
+                , ymEnd
+        );
+        for(DochYearVw dy : dochYearVwRecs) {
+            dy.setYearFondHours(yearFondHoursStr);
+            dy.setYearFondDays(yearFondDaysStr);
+        }
+        return dochYearVwRecs;
     }
 
 
     @Override
-    public List<DochYear> fetchRepDochYearForPersonAndYear(Long personId, Integer dochYear) {
+    public List<DochYearVw> fetchRepDochYearForPersonAndYear(Long personId, Integer dochYear) {
         YearMonth ymStart = YearMonth.of(dochYear, 1);
         YearMonth ymEnd = YearMonth.of(dochYear, 12);
 
@@ -75,13 +116,13 @@ public class DochYearMonthServiceImpl implements DochYearMonthService, HasLogger
         BigDecimal yearFondDays = getYearFondDays(dochYear);
         String yearFondDaysStr = null == yearFondDays ? "" : VzmFormatUtils.DEC_HOD_FORMAT.format(yearFondDays);
 
-        List<DochYear> dochYearRecs = dochYearRepo.findByPersonIdAndDochYm(personId, ymStart, ymEnd);
-        for(DochYear dy : dochYearRecs) {
+        List<DochYearVw> dochYearVwRecs = dochYearRepo.findByPersonIdAndDochYm(personId, ymStart, ymEnd);
+        for(DochYearVw dy : dochYearVwRecs) {
             dy.setYearFondHours(yearFondHoursStr);
             dy.setYearFondDays(yearFondDaysStr);
         }
 
-        return dochYearRecs;
+        return dochYearVwRecs;
     }
 
     // TODO: predelat do cache v calymRepo (viz tez PruhView)

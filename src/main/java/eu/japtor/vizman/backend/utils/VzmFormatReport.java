@@ -445,6 +445,7 @@ public class VzmFormatReport {
         WORK_HOUR_TOT_GRID_STYLE = new StyleBuilder(true, "work-hour-tot-grid-style")
                 .setParentStyleName(WORK_HOUR_GRID_STYLE_NAME)
                 .setFont(ARIAL_MEDIUM_BOLD)
+                .setHorizontalAlign(HorizontalAlign.RIGHT)
                 .setBackgroundColor(TOTAL_BG_COLOR)
                 .setTransparent(false)
                 .build()

@@ -2,9 +2,9 @@ package eu.japtor.vizman.backend.service;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import eu.japtor.vizman.backend.entity.Person;
-import eu.japtor.vizman.backend.entity.PersonState;
 import eu.japtor.vizman.ui.components.Operation;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public interface PersonService {
@@ -29,16 +29,13 @@ public interface PersonService {
     List<Person> fetchByPersonFilter(PersonFilter personFilter, List<QuerySortOrder> sortOrders);
     long countByPersonFilter(PersonFilter personFilter);
 
+    LinkedList<Long> fetchIdsByHidden(Boolean hidden);
+
     long countOfAssignedPerson(Long roleId);
 
     class PersonFilter {
-        Boolean hidden;
-        String username;
-
-        public PersonFilter(Boolean hidden, String username) {
-            this.hidden = hidden;
-            this.username = username;
-        }
+        Boolean hidden = null;
+        String username = null;
 
         public Boolean getHidden() {
             return hidden;

@@ -60,20 +60,20 @@ public class KontTreeXlsReportBuilder extends FastReportBuilder {
 
                 .setPrintColumnNames(false)
 
-                // Add columns
+                // Columns
                 .addColumn(ckontCol)
                 .addColumn(kontTextCol)
 
-                // Add groups
+                // Groups
                 .addGroup(kontGroup)
 
-                // Add sub-reports
+                // Sub-reports
                 .addField("zaks", Collection.class.getName())
                 .addSubreportInGroupFooter(1, createZaksSubreport(), new ClassicLayoutManager()
                         , "zaks", DJConstants.DATA_SOURCE_ORIGIN_FIELD, DJConstants.DATA_SOURCE_TYPE_COLLECTION
                 )
 
-                // Add totals
+                // Totals
         ;
 
     }

@@ -222,7 +222,7 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<ZaknNaklVw> implemen
     };
 
     private ComponentEventListener expXlsAnchorListener = event -> {
-        updateNaklDetailXlsRepResourceAndDownload(singleZakNaklSupplier);
+        populateNaklDetailXlsRepResourceAndDownload(singleZakNaklSupplier);
     };
 
     private Component initExpXlsAnchor() {
@@ -234,7 +234,7 @@ public class ZakNaklSingleDialog extends AbstractGridDialog<ZaknNaklVw> implemen
         return NAKL_DETAIL_REPORT_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
     }
 
-    private void updateNaklDetailXlsRepResourceAndDownload(
+    private void populateNaklDetailXlsRepResourceAndDownload(
             SerializableSupplier<List<? extends ZaknNaklVw>> itemsSupplier
     ) {
         String[] sheetNames = itemsSupplier.get().stream()

@@ -280,10 +280,9 @@ public class PersonGrid extends Grid<Person> {
         } else {
             //            String usernameFilterValue = null == event.getValue() ? "" : event.getValue().getUsername();
             //            Boolean hiddenValue = null == hidden ? "" : event.getValue().getUsername();
-            PersonService.PersonFilter personFilter = new PersonService.PersonFilter(
-//                            null == hidden ? null : hidden
-                    hidden, username
-            );
+            PersonService.PersonFilter personFilter = new PersonService.PersonFilter();
+            personFilter.setHidden(hidden);
+            personFilter.setUsername(username);
             gridDataProvider.setFilter(personFilter);
         }
         gridDataProvider.refreshAll();

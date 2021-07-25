@@ -3,6 +3,7 @@ package eu.japtor.vizman.ui.views;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.datepicker.GeneratedVaadinDatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -17,22 +18,26 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
 import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.report.DochMonthXlsReportBuilder;
+import eu.japtor.vizman.backend.report.DochYearXlsReportBuilder;
 import eu.japtor.vizman.backend.repository.CinRepo;
 import eu.japtor.vizman.backend.repository.PruhRepo;
 import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import eu.japtor.vizman.backend.service.DochYearMonthService.DochFilter;
+import eu.japtor.vizman.backend.utils.VzmUtils;
 import eu.japtor.vizman.ui.MainView;
-import eu.japtor.vizman.ui.components.Operation;
-import eu.japtor.vizman.ui.components.ReloadButton;
-import eu.japtor.vizman.ui.components.Ribbon;
+import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.DochFormDialog;
 import eu.japtor.vizman.ui.forms.DochMonthReportDialog;
 import eu.japtor.vizman.ui.forms.DochYearReportDialog;
@@ -55,6 +60,7 @@ import static eu.japtor.vizman.backend.entity.Pruh.PRUH_STATE_LOCKED;
 import static eu.japtor.vizman.backend.entity.Pruh.PRUH_STATE_UNLOCKED;
 import static eu.japtor.vizman.backend.service.CfgPropsCacheImpl.PRAC_DOBA_END;
 import static eu.japtor.vizman.backend.service.CfgPropsCacheImpl.PRAC_DOBA_START;
+import static eu.japtor.vizman.backend.utils.VzmFormatReport.RFNDF;
 import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_DOCH;
 
 @Route(value = ROUTE_DOCH, layout = MainView.class)
@@ -93,6 +99,8 @@ public class DochView extends HorizontalLayout implements HasLogger {
     private Icon dochStateIconClosed;
 
     private String authUsername;
+    private ReportXlsExporter<DochMonthVw> dochMonthXlsReportExporter;
+    private ReportXlsExporter<DochYearVw> dochYearXlsReportExporter;
 
     private Icon loadTodayIconEnabled;
     private Icon loadTodayIconDisabled;
@@ -104,15 +112,15 @@ public class DochView extends HorizontalLayout implements HasLogger {
     private static final DateTimeFormatter dochTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static final DateTimeFormatter upperDochDateHeaderFormatter = DateTimeFormatter.ofPattern("EEEE");
     private static final DateTimeFormatter lowerDochDateHeaderFormatter = DateTimeFormatter.ofPattern("dd. MM. yyyy, EEEE");
+    private static final String DOCH_MONTH_REPORT_FILE_NAME = "vzm-doch-month";
+    private static final String DOCH_YEAR_REPORT_FILE_NAME = "vzm-doch-year";
+    private static final Locale czLocale = new Locale("cs", "CZ");
 
     private DochFormDialog dochFormDialog;
     private List<Person> dochPersonList;
     private ComboBox<Person> dochPersonSelector;
     private DatePicker dochDateSelector;
-    private static final Locale czLocale = new Locale("cs", "CZ");
-
-    private Button dochMonthReportBtn = new Button();
-    private Button dochYearReportBtn = new Button();
+    private Anchor expXlsAnchor;
 
     private FormLayout dochControl = new FormLayout();
     private FormLayout nepritControl = new FormLayout();
@@ -198,6 +206,8 @@ public class DochView extends HorizontalLayout implements HasLogger {
     public void init() {
         authUsername = SecurityUtils.getUsername();
         initDochData();
+        dochMonthXlsReportExporter = new ReportXlsExporter();
+        dochYearXlsReportExporter = new ReportXlsExporter();
         dochFormDialog = new DochFormDialog(
                 this::stampDochManualFromDialog);
     }
@@ -517,36 +527,6 @@ public class DochView extends HorizontalLayout implements HasLogger {
                 .set("padding-bottom", "0")
         ;
 
-        dochMonthReportBtn.setText("Měsíční přehled");
-        dochMonthReportBtn.setEnabled(true);
-        dochMonthReportBtn.addClickListener(event -> {
-                DochParams dochParams = new DochParams();
-                dochParams.setPersonId(dochPerson.getId());
-                dochParams.setDochYm(YearMonth.of(dochDate.getYear(), dochDate.getMonthValue()));
-                if (null == dochMonthReportDialog) {
-                    dochMonthReportDialog = new DochMonthReportDialog(dochYearMonthService);
-                }
-                dochMonthReportDialog.openDialog(dochParams);
-                dochMonthReportDialog.generateAndShowReport();
-            }
-        );
-
-        dochYearReportBtn.setText("Roční přehled");
-        dochYearReportBtn.setEnabled(true);
-        dochYearReportBtn.addClickListener(event -> {
-                DochParams dochParams = new DochParams();
-                dochParams.setPersonId(dochPerson.getId());
-                dochParams.setDochYear(dochDate.getYear());
-                dochParams.setDochYmStart(YearMonth.of(dochDate.getYear(), 1));
-                dochParams.setDochYmEnd(YearMonth.of(dochDate.getYear(), 12));
-                if (null == dochYearReportDialog) {
-                    dochYearReportDialog = new DochYearReportDialog(dochYearMonthService);
-                }
-                dochYearReportDialog.openDialog(dochParams);
-                dochYearReportDialog.generateAndShowReport();
-            }
-        );
-
         dochControl.setWidth("30em");
         dochControl.getStyle()
                 .set("margin-top", "0.3em");
@@ -612,6 +592,183 @@ public class DochView extends HorizontalLayout implements HasLogger {
         this.add(new Ribbon(), mainDochPanel, new Ribbon());
     }
 
+    private SerializableSupplier<List<? extends DochMonthVw>> dochMonthRepFilteredSupplier =
+            () -> {
+//                paramsBinder.writeBeanIfValid(dochParams);
+                return dochYearMonthService.fetchRepDochMonthByFilter(
+                        buildDochMonthFilter(personService.fetchIdsByHidden(false)
+                ));
+            };
+
+    private SerializableSupplier<List<? extends DochYearVw>> dochYearRepFilteredSupplier =
+            () -> {
+//                paramsBinder.writeBeanIfValid(dochParams);
+                return dochYearMonthService.fetchRepDochYearByFilter(
+                        buildDochYearFilter(personService.fetchIdsByHidden(false)
+                ));
+            };
+
+    private DochFilter buildDochMonthFilter(LinkedList<Long> personIds) {
+//        dochView.saveFilterFieldValues();
+        DochFilter filter = new DochFilter();
+        filter.setPersonIds(personIds);
+        filter.setDochYm(getDochYm());
+        return filter;
+    }
+
+    private DochFilter buildDochYearFilter(LinkedList<Long> personIds) {
+//        dochView.saveFilterFieldValues();
+        DochFilter filter = new DochFilter();
+        filter.setPersonIds(personIds);
+        filter.setDochYear(dochDate.getYear());
+        return filter;
+    }
+
+
+    private YearMonth getDochYm() {
+        return YearMonth.of(dochDate.getYear(), dochDate.getMonthValue());
+    }
+
+
+    private Component initDochMonthReportButtonMenu() {
+        Button btn = new Button();
+        btn.setText("Měsíční přehled");
+        btn.setEnabled(true);
+        btn.getElement().setAttribute("theme", "icon secondary");
+        btn.getElement().setProperty("title", "Měsíční docházka - report");
+
+        ContextMenu menu = new ContextMenu();
+        menu.addItem("Zobrazený uživatel", e -> openSingleDochMonthRepDialog());
+        menu.addItem("Všichni aktivní uživatelé", e -> populateDochMonthXlsRepResourceAndDownload(
+                dochMonthRepFilteredSupplier
+//                , getDochMonthRepActiveSubtitleText()
+        ));
+
+        menu.setOpenOnClick(true);
+        menu.setTarget(btn);
+        return btn;
+    }
+
+    private Component initDochYearReportButtonMenu() {
+        Button btn = new Button();
+        btn.setText("Roční přehled");
+        btn.setEnabled(true);
+        btn.getElement().setAttribute("theme", "icon secondary");
+        btn.getElement().setProperty("title", "Roční docházka - report");
+
+        ContextMenu menu = new ContextMenu();
+        menu.addItem("Zobrazený uživatel", e -> openSingleDochYearRepDialog());
+        menu.addItem("Všichni aktivní uživatelé", e -> populateDochYearXlsRepResourceAndDownload(
+                dochYearRepFilteredSupplier
+//                , getDochMonthRepActiveSubtitleText()
+        ));
+
+        menu.setOpenOnClick(true);
+        menu.setTarget(btn);
+        return btn;
+    }
+
+    private void openSingleDochMonthRepDialog() {
+        if (null == dochMonthReportDialog) {
+            dochMonthReportDialog = new DochMonthReportDialog(dochYearMonthService);
+        }
+        dochMonthReportDialog.openDialog(
+                buildDochMonthFilter(new LinkedList<>(Arrays.asList(dochPerson.getId())))
+        );
+        dochMonthReportDialog.generateAndShowReport();
+    }
+
+    private void openSingleDochYearRepDialog() {
+        if (null == dochYearReportDialog) {
+            dochYearReportDialog = new DochYearReportDialog(dochYearMonthService);
+        }
+        dochYearReportDialog.openDialog(
+                buildDochYearFilter(new LinkedList<Long>(Arrays.asList(dochPerson.getId())))
+        );
+        dochYearReportDialog.generateAndShowReport();
+    }
+
+    private void populateDochMonthXlsRepResourceAndDownload(
+            SerializableSupplier<List<? extends DochMonthVw>> itemsSupplier
+    ) {
+//        DochParams dochParams = new DochParams();
+//        dochParams.setPersonId(dochPerson.getId());
+//        dochParams.setDochYm(YearMonth.of(dochDate.getYear(), dochDate.getMonthValue()));
+//        if (null == dochMonthReportDialog) {
+//            dochMonthReportDialog = new DochMonthReportDialog(dochYearMonthService);
+//        }
+
+        String[] sheetNames = itemsSupplier.get().stream()
+                .filter(VzmUtils.distinctByKey(p -> p.getPrijmeni()))
+                .map(item -> item.getPrijmeni())
+                .toArray(String[]::new)
+                ;
+//        String[] sheetNames = itemsSupplier.get().stream()
+//                .filter(VzmUtils.distinctByKey(p -> p.getPersonId()))
+//                .map(item -> item.getPersonId().toString())
+//                .toArray(String[]::new)
+//                ;
+        final AbstractStreamResource xlsResource =
+                dochMonthXlsReportExporter.getXlsStreamResource(
+                        new DochMonthXlsReportBuilder()
+                        , getDochMonthReportFileName(ReportXlsExporter.Format.XLS)
+                        , itemsSupplier
+                        , sheetNames
+                );
+
+        expXlsAnchor.setHref(xlsResource);
+        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
+    }
+
+    private String getDochMonthReportFileName(ReportXlsExporter.Format format) {
+        return DOCH_MONTH_REPORT_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
+    }
+
+
+    private void populateDochYearXlsRepResourceAndDownload(
+            SerializableSupplier<List<? extends DochYearVw>> itemsSupplier
+    ) {
+//        DochParams dochParams = new DochParams();
+//        dochParams.setPersonId(dochPerson.getId());
+//        dochParams.setDochYm(YearMonth.of(dochDate.getYear(), dochDate.getMonthValue()));
+//        if (null == dochMonthReportDialog) {
+//            dochMonthReportDialog = new DochMonthReportDialog(dochYearMonthService);
+//        }
+
+        String[] sheetNames = itemsSupplier.get().stream()
+                .filter(VzmUtils.distinctByKey(p -> p.getPrijmeni()))
+                .map(item -> item.getPrijmeni())
+                .toArray(String[]::new)
+                ;
+//        String[] sheetNames = itemsSupplier.get().stream()
+//                .filter(VzmUtils.distinctByKey(p -> p.getPersonId()))
+//                .map(item -> item.getPersonId().toString())
+//                .toArray(String[]::new)
+//                ;
+        final AbstractStreamResource xlsResource =
+                dochYearXlsReportExporter.getXlsStreamResource(
+                        new DochYearXlsReportBuilder()
+                        , getDochYearReportFileName(ReportXlsExporter.Format.XLS)
+                        , itemsSupplier
+                        , sheetNames
+                );
+
+        expXlsAnchor.setHref(xlsResource);
+        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
+    }
+
+    private String getDochYearReportFileName(ReportXlsExporter.Format format) {
+        return DOCH_YEAR_REPORT_FILE_NAME + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
+    }
+
+//    private ComponentEventListener expXlsAnchorListener = event -> {
+//        populateDochMonthXlsRepResourceAndDownload(dochMonthRepFilteredSupplier);
+//    };
+
+    private Component initExpXlsAnchor() {
+        expXlsAnchor = new ExpXlsAnchor();
+        return expXlsAnchor;
+    }
 
     private Component initDochToolBar() {
         HorizontalLayout dochToolBar = new HorizontalLayout();
@@ -643,8 +800,9 @@ public class DochView extends HorizontalLayout implements HasLogger {
 
         HorizontalLayout buttonBox = new HorizontalLayout();
         buttonBox.add(
-                dochMonthReportBtn
-                , dochYearReportBtn
+                initExpXlsAnchor()
+                , initDochMonthReportButtonMenu()
+                , initDochYearReportButtonMenu()
         );
 
         dochToolBar.add(
@@ -994,13 +1152,13 @@ public class DochView extends HorizontalLayout implements HasLogger {
         return vertSpace;
     }
 
-    private ValueProvider<Doch, String> fromTimeValProv =
+    private final ValueProvider<Doch, String> fromTimeValProv =
             doch -> null == doch.getFromTime() ? null : doch.getFromTime().format(VzmFormatUtils.shortTimeFormatter);
 
-    private ValueProvider<Doch, String> toTimeValProv =
+    private final ValueProvider<Doch, String> toTimeValProv =
             doch -> null == doch.getToTime() ? null : doch.getToTime().format(VzmFormatUtils.shortTimeFormatter);
 
-    private ValueProvider<Doch, String> durationValProv =
+    private final ValueProvider<Doch, String> durationValProv =
             doch -> null == doch.getDochDur() ? null : formatDuration(doch.getDochDur());
 
     private Component initUpperDochHeaderBar() {

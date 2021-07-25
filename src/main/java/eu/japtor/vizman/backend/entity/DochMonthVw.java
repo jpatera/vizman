@@ -14,8 +14,8 @@ import java.time.format.DateTimeFormatter;
 @Immutable
 //@ReadOnly
 @Entity
-@Table(name = "DOCH_MES_VIEW")
-public class DochMonth implements Serializable {
+@Table(name = "DOCH_MES_VIEW_2")
+public class DochMonthVw implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -26,6 +26,14 @@ public class DochMonth implements Serializable {
     @Basic
     @Column(name = "PERSON_ID")
     private Long personId;
+
+    @Basic
+    @Column(name = "PRIJMENI")
+    private String prijmeni;
+
+    @Basic
+    @Column(name = "JMENO")
+    private String jmeno;
 
     @Basic
     @Column(name = "DOCH_WEEK")
@@ -91,13 +99,13 @@ public class DochMonth implements Serializable {
     @Column(name = "DUR_SLUZ")
     private Duration durSluz;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="PERSON_ID", unique=true, nullable=true, insertable=false, updatable=false)
-    private Person person;
-
-    public Person getPerson() {
-        return person;
-    }
+//    @OneToOne(fetch = FetchType.EAGER)
+//    @JoinColumn(name="PERSON_ID", unique=true, nullable=true, insertable=false, updatable=false)
+//    private Person person;
+//
+//    public Person getPerson() {
+//        return person;
+//    }
 
     @Transient
     private String monthFondHours;
@@ -111,7 +119,7 @@ public class DochMonth implements Serializable {
 
     // Constructor
     // -----------
-    public DochMonth() {}
+    public DochMonthVw() {}
 
 
     public Long getId() {
@@ -120,6 +128,14 @@ public class DochMonth implements Serializable {
 
     public Long getPersonId() {
         return personId;
+    }
+
+    public String getPrijmeni() {
+        return prijmeni;
+    }
+
+    public String getJmeno() {
+        return jmeno;
     }
 
     public Integer getDochWeek() {
@@ -217,7 +233,7 @@ public class DochMonth implements Serializable {
 
     @Transient
     public String getFullNameAndDochYm() {
-        return person.getPrijmeni() + " " + person.getJmeno()
+        return getPrijmeni() + " " + getJmeno()
                 + " \u00A0\u00A0\u00A0\u00A0 " + getDochYm() + " \u00A0\u00A0\u00A0\u00A0 Fond: " + getMonthFondHours();
     }
 

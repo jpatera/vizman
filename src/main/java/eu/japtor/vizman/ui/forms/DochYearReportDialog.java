@@ -7,13 +7,11 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.function.SerializableSupplier;
 import eu.japtor.vizman.app.HasLogger;
-//import eu.japtor.vizman.backend.entity.DochMonth;
-import eu.japtor.vizman.backend.entity.DochYear;
+import eu.japtor.vizman.backend.entity.DochYearVw;
 import eu.japtor.vizman.backend.report.DochYearReport;
 import eu.japtor.vizman.backend.service.DochYearMonthService;
 import eu.japtor.vizman.ui.components.AbstractPrintDialog;
 import eu.japtor.vizman.ui.components.ReportExpAnchor;
-import eu.japtor.vizman.ui.views.DochView;
 import org.vaadin.reports.PrintPreviewReport;
 
 import java.util.List;
@@ -21,7 +19,7 @@ import java.util.List;
 
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class DochYearReportDialog extends AbstractPrintDialog<DochYear> implements HasLogger {
+public class DochYearReportDialog extends AbstractPrintDialog<DochYearVw> implements HasLogger {
 
     public static final String DIALOG_WIDTH = "1200px";
     public static final String DIALOG_HEIGHT = "750px";
@@ -34,32 +32,31 @@ public class DochYearReportDialog extends AbstractPrintDialog<DochYear> implemen
     private Button closeButton;
 
     private DochYearMonthService dochYearMonthService;
-    private DochView.DochParams dochParams;
+    private DochYearMonthService.DochFilter dochYearFilter;
     private DochYearReport report;
     private HorizontalLayout expAnchorsBox;
     private HorizontalLayout reportParamBox;
     private TextField dochUserParamField;
     private TextField dochYmParamField;
 
-    private SerializableSupplier<List<? extends DochYear>> itemsSupplier = () -> {
-//          zakNaklVwService.fetchByZakId(zakr.getId(), zakrParams)
-            return dochYearMonthService.fetchRepDochYearForPersonAndYear(dochParams.getPersonId(), dochParams.getDochYear());
+    private SerializableSupplier<List<? extends DochYearVw>> itemsSupplier = () -> {
+            return dochYearMonthService.fetchRepDochYearForPersonAndYear(
+                    dochYearFilter.getPersonIds().get(0)
+                    , dochYearFilter.getDochYear());
         }
     ;
 
 
     public DochYearReportDialog(DochYearMonthService dochYearMonthService) {
         super(DIALOG_WIDTH, DIALOG_HEIGHT);
-        setDialogTitle("Report: MĚSÍČNÍ DOCHÁZKA");
+        setDialogTitle("Report: ROČNÍ DOCHÁZKA");
 //        getHeaderRightBox().setText("END text");
         this.dochYearMonthService = dochYearMonthService;
         initReportControls();
     }
 
-    public void openDialog(DochView.DochParams dochParams) {
-        this.dochParams = dochParams;
-//        rezieParamField.setValue(zakrParams.getKoefRezie().toString());
-//        pojistParamField.setValue(zakrParams.getKoefPojist().toString());
+    public void openDialog(DochYearMonthService.DochFilter dochFilter) {
+        this.dochYearFilter = dochFilter;
         this.open();
     }
 

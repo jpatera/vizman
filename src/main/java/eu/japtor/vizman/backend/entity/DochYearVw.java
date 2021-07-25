@@ -9,8 +9,8 @@ import java.time.YearMonth;
 
 @Immutable
 @Entity
-@Table(name = "DOCH_ROK_VIEW")
-public class DochYear implements Serializable {
+@Table(name = "DOCH_ROK_VIEW_2")
+public class DochYearVw implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -21,6 +21,14 @@ public class DochYear implements Serializable {
     @Basic
     @Column(name = "PERSON_ID")
     private Long personId;
+
+    @Basic
+    @Column(name = "PRIJMENI")
+    private String prijmeni;
+
+    @Basic
+    @Column(name = "JMENO")
+    private String jmeno;
 
     @Column(name = "DOCH_YM", columnDefinition = "INTEGER")
     @Convert(converter = YearMonthIntegerAttributeConverter.class)
@@ -54,9 +62,9 @@ public class DochYear implements Serializable {
     @Column(name = "DUR_SLUZ")
     private Duration durSluz;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="PERSON_ID", unique=true, nullable=true, insertable=false, updatable=false)
-    private Person person;
+//    @OneToOne(fetch = FetchType.EAGER)
+//    @JoinColumn(name="PERSON_ID", unique=true, nullable=true, insertable=false, updatable=false)
+//    private Person person;
 
     @Transient
     private String yearFondHours;
@@ -66,7 +74,7 @@ public class DochYear implements Serializable {
 
     // Constructors
     // ------------
-    public DochYear() {}
+    public DochYearVw() {}
 
 
     // Getters & setters
@@ -77,6 +85,14 @@ public class DochYear implements Serializable {
 
     public Long getPersonId() {
         return personId;
+    }
+
+    public String getPrijmeni() {
+        return prijmeni;
+    }
+
+    public String getJmeno() {
+        return jmeno;
     }
 
     public YearMonth getDochYm() {
@@ -139,9 +155,9 @@ public class DochYear implements Serializable {
         return null == durSluz ? null : durSluz.toMinutes();
     }
 
-    public Person getPerson() {
-        return person;
-    }
+//    public Person getPerson() {
+//        return person;
+//    }
 
     public String getYearFondHours() {
         return yearFondHours;
@@ -157,13 +173,13 @@ public class DochYear implements Serializable {
         this.yearFondDays = yearFondDays;
     }
     public String getFullNameAndDochYear() {
-        return person.getPrijmeni() + " " + person.getJmeno()
+        return getPrijmeni() + " " + getJmeno()
                 + " \u00A0\u00A0\u00A0\u00A0 " + getDochYear()
                 + " \u00A0\u00A0\u00A0\u00A0 Fond: " + getYearFondDays() + " [dny]"
                 + " \u00A0\u00A0\u00A0\u00A0 Fond: " + getYearFondHours() + " [hod]";
     }
 
     public String getFullName() {
-        return person.getPrijmeni() + " " + person.getJmeno();
+        return getPrijmeni() + " " + getJmeno();
     }
 }

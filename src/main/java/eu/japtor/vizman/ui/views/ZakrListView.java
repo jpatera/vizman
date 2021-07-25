@@ -365,7 +365,7 @@ public class ZakrListView extends VerticalLayout {
         btn.getElement().setProperty("title", "Souhrnné náklady zakázek - report");
 
         ContextMenu menu = new ContextMenu();
-        menu.addItem("Zobrazené zakázky (max 20)", e -> updateNaklSouhrnXlsRepResourceAndDownload(
+        menu.addItem("Zobrazené zakázky (max 20)", e -> populateNaklSouhrnXlsRepResourceAndDownload(
                 zakYmNaklSouhrnRepVisibleSupplier
                 , getZakrRepFilteredSubtitleText()
         ));
@@ -383,11 +383,11 @@ public class ZakrListView extends VerticalLayout {
         btn.getElement().setProperty("title", "Rozpracovanost zakázek - report");
 
         ContextMenu menu = new ContextMenu();
-        menu.addItem("Zobrazené zakázky", e -> updateRozpracSumXlsRepResourceAndDownload(
+        menu.addItem("Zobrazené zakázky", e -> populateRozpracSumXlsRepResourceAndDownload(
                 zakRozpracRepFilteredSupplier
                 , getZakrRepFilteredSubtitleText()
         ));
-        menu.addItem("Všechny zakázky", e -> updateRozpracSumXlsRepResourceAndDownload(
+        menu.addItem("Všechny zakázky", e -> populateRozpracSumXlsRepResourceAndDownload(
                 zakRozpracRepAllSupplier
                 , getZakrRepAllSubtitleText()
         ));
@@ -398,7 +398,7 @@ public class ZakrListView extends VerticalLayout {
         return btn;
     }
 
-    private void updateRozpracSumXlsRepResourceAndDownload(
+    private void populateRozpracSumXlsRepResourceAndDownload(
             SerializableSupplier<List<? extends Zakr>> itemsSupplier
             , final String subtitleText
     ) {
@@ -426,7 +426,7 @@ public class ZakrListView extends VerticalLayout {
 //        page.setLocation(registration.getResourceUri());
     }
 
-    private void updateNaklSouhrnXlsRepResourceAndDownload(
+    private void populateNaklSouhrnXlsRepResourceAndDownload(
             SerializableSupplier<List<? extends ZakYmNaklVw>> itemsSupplier
             , final String subtitleText
     ) {
@@ -481,7 +481,7 @@ public class ZakrListView extends VerticalLayout {
 
     private ZakrFilter buildZakrFilter() {
         zakrGrid.saveFilterFieldValues();
-        ZakrFilter filter = ZakrFilter.getEmpty();
+        ZakrFilter filter = new ZakrFilter();
         filter.setArch(zakrGrid.getArchFilterValue());
         filter.setCkz(zakrGrid.getCkzFilterValue());
         filter.setRokZak(zakrGrid.getRokFilterValue());
@@ -582,23 +582,12 @@ public class ZakrListView extends VerticalLayout {
     }
 
     public static class ZakrParams {
-        HundredFilter hundredFilter;
-        BigDecimal kurzEur;
-        String rx;
-        String ry;
-        BigDecimal koefRezie;
-        BigDecimal koefPojist;
-
-        public static ZakrParams getEmptyInstance() {
-            ZakrParams zakrParams = new ZakrParams();
-            zakrParams.setHundredFilter(null);
-            zakrParams.setKurzEur(null);
-            zakrParams.setRx(null);
-            zakrParams.setRy(null);
-            zakrParams.setKoefRezie(null);
-            zakrParams.setKoefPojist(null);
-            return zakrParams;
-        }
+        HundredFilter hundredFilter = null;
+        BigDecimal kurzEur = null;
+        String rx = null;
+        String ry = null;
+        BigDecimal koefRezie = null;
+        BigDecimal koefPojist = null;
 
         public static ZakrParams getDefaultInstance(final CfgPropsCache cfgPropsCache) {
             ZakrParams zakrParams = new ZakrParams();
@@ -656,23 +645,12 @@ public class ZakrListView extends VerticalLayout {
 
     public static class ZakrFilter {
 
-        String ckz;
-        Integer rokZak;
-        String skupina;
-        Boolean arch;
-        String kzText;
-        String objednatel;
-
-        public static final ZakrFilter getEmpty() {
-            ZakrListView.ZakrFilter filter = new ZakrFilter();
-            filter.setArch(null);
-            filter.setCkz(null);
-            filter.setRokZak(null);
-            filter.setSkupina(null);
-            filter.setObjednatel(null);
-            filter.setKzText(null);
-            return filter;
-        }
+        String ckz = null;
+        Integer rokZak = null;
+        String skupina = null;
+        Boolean arch = null;
+        String kzText = null;
+        String objednatel = null;
 
         public Boolean getArch() {
             return arch;

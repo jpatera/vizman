@@ -13,6 +13,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 @Service
@@ -26,12 +27,6 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
 
     @Autowired
     private PersonRoleRepo personRoleRepo;
-
-//    @Autowired
-//    public PersonServiceImpl(PersonRepo personRepo) {
-//        super();
-//        this.personRepo = personRepo;
-//    }
 
     @Override
     public List<QuerySortOrder> getDefaultSortOrders() {
@@ -165,6 +160,11 @@ public class PersonServiceImpl extends AbstractSortableService implements Person
                     ;
             return personRepo.count(Example.of(probe, matcher));
         }
+    }
+
+    @Override
+    public LinkedList<Long> fetchIdsByHidden(final Boolean hidden) {
+        return personRepo.findIdsByHidden(hidden);
     }
 
     @Override
