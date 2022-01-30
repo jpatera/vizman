@@ -119,7 +119,7 @@ public class ZakReport extends PrintPreviewReport {
         castkaCol = ColumnBuilder.getNew()
                 .setColumnProperty("castka", BigDecimal.class)
                 .setTitle("Částka")
-                .setStyle(MONEY_GRID_STYLE)
+                .setStyle(MONEY_GRID_NO_SPACE_NO_FRACT_STYLE)
                 .setWidth(80)
 //                .setFixedWidth(true)
                 .build();

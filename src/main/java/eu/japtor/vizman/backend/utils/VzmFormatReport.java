@@ -105,7 +105,7 @@ public class VzmFormatReport {
     public static final Style PERCENT_GRID_STYLE;
 
     public static final Style MONEY_GRID_STYLE;
-//    public static final Style MONEY_GRID_XLS_STYLE;
+    public static final Style MONEY_GRID_NO_SPACE_NO_FRACT_STYLE;
     public static final Style SHORT_DATE_GRID_STYLE;
 //    public static final Style SHORT_DATE_WEEKEND_GRID_STYLE;
     public static final Style WEEKEND_BLACK_GRID_STYLE;
@@ -490,6 +490,12 @@ public class VzmFormatReport {
                 .setParentStyleName(DEFAULT_GRID_STYLE_NAME)
                 .setHorizontalAlign(HorizontalAlign.RIGHT)
                 .setPattern("#,##0.00;-#,##0.00")
+                .build();
+
+        MONEY_GRID_NO_SPACE_NO_FRACT_STYLE = new StyleBuilder(true, "money-grid-no-space-style")
+                .setParentStyleName(DEFAULT_GRID_STYLE_NAME)
+                .setHorizontalAlign(HorizontalAlign.RIGHT)
+                .setPattern("##0;-##0")
                 .build();
 
         PERCENT_GRID_STYLE = new StyleBuilder(true, "percent-grid-style")
