@@ -325,7 +325,9 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
             YearMonth ymFromLast = getLastYmFrom();
             YearMonth ymNow = YearMonth.now();
             YearMonth ymFromNew;
-            if (null == ymToLast) {
+            if (null == ymFromLast && null == ymToLast) {
+                ymFromNew = ymNow;
+            } else if (null == ymToLast) {
                 if (ymNow.compareTo(ymFromLast.plusMonths(1)) > 0) {
                     ymFromNew = ymNow;
                 } else {
@@ -647,15 +649,15 @@ public class PersonWageGridDialog extends AbstractGridDialog<PersonWage> impleme
 
 
     private YearMonth getLastYmTo() {
-        return currentItemList.get(0).getYmTo();
+        return currentItemList == null || currentItemList.isEmpty() ? null : currentItemList.get(0).getYmTo();
     }
 
     private YearMonth getLastYmFrom() {
-        return currentItemList.get(0).getYmFrom();
+        return currentItemList == null || currentItemList.isEmpty() ? null : currentItemList.get(0).getYmFrom();
     }
 
     private PersonWage getLastWage() {
-        return currentItemList.get(0);
+        return currentItemList == null || currentItemList.isEmpty() ? null : currentItemList.get(0);
     }
 
     private PersonWage getWageBefore(PersonWage currentWage) {
