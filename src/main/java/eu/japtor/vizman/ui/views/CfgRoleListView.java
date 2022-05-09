@@ -335,7 +335,7 @@ public class CfgRoleListView extends VerticalLayout implements BeforeEnterObserv
         return new GridItemBtn(event -> {
                 roleGrid.select(itemFromView);
                 assignedPersonsDialog.openDialog(
-                        roleService.fetchByIdWithLazyPersons(itemFromView.getId())
+                        roleService.fetchByIdEager(itemFromView.getId())
                 );
             }
             , new Icon(VaadinIcon.USERS)

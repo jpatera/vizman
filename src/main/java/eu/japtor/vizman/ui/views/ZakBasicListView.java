@@ -14,17 +14,12 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.AbstractStreamResource;
+import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.app.security.Permissions;
-import eu.japtor.vizman.backend.entity.ItemNames;
-import eu.japtor.vizman.backend.entity.ItemType;
-import eu.japtor.vizman.backend.entity.Perm;
-import eu.japtor.vizman.backend.entity.ZakBasic;
+import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.report.ZakBasicReportBuilder;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
-import eu.japtor.vizman.backend.service.CfgPropsCache;
-import eu.japtor.vizman.backend.service.ZakBasicService;
-import eu.japtor.vizman.backend.service.ZakNaklVwService;
-import eu.japtor.vizman.backend.service.ZakrService;
+import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.ui.MainView;
 import eu.japtor.vizman.ui.components.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +28,7 @@ import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static eu.japtor.vizman.app.security.SecurityUtils.isNaklBasicAccessGranted;
-import static eu.japtor.vizman.app.security.SecurityUtils.isNaklCompleteAccessGranted;
+import static eu.japtor.vizman.app.security.SecurityUtils.*;
 import static eu.japtor.vizman.backend.utils.VzmFormatReport.RFNDF;
 import static eu.japtor.vizman.ui.util.VizmanConst.*;
 
@@ -45,7 +39,9 @@ import static eu.japtor.vizman.ui.util.VizmanConst.*;
         Perm.ZAK_BASIC_READ, Perm.ZAK_BASIC_MODIFY,
         Perm.ZAK_EXT_READ, Perm.ZAK_EXT_MODIFY
 })
-public class ZakBasicListView extends VerticalLayout {
+public class ZakBasicListView extends VerticalLayout implements HasLogger {
+
+    private final static String REPORT_FILE_NAME = "vzm-rep-zakb";
 
     private List<ZakBasic> zakList;
     private ZakSimpleGrid zakGrid;
@@ -55,7 +51,6 @@ public class ZakBasicListView extends VerticalLayout {
     private Anchor expXlsAnchor;
     private ReportExporter<ZakBasic> reportExporter;
 
-    private final static String REPORT_FILE_NAME = "vzm-rep-zakb";
 
     @Autowired
     public ZakBasicRepo zakBasicRepo;
@@ -87,20 +82,6 @@ public class ZakBasicListView extends VerticalLayout {
         //        UI.getCurrent().getPage().executeJavaScript("document.querySelectorAll(\"vaadin-grid-sorter\")[1].click()");
     }
 
-    private ZakBasicFilter buildZakBasicFilter() {
-        zakGrid.saveFilterFieldValues();
-        ZakBasicFilter filter = ZakBasicFilter.getEmpty();
-        filter.setArch(zakGrid.getArchFilterValue());
-        filter.setDigi(zakGrid.getDigiFilterValue());
-        filter.setTyp(zakGrid.getTypFilterValue());
-        filter.setCkz(zakGrid.getCkzFilterField());
-        filter.setRokZak(zakGrid.getRokFilterValue());
-        filter.setSkupina(zakGrid.getSkupinaFilterValue());
-        filter.setObjednatel(zakGrid.getObjednatelFilterValue());
-        filter.setTextKont(zakGrid.getTextKontFilterValue());
-        filter.setTextZak(zakGrid.getTextZakFilterValue());
-        return filter;
-    }
 
     private void initView() {
         this.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
@@ -132,11 +113,13 @@ public class ZakBasicListView extends VerticalLayout {
                 ,true
                 , true
                 , isNaklBasicAccessGranted() || isNaklCompleteAccessGranted()
+                , isArchDigiEditGranted()
                 , null
                 , null
                 , zakNaklVwService
                 , zakrService
                 , cfgPropsCache
+                , zakBasicService
         );
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
@@ -196,7 +179,7 @@ public class ZakBasicListView extends VerticalLayout {
 
     private SerializableSupplier<List<? extends ZakBasic>> zakBasicRepFilteredSupplier =
             () -> {
-                return zakBasicService.fetchByFiltersDescOrder(buildZakBasicFilter());
+                return zakBasicService.fetchByFiltersDescOrder(zakGrid.buildZakBasicFilter());
             };
 
     private Component initExpXlsAnchor() {
@@ -255,7 +238,7 @@ public class ZakBasicListView extends VerticalLayout {
     }
 
     public String getZakBasicRepFilteredSubtitleText() {
-        ZakBasicFilter filter = buildZakBasicFilter();
+        ZakSimpleGrid.ZakBasicFilter filter = zakGrid.buildZakBasicFilter();
         return
             "Parametry:" +
             "  Arch=" + (null == filter.getArch() ? "Vše" : filter.getArch().toString()) +
@@ -288,95 +271,5 @@ public class ZakBasicListView extends VerticalLayout {
         zakGrid.rebuildSelectableFilterFields(zakList);
         zakGrid.initFilterFieldValues();
         zakGrid.reloadGridData();
-    }
-
-    public static class ZakBasicFilter {
-
-        String ckz;
-        Integer rokZak;
-        String skupina;
-        Boolean arch;
-        Boolean digi;
-        ItemType typ;
-        String objednatel;
-        String textKont;
-        String textZak;
-
-        public static final ZakBasicFilter getEmpty() {
-            ZakBasicFilter filter = new ZakBasicFilter();
-            filter.setArch(null);
-            filter.setDigi(null);
-            filter.setTyp(null);
-            filter.setCkz(null);
-            filter.setRokZak(null);
-            filter.setSkupina(null);
-            filter.setObjednatel(null);
-            filter.setTextKont(null);
-            filter.setTextZak(null);
-            return filter;
-        }
-
-        public Boolean getArch() {
-            return arch;
-        }
-        public void setArch(Boolean arch) {
-            this.arch = arch;
-        }
-
-        public Boolean getDigi() {
-            return digi;
-        }
-        public void setDigi(Boolean digi) {
-            this.digi = digi;
-        }
-
-        public ItemType getTyp() {
-            return typ;
-        }
-        public void setTyp(ItemType typ) {
-            this.typ = typ;
-        }
-
-        public String getCkz() {
-            return ckz;
-        }
-        public void setCkz(String ckz) {
-            this.ckz = ckz;
-        }
-
-        public Integer getRokZak() {
-            return rokZak;
-        }
-        public void setRokZak(Integer rokZak) {
-            this.rokZak = rokZak;
-        }
-
-        public String getSkupina() {
-            return skupina;
-        }
-        public void setSkupina(String skupina) {
-            this.skupina = skupina;
-        }
-
-        public String getObjednatel() {
-            return objednatel;
-        }
-        public void setObjednatel(String objednatel) {
-            this.objednatel = objednatel;
-        }
-
-        public String getTextKont() {
-            return textKont;
-        }
-        public void setTextKont(String textKont) {
-            this.textKont = textKont;
-        }
-
-        public String getTextZak() {
-            return textZak;
-        }
-        public void setTextZak(String textZak) {
-            this.textZak = textZak;
-        }
     }
 }

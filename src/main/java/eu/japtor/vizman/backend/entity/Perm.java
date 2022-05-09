@@ -28,6 +28,7 @@ public enum Perm implements GrantedAuthority {
     ZAK_EXT_MODIFY("Lze vytvářet/editovat/rušit kontrakty/zakazky, přístup ke všem údajům"),
     ZAK_ROZPRAC_READ("Lze prohlížet seznam rozpracovanocti zakázek, přístup ke všem údajům"),
     ZAK_ROZPRAC_MODIFY("Lze editovat rozpracovanost zakazek, přístup ke všem údajům"),
+    ZAK_ARCH_DIGI_MODIFY("Lze editovat ARCH a DIGI pole u zakázek"),
 
     CONFIG_CHANGE("Lze nastavovat a měnit konfiguraci VizMana"),
 

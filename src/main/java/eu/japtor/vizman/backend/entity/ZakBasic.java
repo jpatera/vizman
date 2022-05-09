@@ -117,8 +117,16 @@ public class ZakBasic implements Serializable, HasItemType, HasArchState {
         return arch;
     }
 
+    public void setArch(Boolean arch) {
+        this.arch = arch;
+    }
+
     public Boolean getDigi() {
         return digi;
+    }
+
+    public void setDigi(Boolean digi) {
+        this.digi = digi;
     }
 
     public Long getIdKont() {
@@ -209,8 +217,12 @@ public class ZakBasic implements Serializable, HasItemType, HasArchState {
 
     @Override
     public boolean equals(Object other) {
-        if (this == other) return true;
-        if (!(other instanceof AbstractGenIdEntity)) return false;
-        return id != null && id.equals(((ZakBasic) other).id);
+        if (null == other) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
+        return null != id && id.equals(((ZakBasic) other).id);
     }
 }

@@ -114,6 +114,19 @@ public class SecurityUtils {
                 .anyMatch(moneyPermNames::contains);
     }
 
+    public static boolean isArchDigiEditGranted() {
+        Authentication userAuthentication = SecurityContextHolder.getContext().getAuthentication();
+        if (userAuthentication == null) {
+            return false;
+        }
+        Set<String> archDigiPermNames =  Perm.getPermNames(Arrays.asList(
+                Perm.MODIFY_ALL, Perm.ZAK_ARCH_DIGI_MODIFY, Perm.ZAK_EXT_MODIFY)
+        );
+        return userAuthentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(archDigiPermNames::contains);
+    }
+
     public static boolean isZakFormsAccessGranted() {
         Authentication userAuthentication = SecurityContextHolder.getContext().getAuthentication();
         if (userAuthentication == null) {

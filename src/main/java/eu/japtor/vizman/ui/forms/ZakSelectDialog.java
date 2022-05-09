@@ -11,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.repository.ZakBasicRepo;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
+import eu.japtor.vizman.backend.service.ZakBasicService;
 import eu.japtor.vizman.backend.service.ZakNaklVwService;
 import eu.japtor.vizman.backend.service.ZakrService;
 import eu.japtor.vizman.ui.components.*;
@@ -39,6 +40,7 @@ public class ZakSelectDialog extends Dialog {
     private ZakNaklVwService zakNaklVwService;
     private ZakrService zakrService;
     private CfgPropsCache cfgPropsCache;
+    private ZakBasicService zakBasicService;
 
 
     public ZakSelectDialog(
@@ -46,19 +48,20 @@ public class ZakSelectDialog extends Dialog {
             , ZakBasicRepo zakBasicRepo
             , ZakNaklVwService zakNaklVwService
             , ZakrService zakrService
+            , ZakBasicService zakBasicService
             , CfgPropsCache cfgPropsCache
     ) {
         this.itemsAder = itemAdder;
         this.zakBasicRepo = zakBasicRepo;
         this.zakNaklVwService = zakNaklVwService;
         this.zakrService = zakrService;
+        this.zakBasicService = zakBasicService;
         this.cfgPropsCache = cfgPropsCache;
 
         this.setWidth("1400px");
         this.setHeight("750px");
 
         zakBasicList = new ArrayList<>();
-//        setupEventListeners();
 
         this.add(initView());
         this.setCloseOnEsc(true);
@@ -135,10 +138,12 @@ public class ZakSelectDialog extends Dialog {
                 , false
                 , false
                 , Boolean.FALSE
+                , Boolean.FALSE
                 , null
                 , zakNaklVwService
                 , zakrService
                 , cfgPropsCache
+                , zakBasicService
         );
         zakGrid.setMultiSort(true);
         zakGrid.setSelectionMode(Grid.SelectionMode.NONE);

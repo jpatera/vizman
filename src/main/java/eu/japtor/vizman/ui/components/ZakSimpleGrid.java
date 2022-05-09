@@ -16,9 +16,11 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Element;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
+import eu.japtor.vizman.backend.service.ZakBasicService;
 import eu.japtor.vizman.backend.service.ZakNaklVwService;
 import eu.japtor.vizman.backend.service.ZakrService;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import eu.japtor.vizman.ui.forms.ZakBasicFormDialog;
 import eu.japtor.vizman.ui.forms.ZakNaklSingleDialog;
 import eu.japtor.vizman.ui.views.ZakrListView;
 import org.apache.commons.lang3.StringUtils;
@@ -34,7 +36,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
 
     // Zak simple grid field keys:
     private static final String TYP_COL_KEY = "zak-bg-typ";
-    private static final String KZCISLO_COL_KEY = "zak-bg-kzcislo";
+    private static final String CKZ_COL_KEY = "zak-bg-ckz";
     private static final String ROK_COL_KEY = "zak-bg-rok";
     private static final String SKUPINA_COL_KEY = "zak-bg-skupina";
     private static final String OBJEDNATEL_COL_KEY = "zak-bg-objednatel";
@@ -71,6 +73,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     private boolean digiFieldVisible;
     private boolean selectFieldVisible;
     private boolean zaknViewBtnVisible;
+    private boolean archDigiEditBtnVisible;
 
     private Consumer<Integer> selectionChanger;
     private Function<ZakBasic, Boolean> checkBoxEnabler;
@@ -79,10 +82,19 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     private ZakrService zakrService;
     private ZakNaklSingleDialog zakNaklSingleDialog;
     private CfgPropsCache cfgPropsCache;
-
+    private ZakBasicService zakBasicService;
     private int selCount;
 
     private HeaderRow filterRow;
+    private ZakBasicFormDialog zakBasicFormDialog;
+
+//    private List<GridSortOrder<ZakBasic>> initialSortOrder = Arrays.asList(
+//            new GridSortOrder(
+//                    this.getColumnByKey(CKZ_COL_KEY), SortDirection.DESCENDING)
+//            , new GridSortOrder(
+//                    this.getColumnByKey(ROK_COL_KEY), SortDirection.DESCENDING)
+//    );
+
 
     public ZakSimpleGrid(
             boolean selectFieldVisible
@@ -91,22 +103,25 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
             , boolean archFieldVisible
             , boolean digiFieldVisible
             , boolean zaknViewBtnVisible
+            , boolean archDigiEditBtnVisible
             , Boolean initFilterArchValue
             , Boolean initFilterDigiValue
             , ZakNaklVwService zakNaklVwService
             , ZakrService zakrService
             , CfgPropsCache cfgPropsCache
+            , ZakBasicService zakBasicService
     ) {
         this.zakNaklVwService = zakNaklVwService;
         this.zakrService = zakrService;
         this.cfgPropsCache = cfgPropsCache;
-
+        this.zakBasicService = zakBasicService;
         this.initFilterArchValue = initFilterArchValue;
         this.initFilterDigiValue = initFilterDigiValue;
         this.checkBoxEnabler = checkBoxEnabler;
         this.archFieldVisible = archFieldVisible;
         this.digiFieldVisible = digiFieldVisible;
         this.zaknViewBtnVisible = zaknViewBtnVisible;
+        this.archDigiEditBtnVisible = archDigiEditBtnVisible;
         this.selectFieldVisible = selectFieldVisible;
         this.selectionChanger = selectionChanger;
 
@@ -120,6 +135,15 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 this.zakNaklVwService
         );
 
+        zakBasicFormDialog = new ZakBasicFormDialog(
+                this.zakBasicService
+        );
+        zakBasicFormDialog.addOpenedChangeListener(event -> {
+            if (!event.isOpened()) {
+                updateGridAfterEdit(((ZakBasicFormDialog)(event.getSource())).getCurrentItem());
+            }
+        });
+
         this.addColumn(archRenderer)
                 .setHeader(("Arch"))
                 .setFlexGrow(0)
@@ -129,6 +153,13 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 .setVisible(this.archFieldVisible)
         //                .setFrozen(true)
         ;
+        if (this.archDigiEditBtnVisible) {
+        this.addColumn(new ComponentRenderer<>(this::buildArchDigiEditBtn))
+                .setHeader("A-D")
+                .setFlexGrow(0)
+                .setWidth("6em")
+        ;
+        }
         this.addColumn(digiRenderer)
                 .setHeader(("DIGI"))
                 .setFlexGrow(0)
@@ -157,7 +188,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 .setFlexGrow(0)
                 .setWidth("9em")
                 .setSortable(true)
-                .setKey(KZCISLO_COL_KEY)
+                .setKey(CKZ_COL_KEY)
         ;
         this.addColumn(ZakBasic::getRok)
                 .setHeader("Rok zak.")
@@ -224,7 +255,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                 .setComponent(typFilterField);
 
         ckzFilterField = buildTextFilterField();
-        filterRow.getCell(this.getColumnByKey(KZCISLO_COL_KEY))
+        filterRow.getCell(this.getColumnByKey(CKZ_COL_KEY))
                 .setComponent(ckzFilterField);
 
         rokFilterField = buildSelectorFilterField();
@@ -257,6 +288,116 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
     }
 
 
+    private void updateGridAfterEdit(ZakBasic modifiedZakBasic) {
+        this.setItems(zakBasicService.fetchByFiltersDescOrder(buildZakBasicFilter()));
+        this.select(modifiedZakBasic);
+    }
+
+    public ZakBasicFilter buildZakBasicFilter() {
+        this.saveFilterFieldValues();
+        ZakBasicFilter filter = ZakBasicFilter.getEmpty();
+        filter.setArch(this.getArchFilterValue());
+        filter.setDigi(this.getDigiFilterValue());
+        filter.setTyp(this.getTypFilterValue());
+        filter.setCkz(this.getCkzFilterField());
+        filter.setRokZak(this.getRokFilterValue());
+        filter.setSkupina(this.getSkupinaFilterValue());
+        filter.setObjednatel(this.getObjednatelFilterValue());
+        filter.setTextKont(this.getTextKontFilterValue());
+        filter.setTextZak(this.getTextZakFilterValue());
+        return filter;
+    }
+
+    public static class ZakBasicFilter {
+
+        String ckz;
+        Integer rokZak;
+        String skupina;
+        Boolean arch;
+        Boolean digi;
+        ItemType typ;
+        String objednatel;
+        String textKont;
+        String textZak;
+
+        public static final ZakBasicFilter getEmpty() {
+            ZakBasicFilter filter = new ZakBasicFilter();
+            filter.setArch(null);
+            filter.setDigi(null);
+            filter.setTyp(null);
+            filter.setCkz(null);
+            filter.setRokZak(null);
+            filter.setSkupina(null);
+            filter.setObjednatel(null);
+            filter.setTextKont(null);
+            filter.setTextZak(null);
+            return filter;
+        }
+
+        public Boolean getArch() {
+            return arch;
+        }
+        public void setArch(Boolean arch) {
+            this.arch = arch;
+        }
+
+        public Boolean getDigi() {
+            return digi;
+        }
+        public void setDigi(Boolean digi) {
+            this.digi = digi;
+        }
+
+        public ItemType getTyp() {
+            return typ;
+        }
+        public void setTyp(ItemType typ) {
+            this.typ = typ;
+        }
+
+        public String getCkz() {
+            return ckz;
+        }
+        public void setCkz(String ckz) {
+            this.ckz = ckz;
+        }
+
+        public Integer getRokZak() {
+            return rokZak;
+        }
+        public void setRokZak(Integer rokZak) {
+            this.rokZak = rokZak;
+        }
+
+        public String getSkupina() {
+            return skupina;
+        }
+        public void setSkupina(String skupina) {
+            this.skupina = skupina;
+        }
+
+        public String getObjednatel() {
+            return objednatel;
+        }
+        public void setObjednatel(String objednatel) {
+            this.objednatel = objednatel;
+        }
+
+        public String getTextKont() {
+            return textKont;
+        }
+        public void setTextKont(String textKont) {
+            this.textKont = textKont;
+        }
+
+        public String getTextZak() {
+            return textZak;
+        }
+        public void setTextZak(String textZak) {
+            this.textZak = textZak;
+        }
+    }
+
     public void reloadGridData() {
         doFilter();
         getDataProvider().refreshAll();
@@ -270,6 +411,20 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
             parent.setProperty("resizable", "true");
             parent = parent.getParent();
         }
+    }
+
+    private Component buildArchDigiEditBtn(ZakBasic zakBasic) {
+        return new GridItemBtn(event -> {
+                    this.select(zakBasic);
+                    zakBasicFormDialog.openDialog(
+                            false
+                            , zakBasicService.fetchByIdLazy(zakBasic.getId())
+                            , Operation.EDIT
+                    );
+                }
+                , new Icon(VaadinIcon.ARCHIVE), VzmFormatUtils.getItemTypeColorName(zakBasic.getTyp())
+                , "Arch & Digi edit"
+        );
     }
 
     private Component buildZaknViewBtn(ZakBasic zakBasic) {
@@ -415,7 +570,7 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         Boolean digiFilterValue = digiFilterField.getValue();
         ItemType typFilterValue = typFilterField.getValue();
         Integer rokFilterValue = rokFilterField.getValue();
-        String kzCisloFilterValue = ckzFilterField.getValue();
+        String ckzFilterValue = ckzFilterField.getValue();
         String skupinaFilterValue = skupinaFilterField.getValue();
         String objednatelFilterValue = objednatelFilterField.getValue();
         String textKontFilterValue = textKontFilterField.getValue();
@@ -441,9 +596,9 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
                     , rok -> rok.equals(rokFilterValue)
             );
         }
-        if (StringUtils.isNotEmpty(kzCisloFilterValue)) {
+        if (StringUtils.isNotEmpty(ckzFilterValue)) {
             listDataProvider.addFilter(ZakBasic::getCkz
-                    , kzc -> StringUtils.containsIgnoreCase(kzc, kzCisloFilterValue)
+                    , kzc -> StringUtils.containsIgnoreCase(kzc, ckzFilterValue)
             );
         }
         if (null != skupinaFilterValue) {
@@ -582,4 +737,3 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         return textZakFilterField.getValue();
     }
 }
-

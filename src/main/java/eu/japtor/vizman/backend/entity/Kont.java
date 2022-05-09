@@ -74,6 +74,8 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
 //    @OneToMany(mappedBy = "kont", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE} )
 //    @OneToMany(mappedBy = "kont", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = false)
     @OneToMany(mappedBy = "kont", fetch = FetchType.EAGER, cascade = CascadeType.REFRESH, orphanRemoval = false)
+    // TODO Aby se pri FetchType.LAZY updatoval z druhe strany joinColumn, nejlepe (ne-linutne) asi je mit
+    //      CascadeType.ALL (asspon pro H2); orphanRemoval=true by asi taky nemel skodit.
     @OrderBy("czak DESC")
     private List<Zak> zaks = new ArrayList<>();
 //    @JoinTable(

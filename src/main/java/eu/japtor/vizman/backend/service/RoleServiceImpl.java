@@ -49,11 +49,17 @@ public class RoleServiceImpl implements RoleService {
     // Using @Transactional
     @Transactional
     @Override
-    public Role fetchByIdWithLazyPersons(Long roleId) {
+    public Role fetchByIdEager(Long roleId) {
         Optional<Role> roleResponse = roleRepo.findById(roleId);
         Role role = roleResponse.get();
         Hibernate.initialize(role.getPersons());
         return role;
+    }
+
+    @Transactional
+    @Override
+    public Role fetchByIdLazy(final Long roleId) {
+        return roleRepo.getOne(roleId);
     }
 
     @Override

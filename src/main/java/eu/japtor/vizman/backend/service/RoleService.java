@@ -14,7 +14,9 @@ public interface RoleService {
 
     Role fetchRoleByNameIgnoreCase(String name);
 
-    Role fetchByIdWithLazyPersons(Long roleId);
+    Role fetchByIdEager(Long roleId);
+
+    Role fetchByIdLazy(Long roleId);
 
     Role saveRole(Role role);
 
