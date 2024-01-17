@@ -877,7 +877,8 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         ckontField = new TextField("Číslo kontraktu");
         ckontField.setReadOnly(true);
         ckontField.getStyle()
-                .set("padding-top", "0em");
+                .set("padding-top", "0em")
+                .set("font-size" , "var(--lumo-font-size-s)");
         getBinder().forField(ckontField)
                 .bind(Zak::getCkont, null);
         return ckontField;

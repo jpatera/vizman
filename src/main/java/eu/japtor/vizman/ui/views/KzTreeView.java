@@ -483,7 +483,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         kzTextRenderer = new ComponentRenderer<>(kontZak -> {
             KzText kzText = new KzText(kontZak.getText());
             kzText.getStyle().set("color", VzmFormatUtils.getItemTypeColorName(kontZak.getTyp()));
-            if (ItemType.KONT != kontZak.getTyp()) {
+            if (ItemType.KONT == kontZak.getTyp()) {
+                kzText.getStyle().set("font-size" , "var(--lumo-font-size-s)");
+            } else {
                 kzText.getStyle().set("text-indent", "1em");
             }
 
@@ -673,7 +675,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         kzTreeGrid.addHierarchyColumn(ckzValProv)
                 .setHeader("ČK|ČZ")
                 .setFlexGrow(0)
-                .setWidth("8em")
+                .setWidth("10em")
                 .setResizable(true)
                 .setKey(CKZ_COL_KEY)
         ;

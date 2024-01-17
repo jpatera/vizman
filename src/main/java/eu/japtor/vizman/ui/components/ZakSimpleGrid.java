@@ -25,6 +25,7 @@ import eu.japtor.vizman.ui.forms.ZakNaklSingleDialog;
 import eu.japtor.vizman.ui.views.ZakrListView;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -186,7 +187,8 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         this.addColumn(ZakBasic::getCkz)
                 .setHeader("ČK-ČZ")
                 .setFlexGrow(0)
-                .setWidth("9em")
+                .setWidth("11em")
+                .setTextAlign(ColumnTextAlign.END)
                 .setSortable(true)
                 .setKey(CKZ_COL_KEY)
         ;
@@ -501,7 +503,9 @@ public class ZakSimpleGrid extends Grid<ZakBasic> {
         setRokFilterItems(zakBasicList.stream()
                 .filter(z -> null != z.getRok())
                 .map(ZakBasic::getRok)
-                .distinct().collect(Collectors.toCollection(LinkedList::new))
+                .distinct()
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toCollection(LinkedList::new))
         );
         setSkupinaFilterItems(zakBasicList.stream()
                 .map(ZakBasic::getSkupina)

@@ -121,7 +121,7 @@ public class ZakRozpracSumXlsReportBuilder extends FastReportBuilder {
                 .setColumnProperty("ckont", String.class)
                 .setTitle("Č.kont.")
                 .setStyle(DEFAULT_GRID_XLS_TEXT_STYLE)
-                .setWidth(5)
+                .setWidth(8)
                 .build();
 
         czakCol = ColumnBuilder.getNew()

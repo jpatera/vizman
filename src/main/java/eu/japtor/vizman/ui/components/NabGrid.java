@@ -113,7 +113,7 @@ public class NabGrid extends Grid<NabVw> {
         this.addColumn(NabVw::getCkont)
                 .setHeader("Č. kont.")
                 .setFlexGrow(0)
-                .setWidth("8em")
+                .setWidth("10em")
                 .setTextAlign(ColumnTextAlign.START)
                 .setSortable(true)
                 .setKey(CKONT_COL_KEY)

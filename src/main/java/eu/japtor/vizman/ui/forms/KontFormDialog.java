@@ -725,13 +725,19 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private Component initCkontField() {
         ckontField = new TextField("Číslo kontraktu");
         ckontField.setRequiredIndicatorVisible(true);
-        ckontField.setPlaceholder("XXXXX.X-[1|2]");
+//        ckontField.setPlaceholder("XXXXX.X-[1|2]");
+        ckontField.setPlaceholder("PRJ-XXXX-XXXX");
         ckontField.getStyle()
                 .set("padding-top", "0em")
+                .set("font-size" , "var(--lumo-font-size-s)");
+//                .set("font-size", "5px");
+//                .set("font-size", "0.75rem");
         ;
         getBinder().forField(ckontField)
-                .withValidator(ckont -> {return ckont.matches("^[0-9]{5}\\.[0-9](-[1-2])?$"); }
-                        , "Je očekáván formát XXXXX.X-[1|2] nebo XXXXX.X")
+//                .withValidator(ckont -> {return ckont.matches("^[0-9]{5}\\.[0-9](-[1-2])?$"); }
+//                        , "Je očekáván formát XXXXX.X-[1|2] nebo XXXXX.X")
+                .withValidator(ckont -> {return ckont.matches("^((PRJ\\-[0-9]{4}\\-[0-9]{4})|([0-9]{5}\\\\.[0-9](-[1-2])?))$"); }
+                        , "Je očekáván formát PRJ-RRRR-NNNN")
                 .bind(Kont::getCkont, Kont::setCkont)
         ;
         return ckontField;

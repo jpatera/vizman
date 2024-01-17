@@ -230,7 +230,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
         this.addColumn(Zakr::getKzCislo)
                 .setHeader("ČK-ČZ")
                 .setFlexGrow(0)
-                .setWidth("7em")
+                .setWidth("9em")
                 .setSortable(true)
                 .setKey(CKZ_COL_KEY)
         ;
