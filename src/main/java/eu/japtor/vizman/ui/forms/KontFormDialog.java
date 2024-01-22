@@ -736,7 +736,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         getBinder().forField(ckontField)
 //                .withValidator(ckont -> {return ckont.matches("^[0-9]{5}\\.[0-9](-[1-2])?$"); }
 //                        , "Je očekáván formát XXXXX.X-[1|2] nebo XXXXX.X")
-                .withValidator(ckont -> {return ckont.matches("^((PRJ\\-[0-9]{4}\\-[0-9]{4})|([0-9]{5}\\\\.[0-9](-[1-2])?))$"); }
+                .withValidator(ckont -> {return ckont.matches("^((PRJ\\-[0-9]{4}\\-[0-9]{4})|([0-9]{5}\\.[0-9](-[1-2])?))$"); }
                         , "Je očekáván formát PRJ-RRRR-NNNN")
                 .bind(Kont::getCkont, Kont::setCkont)
         ;
