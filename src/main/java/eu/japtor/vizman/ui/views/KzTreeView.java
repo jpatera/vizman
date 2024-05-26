@@ -991,9 +991,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
             }
         } else if (null != avizoFilterValue) {
             if (RADIO_AVIZO_GREEN.equals(avizoFilterValue)) {
-                kzList = kontService.fetchHavingSomeZaksAvizoGreen();
+                kzList = kontService.fetchHavingSomeZakAvizosGreen();
             } else if (RADIO_AVIZO_RED.equals(avizoFilterValue)) {
-                kzList = kontService.fetchHavingSomeZaksAvizoRed();
+                kzList = kontService.fetchHavingSomeZakAvizosRed();
             } else {
                 kzList = kontService.fetchAll();
             }
@@ -1012,6 +1012,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
             , final Integer rokFilterValue
             , final String objednatelFilterValue
             , final String archFilterValue
+            , final String avizoFilterValue
     ) {
         List<? extends Kont> kzList;
         if (null != rokFilterValue) {
@@ -1023,6 +1024,14 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 kzList = kontService.fetchTopHavingAllZaksArchivedFilter();
             } else if (RADIO_KONT_EMPTY.equals(archFilterValue)) {
                 kzList = kontService.fetchTopHavingNoZaksFilter();
+            } else {
+                kzList = kontService.fetchTop();
+            }
+        } else if (null != avizoFilterValue) {
+            if (RADIO_AVIZO_GREEN.equals(avizoFilterValue)) {
+                kzList = kontService.fetchTopHavingSomeZakAvizosGreen();
+            } else if (RADIO_AVIZO_RED.equals(avizoFilterValue)) {
+                kzList = kontService.fetchTopHavingSomeZakAvizosRed();
             } else {
                 kzList = kontService.fetchTop();
             }
@@ -1505,8 +1514,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 String ckont = ckontFilterField.getValue();
                 Integer rok = rokFilterField.getValue();
                 String arch = archFilterRadio.getValue();
+                String avizo = avizoFilterRadio.getValue();
                 String objednatel = objednatelFilterField.getValue();
-                return getTopFilteredKzListForReport(ckont, rok, objednatel, arch);  // ..(buildZakBasicFilterParams());
+                return getTopFilteredKzListForReport(ckont, rok, objednatel, arch, avizo);  // ..(buildZakBasicFilterParams());
             };
 
     private SerializableSupplier<List<? extends Kont>> kontSelectionReportSupplier =

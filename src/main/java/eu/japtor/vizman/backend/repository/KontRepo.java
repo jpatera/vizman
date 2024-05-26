@@ -2,7 +2,6 @@ package eu.japtor.vizman.backend.repository;
 
 import eu.japtor.vizman.backend.entity.Klient;
 import eu.japtor.vizman.backend.entity.Kont;
-import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,13 +10,7 @@ import java.util.List;
 
 public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
-//    Kont findById(Long id);
-
-//   Kont findTopByObjednatel(String objednatel);
-
     Kont findTopById(Long id);
-
-//    Kont findTopByObjednatelIgnoreCase(String objednatel);
 
     Kont findTopByCkontIgnoreCase(String ckont);
 
@@ -66,7 +59,7 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
     @Query(value = "SELECT * FROM vizman.kont k WHERE (NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)) "
             + " AND (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont)) "
-            + " ORDER BY CKONT DESC, ROK DESC",
+            + " ORDER BY CKONT DESC, ROK DESC limit 10",
                     nativeQuery = true)
     public List<Kont> findTop10HavingAllZaksArchived();
 
@@ -76,17 +69,21 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
     public List<Kont> findHavingNoZaks();
 
     @Query(value = "SELECT * FROM vizman.kont k WHERE NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont) "
-            + " ORDER BY CKONT DESC, ROK DESC",
+            + " ORDER BY CKONT DESC, ROK DESC limit 10",
                     nativeQuery = true)
     public List<Kont> findTop10HavingNoZaks();
 
-//    @Query(value = "SELECT * FROM vizman.kont k WHERE EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)",
-//                    nativeQuery = true)
     @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)) "
             + " OR (NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont)) "
             + " ORDER BY CKONT DESC, ROK DESC",
                     nativeQuery = true)
     public List<Kont> findHavingSomeZaksActive();
+
+    @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)) "
+            + " OR (NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont)) "
+            + " ORDER BY CKONT DESC, ROK DESC limit 10",
+            nativeQuery = true)
+    public List<Kont> findTop10HavingSomeZaksActive();
 
     @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont"
             + " AND (exists (SELECT  1 from vizman.fakt f WHERE z.id =  f.id_zak"
@@ -94,7 +91,15 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
             + " AND f.date_duzp > TODAY()))))"
             + " ORDER BY CKONT DESC, ROK DESC",
                     nativeQuery = true)
-    public List<Kont> findHavingSomeZakAvizoGreen();
+    public List<Kont> findHavingSomeZakAvizosGreen();
+
+    @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont"
+            + " AND (exists (SELECT  1 from vizman.fakt f WHERE z.id =  f.id_zak"
+            + " AND f.date_vystav is null AND f.date_duzp is not null"
+            + " AND f.date_duzp > TODAY()))))"
+            + " ORDER BY CKONT DESC, ROK DESC limit 10",
+                    nativeQuery = true)
+    public List<Kont> findTop10HavingSomeZakAvizosGreen();
 
     @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont"
             + " AND (exists (SELECT  1 from vizman.fakt f WHERE z.id =  f.id_zak"
@@ -102,22 +107,16 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
             + " AND f.date_duzp + 1 < TODAY()))))"
             + " ORDER BY CKONT DESC, ROK DESC",
                     nativeQuery = true)
-    public List<Kont> findHavingSomeZakAvizoRed();
+    public List<Kont> findHavingSomeZakAvizosRed();
 
-    @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)) "
-            + " OR (NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont)) "
+    @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont"
+            + " AND (exists (SELECT  1 from vizman.fakt f WHERE z.id =  f.id_zak"
+            + " AND f.date_vystav is null AND f.date_duzp is not null"
+            + " AND f.date_duzp + 1 < TODAY()))))"
             + " ORDER BY CKONT DESC, ROK DESC limit 10",
                     nativeQuery = true)
-    public List<Kont> findTop10HavingSomeZaksActive();
+    public List<Kont> findTop10HavingSomeZakAvizosRed();
 
-//    List<Kont> findByArchTrueOrderByCkontDesc();
-
-//    @Query("SELECT k FROM Kont k WHERE k.name LIKE ?1")
-//    List<Kont> findByArchFalseOrderByCkontDesc();
-
-
-
-//        Page<Product> findByNameLikeIgnoreCase(String name, Pageable page);
 
 //    List<Kont> findByObjednatelLikeIgnoreCase(String objednatel, Sort sort);
 //    // TODO: more versatile might be using Example matchers
@@ -131,10 +130,6 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
 
 //    static class KontSpecs {
-//
-//
-//
-//
 //
 //        public static Specification<Kont> hasAnyZakArchived() {
 //
@@ -163,6 +158,5 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 //            };
 //        }
 //    }
-
 
 }

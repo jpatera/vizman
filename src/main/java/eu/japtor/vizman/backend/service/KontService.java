@@ -41,8 +41,11 @@ public interface KontService {
     List<? super Kont> fetchHavingSomeZaksActiveFilter();
     List<? extends Kont> fetchTopHavingSomeZaksActiveFilter();
 
-    List<? super Kont> fetchHavingSomeZaksAvizoGreen();
-    List<? super Kont> fetchHavingSomeZaksAvizoRed();
+    List<? super Kont> fetchHavingSomeZakAvizosGreen();
+    List<? extends Kont> fetchTopHavingSomeZakAvizosGreen();
+
+    List<? super Kont> fetchHavingSomeZakAvizosRed();
+    List<? extends Kont> fetchTopHavingSomeZakAvizosRed();
 
     List<? super Kont> fetchHavingAllZaksArchivedFilter();
     List<? extends Kont> fetchTopHavingAllZaksArchivedFilter();
