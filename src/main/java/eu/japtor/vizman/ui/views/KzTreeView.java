@@ -86,6 +86,10 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private static final String RADIO_KONT_EMPTY = "Prázdné";
     private static final String RADIO_KONT_ALL = "Vše";
 
+    private static final String RADIO_AVIZO_GREEN = "Zelené";
+    private static final String RADIO_AVIZO_RED = "Červené";
+    private static final String LIGHTS_ALL = "Vše";
+
     private static final String CKZ_COL_KEY = "ckz-col";
     private static final String ARCH_COL_KEY = "arch-col";
     private static final String DIGI_COL_KEY = "digi-col";
@@ -115,6 +119,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     private FilterTextField ckontFilterField;
     private FilterTextField objednatelFilterField;
     private RadioButtonGroup<String> archFilterRadio;
+    private RadioButtonGroup<String> avizoFilterRadio;
     private ComponentRenderer<HtmlComponent, KzTreeAware> kzTextRenderer;
     private ComponentRenderer<Component, KzTreeAware> avizoRenderer;
     private Select<Integer> rokFilterField;
@@ -949,6 +954,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
             , final Integer rokFilterValue
             , final String objednatelFilterValue
             , final String archFilterValue
+            , final String avizoFilterValue
     ) {
         ValueProvider<KzTreeAware, Collection<KzTreeAware>> kzNodesProvider = KzTreeAware::getNodes;
         return (new TreeData()).addItems(
@@ -957,6 +963,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                         , rokFilterValue
                         , objednatelFilterValue
                         , archFilterValue
+                        , avizoFilterValue
                 )
                 , kzNodesProvider
         );
@@ -967,6 +974,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
             , final Integer rokFilterValue
             , final String objednatelFilterValue
             , final String archFilterValue
+            , final String avizoFilterValue
     ) {
         List<? super Kont> kzList;
         if (null != rokFilterValue) {
@@ -978,6 +986,14 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 kzList = kontService.fetchHavingAllZaksArchivedFilter();
             } else if (RADIO_KONT_EMPTY.equals(archFilterValue)) {
                 kzList = kontService.fetchHavingNoZaksFilter();
+            } else {
+                kzList = kontService.fetchAll();
+            }
+        } else if (null != avizoFilterValue) {
+            if (RADIO_AVIZO_GREEN.equals(avizoFilterValue)) {
+                kzList = kontService.fetchHavingSomeZaksAvizoGreen();
+            } else if (RADIO_AVIZO_RED.equals(avizoFilterValue)) {
+                kzList = kontService.fetchHavingSomeZaksAvizoRed();
             } else {
                 kzList = kontService.fetchAll();
             }
@@ -1187,16 +1203,17 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 , e -> kzTreeGrid.collapseRecursively(kzTreeGrid.getTreeData().getRootItems(),2));
 
         Span ckontFilterLabel = new Span("Č.kont.:");
+        ckontFilterLabel.getStyle().set("font-size", "var(--lumo-font-size-xxs");
         ckontFilterField = new FilterTextField();
         ckontFilterField.setValue("");
         ckontFilterField.getStyle().set("alignItems", "center");
-        ckontFilterField.getStyle().set("theme", "small");
         ckontFilterField.setValueChangeMode(ValueChangeMode.ON_CHANGE);
         ckontFilterField.addValueChangeListener(event -> {
             if (event.isFromClient()) {
                 rokFilterField.clear();
                 archFilterRadio.clear();
                 objednatelFilterField.clear();
+                avizoFilterRadio.clear();
                 updateViewContent();
             }
         });
@@ -1213,6 +1230,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
 
         Span rokFilterLabel = new Span("Rok:");
+        rokFilterLabel.getStyle().set("font-size", "var(--lumo-font-size-xxs");
         rokFilterField = buildSelectorField();
         rokFilterField.setItems(kontService.fetchKontRoks());
         rokFilterField.addValueChangeListener(event -> {
@@ -1220,6 +1238,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 ckontFilterField.clear();
                 archFilterRadio.clear();
                 objednatelFilterField.clear();
+                avizoFilterRadio.clear();
                 updateViewContent();
             }
         });
@@ -1236,6 +1255,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
 
         Span objednatelFilterLabel = new Span("Obj.:");
+        objednatelFilterLabel.getStyle().set("font-size", "var(--lumo-font-size-xxs");
         objednatelFilterField = new FilterTextField();
         objednatelFilterField.setValue("");
         objednatelFilterField.getStyle().set("alignItems", "center");
@@ -1246,6 +1266,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 ckontFilterField.clear();
                 rokFilterField.clear();
                 archFilterRadio.clear();
+                avizoFilterRadio.clear();
                 updateViewContent();
             }
         });
@@ -1260,17 +1281,18 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 , objednatelFilterField
         );
 
-
         Span archFilterLabel = new Span("Archiv:");
+        archFilterLabel.getStyle().set("font-size", "var(--lumo-font-size-xxs");
         archFilterRadio = new RadioButtonGroup<>();
         archFilterRadio.setItems(RADIO_KONT_ACTIVE, RADIO_KONT_ARCH, RADIO_KONT_EMPTY, RADIO_KONT_ALL);
         archFilterRadio.getStyle().set("alignItems", "center");
-        archFilterRadio.getStyle().set("theme", "small");
+        archFilterRadio.getStyle().set("font-size", "var(--lumo-font-size-xxs");
         archFilterRadio.addValueChangeListener(event -> {
             if (event.isFromClient()) {
                 ckontFilterField.clear();
                 rokFilterField.clear();
                 objednatelFilterField.clear();
+                avizoFilterRadio.clear();
                 updateViewContent();
             }
         });
@@ -1286,14 +1308,42 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         );
 
 
+        Span avizoFilterLabel = new Span("Avízo:");
+        avizoFilterLabel.getStyle().set("font-size", "var(--lumo-font-size-xxs");
+        avizoFilterRadio = new RadioButtonGroup<>();
+        avizoFilterRadio.setItems(RADIO_AVIZO_GREEN, RADIO_AVIZO_RED, LIGHTS_ALL);
+        avizoFilterRadio.getStyle().set("alignItems", "center");
+        avizoFilterRadio.getStyle().set("font-size", "var(--lumo-font-size-xxs");
+        avizoFilterRadio.addValueChangeListener(event -> {
+            if (event.isFromClient()) {
+                ckontFilterField.clear();
+                rokFilterField.clear();
+                objednatelFilterField.clear();
+                archFilterRadio.clear();
+                updateViewContent();
+            }
+        });
+
+        HorizontalLayout avizoFilterComponent = new HorizontalLayout();
+        avizoFilterComponent.setMargin(false);
+        avizoFilterComponent.setPadding(false);
+        avizoFilterComponent.setAlignItems(Alignment.CENTER);
+        avizoFilterComponent.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+        avizoFilterComponent.add(
+                avizoFilterLabel
+                , avizoFilterRadio
+        );
+
+
         HorizontalLayout titleComponent = new HorizontalLayout();
         titleComponent.setMargin(false);
         titleComponent.setPadding(false);
         titleComponent.setSpacing(false);
         titleComponent.setAlignItems(Alignment.CENTER);
         titleComponent.setJustifyContentMode(JustifyContentMode.START);
+        titleComponent.getStyle().set("font-size", "var(--lumo-font-size-l");
         titleComponent.add(
-                new GridTitle("KONTRAKTY / ZAKÁZKY")
+                new GridTitle("KONT/ZAK")
                 , new Ribbon()
                 , initReloadButton()
         );
@@ -1308,6 +1358,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 , objednatelFilterComponent
                 , new Ribbon()
                 , archFilterComponent
+                , new Ribbon()
+                , avizoFilterComponent
                 , new Ribbon()
                 , initNewKontButton()
                 , new Ribbon()
@@ -1366,7 +1418,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         Integer rok = rokFilterField.getValue();
         String objednatel = objednatelFilterField.getValue();
         String arch = archFilterRadio.getValue();
-        kzTreeData = loadKzTreeData(ckont, rok, objednatel, arch);
+        String avizo = avizoFilterRadio.getValue();
+        kzTreeData = loadKzTreeData(ckont, rok, objednatel, arch, avizo);
 
         inMemoryKzTreeProvider = new TreeDataProvider<>(kzTreeData);
         assignDataProviderToGridAndSort(inMemoryKzTreeProvider);

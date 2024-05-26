@@ -88,6 +88,22 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
                     nativeQuery = true)
     public List<Kont> findHavingSomeZaksActive();
 
+    @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont"
+            + " AND (exists (SELECT  1 from vizman.fakt f WHERE z.id =  f.id_zak"
+            + " AND f.date_vystav is null AND f.date_duzp is not null"
+            + " AND f.date_duzp > TODAY()))))"
+            + " ORDER BY CKONT DESC, ROK DESC",
+                    nativeQuery = true)
+    public List<Kont> findHavingSomeZakAvizoGreen();
+
+    @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont"
+            + " AND (exists (SELECT  1 from vizman.fakt f WHERE z.id =  f.id_zak"
+            + " AND f.date_vystav is null AND f.date_duzp is not null"
+            + " AND f.date_duzp + 1 < TODAY()))))"
+            + " ORDER BY CKONT DESC, ROK DESC",
+                    nativeQuery = true)
+    public List<Kont> findHavingSomeZakAvizoRed();
+
     @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)) "
             + " OR (NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont)) "
             + " ORDER BY CKONT DESC, ROK DESC limit 10",

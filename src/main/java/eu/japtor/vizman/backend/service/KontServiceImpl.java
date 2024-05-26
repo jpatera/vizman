@@ -165,6 +165,16 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
 
     @Override
+    public List<Kont> fetchHavingSomeZaksAvizoGreen() {
+        return kontRepo.findHavingSomeZakAvizoGreen();
+    }
+
+    @Override
+    public List<Kont> fetchHavingSomeZaksAvizoRed() {
+        return kontRepo.findHavingSomeZakAvizoRed();
+    }
+
+    @Override
     public List<Kont> fetchTopHavingAllZaksArchivedFilter() {
         return kontRepo.findTop10HavingAllZaksArchived();
     }
@@ -184,7 +194,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
         return kontRepo.findKontRoks();
     }
 
-    @Override
+     @Override
     public long countAll() {
         return kontRepo.count();
     }
