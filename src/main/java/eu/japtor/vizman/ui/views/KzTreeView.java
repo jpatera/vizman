@@ -31,7 +31,10 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.treegrid.TreeGrid;
+import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.SortDirection;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -57,6 +60,7 @@ import eu.japtor.vizman.ui.forms.ZakFormDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
@@ -1516,6 +1520,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
                 String arch = archFilterRadio.getValue();
                 String avizo = avizoFilterRadio.getValue();
                 String objednatel = objednatelFilterField.getValue();
+//                HierarchicalDataProvider dataProvider = kzTreeGrid.getDataProvider();
+//                dataProvider.fetch(new Query(new Filter))
                 return getTopFilteredKzListForReport(ckont, rok, objednatel, arch, avizo);  // ..(buildZakBasicFilterParams());
             };
 
@@ -1535,7 +1541,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
 
         ContextMenu menu = new ContextMenu();
         menu.addItem("Aktuální kontrakt", e -> updateXlsRepResourceAndDownload(kontSelectionReportSupplier));
-        menu.addItem("Zobrazené kontrakty (max 10)", e -> updateXlsRepResourceAndDownload(kontListReportSupplier));
+        menu.addItem("Zobrazené kontrakty (max 50)", e -> updateXlsRepResourceAndDownload(kontListReportSupplier));
         menu.setOpenOnClick(true);
 
         menu.setTarget(btn);

@@ -22,20 +22,20 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
     List<Kont> findAllByRokOrderByCkontDesc(Integer rok);
 
-    List<Kont> findTop10ByRokOrderByCkontDesc(Integer rok);
+    List<Kont> findTop50ByRokOrderByCkontDesc(Integer rok);
 
-    @Query(value = "SELECT * FROM vizman.kont WHERE ckont LIKE :ckont% ORDER BY ckont DESC limit 10",
+    @Query(value = "SELECT * FROM vizman.kont WHERE ckont LIKE :ckont% ORDER BY ckont DESC limit 5",
             nativeQuery = true)
-    List<Kont> findTop10LikeCkontOrderByCkontDesc(@Param("ckont") String ckont);
+    List<Kont> findTop50LikeCkontOrderByCkontDesc(@Param("ckont") String ckont);
 
     List<Kont> findTop1ByCkont(String ckont);
 
-    List<Kont> findTop10ByOrderByCkontDesc();
+    List<Kont> findTop50ByOrderByCkontDesc();
 
     @Query(value = "SELECT * FROM vizman.kont knt, vizman.klient kli WHERE kli.name LIKE :objName% "
-            + " AND kli.id = knt.id_objednatel ORDER BY ckont DESC limit 10",
+            + " AND kli.id = knt.id_objednatel ORDER BY ckont DESC limit 50",
             nativeQuery = true)
-    List<Kont> findTop10LikeObjNameOrderByCkontDesc(@Param("objName") String objName);
+    List<Kont> findTop50LikeObjNameOrderByCkontDesc(@Param("objName") String objName);
 
     @Query(value = "SELECT * FROM vizman.kont knt, vizman.klient kli WHERE kli.name LIKE :objName% "
             + " AND kli.id = knt.id_objednatel ORDER BY ckont DESC",
@@ -43,7 +43,7 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
     List<Kont> findAllLikeObjNameOrderByCkontDesc(@Param("objName") String objName);
 
 
-//    List<Kont> findTop10By(Example example);  For report, but does not not work with example
+//    List<Kont> findTop50By(Example example);  For report, but does not not work with example
 
     int countAllByObjednatel(Klient objednatel);
 
@@ -59,9 +59,9 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
     @Query(value = "SELECT * FROM vizman.kont k WHERE (NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)) "
             + " AND (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont)) "
-            + " ORDER BY CKONT DESC, ROK DESC limit 10",
+            + " ORDER BY CKONT DESC, ROK DESC limit 50",
                     nativeQuery = true)
-    public List<Kont> findTop10HavingAllZaksArchived();
+    public List<Kont> findTop50HavingAllZaksArchived();
 
     @Query(value = "SELECT * FROM vizman.kont k WHERE NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont) "
             + " ORDER BY CKONT DESC, ROK DESC",
@@ -69,9 +69,9 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
     public List<Kont> findHavingNoZaks();
 
     @Query(value = "SELECT * FROM vizman.kont k WHERE NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont) "
-            + " ORDER BY CKONT DESC, ROK DESC limit 10",
+            + " ORDER BY CKONT DESC, ROK DESC limit 50",
                     nativeQuery = true)
-    public List<Kont> findTop10HavingNoZaks();
+    public List<Kont> findTop50HavingNoZaks();
 
     @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)) "
             + " OR (NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont)) "
@@ -81,9 +81,9 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
 
     @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont AND z.arch = false)) "
             + " OR (NOT EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont)) "
-            + " ORDER BY CKONT DESC, ROK DESC limit 10",
+            + " ORDER BY CKONT DESC, ROK DESC limit 50",
             nativeQuery = true)
-    public List<Kont> findTop10HavingSomeZaksActive();
+    public List<Kont> findTop50HavingSomeZaksActive();
 
     @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont"
             + " AND (exists (SELECT  1 from vizman.fakt f WHERE z.id =  f.id_zak"
@@ -97,9 +97,9 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
             + " AND (exists (SELECT  1 from vizman.fakt f WHERE z.id =  f.id_zak"
             + " AND f.date_vystav is null AND f.date_duzp is not null"
             + " AND f.date_duzp > TODAY()))))"
-            + " ORDER BY CKONT DESC, ROK DESC limit 10",
+            + " ORDER BY CKONT DESC, ROK DESC limit 50",
                     nativeQuery = true)
-    public List<Kont> findTop10HavingSomeZakAvizosGreen();
+    public List<Kont> findTop50HavingSomeZakAvizosGreen();
 
     @Query(value = "SELECT * FROM vizman.kont k WHERE (EXISTS (SELECT 1 FROM vizman.zak z WHERE k.id = z.id_kont"
             + " AND (exists (SELECT  1 from vizman.fakt f WHERE z.id =  f.id_zak"
@@ -113,9 +113,9 @@ public interface KontRepo extends JpaRepository<Kont, Long>, KontRepoCustom {
             + " AND (exists (SELECT  1 from vizman.fakt f WHERE z.id =  f.id_zak"
             + " AND f.date_vystav is null AND f.date_duzp is not null"
             + " AND f.date_duzp + 1 < TODAY()))))"
-            + " ORDER BY CKONT DESC, ROK DESC limit 10",
+            + " ORDER BY CKONT DESC, ROK DESC limit 50",
                     nativeQuery = true)
-    public List<Kont> findTop10HavingSomeZakAvizosRed();
+    public List<Kont> findTop50HavingSomeZakAvizosRed();
 
 
 //    List<Kont> findByObjednatelLikeIgnoreCase(String objednatel, Sort sort);

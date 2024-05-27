@@ -79,7 +79,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
     @Override
     public List<? extends Kont> fetchTop() {
-        return kontRepo.findTop10ByOrderByCkontDesc();
+        return kontRepo.findTop50ByOrderByCkontDesc();
     }
 
     @Override
@@ -101,7 +101,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     @Override
     public List<? extends Kont> fetchTopByCkontFilter(final String ckont) {
         if (StringUtils.isBlank(ckont)) {
-            return kontRepo.findTop10ByOrderByCkontDesc();
+            return kontRepo.findTop50ByOrderByCkontDesc();
         } else {
             Kont probe = Kont.getEmptyInstance();
             probe.setCkont(ckont);
@@ -111,7 +111,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 //                    .withMatcher("arch", new ExampleMatcher.GenericPropertyMatcher().exact())
                     ;
             // return kontRepo.findTop10By(Example.of(probe, matcher)); -- Takhle to nefunguje
-            return kontRepo.findTop10LikeCkontOrderByCkontDesc(ckont);
+            return kontRepo.findTop50LikeCkontOrderByCkontDesc(ckont);
         }
     }
 
@@ -127,11 +127,11 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     @Override
     public List<? extends Kont> fetchTopByObjednatelFilter(final String objednatel) {
         if (StringUtils.isBlank(objednatel)) {
-            return kontRepo.findTop10ByOrderByCkontDesc();
+            return kontRepo.findTop50ByOrderByCkontDesc();
         } else {
             Kont probe = Kont.getEmptyInstance();
             probe.setCkont(objednatel);
-            return kontRepo.findTop10LikeObjNameOrderByCkontDesc(objednatel);
+            return kontRepo.findTop50LikeObjNameOrderByCkontDesc(objednatel);
         }
     }
 
@@ -147,7 +147,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
     @Override
     public List<? extends Kont> fetchTopByRokFilter(final Integer rok) {
-        return kontRepo.findTop10ByRokOrderByCkontDesc(rok);
+        return kontRepo.findTop50ByRokOrderByCkontDesc(rok);
     }
 
     @Override
@@ -156,7 +156,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
     @Override
     public List<Kont> fetchTopHavingSomeZaksActiveFilter() {
-        return kontRepo.findTop10HavingSomeZaksActive();
+        return kontRepo.findTop50HavingSomeZaksActive();
     }
 
     @Override
@@ -170,7 +170,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
     @Override
     public List<Kont> fetchTopHavingSomeZakAvizosGreen() {
-        return kontRepo.findTop10HavingSomeZakAvizosGreen();
+        return kontRepo.findTop50HavingSomeZakAvizosGreen();
     }
 
     @Override
@@ -179,12 +179,12 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
     }
     @Override
     public List<Kont> fetchTopHavingSomeZakAvizosRed() {
-        return kontRepo.findTop10HavingSomeZakAvizosRed();
+        return kontRepo.findTop50HavingSomeZakAvizosRed();
     }
 
     @Override
     public List<Kont> fetchTopHavingAllZaksArchivedFilter() {
-        return kontRepo.findTop10HavingAllZaksArchived();
+        return kontRepo.findTop50HavingAllZaksArchived();
     }
 
     @Override
@@ -194,7 +194,7 @@ public class KontServiceImpl extends AbstractSortableService implements KontServ
 
     @Override
     public List<Kont> fetchTopHavingNoZaksFilter() {
-        return kontRepo.findTop10HavingNoZaks();
+        return kontRepo.findTop50HavingNoZaks();
     }
 
     @Override

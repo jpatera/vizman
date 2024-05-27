@@ -45,9 +45,9 @@ public class KontTreeXlsReportBuilder extends FastReportBuilder {
 //                .setTitle("")
 //                .setSubtitle("")
 
-//                .setPageSizeAndOrientation(    new Page(666,900))
+                .setPageSizeAndOrientation(new Page(2666,700))  // 2666 is arbitrary high enough number to avoid pagination of contracts having lot of zaks.
                 .setUseFullPageWidth(true)
-                .setIgnorePagination(false) // We need pagination to split report to mmore XLS lists
+                .setIgnorePagination(false) // We need pagination to split report to more XLS lists
                 .setMargins(0, 0, 0, 0)
                 .setWhenNoData("(no data)", new Style())
                 .setReportLocale(new Locale("cs", "CZ"))
@@ -81,7 +81,7 @@ public class KontTreeXlsReportBuilder extends FastReportBuilder {
     private DynamicReport createZaksSubreport() {
         return new FastReportBuilder()
                 .setUseFullPageWidth(true)
-                .setIgnorePagination(false)
+                .setIgnorePagination(true)  // Can be ignored as pagination/sheets is performed on contracts, not zaks
                 .setMargins(0, 0, 0, 0)
                 .setWhenNoDataNoPages()
                 .setReportLocale(new Locale("cs", "CZ"))
