@@ -140,6 +140,9 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     public ZakService zakService;
 
     @Autowired
+    public ZaqaService zaqaService;
+
+    @Autowired
     public FaktService faktService;
 
     @Autowired
@@ -207,8 +210,8 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
     public void postInit() {
 
         kontFormDialog = new KontFormDialog(
-                kontService, zakService, faktService, klientService, dochsumZakService
-                , cfgPropsCache
+                kontService, zakService, zaqaService, faktService,
+                klientService, dochsumZakService, cfgPropsCache
         );
         kontFormDialog.addOpenedChangeListener(event -> {
             if (!event.isOpened()) {
@@ -220,7 +223,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         });
 
         zakFormDialog = new ZakFormDialog(
-                zakService, faktService, cfgPropsCache
+                zakService, zaqaService, faktService, cfgPropsCache
         );
         zakFormDialog.addOpenedChangeListener(event -> {
             if (!event.isOpened()) {
@@ -535,7 +538,7 @@ public class KzTreeView extends VerticalLayout implements HasLogger {
         kz -> kz.getTyp() == ItemType.KONT ? kz.getInvestorOrigName() : null;
 
     private ComponentRenderer<HtmlComponent, KzTreeAware> datetimeUpdateCellRenderer = new ComponentRenderer<>(kz -> {
-        if (ItemType.KONT == kz.getTyp()) {
+        if (ItemType.KONT == kz.getTyp() || ItemType.ZAK == kz.getTyp()) {
             return VzmFormatUtils.getDatetimeUpdateComponent(kz.getDatetimeUpdate(), kz.getUpdatedBy());
         } else {
             return VzmFormatUtils.getEmptyComponent();

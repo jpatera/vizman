@@ -20,7 +20,7 @@ For more information on Vaadin, visit https://vaadin.com/.
 
 ------------------------------------------
 
-Parametr zalezi zerjme na tom jak je napsan v  pom.xml:
+Parametr zalezi zrejme na tom jak je napsan v  pom.xml:
 --------------------------------------------------------
 mvn package -Dvaadin.productionMode
 mvn spring-boot:run -Dvaadin.productionMode

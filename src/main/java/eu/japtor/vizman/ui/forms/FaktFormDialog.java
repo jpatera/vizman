@@ -12,6 +12,7 @@ import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.shared.Registration;
 import eu.japtor.vizman.app.HasLogger;
+import eu.japtor.vizman.app.security.SecurityUtils;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.service.CfgPropsCache;
 import eu.japtor.vizman.backend.service.FaktService;
@@ -24,6 +25,7 @@ import org.claspina.confirmdialog.ConfirmDialog;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Locale;
 
 
@@ -65,6 +67,8 @@ public class FaktFormDialog extends AbstractSimpleFormDialog<Fakt> implements Ha
     private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
     private boolean readonly;
 
+    private String authUsername;
+
     private Registration binderChangeListener = null;
 
     private FaktService faktService;
@@ -99,6 +103,7 @@ public class FaktFormDialog extends AbstractSimpleFormDialog<Fakt> implements Ha
         this.currentItem = fakt;
         this.origItem = fakt;
         this.readonly = readonly;
+        this.authUsername = SecurityUtils.getUsername();
 
         // Set locale here, because when it is set in constructor, it is effective only in first open,
         // and next openings show date in US format
@@ -499,6 +504,9 @@ public class FaktFormDialog extends AbstractSimpleFormDialog<Fakt> implements Ha
 
     public Fakt saveFakt(Fakt faktToSave) throws VzmServiceException {
         try {
+            faktToSave.setUpdatedBy(authUsername);
+            faktToSave.setDatetimeUpdate(LocalDateTime.now());
+
             currentItem = faktService.saveFakt(faktToSave, currentOperation);
             lastOperationResult = OperationResult.ITEM_SAVED;
             return currentItem;

@@ -98,6 +98,9 @@ public class ZakrListView extends VerticalLayout {
     public ZakService zakService;
 
     @Autowired
+    public ZaqaService zaqaService;
+
+    @Autowired
     public FaktService faktService;
 
     @Autowired
@@ -552,6 +555,7 @@ public class ZakrListView extends VerticalLayout {
                 , zakrParams
                 , zakrService
                 , zakService
+                , zaqaService
                 , faktService
                 , zakNaklVwService
                 , cfgPropsCache

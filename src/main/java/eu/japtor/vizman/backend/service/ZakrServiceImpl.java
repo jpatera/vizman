@@ -178,7 +178,7 @@ public class ZakrServiceImpl implements ZakrService, HasLogger {
                 zaqasDb.add(new Zaqa(currentYear, 4, itemForSave.getR4(), itemForSave));
             }
 
-            zaqaRepo.deleteAllByZakId(itemForSave.getId());
+            zaqaRepo.deleteAllByIdZak(itemForSave.getId());
             zaqaRepo.saveAll(zaqasDb);
             zaqaRepo.flush();
 

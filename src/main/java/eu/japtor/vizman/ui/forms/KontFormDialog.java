@@ -126,6 +126,8 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private Registration ckontFieldListener = null;
 
     private KontService kontService;
+//    private ZakService zakService;
+//    private ZaqaService = zaqaService;
     private KlientService klientService;
     private List<Klient> klientList;
     private CfgPropsCache cfgPropsCache;
@@ -133,6 +135,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     public KontFormDialog(
             KontService kontService,
             ZakService zakService,
+            ZaqaService zaqaService,
             FaktService faktService,
             KlientService klientService,
             DochsumZakService dochsumZakService,
@@ -142,6 +145,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 
         this.kontService = kontService;
 //        this.zakService = zakService;
+//        this.zaqaService = zaqaService;
         this.klientService = klientService;
         this.cfgPropsCache = cfgPropsCache;
 
@@ -174,7 +178,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         addLowerPaneFlexComponent(initZakGrid(), "13em");
 
         zakFormDialog = new ZakFormDialog(
-                zakService, faktService, cfgPropsCache
+                zakService, zaqaService, faktService, cfgPropsCache
         );
 
         zakFormDialog.addOpenedChangeListener(event -> {

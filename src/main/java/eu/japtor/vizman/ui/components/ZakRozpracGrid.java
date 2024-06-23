@@ -108,6 +108,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
     private ZakrService zakrService;
     private ZakService zakService;
+    private ZaqaService zaqaService;
     private FaktService faktService;
     private ZakNaklVwService zakNaklVwService;
     private CfgPropsCache cfgPropsCache;
@@ -121,6 +122,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
             , ZakrListView.ZakrParams zakrParams
             , ZakrService zakrService
             , ZakService zakService
+            , ZaqaService zaqaService
             , FaktService faktService
             , ZakNaklVwService zakNaklVwService
             , CfgPropsCache cfgPropsCache
@@ -134,6 +136,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
 
         this.zakrService = zakrService;
         this.zakService = zakService;
+        this.zaqaService = zaqaService;
         this.faktService = faktService;
         this.zakNaklVwService = zakNaklVwService;
         this.cfgPropsCache = cfgPropsCache;
@@ -142,7 +145,7 @@ public class ZakRozpracGrid extends Grid<Zakr> {
                 this.zakrService
         );
         zakFormDialog = new ZakFormDialog(
-                this.zakService, this.faktService, this.cfgPropsCache
+                this.zakService, this.zaqaService, this.faktService, this.cfgPropsCache
         );
         zakNaklSingleDialog = new ZakNaklSingleDialog(
                 this.zakNaklVwService

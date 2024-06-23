@@ -592,7 +592,7 @@ public class VzmFormatUtils {
             return null;
         }
 //        if (4 > ChronoUnit.DAYS.between(datetimeUpdate, LocalDateTime.now())) {
-        long workDaysBetween = countBusinessDaysBetweenApprox(LocalDate.now(), datetimeUpdate.toLocalDate(), 20);
+        long workDaysBetween = countBusinessDaysBetweenApprox(datetimeUpdate.toLocalDate(), LocalDate.now(), 20);
         if (workDaysBetween > 4) {
             return "red";
         } else if (workDaysBetween >= 0) {
@@ -603,10 +603,11 @@ public class VzmFormatUtils {
     }
 
     public static long countBusinessDaysBetweenApprox(final LocalDate startDate, final LocalDate endDate, int exactLimitDaysBetween) {
-        int daysBetween = Period.between(endDate, startDate).getDays();
+        int daysBetween = Period.between(startDate, endDate).getDays();
         if (daysBetween >= exactLimitDaysBetween) {
             return  daysBetween;
         } else {
+//            return countBusinessDaysBetweenExact(endDate, startDate, Optional.of(lastTwoYearsHolis));
             return countBusinessDaysBetweenExact(startDate, endDate, Optional.of(lastTwoYearsHolis));
         }
     }
@@ -624,7 +625,7 @@ public class VzmFormatUtils {
         Predicate<LocalDate> isWeekend = date -> date.getDayOfWeek() == DayOfWeek.SATURDAY
                 || date.getDayOfWeek() == DayOfWeek.SUNDAY;
 
-        long daysBetween = ChronoUnit.DAYS.between(endDate, startDate);
+        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
 
         long businessDays = Stream.iterate(startDate, date -> date.plusDays(1)).limit(daysBetween)
                 .filter(isHoliday.or(isWeekend).negate()).count();

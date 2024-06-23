@@ -122,6 +122,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
     private boolean readonly;
     private ZakService zakService;
+    private ZaqaService zaqaService;
     private FaktService faktService;
     private CfgPropsCache cfgPropsCache;
 
@@ -129,12 +130,14 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //                         BiConsumer<Zak, Operation> itemSaver,
 //                         Consumer<Zak> zakDeleter,
                          ZakService zakService,
+                         ZaqaService zaqaService,
                          FaktService faktService,
                          CfgPropsCache cfgPropsCache
     ){
         super(DIALOG_WIDTH, DIALOG_HEIGHT, true, true);
 
         this.zakService = zakService;
+        this.zaqaService = zaqaService;
         this.faktService = faktService;
         this.cfgPropsCache = cfgPropsCache;
 
@@ -693,6 +696,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         String ckzDel = String.format("%s / %s", currentItem.getCkont(), currentItem.getCzak());
         OperationResult lastOperResOrig = lastOperationResult;
         try {
+            zaqaService.deleteZaqas(itemToDelete.getId());
             zakService.deleteZak(itemToDelete);
             lastOperationResult = OperationResult.ITEM_DELETED;
             return true;

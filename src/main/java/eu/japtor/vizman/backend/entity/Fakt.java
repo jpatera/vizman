@@ -51,6 +51,10 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemT
     @Column(name = "DATETIME_UPDATE", insertable = false, updatable = false)
     private LocalDateTime datetimeUpdate;
 
+    @Basic
+    @Column(name = "UPDATED_BY")
+    private String updatedBy;
+
     @Column(name = "FAKT_CISLO")
     private String faktCislo;
 
@@ -172,8 +176,17 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemT
         return datetimeUpdate;
     }
 
-    protected void setDatetimeUpdate(LocalDateTime datetimeUpdate) {
+    public void setDatetimeUpdate(LocalDateTime datetimeUpdate) {
         this.datetimeUpdate = datetimeUpdate;
+    }
+
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 
 

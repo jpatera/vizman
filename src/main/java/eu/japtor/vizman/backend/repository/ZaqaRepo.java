@@ -20,9 +20,11 @@ public interface ZaqaRepo extends JpaRepository<Zaqa, Long> {
 
     List<Zaqa> findByZakrIdOrderByRokDesc(Long idZak);
 
+    List<Zaqa> findByZakrId(Long idZak);
+
     @Modifying
     @Query(value = "DELETE FROM VIZMAN.ZAQA WHERE ID_ZAK = ?1 "
             , nativeQuery = true)
-    void deleteAllByZakId(Long zakId);
+    void deleteAllByIdZak(Long idZak);
 
 }

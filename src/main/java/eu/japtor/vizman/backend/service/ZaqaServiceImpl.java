@@ -3,29 +3,29 @@ package eu.japtor.vizman.backend.service;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.SortDirection;
 import eu.japtor.vizman.app.HasLogger;
-import eu.japtor.vizman.backend.entity.Zak;
-import eu.japtor.vizman.backend.entity.Zakr;
 import eu.japtor.vizman.backend.entity.Zaqa;
+import eu.japtor.vizman.backend.repository.ZakRepo;
 import eu.japtor.vizman.backend.repository.ZaqaRepo;
 import eu.japtor.vizman.ui.components.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.*;
 
 @Service
 public class ZaqaServiceImpl extends AbstractSortableService implements ZaqaService, HasLogger {
 
     private final ZaqaRepo zaqaRepo;
+    private final ZakRepo zakRepo;
     private static final List<QuerySortOrder> DEFAULT_SORT_ORDER =
             Collections.singletonList(new QuerySortOrder("ymFrom", SortDirection.DESCENDING));
 
     @Autowired
-    public ZaqaServiceImpl(ZaqaRepo zaqaRepo) {
+    public ZaqaServiceImpl(ZaqaRepo zaqaRepo, ZakRepo zakRepo) {
         super();
         this.zaqaRepo = zaqaRepo;
+        this.zakRepo = zakRepo;
     }
 
     @Override
@@ -70,5 +70,24 @@ public class ZaqaServiceImpl extends AbstractSortableService implements ZaqaServ
             return false;
         }
         return true;
+    }
+
+
+    @Override
+    @Transactional
+    public void deleteZaqas(Long idZak) throws VzmServiceException {
+//        String zakEvidCis = String.format("%s / %d", zakToDel.getCkont(), zakToDel.getCzak());
+        String kzCislo = zakRepo.getOne(idZak).getKzCislo();
+        try {
+            int zaquasCount = zaqaRepo.findByZakrId(idZak).size();
+            if (zaquasCount > 0) {
+                zaqaRepo.deleteAllByIdZak(idZak);
+                getLogger().info("{} quartal records of zak {} deleted", zaquasCount, kzCislo);
+            }
+        } catch (Exception e) {
+            String errMsg = "Error while deleting quartal records of zak {}";
+            getLogger().error(errMsg, kzCislo, e);
+            throw new VzmServiceException(errMsg);
+        }
     }
 }
