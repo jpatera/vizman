@@ -17,7 +17,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "KONT")
-public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArchState, HasModifDates, HasUpdatedBy {
+public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArchState
+        , HasModifDates, HasUpdatedBy, HasAlertModif {
 
     @Column(columnDefinition = "BINARY(16)")
     private UUID uuid;
@@ -69,6 +70,10 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     @Basic
     @Column(name = "UPDATED_BY")
     private String updatedBy;
+
+    @Basic
+    @Column(name = "ALERT_MODIF")
+    private Boolean alertModif;
 
     //    @OneToMany(fetch = FetchType.LAZY)
 //    @OneToMany(mappedBy = "kont", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE} )
@@ -223,6 +228,28 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     }
     public void setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
+    }
+
+    @Override
+    public boolean isAlertModif() {
+        return null != alertModif && alertModif;
+    }
+    public void setAlertModif(Boolean alertModif) {
+        this.alertModif = alertModif;
+    }
+
+// TODO: ALERTY pro Kont!!
+
+    @Transient
+    public boolean hasAlertedItems() {
+        return getZaks().stream()
+                .map(z -> z.isAlerted())
+                .anyMatch(a -> a);
+    }
+
+    @Transient
+    public boolean isAlerted() {
+        return isAlertModif() || hasAlertedItems();
     }
 
     public List<KontDoc> getKontDocs() {

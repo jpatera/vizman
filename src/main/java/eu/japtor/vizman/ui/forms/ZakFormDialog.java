@@ -45,6 +45,7 @@ import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static eu.japtor.vizman.backend.utils.VzmFileUtils.*;
 import static eu.japtor.vizman.backend.utils.VzmFormatUtils.vzmFileIconNameProvider;
@@ -56,6 +57,7 @@ import static eu.japtor.vizman.ui.components.OperationResult.NO_CHANGE;
 public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
     private final static String FAKT_EDIT_COL_KEY = "fakt-edit-col";
+    private final static String FAKT_ALERT_COL_KEY = "fakt-alert-col";
     private final static String FAKT_CISLO_COL_KEY = "fakt-cislo-col";
     private final static String DELETE_STR = "Zrušit";
     public static final String DIALOG_WIDTH = "1250px";
@@ -371,15 +373,13 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private void finishFaktEdit(FaktFormDialog faktFormDialog) {
         Fakt faktAfter = faktFormDialog.getCurrentItem(); // Modified, just added or just deleted
         String ckzf = String.format("%s / %s / %s", faktAfter.getCkont(), faktAfter.getCzak(), faktAfter.getCfakt());
-        Operation faktOper = faktFormDialog.getCurrentOperation();
         OperationResult faktOperRes = faktFormDialog.getLastOperationResult();
 
         if (OperationResult.NO_CHANGE != faktOperRes) {
             zakFaktsChanged = true;
         }
-        Fakt faktItemOrig = faktFormDialog.getOrigItem();
 
-        syncFormGridAfterFaktEdit(faktAfter, faktOper, faktOperRes, faktItemOrig);
+        syncFormGridAfterFaktsModification(faktAfter, faktOperRes);
         updateZakDocViewContent(null);
 
         if (OperationResult.ITEM_SAVED == faktOperRes) {
@@ -399,15 +399,13 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     private void finishSubEdit(SubFormDialog subFormDialog) {
         Fakt faktAfter = subFormDialog.getCurrentItem(); // ...modified, just added or just deleted
         String ckzf = String.format("%s / %s / %s", faktAfter.getCkont(), faktAfter.getCzak(), faktAfter.getCfakt());
-        Operation faktOper = subFormDialog.getCurrentOperation();
         OperationResult faktOperRes = subFormDialog.getLastOperationResult();
 
         if (OperationResult.NO_CHANGE != faktOperRes) {
             zakFaktsChanged = true;
         }
-        Fakt faktItemOrig = subFormDialog.getOrigItem();
 
-        syncFormGridAfterFaktEdit(faktAfter, faktOper, faktOperRes, faktItemOrig);
+        syncFormGridAfterFaktsModification(faktAfter, faktOperRes);
 
         if (OperationResult.ITEM_SAVED == faktOperRes) {
             Notification.show(String.format("Subdodávka %s uložena", ckzf)
@@ -423,8 +421,48 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     }
 
 
-    private void syncFormGridAfterFaktEdit(Fakt faktAfter, Operation faktOper
-            , OperationResult faktOperRes, Fakt faktItemOrig) {
+    private void resetZakFaktAlerts() {
+
+//        if (NO_CHANGE == faktOperRes) {
+//            return;
+//        }
+
+//        if (Operation.ADD == faktOper) {
+//            currentItem.addFaktOnTop(faktAfter);
+//        } else if (Operation.EDIT == faktOper) {
+//            if (OperationResult.ITEM_DELETED == faktOperRes) {
+//                currentItem.removeFakt(faktItemOrig);
+//            } else if (OperationResult.ITEM_SAVED == faktOperRes) {
+//                int itemIndex = currentItem.getFakts().indexOf(faktItemOrig);
+//                if (itemIndex != -1) {
+//                    currentItem.getFakts().set(itemIndex, faktAfter);
+//                }
+//            }
+//        }
+
+        List<Fakt> fakts = currentItem.getFakts();
+        for(Fakt fakt : fakts) {
+            fakt.setAlertModif(false);
+            faktService.saveFakt(fakt, Operation.SAVE);
+        }
+
+
+//        currentItem = zakService.fetchOne(currentItem.getId());
+//        faktGrid.getDataCommunicator().getKeyMapper().removeAll();
+//        faktGrid.setItems(currentItem.getFakts());
+//        faktGrid.getDataProvider().refreshAll();
+//        if (null != faktAfter) {
+//            faktGrid.select(faktAfter);
+//        }
+//
+//        if (NO_CHANGE != faktOperRes) {
+//            binder.removeBean();
+//            binder.readBean(currentItem);
+//            refreshControls(currentItem);
+//        }
+    }
+
+    private void syncFormGridAfterFaktsModification(Fakt faktAfter, OperationResult faktOperRes) {
 
         if (NO_CHANGE == faktOperRes) {
             return;
@@ -446,16 +484,18 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         faktGrid.getDataCommunicator().getKeyMapper().removeAll();
         faktGrid.setItems(currentItem.getFakts());
         faktGrid.getDataProvider().refreshAll();
-        faktGrid.select(faktAfter);
+        if (null != faktAfter) {
+            faktGrid.select(faktAfter);
+        }
 
         if (NO_CHANGE != faktOperRes) {
             binder.removeBean();
             binder.readBean(currentItem);
-            refreshControls(currentItem, currentOperation);
+            refreshControls(currentItem);
         }
     }
 
-    private void refreshControls(Zak zakItem, final Operation zakOperation) {
+    private void refreshControls(Zak zakItem) {
         deactivateListeners();
         refreshHeaderMiddleBox(zakItem);
 //        getHeaderEndBox().setText(getHeaderEndComponentValue(null));
@@ -582,7 +622,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 //        }
         binder.removeBean();
         binder.readBean(currentItem);
-        lastOperationResult = OperationResult.NO_CHANGE;
+//        lastOperationResult = OperationResult.NO_CHANGE;
     }
 
     private void deleteClicked() {
@@ -1272,6 +1312,13 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 .setWidth("3.5em")
                 .setFlexGrow(0)
         ;
+//        faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktEditBtn))
+        faktGrid.addColumn(alertSwitchRenderer)
+                .setHeader("Alert")
+                .setWidth("3em")
+                .setFlexGrow(0)
+                .setKey(FAKT_ALERT_COL_KEY)
+        ;
         faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktEditBtn))
                 .setHeader("Edit")
                 .setWidth("3em")
@@ -1316,6 +1363,41 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                     subFormDialog.openDialog(readonly, fakt, Operation.EDIT)
                     , VzmFormatUtils.getItemTypeColorName(fakt.getTyp()));
         }
+    }
+
+//    private Component buildFaktAlertIco(Fakt fakt) {
+////
+//        if (ItemType.FAKT == fakt.getTyp()) {
+//            return new GridItemEditBtn(event ->
+//                    faktFormDialog.openDialog(readonly, fakt, Operation.EDIT)
+//                    , VzmFormatUtils.getItemTypeColorName(fakt.getTyp()));
+//        } else {
+//            return new GridItemEditBtn(event ->
+//                    subFormDialog.openDialog(readonly, fakt, Operation.EDIT)
+//                    , VzmFormatUtils.getItemTypeColorName(fakt.getTyp()));
+//        }
+//    }
+
+    private ComponentRenderer<Component, Fakt> alertSwitchRenderer = new ComponentRenderer<>(fakt -> {
+        AlertModifIconBox alertBox = new AlertModifIconBox();
+        alertBox.showIcon(!fakt.isAlertModif() ?
+                AlertModifIconBox.AlertModifState.INACTIVE : AlertModifIconBox.AlertModifState.ACTIVE);
+        return alertBox;
+    });
+
+    @Override
+    public Consumer<Boolean> getAlertModifSwitchAction() {
+        return isActive -> {
+            if (isActive) {
+                resetZakFaktAlerts();
+                currentItem.setAlertModif(false);
+            } else {
+                currentItem.setAlertModif(true);
+            }
+            currentItem = zakService.saveZak(currentItem, Operation.SAVE);
+            syncFormGridAfterFaktsModification(null, OperationResult.ALERT_MODIF_SWITCHED);
+            lastOperationResult = OperationResult.ALERT_MODIF_SWITCHED;
+        };
     }
 
     private Component buildFakStornoBtn(Fakt fakt) {

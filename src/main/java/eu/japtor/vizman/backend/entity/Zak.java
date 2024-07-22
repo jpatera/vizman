@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
+import eu.japtor.vizman.backend.utils.VzmUtils;
 import eu.japtor.vizman.ui.components.ArchIconBox;
 import eu.japtor.vizman.ui.components.DigiIconBox;
 import org.apache.commons.lang3.StringUtils;
@@ -18,7 +19,9 @@ import java.util.function.Predicate;
 
 @Entity
 @Table(name = "ZAK")
-public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArchState, HasModifDates, HasUpdatedBy {
+public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType, HasArchState
+        , HasModifDates, HasUpdatedBy, HasAlertModif
+{
 
     @Column(columnDefinition = "BINARY(16)")
     private UUID uuid;
@@ -73,13 +76,17 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     @CreationTimestamp
     private LocalDate dateCreate;
 
+    // Automatic date update is implemented in database
     @Basic
-    @Column(name = "DATETIME_UPDATE")
+    @Column(name = "DATETIME_UPDATE", insertable = false, updatable = false)
     private LocalDateTime datetimeUpdate;
 
     @Basic
     @Column(name = "UPDATED_BY")
     private String updatedBy;
+
+    @Column(name = "ALERT_MODIF")
+    private Boolean alertModif;
 
     @Basic
     @Column(name = "POZNAMKA")
@@ -177,12 +184,15 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     }
 
     @Override
-    @Transient
+//    @Transient
     public String getUpdatedBy() {
         return updatedBy;
     }
     public void setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
+        if (VzmUtils.isAlertModifCondition(updatedBy)) {
+            setAlertModif(true);
+        }
     }
 
     public String getPoznamka() {
@@ -190,6 +200,26 @@ public class Zak extends AbstractGenIdEntity implements KzTreeAware, HasItemType
     }
     public void setPoznamka(String poznamka) {
         this.poznamka = poznamka;
+    }
+
+    @Override
+    public boolean isAlertModif() {
+        return null != alertModif && alertModif;
+    }
+    public void setAlertModif(Boolean alertModif) {
+        this.alertModif = alertModif;
+    }
+
+    @Transient
+    public boolean hasAlertedItems() {
+        return getFakts().stream()
+                .map(f -> f.isAlertModif())
+                .anyMatch(a -> a);
+    }
+
+    @Transient
+    public boolean isAlerted() {
+        return isAlertModif() || hasAlertedItems();
     }
 
     @Transient

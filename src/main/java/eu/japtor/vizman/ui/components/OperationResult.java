@@ -11,4 +11,5 @@ public enum OperationResult {
     NO_CHANGE
     , ITEM_SAVED
     , ITEM_DELETED
+    , ALERT_MODIF_SWITCHED
 }

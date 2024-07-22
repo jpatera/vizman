@@ -1,6 +1,7 @@
 package eu.japtor.vizman.backend.entity;
 
 import eu.japtor.vizman.backend.utils.VzmFileUtils;
+import eu.japtor.vizman.backend.utils.VzmUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -10,9 +11,10 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+
 @Entity
 @Table(name = "FAKT")
-public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemType {
+public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemType, HasUpdatedBy, HasAlertModif {
 
     @Enumerated(EnumType.STRING)
     @Basic
@@ -48,12 +50,16 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemT
     @CreationTimestamp
     private LocalDate dateCreate;
 
+    // Automatic date update is implemented in database
     @Column(name = "DATETIME_UPDATE", insertable = false, updatable = false)
     private LocalDateTime datetimeUpdate;
 
     @Basic
     @Column(name = "UPDATED_BY")
     private String updatedBy;
+
+    @Column(name = "ALERT_MODIF")
+    private Boolean alertModif;
 
     @Column(name = "FAKT_CISLO")
     private String faktCislo;
@@ -172,28 +178,47 @@ public class Fakt extends AbstractGenIdEntity implements HasModifDates, HasItemT
     }
 
 
+    @Override
     public LocalDateTime getDatetimeUpdate() {
         return datetimeUpdate;
     }
-
     public void setDatetimeUpdate(LocalDateTime datetimeUpdate) {
         this.datetimeUpdate = datetimeUpdate;
     }
 
-
+    @Override
     public String getUpdatedBy() {
         return updatedBy;
     }
-
     public void setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
+        if (VzmUtils.isAlertModifCondition(updatedBy)) {
+            setAlertModif(true);
+        }
     }
 
+    @Override
+    public boolean isAlertModif() {
+        return null != alertModif && alertModif;
+    }
+    public void setAlertModif(Boolean alertModif) {
+        this.alertModif = alertModif;
+    }
+
+    @Transient
+    @Override
+    public boolean hasAlertedItems() {
+        return false;
+    }
+
+    @Transient
+    public boolean isAlerted() {
+        return isAlertModif() || hasAlertedItems();
+    }
 
     public String getFaktCislo() {
         return faktCislo;
     }
-
     public void setFaktCislo(String faktCislo) {
         this.faktCislo = faktCislo;
     }

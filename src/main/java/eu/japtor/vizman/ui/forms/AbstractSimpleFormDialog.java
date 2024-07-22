@@ -274,7 +274,7 @@ public abstract class AbstractSimpleFormDialog<T extends Serializable> extends D
                 String dateCreateStr = null == dateCreate ? "" : dateCreate.format(VzmFormatUtils.basicDateFormatter);
                 LocalDateTime dateTimeUpdate = ((HasModifDates) getCurrentItem()).getDatetimeUpdate();
                 String dateUpdateStr = null == dateTimeUpdate ? "" : dateTimeUpdate.format(VzmFormatUtils.titleUpdateDateFormatter);
-                value = "Vytvořeno: " + dateCreateStr + ", Změna: " + dateUpdateStr;
+                value = "Vytvořeno ss: " + dateCreateStr + ", Změna: " + dateUpdateStr;
             }
         }
         return value;

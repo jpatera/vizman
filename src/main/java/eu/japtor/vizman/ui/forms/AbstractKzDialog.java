@@ -15,10 +15,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import eu.japtor.vizman.backend.entity.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
-import eu.japtor.vizman.ui.components.Block;
-import eu.japtor.vizman.ui.components.Operation;
-import eu.japtor.vizman.ui.components.ResizeBtn;
-import eu.japtor.vizman.ui.components.Ribbon;
+import eu.japtor.vizman.ui.components.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -233,13 +230,31 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         return lowerPane;
     }
 
+//    public Consumer<Boolean> getAlertModifSwitchAction() {
+//        return isActive -> {
+//            syncFormGridAfterFaktsModification(null, OperationResult.ALERT_MODIF_SWITCHED);
+////            dialogContent.setVisible(!isExpanded);
+////            headerEndBox.setVisible(!isExpanded);
+////            headerMiddleBox.setVisible(!isExpanded);
+////            this.setHeight(isExpanded ? dialogMinHeight : dialogHeight);
+////            this.setWidth(isExpanded ? dialogMinWidth : dialogWidth);
+//        };
+//    };
+
+    public Consumer<Boolean> getAlertModifSwitchAction() {
+        return isActive -> {
+            // Override, by default does nothing.
+        };
+    };
+
     public HtmlContainer getHeaderEndComponent(final String titleEndText) {
         HtmlContainer comp = new Div();
+        Component alertSwitchBtn = new AlertSwitchBtn(getAlertModifSwitchAction(), isZakAlerted());
         if ((null == titleEndText) && (getCurrentItem() instanceof HasModifDates)) {
             if (getCurrentOperation() != Operation.ADD) {
                 LocalDate dateCreate = ((HasModifDates) getCurrentItem()).getDateCreate();
                 Span createComponent = null == dateCreate ? new Span("")
-                        : new Span("Vytvořeno: " + dateCreate.format(VzmFormatUtils.basicDateFormatter));
+                        : new Span("Vytvořeno QQ: " + dateCreate.format(VzmFormatUtils.basicDateFormatter));
 
                 LocalDateTime dateTimeUpdate = ((HasModifDates) getCurrentItem()).getDatetimeUpdate();
                 Span updateComponent = null == dateCreate ? new Span("")
@@ -248,10 +263,14 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
                     updateComponent.getElement().getStyle()
                             .set("color", VzmFormatUtils.getColorByUpdatedRule(dateTimeUpdate, ((KzTreeAware<?>) getCurrentItem()).getUpdatedBy()));
                 }
-                comp.add(createComponent, new Block(), updateComponent);
+                comp.add(alertSwitchBtn, new Block(), createComponent, new Block(), updateComponent);
             }
         }
         return comp;
+    }
+
+    private boolean isZakAlerted() {
+        return ((HasAlertModif) getCurrentItem()).isAlertModif() || ((HasAlertModif) getCurrentItem()).hasAlertedItems();
     }
 
     public abstract T getCurrentItem();

@@ -181,7 +181,7 @@ public abstract class AbstractSimpleEditorDialog<T extends Serializable> extends
 
 
         if ((null == titleEndText) && (currentItem instanceof HasModifDates)) {
-                titleEndText = "Vytvořeno: " + ((HasModifDates) currentItem).getDateCreate().format(VzmFormatUtils.basicDateFormatter)
+                titleEndText = "Vytvořeno ii: " + ((HasModifDates) currentItem).getDateCreate().format(VzmFormatUtils.basicDateFormatter)
                         + ", Poslední změna: " + ((HasModifDates) currentItem).getDatetimeUpdate().format(VzmFormatUtils.titleUpdateDateFormatter);
         }
 

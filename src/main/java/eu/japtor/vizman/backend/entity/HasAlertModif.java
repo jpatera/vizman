@@ -3,7 +3,8 @@ package eu.japtor.vizman.backend.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public interface HasUpdatedBy {
+public interface HasAlertModif {
 
-    String getUpdatedBy();
+    boolean isAlertModif();
+    boolean hasAlertedItems();
 }

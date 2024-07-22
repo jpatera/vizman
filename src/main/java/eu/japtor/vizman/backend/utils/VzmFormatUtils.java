@@ -588,18 +588,23 @@ public class VzmFormatUtils {
 
 
     public static String getColorByUpdatedRule(final LocalDateTime datetimeUpdate, final String username) {
-        if (null == datetimeUpdate || null == username || !"vancik".equalsIgnoreCase(username)) {
-            return null;
-        }
-//        if (4 > ChronoUnit.DAYS.between(datetimeUpdate, LocalDateTime.now())) {
-        long workDaysBetween = countBusinessDaysBetweenApprox(datetimeUpdate.toLocalDate(), LocalDate.now(), 20);
-        if (workDaysBetween > 4) {
+        if (null != datetimeUpdate && null != username && "vancik".equalsIgnoreCase(username)) {
             return "red";
-        } else if (workDaysBetween >= 0) {
-            return "magenta";
         } else {
             return null;
         }
+//        if (null == datetimeUpdate || null == username || !"vancik".equalsIgnoreCase(username)) {
+//            return null;
+//        }
+////        if (4 > ChronoUnit.DAYS.between(datetimeUpdate, LocalDateTime.now())) {
+//        long workDaysBetween = countBusinessDaysBetweenApprox(datetimeUpdate.toLocalDate(), LocalDate.now(), 20);
+//        if (workDaysBetween > 4) {
+//            return "red";
+//        } else if (workDaysBetween >= 0) {
+//            return "magenta";
+//        } else {
+//            return null;
+//        }
     }
 
     public static long countBusinessDaysBetweenApprox(final LocalDate startDate, final LocalDate endDate, int exactLimitDaysBetween) {
