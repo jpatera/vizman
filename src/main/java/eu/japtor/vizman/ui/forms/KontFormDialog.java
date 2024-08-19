@@ -45,6 +45,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static eu.japtor.vizman.backend.utils.VzmFileUtils.*;
 import static eu.japtor.vizman.backend.utils.VzmFormatUtils.vzmFileIconNameProvider;
@@ -54,11 +55,10 @@ import static eu.japtor.vizman.ui.components.OperationResult.NO_CHANGE;
 //@SpringComponent
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger {
-//public class KontFormDialog extends AbstractComplexFormDialog<Kont> implements BeforeEnterObserver {
 
     private final static String ZAK_EDIT_COL_KEY = "zak-edit-col";
+    private final static String ZAK_ALERT_COL_KEY = "zak-alert-col";
     private final static String DELETE_STR = "Zrušit";
-    private final static String SAVE_STR = "Uložit";
     public static final String DIALOG_WIDTH = "1300px";
     public static final String DIALOG_HEIGHT = "800px";
 
@@ -126,7 +126,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private Registration ckontFieldListener = null;
 
     private KontService kontService;
-//    private ZakService zakService;
+    private ZakService zakService;
 //    private ZaqaService = zaqaService;
     private KlientService klientService;
     private List<Klient> klientList;
@@ -144,7 +144,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         super(DIALOG_WIDTH, DIALOG_HEIGHT, true, true);
 
         this.kontService = kontService;
-//        this.zakService = zakService;
+        this.zakService = zakService;
 //        this.zaqaService = zaqaService;
         this.klientService = klientService;
         this.cfgPropsCache = cfgPropsCache;
@@ -250,7 +250,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         activateListeners();
     }
 
-    private void refreshControls(Kont kontItem, final Operation kontOperation) {
+    private void refreshControls(Kont kontItem) {
         deactivateListeners();
         refreshHeaderMiddleBox(kontItem);
         getHeaderEndBox().removeAll();
@@ -372,7 +372,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
 //        currentItem = kontService.fetchOne(zakItemOrig.getKontId());
 //        getBinder().readBean(currentItem);
 
-        syncFormGridAfterZakEdit(zakAfter, zakOper, zakOperRes, lastZakFaktsChanged, zakItemOrig);
+        syncFormGridAfterZaksModification(zakAfter, zakOperRes);
         updateKontDocViewContent(null);
 
 //        if (OperationResult.NO_CHANGE == zakOperRes) {
@@ -391,35 +391,36 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         }
     }
 
-    private void syncFormGridAfterZakEdit(Zak zakAfter, Operation zakOper
-            , OperationResult zakOperRes, boolean lastZakFaktsChanged, Zak zakItemOrig) {
+    private void resetKontZakFaktAlerts() {
+        List<Zak> zaks = currentItem.getZaks();
+        for (Zak zak : zaks) {
+            zak.setAlertModif(false);
+            for (Fakt fakt : zak.getFakts()) {
+                fakt.setAlertModif(false);
+            }
+        }
+    }
 
-        if ((NO_CHANGE == zakOperRes) && !lastZakFaktsChanged) {
+
+    private void syncFormGridAfterZaksModification(Zak zakAfter, OperationResult zakOperRes) {
+        if (NO_CHANGE == zakOperRes) {
             return;
         }
 
-        if (Operation.ADD == zakOper) {
-            currentItem.addZakOnTop(zakAfter);
-        } else if (Operation.EDIT == zakOper) {
-            if (OperationResult.ITEM_DELETED == zakOperRes) {
-                currentItem.removeZak(zakItemOrig);
-            } else if (lastZakFaktsChanged || (OperationResult.ITEM_SAVED == zakOperRes)) {
-                int itemIndex = getCurrentItem().getZaks().indexOf(zakItemOrig);
-                if (itemIndex != -1) {
-                    getCurrentItem().getZaks().set(itemIndex, zakAfter);
-                }
-            }
-        }
         currentItem = kontService.fetchOne(currentItem.getId());
         zakGrid.getDataCommunicator().getKeyMapper().removeAll();
         zakGrid.setItems(currentItem.getZaks());
         zakGrid.getDataProvider().refreshAll();
-        zakGrid.select(zakAfter);
+        if (null != zakAfter) {
+            zakGrid.select(zakAfter);
+        }
 
-        binder.removeBean();
-        binder.readBean(currentItem);
-        refreshControls(currentItem, currentOperation);
-        updateKontDocViewContent(null);
+        if (NO_CHANGE != zakOperRes) {
+            binder.removeBean();
+            binder.readBean(currentItem);
+            refreshControls(currentItem);
+            updateKontDocViewContent(null);
+        }
     }
 
     @Override
@@ -512,7 +513,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     private void revertFormChanges() {
         binder.removeBean();
         binder.readBean(currentItem);
-        lastOperationResult = NO_CHANGE;
     }
 
     private void deleteClicked() {
@@ -547,7 +547,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     }
 
     private void saveClicked(boolean closeAfterSave) {
-        if (!isKontValid()) {
+        if (!writeKontToBeanIfValid()) {
             return;
         }
         try {
@@ -563,7 +563,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     }
 
     private boolean saveWithoutClose() {
-        if (!isKontValid()) {
+        if (!writeKontToBeanIfValid()) {
             return false;
         }
         try {
@@ -572,9 +572,6 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                 currentOperation = Operation.EDIT;
             }
             initKontDataAndControls(currentItem, currentOperation);
-//            binder.removeBean();
-//            binder.readBean(currentItem);
-//            initControlsOperability(currentOperation, currentItem);
             return true;
         } catch (VzmServiceException e) {
             showSaveErrMessage();
@@ -603,7 +600,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
         ;
     }
 
-    private boolean isKontValid() {
+    private boolean writeKontToBeanIfValid() {
         boolean isValid = binder.writeBeanIfValid(currentItem);
         if (!isValid) {
             ConfirmDialog
@@ -657,14 +654,12 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
             kontToSave.setDatetimeUpdate(LocalDateTime.now());
 
             currentItem = kontService.saveKont(kontToSave, currentOperation);
-//            kontToSave = kontService.saveKont(kontToSave, oper);
-//            currentItem = kontSaved;
             if (needCreateKontDirs(currentItem, currentOperation)) {
                 createKontDirs(currentItem);
             }
             lastOperationResult = OperationResult.ITEM_SAVED;
             return currentItem;
-        } catch(VzmServiceException e) {
+        } catch (VzmServiceException e) {
             lastOperationResult = lastOperResOrig;
             throw(e);
         }
@@ -1139,6 +1134,12 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                 .setFlexGrow(0)
                 .setResizable(true)
         ;
+        zakGrid.addColumn(alertSwitchRenderer)
+                .setHeader("Alert")
+                .setWidth("3em")
+                .setFlexGrow(0)
+                .setKey(ZAK_ALERT_COL_KEY)
+        ;
         zakGrid.addColumn(new ComponentRenderer<>(this::buildZakOpenBtn))
                 .setFlexGrow(0)
                 .setKey(ZAK_EDIT_COL_KEY)
@@ -1220,23 +1221,53 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
     }
 
     private Component buildZakOpenBtn(Zak zak) {
-
-//        if (ItemType.SUB == zak.getTyp()) {
-//            Button btn = new GridItemEditBtn(event -> {
-//                subFormDialog.openDialog(
-//                        zak, Operation.EDIT, null, null);
-//            }, VzmFormatUtils.getItemTypeColorName(zak.getTyp()));
-//            return btn;
-//        } else {
-            Button btn = new GridItemEditBtn(event -> {
-                    if (saveWithoutClose()) {
-                        zakFormDialog.openDialog(false, zak, Operation.EDIT);
-                    }
+        return new GridItemEditBtn(event -> {
+                if (saveWithoutClose()) {
+                    zakFormDialog.openDialog(false, zak, Operation.EDIT);
                 }
-                , VzmFormatUtils.getItemTypeColorName(zak.getTyp())
-            );
-            return btn;
-//        }
+            }
+            , VzmFormatUtils.getItemTypeColorName(zak.getTyp())
+        );
+    }
+
+    private ComponentRenderer<Component, Zak> alertSwitchRenderer = new ComponentRenderer<>(zak -> {
+        AlertModifIconBox alertBox = new AlertModifIconBox();
+        alertBox.showIcon(zak.isAlerted() ?
+                AlertModifIconBox.AlertModifState.ACTIVE : AlertModifIconBox.AlertModifState.INACTIVE);
+        return alertBox;
+    });
+
+    @Override
+    public Consumer<Boolean> getAlertModifSwitchAction() {
+        return isActive -> {
+            if (isActive) {
+                ConfirmDialog.createQuestion()
+                    .withCaption("Reset alertů kontraktu")
+                    .withMessage(String.format("Resetovat alerty kontraktu a všech příslušných zakázek, faktur a subdodávek?"))
+                    .withOkButton(() -> {
+                            resetKontZakFaktAlerts();
+                            currentItem.setAlertModif(false);
+                            finishKontAlertSwitch();
+                        }, ButtonOption.focus(), ButtonOption.caption("RESET")
+                    )
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .open()
+                ;
+
+
+                resetKontZakFaktAlerts();
+                currentItem.setAlertModif(false);
+            } else {
+                currentItem.setAlertModif(true);
+                finishKontAlertSwitch();
+            }
+        };
+    }
+
+    private void finishKontAlertSwitch() {
+        currentItem = kontService.saveKont(currentItem, Operation.SAVE);
+        syncFormGridAfterZaksModification(null, OperationResult.ALERT_MODIF_SWITCHED);
+        lastOperationResult = OperationResult.ALERT_MODIF_SWITCHED;
     }
 
 }

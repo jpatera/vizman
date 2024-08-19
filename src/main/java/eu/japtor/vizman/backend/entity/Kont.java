@@ -1,5 +1,6 @@
 package eu.japtor.vizman.backend.entity;
 
+import eu.japtor.vizman.backend.utils.VzmUtils;
 import eu.japtor.vizman.ui.components.ArchIconBox;
 import eu.japtor.vizman.ui.components.DigiIconBox;
 import org.hibernate.annotations.CreationTimestamp;
@@ -75,10 +76,7 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     @Column(name = "ALERT_MODIF")
     private Boolean alertModif;
 
-    //    @OneToMany(fetch = FetchType.LAZY)
-//    @OneToMany(mappedBy = "kont", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE} )
-//    @OneToMany(mappedBy = "kont", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = false)
-    @OneToMany(mappedBy = "kont", fetch = FetchType.EAGER, cascade = CascadeType.REFRESH, orphanRemoval = false)
+    @OneToMany(mappedBy = "kont", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = false)
     // TODO Aby se pri FetchType.LAZY updatoval z druhe strany joinColumn, nejlepe (ne-linutne) asi je mit
     //      CascadeType.ALL (asspon pro H2); orphanRemoval=true by asi taky nemel skodit.
     @OrderBy("czak DESC")
@@ -228,6 +226,9 @@ public class Kont extends AbstractGenIdEntity implements KzTreeAware, HasItemTyp
     }
     public void setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
+        if (VzmUtils.isAlertModifCondition(updatedBy)) {
+            setAlertModif(true);
+        }
     }
 
     @Override

@@ -249,7 +249,7 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
 
     public HtmlContainer getHeaderEndComponent(final String titleEndText) {
         HtmlContainer comp = new Div();
-        Component alertSwitchBtn = new AlertSwitchBtn(getAlertModifSwitchAction(), isZakAlerted());
+        Component alertSwitchBtn = new AlertSwitchBtn(getAlertModifSwitchAction(), isItemAlerted());
         if ((null == titleEndText) && (getCurrentItem() instanceof HasModifDates)) {
             if (getCurrentOperation() != Operation.ADD) {
                 LocalDate dateCreate = ((HasModifDates) getCurrentItem()).getDateCreate();
@@ -269,7 +269,7 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         return comp;
     }
 
-    private boolean isZakAlerted() {
+    private boolean isItemAlerted() {
         return ((HasAlertModif) getCurrentItem()).isAlertModif() || ((HasAlertModif) getCurrentItem()).hasAlertedItems();
     }
 

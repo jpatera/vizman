@@ -10,7 +10,6 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Hr;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
@@ -41,7 +40,6 @@ import org.claspina.confirmdialog.ConfirmDialog;
 import org.springframework.util.CollectionUtils;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -683,9 +681,6 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 currentOperation = Operation.EDIT;
             }
             initZakDataAndControls(currentItem, currentOperation, readonly);
-//            binder.removeBean();
-//            binder.readBean(currentItem);
-//            initControlsOperability();
             return true;
         } catch (VzmServiceException e) {
             showSaveErrMessage();
@@ -1312,14 +1307,13 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                 .setWidth("3.5em")
                 .setFlexGrow(0)
         ;
-//        faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktEditBtn))
         faktGrid.addColumn(alertSwitchRenderer)
                 .setHeader("Alert")
                 .setWidth("3em")
                 .setFlexGrow(0)
                 .setKey(FAKT_ALERT_COL_KEY)
         ;
-        faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktEditBtn))
+        faktGrid.addColumn(new ComponentRenderer<>(this::buildFaktOpenBtn))
                 .setHeader("Edit")
                 .setWidth("3em")
                 .setFlexGrow(0)
@@ -1353,7 +1347,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         return faktGrid;
     }
 
-    private Component buildFaktEditBtn(Fakt fakt) {
+    private Component buildFaktOpenBtn(Fakt fakt) {
         if (ItemType.FAKT == fakt.getTyp()) {
             return new GridItemEditBtn(event ->
                     faktFormDialog.openDialog(readonly, fakt, Operation.EDIT)
@@ -1365,23 +1359,10 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         }
     }
 
-//    private Component buildFaktAlertIco(Fakt fakt) {
-////
-//        if (ItemType.FAKT == fakt.getTyp()) {
-//            return new GridItemEditBtn(event ->
-//                    faktFormDialog.openDialog(readonly, fakt, Operation.EDIT)
-//                    , VzmFormatUtils.getItemTypeColorName(fakt.getTyp()));
-//        } else {
-//            return new GridItemEditBtn(event ->
-//                    subFormDialog.openDialog(readonly, fakt, Operation.EDIT)
-//                    , VzmFormatUtils.getItemTypeColorName(fakt.getTyp()));
-//        }
-//    }
-
     private ComponentRenderer<Component, Fakt> alertSwitchRenderer = new ComponentRenderer<>(fakt -> {
         AlertModifIconBox alertBox = new AlertModifIconBox();
-        alertBox.showIcon(!fakt.isAlertModif() ?
-                AlertModifIconBox.AlertModifState.INACTIVE : AlertModifIconBox.AlertModifState.ACTIVE);
+        alertBox.showIcon(fakt.isAlerted() ?
+                AlertModifIconBox.AlertModifState.ACTIVE : AlertModifIconBox.AlertModifState.INACTIVE);
         return alertBox;
     });
 
@@ -1389,60 +1370,30 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     public Consumer<Boolean> getAlertModifSwitchAction() {
         return isActive -> {
             if (isActive) {
-                resetZakFaktAlerts();
-                currentItem.setAlertModif(false);
+                ConfirmDialog.createQuestion()
+                    .withCaption("Reset alertů zakázky")
+                    .withMessage(String.format("Resetovat alerty zakázky a všech příslušných faktur a subdodávek?"))
+                    .withOkButton(() -> {
+                            resetZakFaktAlerts();
+                            currentItem.setAlertModif(false);
+                            finishZakAlertSwitch();
+                        }, ButtonOption.focus(), ButtonOption.caption("RESET")
+                    )
+                    .withCancelButton(ButtonOption.caption("ZPĚT"))
+                    .open()
+                ;
             } else {
                 currentItem.setAlertModif(true);
+                finishZakAlertSwitch();
             }
-            currentItem = zakService.saveZak(currentItem, Operation.SAVE);
-            syncFormGridAfterFaktsModification(null, OperationResult.ALERT_MODIF_SWITCHED);
-            lastOperationResult = OperationResult.ALERT_MODIF_SWITCHED;
         };
     }
 
-    private Component buildFakStornoBtn(Fakt fakt) {
-        boolean isFakturovano = fakt.isFakturovano();
-        if (ItemType.FAKT == fakt.getTyp()) {
-            return new FakturovatBtn(event -> {
-                if (isFakturovano) {
-                    faktFormDialog.openDialog(readonly, fakt, Operation.STORNO);
-                } else {
-                    if (null == fakt.getPlneni() || fakt.getPlneni().compareTo(BigDecimal.ZERO) <= 0) {
-                        ConfirmDialog.createInfo()
-                                .withCaption("Fakturace")
-                                .withMessage("Nelze fakturovat, není zadáno plnění")
-                                .open();
-                    } else if (null != fakt.getDateTimeExport()) {
-                        ConfirmDialog.createInfo()
-                                .withCaption("Fakturace")
-                                .withMessage("Nelze fakturovat, již bylo exportováno")
-                                .open();
-
-                    } else {
-                        faktFormDialog.openDialog(readonly, fakt, Operation.FAKTUROVAT);
-                    }
-                }
-            }, isFakturovano);
-        } else {
-            return new Span();
-        }
+    private void finishZakAlertSwitch() {
+        currentItem = zakService.saveZak(currentItem, Operation.SAVE);
+        syncFormGridAfterFaktsModification(null, OperationResult.ALERT_MODIF_SWITCHED);
+        lastOperationResult = OperationResult.ALERT_MODIF_SWITCHED;
     }
-
-    private Component buildExportBackBtn(Fakt fakt) {
-
-        if (ItemType.FAKT == fakt.getTyp()) {
-            Button exportBackBtn = new GridFaktExportBtn(event -> {
-                //            Fakt fakt = new Fakt(ItemType.FAKT, getCurrentItem().getNewCfakt(), getCurrentItem());
-                //            faktFormDialog.open(fakt, Operation.ADD, "Fakturace");
-                faktFormDialog.openDialog(readonly, fakt, Operation.EXPORT);
-            });
-            exportBackBtn.setEnabled(false);
-            return exportBackBtn;
-        } else {
-            return new Span();
-        }
-    }
-
 
     private Component initZakReportButton() {
 

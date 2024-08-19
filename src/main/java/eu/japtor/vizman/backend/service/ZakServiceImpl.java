@@ -64,7 +64,7 @@ public class ZakServiceImpl implements ZakService, HasLogger {
             return zakSaved;
         } catch (Exception e) {
             String errMsg = "Error while saving {} : {} [operation: {}]";
-                getLogger().error(errMsg, zakToSave.getTyp().name(), kzCis, oper.name(), e);
+            getLogger().error(errMsg, zakToSave.getTyp().name(), kzCis, oper.name(), e);
             throw new VzmServiceException(errMsg);
         }
     }
