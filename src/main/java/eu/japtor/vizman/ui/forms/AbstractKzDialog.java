@@ -230,17 +230,6 @@ public abstract class AbstractKzDialog<T extends Serializable>  extends Dialog {
         return lowerPane;
     }
 
-//    public Consumer<Boolean> getAlertModifSwitchAction() {
-//        return isActive -> {
-//            syncFormGridAfterFaktsModification(null, OperationResult.ALERT_MODIF_SWITCHED);
-////            dialogContent.setVisible(!isExpanded);
-////            headerEndBox.setVisible(!isExpanded);
-////            headerMiddleBox.setVisible(!isExpanded);
-////            this.setHeight(isExpanded ? dialogMinHeight : dialogHeight);
-////            this.setWidth(isExpanded ? dialogMinWidth : dialogWidth);
-//        };
-//    };
-
     public Consumer<Boolean> getAlertModifSwitchAction() {
         return isActive -> {
             // Override, by default does nothing.

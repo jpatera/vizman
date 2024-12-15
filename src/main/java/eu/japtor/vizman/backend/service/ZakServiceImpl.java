@@ -57,8 +57,8 @@ public class ZakServiceImpl implements ZakService, HasLogger {
         try {
 //            kontRepo.flush();
 //            zakRepo.flush();
-//            Zak zakSaved = zakRepo.saveAndFlush(zakToSave);
-            Zak zakSaved = zakRepo.save(zakToSave);
+            Zak zakSaved = zakRepo.saveAndFlush(zakToSave);
+//            Zak zakSaved = zakRepo.save(zakToSave);
             getLogger().info("{} saved: {} [operation: {}]"
                     , zakSaved.getTyp().name(), kzCis, oper.name());
             return zakSaved;

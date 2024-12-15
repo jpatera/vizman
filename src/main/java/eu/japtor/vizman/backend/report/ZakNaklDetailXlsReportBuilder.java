@@ -85,8 +85,8 @@ public class ZakNaklDetailXlsReportBuilder extends FastReportBuilder {
                 .addColumn(workPruhCol)
 
                 // Groups
-                .addGroup(zakGroup)
                 .addGroup(userGroup)
+                .addGroup(zakGroup)
                 .addGroup(ymGroup)
 
         // Sub-reports

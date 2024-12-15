@@ -368,7 +368,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
             kontZaksFaktsChanged = true;
             kontZaksChanged = true;
         }
-        Zak zakItemOrig = zakFormDialog.getOrigItem();
+//        Zak zakItemOrig = zakFormDialog.getOrigItem();
 //        currentItem = kontService.fetchOne(zakItemOrig.getKontId());
 //        getBinder().readBean(currentItem);
 
@@ -1248,6 +1248,7 @@ public class KontFormDialog extends AbstractKzDialog<Kont> implements HasLogger 
                             resetKontZakFaktAlerts();
                             currentItem.setAlertModif(false);
                             finishKontAlertSwitch();
+                            refreshControls(currentItem);
                         }, ButtonOption.focus(), ButtonOption.caption("RESET")
                     )
                     .withCancelButton(ButtonOption.caption("ZPĚT"))

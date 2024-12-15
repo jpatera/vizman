@@ -31,4 +31,5 @@ public interface KzTreeAware<T extends KzTreeAware> {
     long getAfterTerms();
     boolean isChecked();
     void setChecked(boolean checked);
+    boolean isAlerted();
 }

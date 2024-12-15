@@ -32,7 +32,7 @@ public class AlertSwitchBtn extends Button {
         ;
         this.addClickListener(event -> {
             buttonActionConsumer.accept(this.getIcon() == alertActiveIcon);
-            this.setIcon(this.getIcon() == alertInactiveIcon ? alertActiveIcon : alertInactiveIcon);
+//            this.setIcon(this.getIcon() == alertInactiveIcon ? alertActiveIcon : alertInactiveIcon);
         });
     }
 }

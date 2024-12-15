@@ -2,6 +2,7 @@ package eu.japtor.vizman.backend.service;
 
 import eu.japtor.vizman.app.HasLogger;
 import eu.japtor.vizman.backend.entity.Mena;
+import eu.japtor.vizman.backend.entity.Zak;
 import eu.japtor.vizman.backend.entity.Zakr;
 import eu.japtor.vizman.backend.entity.Zaqa;
 import eu.japtor.vizman.backend.repository.ZakrRepo;

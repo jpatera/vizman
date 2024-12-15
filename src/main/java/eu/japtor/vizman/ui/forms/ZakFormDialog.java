@@ -109,7 +109,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
 
     private Binder<Zak> binder = new Binder<>();
     private Zak currentItem;
-    private Zak origItem;
+//    private Zak origItem;
     private Operation currentOperation;
     private OperationResult lastOperationResult = OperationResult.NO_CHANGE;
     private boolean zakFaktsChanged = false;
@@ -190,7 +190,9 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
     public void openDialog(boolean readonly, Zak zak, Operation operation) {
         this.readonly = readonly;
         this.currentItem = zak;
-        this.origItem = zak;    // TODO: to je asi blbe, musi se udelat new Zak
+
+//        this.origItem = zak;    // TODO: to je asi blbe, musi se udelat new Zak
+
         this.currentOperation = operation;
         this.zakFaktsChanged = false;
         this.authUsername = SecurityUtils.getUsername();
@@ -889,9 +891,9 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
         return zakFaktsChanged;
     }
 
-    public Zak getOrigItem()  {
-        return origItem;
-    }
+//    public Zak getOrigItem()  {
+//        return origItem;
+//    }
 
 // -----------------------------------------------------
 
@@ -1377,6 +1379,7 @@ public class ZakFormDialog extends AbstractKzDialog<Zak> implements HasLogger {
                             resetZakFaktAlerts();
                             currentItem.setAlertModif(false);
                             finishZakAlertSwitch();
+                            refreshControls(currentItem);
                         }, ButtonOption.focus(), ButtonOption.caption("RESET")
                     )
                     .withCancelButton(ButtonOption.caption("ZPĚT"))
