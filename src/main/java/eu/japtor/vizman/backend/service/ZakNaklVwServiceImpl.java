@@ -41,6 +41,21 @@ public class ZakNaklVwServiceImpl implements ZakNaklVwService, HasLogger {
     }
 
     @Override
+//    public List<ZaknNaklVw> fetchByPersonId(final Long personId, ZakrListView.ZakrParams zakrParams) {
+    public List<ZaknNaklVw> fetchByPersonId(final Long personId) {
+//        List<ZaknNaklVw> zakns = zakNaklVwRepo.findByZakIdOrderByPersonIdAscDatePruhDesc(personId);
+        List<ZaknNaklVw> zakns = zakNaklVwRepo.findPersonReportOfWorkItems(personId);
+//        zakns.stream()
+//                .filter(zn -> null != zn.getWorkPruh() && zn.getWorkPruh().compareTo(BigDecimal.ZERO) != 0)
+//                .forEach(zn -> {
+//                    zn.setNaklPojist(zn.calcNaklPojist(zakrParams.getKoefPojist()));
+//                    zn.setNaklRezie(zn.calcNaklPojist(zakrParams.getKoefRezie()));
+//                })
+//        ;
+        return zakns;
+    }
+
+    @Override
     public List<ZakYmNaklVw> fetchByZakIdsSumByYm(final List<Long> zakIds, ZakrListView.ZakrParams zakrParams) {
         List<ZakYmNaklVw> zakns = zakYmNaklVwRepo.findByZakIdsSumByYm(zakIds);
         zakns.stream()

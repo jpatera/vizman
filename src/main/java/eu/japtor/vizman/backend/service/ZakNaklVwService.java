@@ -10,5 +10,8 @@ public interface ZakNaklVwService {
 
     List<ZaknNaklVw> fetchByZakId(Long zakId, ZakrListView.ZakrParams zakrParams);
 
+//    List<ZaknNaklVw> fetchByPersonId(final Long personId, ZakrListView.ZakrParams zakrParams);
+    List<ZaknNaklVw> fetchByPersonId(final Long personId);
+
     List<ZakYmNaklVw> fetchByZakIdsSumByYm(List<Long> zakIds, ZakrListView.ZakrParams zakrParams);
 }

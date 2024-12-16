@@ -21,8 +21,10 @@ import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.validator.RegexpValidator;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -33,14 +35,13 @@ import eu.japtor.vizman.backend.bean.PruhParag;
 import eu.japtor.vizman.backend.bean.PruhSum;
 import eu.japtor.vizman.backend.bean.PruhZak;
 import eu.japtor.vizman.backend.entity.*;
+import eu.japtor.vizman.backend.report.PersonRepOfWorkXlsReportBuilder;
 import eu.japtor.vizman.backend.repository.*;
 import eu.japtor.vizman.backend.service.*;
 import eu.japtor.vizman.backend.utils.VzmFormatUtils;
+import eu.japtor.vizman.backend.utils.VzmUtils;
 import eu.japtor.vizman.ui.MainView;
-import eu.japtor.vizman.ui.components.Gap;
-import eu.japtor.vizman.ui.components.ItemRemoveBtn;
-import eu.japtor.vizman.ui.components.ReloadButton;
-import eu.japtor.vizman.ui.components.Ribbon;
+import eu.japtor.vizman.ui.components.*;
 import eu.japtor.vizman.ui.forms.ZakSelectDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.claspina.confirmdialog.ButtonOption;
@@ -58,6 +59,7 @@ import java.util.stream.Collectors;
 import static eu.japtor.vizman.app.security.SecurityUtils.canViewOtherUsers;
 import static eu.japtor.vizman.backend.entity.Pruh.PRUH_STATE_LOCKED;
 import static eu.japtor.vizman.backend.entity.Pruh.PRUH_STATE_UNLOCKED;
+import static eu.japtor.vizman.backend.utils.VzmFormatReport.RFNDF;
 import static eu.japtor.vizman.ui.util.VizmanConst.ROUTE_PRUH;
 
 @Route(value = ROUTE_PRUH, layout = MainView.class)
@@ -113,6 +115,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
     private Button cancelEditButton;
     private Button saveEditButton;
     private Button zaksCopyButton;
+    private Button personRepOfWorkButton;
     private Button zaksAddButton;
     private Button togglePruhStateButton;
 
@@ -139,6 +142,11 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
                 return pz2.getCkont().compareTo(pz1.getCkont());
             }
     ;
+
+    private final static String PERSON_REP_OF_WORK_FILE_NAME = "vzm-vykaz-prace-";
+    private String repSubtitleText;
+    private Anchor expXlsAnchor;
+    private ReportXlsExporter<ZaknNaklVw> xlsReportExporter;
 
     @Autowired
     public PersonService personService;
@@ -231,6 +239,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
 //        !SecurityUtils.isAccessGranted(event.getNavigationTarget())
         authUsername = SecurityUtils.getUsername();
         initPruhData();
+        xlsReportExporter = new ReportXlsExporter();
         zakSelectDialog = new ZakSelectDialog (
                 this::addSelectedZaksToGrid
                 , zakBasicRepo
@@ -345,6 +354,10 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
         updatePruhGrids(pruhPerson, pruhYm);
     }
 
+    private Component initExpXlsAnchor() {
+        expXlsAnchor = new ExpXlsButtonAnchor(expXlsAnchorListener);
+        return expXlsAnchor;
+    }
 
     private Optional<Person> getPruhPersonFromList(String username) {
         return pruhPersonList.stream()
@@ -871,6 +884,7 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
         buttonBox.add(
                 initZaksCopyButton()
                 , initZaksAddButton()
+                , initExpXlsAnchor()
         );
 
         pruhToolBar.add(
@@ -1444,6 +1458,55 @@ public class PruhView extends VerticalLayout implements HasLogger, AfterNavigati
             ;
         });
         return zaksCopyButton;
+    }
+
+    private SerializableSupplier<List<? extends ZaknNaklVw>> singlePersonRepOfWorkSupplier = () -> {
+//        return zakNaklVwService.fetchByZakId(zakr.getId(), zakrParams);
+        return zakNaklVwService.fetchByPersonId(pruhPerson.getId());
+    };
+
+    private ComponentEventListener expXlsAnchorListener = event -> {
+        populatePersonRepOfWorkXlsRepResourceAndDownload(singlePersonRepOfWorkSupplier);
+    };
+
+    private void populatePersonRepOfWorkXlsRepResourceAndDownload(
+            SerializableSupplier<List<? extends ZaknNaklVw>> itemsSupplier
+    ) {
+        String[] sheetNames = itemsSupplier.get().stream()
+                .filter(VzmUtils.distinctByKey(p -> p.getKzCisloRep()))
+                .map(item -> item.getKzCisloRep())
+                .toArray(String[]::new)
+                ;
+        repSubtitleText = "";
+        final AbstractStreamResource xlsResource =
+                xlsReportExporter.getXlsStreamResource(
+                        new PersonRepOfWorkXlsReportBuilder(
+                                "VÝKAZ PRÁCE"
+                                , repSubtitleText
+                                , SecurityUtils.isNaklCompleteAccessGranted()
+                        )
+                        , getPersonRepOfWorkFileName(ReportXlsExporter.Format.XLS)
+                        , itemsSupplier
+                        , sheetNames
+                );
+        expXlsAnchor.setHref(xlsResource);
+
+        // Varianta 1
+        UI.getCurrent().getPage().executeJs("$0.click();", expXlsAnchor.getElement());
+//      or:  page.executeJs("document.getElementById('" + ZAK_BASIC_REP_ID + "').click();");
+
+        // Varianta 2 - browsers can have pop-up opening disabled
+//        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
+//        UI.getCurrent().getPage().executeJs("window.open($0, $1)", registration.getResourceUri().toString(), "_blank");
+
+        // Varianta 3 - It is not clear how to activate source page again after download is finished
+//        final StreamRegistration registration = VaadinSession.getCurrent().getResourceRegistry().registerResource(xlsResource);
+//        UI.getCurrent().getPage().setLocation(registration.getResourceUri());
+
+    }
+
+    private String getPersonRepOfWorkFileName(ReportXlsExporter.Format format) {
+        return PERSON_REP_OF_WORK_FILE_NAME + pruhPerson.getUsername() + RFNDF.format(LocalDateTime.now()) + "." + format.name().toLowerCase();
     }
 
     private YearMonth getLastUserPruhYmNotCurrent(Long userId) {
